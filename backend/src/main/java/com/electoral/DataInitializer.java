@@ -20,6 +20,9 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        log.info("=== INICIANDO DATAINITIALIZER ===");
+        
+        // Crear roles
         if (rolRepository.count() == 0) {
             rolRepository.save(Rol.builder().nombre("ADMIN").descripcion("Administrador del sistema").build());
             rolRepository.save(Rol.builder().nombre("SUPERVISOR").descripcion("Supervisor de elecciones").build());
@@ -27,6 +30,7 @@ public class DataInitializer implements CommandLineRunner {
             log.info("Roles inicializados");
         }
 
+        // Crear usuario admin
         if (!usuarioRepository.existsByUsername("admin")) {
             Rol adminRol = rolRepository.findByNombre("ADMIN").orElseThrow();
             usuarioRepository.save(Usuario.builder()
@@ -39,6 +43,15 @@ public class DataInitializer implements CommandLineRunner {
                     .activo(true)
                     .build());
             log.info("Usuario admin creado con password: admin123");
+        } else {
+            // Actualizar password por si acaso
+            usuarioRepository.findByUsername("admin").ifPresent(usuario -> {
+                usuario.setPassword(passwordEncoder.encode("admin123"));
+                usuarioRepository.save(usuario);
+                log.info("Password de admin reseteado a: admin123");
+            });
         }
+        
+        log.info("=== DATAINITIALIZER COMPLETADO ===");
     }
 }
