@@ -2,6 +2,7 @@ package com.electoral.controllers;
 
 import com.electoral.dto.*;
 import com.electoral.services.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -50,5 +51,11 @@ public class UsuarioController {
     public ResponseEntity<Void> resetPassword(@PathVariable Long id, @RequestBody ResetPasswordRequest request) {
         usuarioService.resetPassword(id, request.getNuevaPassword());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/rol/{rolNombre}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<List<UsuarioResponse>> getUsuariosByRol(@PathVariable String rolNombre) {
+        return ResponseEntity.ok(usuarioService.getUsuariosByRol(rolNombre));
     }
 }

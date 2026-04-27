@@ -19,18 +19,21 @@ public class MesaService {
     private final EleccionService eleccionService;
     private final MesaUsuarioRepository mesaUsuarioRepository;
 
+    @Transactional(readOnly = true)
     public List<MesaResponse> getMesasByEleccion(Long eleccionesId) {
         return mesaRepository.findByEleccionesId(eleccionesId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<MesaResponse> getMesasByRecinto(Long recintoId) {
         return mesaRepository.findByRecintoId(recintoId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public MesaResponse getMesaById(Long id) {
         Mesa mesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
@@ -93,6 +96,10 @@ public class MesaService {
 
     @Transactional
     public void asignarUsuario(Long mesaId, Long usuarioId) {
+        if (mesaUsuarioRepository.findByMesaIdAndUsuarioId(mesaId, usuarioId).isPresent()) {
+            throw new IllegalStateException("Esta mesa ya esta asignada a este usuario");
+        }
+        
         Mesa mesa = getMesaEntityById(mesaId);
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con ID: " + usuarioId));
@@ -103,6 +110,12 @@ public class MesaService {
                 .build();
         
         mesaUsuarioRepository.save(mesaUsuario);
+    }
+
+    @Transactional
+    public void desasignarUsuario(Long mesaId, Long usuarioId) {
+        mesaUsuarioRepository.findByMesaIdAndUsuarioId(mesaId, usuarioId)
+                .ifPresent(mesaUsuario -> mesaUsuarioRepository.delete(mesaUsuario));
     }
 
     public boolean usuarioPerteneceAMesa(Long usuarioId, Long mesaId) {

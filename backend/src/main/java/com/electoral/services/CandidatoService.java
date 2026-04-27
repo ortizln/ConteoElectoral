@@ -3,6 +3,7 @@ package com.electoral.services;
 import com.electoral.dto.*;
 import com.electoral.entities.*;
 import com.electoral.exception.RecursoNoEncontradoException;
+import com.electoral.exception.ValidacionException;
 import com.electoral.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -49,8 +50,15 @@ public class CandidatoService {
         if (request.getPartidoId() != null) {
             partido = partidoRepository.findById(request.getPartidoId())
                     .orElseThrow(() -> new RecursoNoEncontradoException("Partido no encontrado con ID: " + request.getPartidoId()));
+            
+            boolean existeCandidato = candidatoRepository.existsByEleccionesIdAndPartidoIdAndCargoId(
+                request.getEleccionesId(), request.getPartidoId(), request.getCargoId());
+            if (existeCandidato) {
+                throw new ValidacionException("Ya existe un candidato del partido '" + partido.getNombre() + 
+                    "' para el cargo de '" + cargo.getNombre() + "' en esta elección");
+            }
         }
-
+        
         Candidato candidato = Candidato.builder()
                 .nombre(request.getNombre())
                 .apellido(request.getApellido())

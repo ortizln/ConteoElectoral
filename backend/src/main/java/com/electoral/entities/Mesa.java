@@ -1,9 +1,7 @@
 package com.electoral.entities;
 
-import com.electoral.config.SexoMesaType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.Type;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,7 +18,7 @@ public class Mesa {
     @Column(nullable = false, length = 20)
     private String numero;
 
-    @Type(SexoMesaType.class)
+    @Enumerated(EnumType.STRING)
     @Column(name = "sexo", nullable = false)
     private SexoMesa sexo;
 

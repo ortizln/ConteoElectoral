@@ -62,4 +62,11 @@ public class MesaController {
         mesaService.asignarUsuario(mesaId, usuarioId);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/{mesaId}/asignar-usuario/{usuarioId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<Void> desasignarUsuario(@PathVariable Long mesaId, @PathVariable Long usuarioId) {
+        mesaService.desasignarUsuario(mesaId, usuarioId);
+        return ResponseEntity.ok().build();
+    }
 }

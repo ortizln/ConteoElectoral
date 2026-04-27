@@ -1,5 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { DashboardData } from '../models';
@@ -16,7 +17,7 @@ export class WebSocketService implements OnDestroy {
 
   private connect(): void {
     this.client = new Client({
-      brokerURL: 'ws://localhost:8080/ws',
+      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
@@ -33,22 +34,45 @@ export class WebSocketService implements OnDestroy {
 
   subscribeToResultados(eleccionId: number): Observable<DashboardData> {
     return new Observable<DashboardData>(observer => {
-      if (!this.client) {
-        observer.error('WebSocket not connected');
-        return;
-      }
+      let retryCount = 0;
+      const maxRetries = 10;
 
-      const subscription = this.client.subscribe(
-        `/topic/resultados/${eleccionId}`,
-        (message: any) => {
-          const data = JSON.parse(message.body);
-          observer.next(data);
+      const trySubscribe = () => {
+        if (!this.client) {
+          observer.error('WebSocket not initialized');
+          return;
         }
-      );
 
-      return () => {
-        subscription.unsubscribe();
+        if (!this.client.connected) {
+          if (retryCount < maxRetries) {
+            retryCount++;
+            setTimeout(trySubscribe, 500);
+            return;
+          }
+          observer.error('WebSocket connection timeout');
+          return;
+        }
+
+        try {
+          const subscription = this.client.subscribe(
+            `/topic/resultados/${eleccionId}`,
+            (message: any) => {
+              try {
+                const data = JSON.parse(message.body);
+                observer.next(data);
+              } catch (e) {
+                console.error('Error parsing message:', e);
+              }
+            }
+          );
+
+          observer.add(() => subscription.unsubscribe());
+        } catch (e: any) {
+          observer.error('Subscribe error: ' + e.message);
+        }
       };
+
+      trySubscribe();
     });
   }
 

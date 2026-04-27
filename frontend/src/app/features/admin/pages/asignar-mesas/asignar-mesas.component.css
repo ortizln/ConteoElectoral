@@ -1,0 +1,47 @@
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.card {
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  padding: 10px 15px;
+  font-weight: 500;
+}
+
+.card-body {
+  padding: 15px;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.table td {
+  font-size: 13px;
+  vertical-align: middle;
+}

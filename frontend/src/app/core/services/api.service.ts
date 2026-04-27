@@ -131,6 +131,35 @@ export class ApiService {
     return this.http.post<void>(`${this.API_URL}/mesas/${mesaId}/asignar-usuario/${usuarioId}`, {});
   }
 
+  desasignarUsuarioDeMesa(mesaId: number, usuarioId: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/mesas/${mesaId}/asignar-usuario/${usuarioId}`);
+  }
+
+  // Usuarios
+  getUsuarios(): Observable<Usuario[]> {
+    return this.http.get<Usuario[]>(`${this.API_URL}/usuarios`);
+  }
+
+  createUsuario(data: any): Observable<Usuario> {
+    return this.http.post<Usuario>(`${this.API_URL}/usuarios`, data);
+  }
+
+  updateUsuario(id: number, data: any): Observable<Usuario> {
+    return this.http.put<Usuario>(`${this.API_URL}/usuarios/${id}`, data);
+  }
+
+  deleteUsuario(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/usuarios/${id}`);
+  }
+
+  resetPassword(id: number, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/usuarios/${id}/reset-password`, { nuevaPassword: newPassword });
+  }
+
+  getUsuariosByRol(rolNombre: string): Observable<Usuario[]> {
+    return this.http.get<Usuario[]>(`${this.API_URL}/usuarios/rol/${rolNombre}`);
+  }
+
   // Votos
   getVotosByMesa(mesaId: number): Observable<Voto[]> {
     return this.http.get<Voto[]>(`${this.API_URL}/votos/mesa/${mesaId}`);
@@ -153,24 +182,14 @@ export class ApiService {
     return this.http.get<any>(`${this.API_URL}/dashboard/eleccion/${eleccionId}`);
   }
 
-  // Usuarios
-  getUsuarios(): Observable<Usuario[]> {
-    return this.http.get<Usuario[]>(`${this.API_URL}/usuarios`);
-  }
-
-  createUsuario(data: any): Observable<Usuario> {
-    return this.http.post<Usuario>(`${this.API_URL}/usuarios`, data);
-  }
-
-  updateUsuario(id: number, data: any): Observable<Usuario> {
-    return this.http.put<Usuario>(`${this.API_URL}/usuarios/${id}`, data);
-  }
-
-  deleteUsuario(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/usuarios/${id}`);
-  }
-
-  resetPassword(id: number, newPassword: string): Observable<void> {
-    return this.http.post<void>(`${this.API_URL}/usuarios/${id}/reset-password`, { nuevaPassword: newPassword });
+  getDashboardConFiltros(eleccionId: number, cargoId?: number, partidoId?: number, recintoId?: number): Observable<any> {
+    let url = `${this.API_URL}/dashboard/eleccion/${eleccionId}/filtrar`;
+    const params = new URLSearchParams();
+    if (cargoId !== undefined) params.set('cargoId', cargoId.toString());
+    if (partidoId !== undefined) params.set('partidoId', partidoId.toString());
+    if (recintoId !== undefined) params.set('recintoId', recintoId.toString());
+    const queryString = params.toString();
+    if (queryString) url += '?' + queryString;
+    return this.http.get<any>(url);
   }
 }

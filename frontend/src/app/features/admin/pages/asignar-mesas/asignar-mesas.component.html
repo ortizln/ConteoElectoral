@@ -1,0 +1,72 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Asignar Mesas a Miembros</h1>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <label class="form-label">Eleccion</label>
+          <select class="form-select form-select-sm" [(ngModel)]="eleccionId" (ngModelChange)="onEleccionChange()">
+            <option *ngFor="let e of elecciones" [value]="e.id">{{ e.nombre }}</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Miembro de Mesa</label>
+          <select class="form-select form-select-sm" [(ngModel)]="usuarioId" (ngModelChange)="onUsuarioChange()">
+            <option [value]="null">-- Seleccionar --</option>
+            <option *ngFor="let u of miembros" [value]="u.id">{{ u.username }} - {{ u.nombre }} {{ u.apellido }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="usuarioId">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-success text-white">
+          <h6 class="mb-0">Mesas Disponibles</h6>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover table-sm mb-0">
+            <thead><tr><th>Numero</th><th>Recinto</th><th>Accion</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let m of mesasDisponibles">
+                <td>{{ m.numero }}</td>
+                <td>{{ m.recintoNombre }}</td>
+                <td><button class="btn btn-sm btn-outline-success" (click)="asignarMesa(m)">+ Asignar</button></td>
+              </tr>
+              <tr *ngIf="mesasDisponibles.length === 0">
+                <td colspan="3" class="text-center text-muted">No hay mesas disponibles</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h6 class="mb-0">Mesas Asignadas</h6>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover table-sm mb-0">
+            <thead><tr><th>Numero</th><th>Recinto</th><th>Accion</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let m of mesasAsignadas">
+                <td>{{ m.numero }}</td>
+                <td>{{ m.recintoNombre }}</td>
+                <td><button class="btn btn-sm btn-outline-danger" (click)="desasignarMesa(m)">- Quitar</button></td>
+              </tr>
+              <tr *ngIf="mesasAsignadas.length === 0">
+                <td colspan="3" class="text-center text-muted">Sin mesas asignadas</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

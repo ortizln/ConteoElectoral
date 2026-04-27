@@ -1,19 +1,21 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
 import { ApiService } from '../../core/services/api.service';
 import { WebSocketService } from '../../core/services/websocket.service';
 import { AuthService } from '../../core/services/auth.service';
-import { DashboardData, Eleccion } from '../../core/models';
+import { DashboardData, Eleccion, Cargo, Partido, Recinto } from '../../core/models';
 import { Subscription } from 'rxjs';
+import { catchError, of } from 'rxjs';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="dashboard-container">
       <header class="dashboard-header">
@@ -28,6 +30,22 @@ Chart.register(...registerables);
           <button class="btn btn-outline-primary" (click)="logout()">Cerrar Sesión</button>
         </div>
       </header>
+
+      <div class="filters-bar">
+        <select class="form-select" [(ngModel)]="filtroCargoId" (change)="aplicarFiltros()">
+          <option [ngValue]="null">Todos los Cargos</option>
+          <option *ngFor="let c of cargos" [value]="c.id">{{ c.nombre }}</option>
+        </select>
+        <select class="form-select" [(ngModel)]="filtroPartidoId" (change)="aplicarFiltros()">
+          <option [ngValue]="null">Todos los Partidos</option>
+          <option *ngFor="let p of partidos" [value]="p.id">{{ p.nombre }}</option>
+        </select>
+        <select class="form-select" [(ngModel)]="filtroRecintoId" (change)="aplicarFiltros()">
+          <option [ngValue]="null">Todos los Recintos</option>
+          <option *ngFor="let r of recintos" [value]="r.id">{{ r.nombre }}</option>
+        </select>
+        <button class="btn btn-outline-secondary" (click)="limpiarFiltros()">Limpiar</button>
+      </div>
 
       <div class="stats-grid">
         <div class="stat-card">
@@ -147,7 +165,9 @@ Chart.register(...registerables);
     .progress-container { display: flex; align-items: center; gap: 12px; }
     .progress { flex: 1; height: 8px; background: #e2e8f0; border-radius: 4px; }
     .progress-bar { background: #3b82f6; border-radius: 4px; }
-    @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .charts-grid { grid-template-columns: 1fr; } }
+    .filters-bar { display: flex; gap: 12px; margin-bottom: 24px; padding: 16px; background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .filters-bar .form-select { flex: 1; max-width: 200px; }
+    @media (max-width: 1024px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .charts-grid { grid-template-columns: 1fr; } .filters-bar { flex-wrap: wrap; } }
   `]
 })
 export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -159,6 +179,20 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   dashboard: DashboardData | null = null;
   eleccionNombre = '';
 
+  filtros: {
+    cargos: { id: number; nombre: string }[];
+    partidos: { id: number; nombre: string }[];
+    recintos: { id: number; nombre: string }[];
+  } = { cargos: [], partidos: [], recintos: [] };
+  
+  get cargos() { return this.filtros.cargos; }
+  get partidos() { return this.filtros.partidos; }
+  get recintos() { return this.filtros.recintos; }
+
+  filtroCargoId: number | null = null;
+  filtroPartidoId: number | null = null;
+  filtroRecintoId: number | null = null;
+
   private barChart?: Chart;
   private pieChart?: Chart;
   private wsSubscription?: Subscription;
@@ -167,7 +201,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     private api: ApiService,
     private wsService: WebSocketService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -184,6 +219,13 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngAfterViewInit(): void {
     setTimeout(() => this.initCharts(), 100);
+  }
+
+  loadDataComplete(): void {
+    if (!this.barChart && this.barChartRef?.nativeElement) {
+      this.initCharts();
+    }
+    this.updateCharts();
   }
 
   ngOnDestroy(): void {
@@ -205,8 +247,45 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     
     this.api.getDashboard(this.selectedEleccionId).subscribe((data: DashboardData) => {
       this.dashboard = data;
-      this.updateCharts();
+      this.cdr.detectChanges();
+      this.loadDataComplete();
     });
+
+    this.api.getCargosByEleccion(this.selectedEleccionId).subscribe((data: Cargo[]) => {
+      this.filtros.cargos = data;
+    });
+    this.api.getPartidosByEleccion(this.selectedEleccionId).subscribe((data: Partido[]) => {
+      this.filtros.partidos = data;
+    });
+    this.api.getRecintosByEleccion(this.selectedEleccionId).subscribe((data: Recinto[]) => {
+      this.filtros.recintos = data;
+    });
+  }
+
+  aplicarFiltros(): void {
+    if (!this.selectedEleccionId) return;
+    
+    const cargoId = this.filtroCargoId ?? undefined;
+    const partidoId = this.filtroPartidoId ?? undefined;
+    const recintoId = this.filtroRecintoId ?? undefined;
+    
+    this.api.getDashboardConFiltros(
+      this.selectedEleccionId,
+      cargoId,
+      partidoId,
+      recintoId
+    ).subscribe((data: DashboardData) => {
+      this.dashboard = data;
+      this.cdr.detectChanges();
+      this.loadDataComplete();
+    });
+  }
+
+  limpiarFiltros(): void {
+    this.filtroCargoId = null;
+    this.filtroPartidoId = null;
+    this.filtroRecintoId = null;
+    this.loadDashboard();
   }
 
   subscribeToUpdates(): void {
@@ -215,9 +294,17 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!this.selectedEleccionId) return;
 
     this.wsSubscription = this.wsService.subscribeToResultados(this.selectedEleccionId)
-      .subscribe((data: DashboardData) => {
-        this.dashboard = data;
-        this.updateCharts();
+      .pipe(
+        catchError(err => {
+          console.warn('WebSocket error:', err);
+          return of(null as any);
+        })
+      )
+      .subscribe((data: DashboardData | null) => {
+        if (data) {
+          this.dashboard = data;
+          this.loadDataComplete();
+        }
       });
   }
 

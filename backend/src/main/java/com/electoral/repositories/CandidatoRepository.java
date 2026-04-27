@@ -15,4 +15,6 @@ public interface CandidatoRepository extends JpaRepository<Candidato, Long> {
 
     @Query("SELECT c FROM Candidato c LEFT JOIN FETCH c.partido LEFT JOIN FETCH c.cargo LEFT JOIN FETCH c.elecciones WHERE c.elecciones.id = :eleccionId ORDER BY c.cargo.nombre, c.apellido")
     List<Candidato> findByEleccionOrderByCargo(Long eleccionId);
+    
+    boolean existsByEleccionesIdAndPartidoIdAndCargoId(Long eleccionesId, Long partidoId, Long cargoId);
 }

@@ -25,18 +25,21 @@ public class VotoService {
     private final AuditoriaService auditoriaService;
     private final SimpMessagingTemplate messagingTemplate;
 
+    @Transactional(readOnly = true)
     public List<VotoResponse> getVotosByMesa(Long mesaId) {
         return votoRepository.findByMesaId(mesaId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<VotoResponse> getVotosByEleccion(Long eleccionesId) {
         return votoRepository.findByEleccionesId(eleccionesId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public VotoResponse getVotoById(Long id) {
         Voto voto = votoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Voto no encontrado con ID: " + id));
@@ -129,14 +132,34 @@ public class VotoService {
         }
     }
 
+    @Transactional(readOnly = true)
     public DashboardResponse getDashboardData(Long eleccionId) {
+        return getDashboardDataConFiltros(eleccionId, null, null, null);
+    }
+
+    @Transactional(readOnly = true)
+    public DashboardResponse getDashboardDataConFiltros(Long eleccionId, Long cargoId, Long partidoId, Long recintoId) {
         Eleccion eleccion = eleccionService.getEleccionEntityById(eleccionId);
-        Long totalVotos = votoRepository.sumVotosByEleccion(eleccionId);
+        
         List<Mesa> mesas = mesaRepository.findByEleccionesId(eleccionId);
+        if (recintoId != null) {
+            mesas = mesas.stream().filter(m -> m.getRecinto().getId().equals(recintoId)).collect(Collectors.toList());
+        }
+        
+        List<Long> mesaIds = mesas.stream().map(Mesa::getId).collect(Collectors.toList());
+        
+        Long totalVotos = votoRepository.sumVotosByEleccionAndMesaIds(eleccionId, mesaIds);
         Long mesasCerradas = mesaRepository.countByEleccionesIdAndCerrada(eleccionId, true);
 
-        List<Object[]> votosPorCandidato = votoRepository.sumVotosGroupByCandidato(eleccionId);
+        List<Object[]> votosPorCandidato = votoRepository.sumVotosGroupByCandidatoAndMesaIds(eleccionId, mesaIds);
         List<Candidato> candidatos = candidatoRepository.findByEleccionesId(eleccionId);
+        
+        if (cargoId != null) {
+            candidatos = candidatos.stream().filter(c -> c.getCargo().getId().equals(cargoId)).collect(Collectors.toList());
+        }
+        if (partidoId != null) {
+            candidatos = candidatos.stream().filter(c -> c.getPartido() != null && c.getPartido().getId().equals(partidoId)).collect(Collectors.toList());
+        }
         
         List<ResultadoCandidato> resultados = candidatos.stream()
                 .map(c -> {

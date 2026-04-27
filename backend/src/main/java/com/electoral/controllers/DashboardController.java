@@ -22,6 +22,15 @@ public class DashboardController {
         return ResponseEntity.ok(votoService.getDashboardData(eleccionesId));
     }
 
+    @GetMapping("/eleccion/{eleccionesId}/filtrar")
+    public ResponseEntity<DashboardResponse> getDashboardConFiltros(
+            @PathVariable Long eleccionesId,
+            @RequestParam(required = false) Long cargoId,
+            @RequestParam(required = false) Long partidoId,
+            @RequestParam(required = false) Long recintoId) {
+        return ResponseEntity.ok(votoService.getDashboardDataConFiltros(eleccionesId, cargoId, partidoId, recintoId));
+    }
+
     @GetMapping("/eleccion/{eleccionesId}/resultados")
     public ResponseEntity<List<VotoResponse>> getResultados(@PathVariable Long eleccionesId) {
         return ResponseEntity.ok(votoService.getVotosByEleccion(eleccionesId));

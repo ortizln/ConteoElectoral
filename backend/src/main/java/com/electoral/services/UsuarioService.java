@@ -95,6 +95,12 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
+    public List<UsuarioResponse> getUsuariosByRol(String rolNombre) {
+        return usuarioRepository.findByRolNombre(rolNombre).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     private UsuarioResponse mapToResponse(Usuario usuario) {
         return UsuarioResponse.builder()
                 .id(usuario.getId())
