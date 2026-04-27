@@ -18,18 +18,21 @@ public class CandidatoService {
     private final CargoRepository cargoRepository;
     private final EleccionService eleccionService;
 
+    @Transactional(readOnly = true)
     public List<CandidatoResponse> getCandidatosByEleccion(Long eleccionesId) {
         return candidatoRepository.findByEleccionesId(eleccionesId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<CandidatoResponse> getCandidatosOrderByCargo(Long eleccionId) {
         return candidatoRepository.findByEleccionOrderByCargo(eleccionId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public CandidatoResponse getCandidatoById(Long id) {
         Candidato candidato = candidatoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Candidato no encontrado con ID: " + id));

@@ -43,6 +43,14 @@ export class ApiService {
     return this.http.post<Partido>(`${this.API_URL}/partidos`, data);
   }
 
+  updatePartido(id: number, data: Partial<Partido>): Observable<Partido> {
+    return this.http.put<Partido>(`${this.API_URL}/partidos/${id}`, data);
+  }
+
+  deletePartido(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/partidos/${id}`);
+  }
+
   // Cargos
   getCargosByEleccion(eleccionId: number): Observable<Cargo[]> {
     return this.http.get<Cargo[]>(`${this.API_URL}/cargos/eleccion/${eleccionId}`);
@@ -50,6 +58,14 @@ export class ApiService {
 
   createCargo(data: Partial<Cargo>): Observable<Cargo> {
     return this.http.post<Cargo>(`${this.API_URL}/cargos`, data);
+  }
+
+  updateCargo(id: number, data: Partial<Cargo>): Observable<Cargo> {
+    return this.http.put<Cargo>(`${this.API_URL}/cargos/${id}`, data);
+  }
+
+  deleteCargo(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/cargos/${id}`);
   }
 
   // Candidatos
@@ -61,6 +77,14 @@ export class ApiService {
     return this.http.post<Candidato>(`${this.API_URL}/candidatos`, data);
   }
 
+  updateCandidato(id: number, data: Partial<Candidato>): Observable<Candidato> {
+    return this.http.put<Candidato>(`${this.API_URL}/candidatos/${id}`, data);
+  }
+
+  deleteCandidato(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/candidatos/${id}`);
+  }
+
   // Recintos
   getRecintosByEleccion(eleccionId: number): Observable<Recinto[]> {
     return this.http.get<Recinto[]>(`${this.API_URL}/recintos/eleccion/${eleccionId}`);
@@ -68,6 +92,14 @@ export class ApiService {
 
   createRecinto(data: Partial<Recinto>): Observable<Recinto> {
     return this.http.post<Recinto>(`${this.API_URL}/recintos`, data);
+  }
+
+  updateRecinto(id: number, data: Partial<Recinto>): Observable<Recinto> {
+    return this.http.put<Recinto>(`${this.API_URL}/recintos/${id}`, data);
+  }
+
+  deleteRecinto(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/recintos/${id}`);
   }
 
   // Mesas
@@ -81,6 +113,14 @@ export class ApiService {
 
   createMesa(data: Partial<Mesa>): Observable<Mesa> {
     return this.http.post<Mesa>(`${this.API_URL}/mesas`, data);
+  }
+
+  updateMesa(id: number, data: Partial<Mesa>): Observable<Mesa> {
+    return this.http.put<Mesa>(`${this.API_URL}/mesas/${id}`, data);
+  }
+
+  deleteMesa(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/mesas/${id}`);
   }
 
   cerrarMesa(id: number): Observable<Mesa> {
@@ -120,5 +160,17 @@ export class ApiService {
 
   createUsuario(data: any): Observable<Usuario> {
     return this.http.post<Usuario>(`${this.API_URL}/usuarios`, data);
+  }
+
+  updateUsuario(id: number, data: any): Observable<Usuario> {
+    return this.http.put<Usuario>(`${this.API_URL}/usuarios/${id}`, data);
+  }
+
+  deleteUsuario(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/usuarios/${id}`);
+  }
+
+  resetPassword(id: number, newPassword: string): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/usuarios/${id}/reset-password`, { nuevaPassword: newPassword });
   }
 }
