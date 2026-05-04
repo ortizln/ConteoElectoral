@@ -14,6 +14,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class AuditoriaService {
     private final AuditoriaRepository auditoriaRepository;
     private final UsuarioRepository usuarioRepository;

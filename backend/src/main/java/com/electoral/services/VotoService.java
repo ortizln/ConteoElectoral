@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class VotoService {
     private final VotoRepository votoRepository;
     private final CandidatoRepository candidatoRepository;

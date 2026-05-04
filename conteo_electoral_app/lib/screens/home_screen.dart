@@ -12,27 +12,32 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late AppProvider _provider;
+
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _provider = context.read<AppProvider>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadData();
+    });
   }
 
   Future<void> _loadData() async {
-    final provider = context.read<AppProvider>();
-    await provider.descargarDatos();
+    if (!mounted) return;
+    await _provider.descargarDatos();
+     
+    if (!mounted || _provider.eleccionActual == null) return;
     
-    if (provider.eleccionActual != null) {
-      final db = DatabaseHelper.instance;
-      final mesas = await db.getMesasByUsuario(provider.usuario!.id);
-      if (mesas.isNotEmpty) {
-        await provider.seleccionarMesa(mesas.first);
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const VotacionScreen()),
-          );
-        }
+    final db = DatabaseHelper.instance;
+    final mesas = await db.getMesasByUsuario(_provider.usuario!.id);
+    if (mesas.isNotEmpty && mounted) {
+      await _provider.seleccionarMesa(mesas.first);
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const VotacionScreen()),
+        );
       }
     }
   }
@@ -192,16 +197,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ? 'CERRADA'
                                   : 'Abierta'),
                               trailing: const Icon(Icons.chevron_right),
-                              onTap: () async {
-                                await provider.seleccionarMesa(mesa);
-                                if (mounted) {
-                                  Navigator.pushReplacement(
-                                    context,
+                              onTap: () {
+                                final navigator = Navigator.of(context);
+                                provider.seleccionarMesa(mesa).then((_) {
+                                  if (!mounted) return;
+                                  navigator.pushReplacement(
                                     MaterialPageRoute(
                                       builder: (_) => const VotacionScreen(),
                                     ),
                                   );
-                                }
+                                });
                               },
                             ),
                           )),

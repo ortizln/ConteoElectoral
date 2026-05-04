@@ -19,14 +19,18 @@ public class DataInitializer implements CommandLineRunner {
     private final PasswordEncoder passwordEncoder;
 
     @Override
+    @SuppressWarnings("null")
     public void run(String... args) {
         log.info("=== INICIANDO DATAINITIALIZER ===");
         
         // Crear roles
         if (rolRepository.count() == 0) {
-            rolRepository.save(Rol.builder().nombre("ADMIN").descripcion("Administrador del sistema").build());
-            rolRepository.save(Rol.builder().nombre("SUPERVISOR").descripcion("Supervisor de elecciones").build());
-            rolRepository.save(Rol.builder().nombre("MIEMBRO_MESA").descripcion("Miembro de mesa de votación").build());
+            Rol adminRol = Rol.builder().nombre("ADMIN").descripcion("Administrador del sistema").build();
+            Rol supervisorRol = Rol.builder().nombre("SUPERVISOR").descripcion("Supervisor de elecciones").build();
+            Rol miembroRol = Rol.builder().nombre("MIEMBRO_MESA").descripcion("Miembro de mesa de votación").build();
+            rolRepository.save(adminRol);
+            rolRepository.save(supervisorRol);
+            rolRepository.save(miembroRol);
             log.info("Roles inicializados");
         }
 

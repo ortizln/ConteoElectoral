@@ -1,12 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/models.dart';
-import '../database/database_helper.dart';
 
 class ApiService {
   static const String baseUrl = 'http://10.0.2.2:8080/api';
-  
-  final DatabaseHelper _db = DatabaseHelper.instance;
 
   Map<String, String> _headers({String? token}) {
     final headers = <String, String>{
@@ -184,21 +181,12 @@ class ApiService {
 
   Future<bool> sincronizarVoto(Voto voto, {String? token}) async {
     try {
-      http.Response response;
-      if (voto.id != null) {
-        response = await http.put(
-          Uri.parse('$baseUrl/votos/${voto.id}'),
-          headers: _headers(token: token),
-          body: jsonEncode(voto.toJson()),
-        );
-      } else {
-        response = await http.post(
-          Uri.parse('$baseUrl/votos'),
-          headers: _headers(token: token),
-          body: jsonEncode(voto.toJson()),
-        );
-      }
-      return response.statusCode == 200;
+      final response = await http.post(
+        Uri.parse('$baseUrl/votos'),
+        headers: _headers(token: token),
+        body: jsonEncode(voto.toJson()),
+      );
+      return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
       return false;
     }
