@@ -27,8 +27,14 @@ public class DashboardController {
             @PathVariable Long eleccionesId,
             @RequestParam(required = false) Long cargoId,
             @RequestParam(required = false) Long partidoId,
-            @RequestParam(required = false) Long recintoId) {
-        return ResponseEntity.ok(votoService.getDashboardDataConFiltros(eleccionesId, cargoId, partidoId, recintoId));
+            @RequestParam(required = false) Long recintoId,
+            @RequestParam(required = false) Long zonaId,
+            @RequestParam(required = false) Long provinciaId,
+            @RequestParam(required = false) Long cantonId,
+            @RequestParam(required = false) Long parroquiaId,
+            @RequestParam(required = false) Long institucionId) {
+        return ResponseEntity.ok(votoService.getDashboardDataConFiltros(eleccionesId, cargoId, partidoId, recintoId, 
+                zonaId, provinciaId, cantonId, parroquiaId, institucionId));
     }
 
     @GetMapping("/eleccion/{eleccionesId}/resultados")

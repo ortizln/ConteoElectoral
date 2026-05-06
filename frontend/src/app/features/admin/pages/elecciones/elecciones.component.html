@@ -1,78 +1,75 @@
-<div class="page-container">
+<div class="container">
   <div class="page-header">
-    <h1>Gestion de Elecciones</h1>
-    <button class="btn btn-primary btn-sm" (click)="openModal()">
-      + Nueva Eleccion
+    <h2>Gestión de Elecciones</h2>
+    <button class="btn btn-primary btn-with-icon" (click)="openModal()">
+      <span class="btn-icon">+</span> Nueva Elección
     </button>
   </div>
+  
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Fecha Inicio</th>
+        <th>Fecha Fin</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let e of elecciones">
+        <td>{{ e.nombre }}</td>
+        <td>{{ e.descripcion || 'N/A' }}</td>
+        <td>{{ e.fechaInicio | date:'shortDate' }}</td>
+        <td>{{ e.fechaFin | date:'shortDate' }}</td>
+        <td>
+          <span [class]="e.activa ? 'badge bg-success' : 'badge bg-secondary'">
+            {{ e.activa ? 'Activa' : 'Inactiva' }}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-sm btn-warning" (click)="edit(e)">Editar</button>
+          <button class="btn btn-sm btn-danger" (click)="delete(e.id)">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
-  <div class="card">
-    <table class="table table-hover table-sm">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Fecha Inicio</th>
-          <th>Fecha Fin</th>
-          <th>Estado</th>
-          <th>Total Votos</th>
-          <th>Mesas Cerradas</th>
-          <th class="text-center">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let eleccion of elecciones">
-          <td><strong>{{ eleccion.nombre }}</strong></td>
-          <td>{{ eleccion.fechaInicio | date:'dd/MM/yyyy HH:mm' }}</td>
-          <td>{{ eleccion.fechaFin | date:'dd/MM/yyyy HH:mm' }}</td>
-          <td>
-            <span class="badge" [class.bg-success]="eleccion.activa" [class.bg-secondary]="!eleccion.activa">
-              {{ eleccion.activa ? 'Activa' : 'Inactiva' }}
-            </span>
-          </td>
-          <td>{{ eleccion.totalVotos || 0 }}</td>
-          <td>{{ eleccion.mesasCerradas || 0 }} / {{ eleccion.totalMesas || 0 }}</td>
-          <td class="text-center">
-            <button class="btn btn-outline-primary btn-sm me-1" (click)="edit(eleccion)">Editar</button>
-            <button class="btn btn-outline-danger btn-sm" (click)="delete(eleccion.id)">Eliminar</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="modal-overlay" *ngIf="showModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>{{ editMode ? 'Editar' : 'Nueva' }} Eleccion</h3>
-        <button class="btn-close" (click)="closeModal()">x</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label>Nombre</label>
-          <input type="text" class="form-control" [(ngModel)]="form.nombre" required>
+  <div class="modal" *ngIf="showModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5>{{ editMode ? 'Editar' : 'Nueva' }} Elección</h5>
+          <button class="btn-close" (click)="closeModal()">×</button>
         </div>
-        <div class="form-group">
-          <label>Descripcion</label>
-          <textarea class="form-control" [(ngModel)]="form.descripcion" rows="3"></textarea>
-        </div>
-        <div class="row">
-          <div class="col">
-            <label>Fecha Inicio</label>
-            <input type="datetime-local" class="form-control" [(ngModel)]="form.fechaInicio">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label>Nombre:</label>
+            <input type="text" class="form-control" [(ngModel)]="form.nombre" />
           </div>
-          <div class="col">
-            <label>Fecha Fin</label>
-            <input type="datetime-local" class="form-control" [(ngModel)]="form.fechaFin">
+          <div class="mb-3">
+            <label>Descripción:</label>
+            <textarea class="form-control" [(ngModel)]="form.descripcion"></textarea>
+          </div>
+          <div class="mb-3">
+            <label>Fecha Inicio:</label>
+            <input type="date" class="form-control" [(ngModel)]="form.fechaInicio" />
+          </div>
+          <div class="mb-3">
+            <label>Fecha Fin:</label>
+            <input type="date" class="form-control" [(ngModel)]="form.fechaFin" />
+          </div>
+          <div class="mb-3">
+            <label>
+              <input type="checkbox" [(ngModel)]="form.activa" /> Activa
+            </label>
           </div>
         </div>
-        <div class="form-check mt-3">
-          <input type="checkbox" class="form-check-input" [(ngModel)]="form.activa" id="activa">
-          <label class="form-check-label" for="activa">Eleccion activa</label>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+          <button class="btn btn-primary" (click)="save()">Guardar</button>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary btn-sm" (click)="closeModal()">Cancelar</button>
-        <button class="btn btn-primary btn-sm" (click)="save()">Guardar</button>
       </div>
     </div>
   </div>

@@ -1,44 +1,82 @@
-<div class="page-container">
+<div class="container">
   <div class="page-header">
-    <h1>Gestion de Mesas</h1>
-    <button class="btn btn-primary btn-sm" (click)="openModal()">+ Nueva</button>
+    <h2>Gestión de Mesas</h2>
+    <button class="btn btn-primary btn-with-icon" (click)="openModal()">
+      <span class="btn-icon">+</span> Nueva Mesa
+    </button>
   </div>
-  <div class="card">
-    <table class="table table-hover table-sm">
-      <thead><tr><th>Numero</th><th>Recinto</th><th>Sexo</th><th>Estado</th><th class="text-center">Acciones</th></tr></thead>
-      <tbody>
-        <tr *ngFor="let m of mesas">
-          <td><strong>{{ m.numero }}</strong></td>
-          <td>{{ m.recintoNombre }}</td>
-          <td>{{ m.sexo }}</td>
-          <td>
-            <span class="badge" [class.bg-success]="!m.cerrada" [class.bg-danger]="m.cerrada">
-              {{ m.cerrada ? 'CERRADA' : 'ABIERTA' }}
-            </span>
-          </td>
-          <td class="text-center">
-            <button *ngIf="!m.cerrada" class="btn btn-outline-warning btn-sm me-1" (click)="cerrar(m.id)">Cerrar</button>
-            <button *ngIf="!m.cerrada" class="btn btn-outline-primary btn-sm me-1" (click)="edit(m)">Editar</button>
-            <button *ngIf="!m.cerrada" class="btn btn-outline-danger btn-sm" (click)="delete(m.id)">Eliminar</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  
+  <div class="filters-bar mb-4">
+    <div class="filter-item">
+      <label>Elección:</label>
+      <select class="form-select" (change)="load(form.eleccionesId)" [(ngModel)]="form.eleccionesId">
+        <option [ngValue]="null">Seleccione...</option>
+        <option *ngFor="let e of elecciones" [value]="e.id">{{ e.nombre }}</option>
+      </select>
+    </div>
   </div>
-  <div class="modal-overlay" *ngIf="showModal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>{{ editMode ? 'Editar' : 'Nueva' }} Mesa</h3>
-        <button class="btn-close" (click)="closeModal()">x</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group"><label>Numero</label><input type="text" class="form-control" [(ngModel)]="form.numero"></div>
-        <div class="form-group"><label>Sexo</label><select class="form-select" [(ngModel)]="form.sexo"><option value="MASCULINO">Masculino</option><option value="FEMENINO">Femenino</option><option value="MIXTA">Mixta</option></select></div>
-        <div class="form-group"><label>Recinto</label><select class="form-select" [(ngModel)]="form.recintoId"><option *ngFor="let r of recintos" [value]="r.id">{{ r.nombre }}</option></select></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary btn-sm" (click)="closeModal()">Cancelar</button>
-        <button class="btn btn-primary btn-sm" (click)="save()">Guardar</button>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Número</th>
+        <th>Recinto</th>
+        <th>Sexo</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let m of mesas">
+        <td>{{ m.numero }}</td>
+        <td>{{ m.recintoNombre }}</td>
+        <td><span class="badge" [class]="m.sexo === 'MIXTA' ? 'bg-info' : m.sexo === 'HOMBRES' ? 'bg-primary' : 'bg-warning'">{{ m.sexo }}</span></td>
+        <td>
+          <span [class]="m.cerrada ? 'badge bg-danger' : 'badge bg-success'">
+            {{ m.cerrada ? 'CERRADA' : 'ABIERTA' }}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-sm btn-warning" (click)="edit(m)">Editar</button>
+          <button class="btn btn-sm btn-danger" (click)="delete(m.id)">Eliminar</button>
+          <button *ngIf="!m.cerrada" class="btn btn-sm btn-secondary" (click)="cerrar(m.id)">Cerrar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="modal" *ngIf="showModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5>{{ editMode ? 'Editar' : 'Nueva' }} Mesa</h5>
+          <button class="btn-close" (click)="closeModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label>Número:</label>
+            <input type="text" class="form-control" [(ngModel)]="form.numero" />
+          </div>
+          <div class="mb-3">
+            <label>Recinto:</label>
+            <select class="form-select" [(ngModel)]="form.recintoId">
+              <option [ngValue]="null">Seleccione...</option>
+              <option *ngFor="let r of recintos" [value]="r.id">{{ r.nombre }}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label>Sexo:</label>
+            <select class="form-select" [(ngModel)]="form.sexo">
+              <option value="MIXTA">Mixta</option>
+              <option value="HOMBRES">Hombres</option>
+              <option value="MUJERES">Mujeres</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+          <button class="btn btn-primary" (click)="save()">Guardar</button>
+        </div>
       </div>
     </div>
   </div>

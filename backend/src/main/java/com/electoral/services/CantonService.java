@@ -1,7 +1,6 @@
 package com.electoral.services;
 
 import com.electoral.entities.Canton;
-import com.electoral.entities.Provincia;
 import com.electoral.repositories.CantonRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

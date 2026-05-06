@@ -50,7 +50,7 @@ public class VotoService {
     @Transactional
     public VotoResponse registrarVoto(VotoRequest request, Long usuarioId) {
         Mesa mesa = mesaService.getMesaEntityById(request.getMesaId());
-        
+
         if (mesa.getCerrada()) {
             throw new MesaCerradaException("No se puede registrar votos en una mesa cerrada");
         }
@@ -60,10 +60,11 @@ public class VotoService {
         }
 
         Candidato candidato = candidatoRepository.findById(request.getCandidatoId())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Candidato no encontrado con ID: " + request.getCandidatoId()));
-        
+                .orElseThrow(() -> new RecursoNoEncontradoException(
+                        "Candidato no encontrado con ID: " + request.getCandidatoId()));
+
         Eleccion eleccion = eleccionService.getEleccionEntityById(request.getEleccionesId());
-        
+
         Usuario usuario = Usuario.builder().id(usuarioId).build();
 
         Voto voto = votoRepository.findByMesaIdAndCandidatoId(mesa.getId(), candidato.getId())
@@ -80,18 +81,17 @@ public class VotoService {
                         .build());
 
         Voto savedVoto = votoRepository.save(voto);
-        
+
         auditoriaService.registrarAccion(
-            usuarioId, 
-            Auditoria.TipoAccion.CREATE, 
-            "votos", 
-            savedVoto.getId(), 
-            null, 
-            mapToJson(savedVoto)
-        );
-        
+                usuarioId,
+                Auditoria.TipoAccion.CREATE,
+                "votos",
+                savedVoto.getId(),
+                null,
+                mapToJson(savedVoto));
+
         notifyDashboardUpdate(eleccion.getId());
-        
+
         return mapToResponse(savedVoto);
     }
 
@@ -110,18 +110,17 @@ public class VotoService {
 
         voto.setCantidadVotos(request.getCantidadVotos());
         Voto updatedVoto = votoRepository.save(voto);
-        
+
         auditoriaService.registrarAccion(
-            usuarioId, 
-            Auditoria.TipoAccion.UPDATE, 
-            "votos", 
-            updatedVoto.getId(), 
-            mapToJson(voto), 
-            mapToJson(updatedVoto)
-        );
-        
+                usuarioId,
+                Auditoria.TipoAccion.UPDATE,
+                "votos",
+                updatedVoto.getId(),
+                mapToJson(voto),
+                mapToJson(updatedVoto));
+
         notifyDashboardUpdate(updatedVoto.getElecciones().getId());
-        
+
         return mapToResponse(updatedVoto);
     }
 
@@ -135,33 +134,77 @@ public class VotoService {
 
     @Transactional(readOnly = true)
     public DashboardResponse getDashboardData(Long eleccionId) {
-        return getDashboardDataConFiltros(eleccionId, null, null, null);
+        return getDashboardDataConFiltros(eleccionId, null, null, null, null, null, null, null, null);
     }
 
     @Transactional(readOnly = true)
-    public DashboardResponse getDashboardDataConFiltros(Long eleccionId, Long cargoId, Long partidoId, Long recintoId) {
+    public DashboardResponse getDashboardDataConFiltros(Long eleccionId, Long cargoId, Long partidoId, Long recintoId,
+            Long zonaId, Long provinciaId, Long cantonId, Long parroquiaId, Long institucionId) {
         Eleccion eleccion = eleccionService.getEleccionEntityById(eleccionId);
-        
+
         List<Mesa> mesas = mesaRepository.findByEleccionesId(eleccionId);
+
+        if (zonaId != null || provinciaId != null || cantonId != null || parroquiaId != null || institucionId != null) {
+            mesas = mesas.stream().filter(m -> {
+                Recinto recinto = m.getRecinto();
+                if (institucionId != null) {
+                    return recinto.getInstitucion() != null &&
+                            recinto.getInstitucion().getId().equals(institucionId);
+                }
+                if (parroquiaId != null) {
+                    return recinto.getInstitucion() != null &&
+                            recinto.getInstitucion().getParroquia() != null &&
+                            recinto.getInstitucion().getParroquia().getId().equals(parroquiaId);
+                }
+                if (cantonId != null) {
+                    return recinto.getInstitucion() != null &&
+                            recinto.getInstitucion().getParroquia() != null &&
+                            recinto.getInstitucion().getParroquia().getCanton() != null &&
+                            recinto.getInstitucion().getParroquia().getCanton().getId().equals(cantonId);
+                }
+                if (provinciaId != null) {
+                    return recinto.getInstitucion() != null &&
+                            recinto.getInstitucion().getParroquia() != null &&
+                            recinto.getInstitucion().getParroquia().getCanton() != null &&
+                            recinto.getInstitucion().getParroquia().getCanton().getProvincia() != null &&
+                            recinto.getInstitucion().getParroquia().getCanton().getProvincia().getId()
+                                    .equals(provinciaId);
+                }
+                if (zonaId != null) {
+                    return recinto.getInstitucion() != null &&
+                            recinto.getInstitucion().getParroquia() != null &&
+                            recinto.getInstitucion().getParroquia().getCanton() != null &&
+                            recinto.getInstitucion().getParroquia().getCanton().getProvincia() != null &&
+                            recinto.getInstitucion().getParroquia().getCanton().getProvincia().getZona() != null &&
+                            recinto.getInstitucion().getParroquia().getCanton().getProvincia().getZona().getId()
+                                    .equals(zonaId);
+                }
+                return true;
+            }).collect(Collectors.toList());
+        }
+
         if (recintoId != null) {
             mesas = mesas.stream().filter(m -> m.getRecinto().getId().equals(recintoId)).collect(Collectors.toList());
         }
-        
+
         List<Long> mesaIds = mesas.stream().map(Mesa::getId).collect(Collectors.toList());
-        
+
         Long totalVotos = votoRepository.sumVotosByEleccionAndMesaIds(eleccionId, mesaIds);
-        Long mesasCerradas = mesaRepository.countByEleccionesIdAndCerrada(eleccionId, true);
+        Long mesasCerradas = mesas.stream().filter(Mesa::getCerrada).count();
 
         List<Object[]> votosPorCandidato = votoRepository.sumVotosGroupByCandidatoAndMesaIds(eleccionId, mesaIds);
         List<Candidato> candidatos = candidatoRepository.findByEleccionesId(eleccionId);
-        
+
         if (cargoId != null) {
-            candidatos = candidatos.stream().filter(c -> c.getCargo().getId().equals(cargoId)).collect(Collectors.toList());
+            candidatos = candidatos.stream().filter(c -> c.getCargo().getId().equals(cargoId))
+                    .collect(Collectors.toList());
         }
         if (partidoId != null) {
-            candidatos = candidatos.stream().filter(c -> c.getPartido() != null && c.getPartido().getId().equals(partidoId)).collect(Collectors.toList());
+            candidatos = candidatos.stream()
+                    .filter(c -> c.getPartido() != null && c.getPartido().getId().equals(partidoId))
+                    .collect(Collectors.toList());
         }
-        
+
         List<ResultadoCandidato> resultados = candidatos.stream()
                 .map(c -> {
                     Long votos = votosPorCandidato.stream()
@@ -170,7 +213,7 @@ public class VotoService {
                             .findFirst()
                             .orElse(0L);
                     double porcentaje = totalVotos > 0 ? (votos * 100.0 / totalVotos) : 0;
-                    
+
                     return ResultadoCandidato.builder()
                             .candidatoId(c.getId())
                             .nombreCompleto(c.getNombreCompleto())
@@ -190,7 +233,8 @@ public class VotoService {
                 .totalMesas((long) mesas.size())
                 .mesasCerradas(mesasCerradas)
                 .mesasAbiertas((long) mesas.size() - mesasCerradas)
-                .porcentajeMesasCerradas(mesas.isEmpty() ? 0.0 : Math.round((mesasCerradas * 100.0 / mesas.size()) * 100.0) / 100.0)
+                .porcentajeMesasCerradas(
+                        mesas.isEmpty() ? 0.0 : Math.round((mesasCerradas * 100.0 / mesas.size()) * 100.0) / 100.0)
                 .resultados(resultados)
                 .build();
     }

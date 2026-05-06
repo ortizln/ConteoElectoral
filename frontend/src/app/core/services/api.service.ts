@@ -99,6 +99,10 @@ export class ApiService {
     return this.http.get<InstitucionEducativa[]>(`${this.API_URL}/instituciones/parroquia/${parroquiaId}`);
   }
 
+  getRecintosByInstitucion(institucionId: number): Observable<Recinto[]> {
+    return this.http.get<Recinto[]>(`${this.API_URL}/recintos/institucion/${institucionId}`);
+  }
+
   createInstitucion(data: Partial<InstitucionEducativa>): Observable<InstitucionEducativa> {
     return this.http.post<InstitucionEducativa>(`${this.API_URL}/instituciones`, data);
   }
@@ -188,6 +192,10 @@ export class ApiService {
   }
 
   // Recintos
+  getRecintos(): Observable<Recinto[]> {
+    return this.http.get<Recinto[]>(`${this.API_URL}/recintos`);
+  }
+
   getRecintosByEleccion(eleccionId: number): Observable<Recinto[]> {
     return this.http.get<Recinto[]>(`${this.API_URL}/recintos/eleccion/${eleccionId}`);
   }
@@ -213,6 +221,14 @@ export class ApiService {
     return this.http.get<Mesa[]>(`${this.API_URL}/mesas/recinto/${recintoId}`);
   }
 
+  asignarUsuarioAMesa(mesaId: number, usuarioId: number): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/mesas/${mesaId}/asignar-usuario`, { usuarioId });
+  }
+
+  desasignarUsuarioDeMesa(mesaId: number, usuarioId: number): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/mesas/${mesaId}/desasignar-usuario`, { usuarioId });
+  }
+
   createMesa(data: Partial<Mesa>): Observable<Mesa> {
     return this.http.post<Mesa>(`${this.API_URL}/mesas`, data);
   }
@@ -221,20 +237,12 @@ export class ApiService {
     return this.http.put<Mesa>(`${this.API_URL}/mesas/${id}`, data);
   }
 
+  cerrarMesa(id: number): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/mesas/${id}/cerrar`, {});
+  }
+
   deleteMesa(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/mesas/${id}`);
-  }
-
-  cerrarMesa(id: number): Observable<Mesa> {
-    return this.http.post<Mesa>(`${this.API_URL}/mesas/${id}/cerrar`, {});
-  }
-
-  asignarUsuarioAMesa(mesaId: number, usuarioId: number): Observable<void> {
-    return this.http.post<void>(`${this.API_URL}/mesas/${mesaId}/asignar-usuario/${usuarioId}`, {});
-  }
-
-  desasignarUsuarioDeMesa(mesaId: number, usuarioId: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/mesas/${mesaId}/asignar-usuario/${usuarioId}`);
   }
 
   // Usuarios
@@ -242,24 +250,24 @@ export class ApiService {
     return this.http.get<Usuario[]>(`${this.API_URL}/usuarios`);
   }
 
-  createUsuario(data: any): Observable<Usuario> {
+  getUsuariosByRol(rolNombre: string): Observable<Usuario[]> {
+    return this.http.get<Usuario[]>(`${this.API_URL}/usuarios/rol/${rolNombre}`);
+  }
+
+  createUsuario(data: Partial<Usuario>): Observable<Usuario> {
     return this.http.post<Usuario>(`${this.API_URL}/usuarios`, data);
   }
 
-  updateUsuario(id: number, data: any): Observable<Usuario> {
+  updateUsuario(id: number, data: Partial<Usuario>): Observable<Usuario> {
     return this.http.put<Usuario>(`${this.API_URL}/usuarios/${id}`, data);
-  }
-
-  deleteUsuario(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/usuarios/${id}`);
   }
 
   resetPassword(id: number, newPassword: string): Observable<void> {
     return this.http.post<void>(`${this.API_URL}/usuarios/${id}/reset-password`, { nuevaPassword: newPassword });
   }
 
-  getUsuariosByRol(rolNombre: string): Observable<Usuario[]> {
-    return this.http.get<Usuario[]>(`${this.API_URL}/usuarios/rol/${rolNombre}`);
+  deleteUsuario(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/usuarios/${id}`);
   }
 
   // Votos
@@ -284,12 +292,27 @@ export class ApiService {
     return this.http.get<any>(`${this.API_URL}/dashboard/eleccion/${eleccionId}`);
   }
 
-  getDashboardConFiltros(eleccionId: number, cargoId?: number, partidoId?: number, recintoId?: number): Observable<any> {
+  getDashboardConFiltros(
+    eleccionId: number, 
+    cargoId?: number, 
+    partidoId?: number, 
+    recintoId?: number,
+    zonaId?: number,
+    provinciaId?: number,
+    cantonId?: number,
+    parroquiaId?: number,
+    institucionId?: number
+  ): Observable<any> {
     let url = `${this.API_URL}/dashboard/eleccion/${eleccionId}/filtrar`;
     const params = new URLSearchParams();
     if (cargoId !== undefined) params.set('cargoId', cargoId.toString());
     if (partidoId !== undefined) params.set('partidoId', partidoId.toString());
     if (recintoId !== undefined) params.set('recintoId', recintoId.toString());
+    if (zonaId !== undefined) params.set('zonaId', zonaId.toString());
+    if (provinciaId !== undefined) params.set('provinciaId', provinciaId.toString());
+    if (cantonId !== undefined) params.set('cantonId', cantonId.toString());
+    if (parroquiaId !== undefined) params.set('parroquiaId', parroquiaId.toString());
+    if (institucionId !== undefined) params.set('institucionId', institucionId.toString());
     const queryString = params.toString();
     if (queryString) url += '?' + queryString;
     return this.http.get<any>(url);

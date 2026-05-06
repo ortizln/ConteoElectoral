@@ -12,7 +12,7 @@ class ApiService {
 
   Future<void> loadServerUrl() async {
     final prefs = await SharedPreferences.getInstance();
-    _baseUrl = prefs.getString(_serverUrlKey) ?? _defaultBaseUrl;
+    _baseUrl = prefs.getString(_serverUrlKey) ?? AppEnvironment.current.baseUrl;
   }
 
   Future<void> setServerUrl(String url) async {

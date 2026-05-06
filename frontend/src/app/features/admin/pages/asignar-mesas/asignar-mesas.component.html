@@ -1,91 +1,95 @@
-<div class="page-container">
+<div class="container">
   <div class="page-header">
-    <h1>Asignar Mesas a Miembros</h1>
+    <h2>Asignar Mesas a Miembros</h2>
+  </div>
+  
+  <div class="filters-bar mb-4">
+    <div class="filter-item">
+      <label>Elección:</label>
+      <select class="form-select" (change)="onEleccionChange()" [(ngModel)]="eleccionId">
+        <option [ngValue]="null">Seleccione una elección...</option>
+        <option *ngFor="let e of elecciones" [value]="e.id">{{ e.nombre }}</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label>Miembro de Mesa:</label>
+      <select class="form-select" (change)="onUsuarioChange()" [(ngModel)]="usuarioId">
+        <option [ngValue]="null">Seleccione un miembro...</option>
+        <option *ngFor="let m of miembros" [value]="m.id">{{ m.nombre }} {{ m.apellido }}</option>
+      </select>
+    </div>
   </div>
 
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="row">
-        <div class="col-md-4">
-          <label class="form-label">Eleccion</label>
-          <select class="form-select form-select-sm" [(ngModel)]="eleccionId" (ngModelChange)="onEleccionChange()">
-            <option *ngFor="let e of elecciones" [value]="e.id">{{ e.nombre }}</option>
-          </select>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Miembro de Mesa</label>
-          <select class="form-select form-select-sm" [(ngModel)]="usuarioId" (ngModelChange)="onUsuarioChange()">
-            <option [value]="null">-- Seleccionar --</option>
-            <option *ngFor="let u of miembros" [value]="u.id">{{ u.username }} - {{ u.nombre }} {{ u.apellido }}</option>
-          </select>
-        </div>
-        <div class="col-md-4" *ngIf="usuarioId">
-          <label class="form-label">Mesas Asignadas</label>
-          <div class="bg-light p-2 rounded">
-            <strong>{{ getMiembroSeleccionado()?.nombre }} {{ getMiembroSeleccionado()?.apellido }}</strong>
-            <span class="badge bg-primary ms-2">{{ mesasAsignadas.length }} mesa(s)</span>
-          </div>
-        </div>
+  <div class="row" *ngIf="getMiembroSeleccionado()">
+    <div class="col-12">
+      <div class="alert alert-info">
+        <strong>Miembro:</strong> {{ getMiembroSeleccionado()?.nombre }} {{ getMiembroSeleccionado()?.apellido }}
+        <span class="badge bg-primary">{{ getMiembroSeleccionado()?.username }}</span>
       </div>
     </div>
   </div>
 
-  <div class="row" *ngIf="usuarioId">
+  <div class="row">
     <div class="col-md-6">
       <div class="card">
-        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-          <h6 class="mb-0">Mesas Disponibles</h6>
-          <span class="badge bg-light text-success">{{ mesasDisponibles.length }}</span>
+        <div class="card-header">
+          <h5>Mesas Disponibles</h5>
         </div>
-        <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
-          <table class="table table-hover table-sm mb-0">
-            <thead class="sticky-top bg-white">
-              <tr><th>Numero</th><th>Recinto</th><th>Genero</th><th>Accion</th></tr>
+        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Mesa</th>
+                <th>Recinto</th>
+                <th>Acción</th>
+              </tr>
             </thead>
             <tbody>
               <tr *ngFor="let m of mesasDisponibles">
-                <td><strong>{{ m.numero }}</strong></td>
+                <td>{{ m.numero }}</td>
                 <td>{{ m.recintoNombre }}</td>
-                <td><span class="badge" [ngClass]="m.sexo === 'F' ? 'bg-info' : 'bg-secondary'">{{ m.sexo }}</span></td>
-                <td><button class="btn btn-sm btn-outline-success" (click)="asignarMesa(m)">+ Asignar</button></td>
+                <td>
+                  <button class="btn btn-sm btn-primary" (click)="asignarMesa(m)">Asignar</button>
+                </td>
               </tr>
               <tr *ngIf="mesasDisponibles.length === 0">
-                <td colspan="4" class="text-center text-muted py-4">No hay mesas disponibles para asignar</td>
+                <td colspan="3" class="text-center text-muted">No hay mesas disponibles</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
     </div>
+
     <div class="col-md-6">
       <div class="card">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-          <h6 class="mb-0">Mesas Asignadas</h6>
-          <span class="badge bg-light text-primary">{{ mesasAsignadas.length }}</span>
+        <div class="card-header">
+          <h5>Mesas Asignadas</h5>
         </div>
-        <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
-          <table class="table table-hover table-sm mb-0">
-            <thead class="sticky-top bg-white">
-              <tr><th>Numero</th><th>Recinto</th><th>Genero</th><th>Accion</th></tr>
+        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Mesa</th>
+                <th>Recinto</th>
+                <th>Acción</th>
+              </tr>
             </thead>
             <tbody>
               <tr *ngFor="let m of mesasAsignadas">
-                <td><strong>{{ m.numero }}</strong></td>
+                <td>{{ m.numero }}</td>
                 <td>{{ m.recintoNombre }}</td>
-                <td><span class="badge" [ngClass]="m.sexo === 'F' ? 'bg-info' : 'bg-secondary'">{{ m.sexo }}</span></td>
-                <td><button class="btn btn-sm btn-outline-danger" (click)="desasignarMesa(m)">- Quitar</button></td>
+                <td>
+                  <button class="btn btn-sm btn-danger" (click)="desasignarMesa(m)">Quitar</button>
+                </td>
               </tr>
               <tr *ngIf="mesasAsignadas.length === 0">
-                <td colspan="4" class="text-center text-muted py-4">Sin mesas asignadas a este miembro</td>
+                <td colspan="3" class="text-center text-muted">No hay mesas asignadas</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
     </div>
-  </div>
-
-  <div class="alert alert-info mt-3" *ngIf="!usuarioId">
-    <i class="fas fa-info-circle"></i> Seleccione un miembro de mesa para ver y gestionar sus mesas asignadas.
   </div>
 </div>

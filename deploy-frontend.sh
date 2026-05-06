@@ -1,51 +1,65 @@
 #!/bin/bash
 
-# Script de despliegue para el frontend (Nginx sin Docker)
+# Script de despliegue para el frontend Angular + Nginx (Linux/WSL)
 # Uso: ./deploy-frontend.sh
 
-PROJECT_DIR="/root/ConteoElectoral"
-FRONTEND_DIR="$PROJECT_DIR/frontend"
-NGINX_DIR="/var/www/html"
-NGINX_CONFIG="/etc/nginx/sites-available/default"
+set -e
 
-echo "=== Iniciando despliegue del frontend ==="
+echo "=== Desplegando frontend ==="
 
-# Entrar al directorio del frontend
-cd "$FRONTEND_DIR" || exit 1
+# Detectar ruta del script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$SCRIPT_DIR"
 
-# Instalar dependencias
-echo "Instalando dependencias..."
-npm install
+echo "Directorio del proyecto: $PROJECT_DIR"
 
-# Construir para producción
-echo "Construyendo frontend para producción..."
-npm run build
-
-# Verificar si la construcción fue exitosa
-if [ ! -d "dist/frontend/browser" ]; then
-    echo "Error: No se encontró el directorio de construcción"
+# Verificar que existe el directorio frontend
+if [ ! -d "$PROJECT_DIR/frontend" ]; then
+    echo "ERROR: No se encuentra el directorio frontend en $PROJECT_DIR"
     exit 1
 fi
 
-# Limpiar directorio de Nginx
-echo "Limpiando directorio de Nginx..."
-rm -rf "$NGINX_DIR"/*
+cd "$PROJECT_DIR/frontend"
 
-# Copiar archivos construidos a Nginx
+# Verificar que existe el archivo de entorno de producción
+if [ ! -f "src/environments/environment.prod.ts" ]; then
+    echo "ADVERTENCIA: No se encuentra environment.prod.ts"
+    echo "Asegúrese de configurar la URL de la API correctamente"
+fi
+
+# Construir la aplicación para producción
+echo "Construyendo Angular app (producción)..."
+npm install
+ng build --configuration=production
+
+# Verificar que se generó la carpeta dist
+if [ ! -d "dist/conteo-electoral" ]; then
+    echo "ERROR: No se generó la carpeta dist/conteo-electoral"
+    exit 1
+fi
+
+echo "Build completado: frontend/dist/conteo-electoral"
+
+# Ruta de Nginx (ajustar según tu instalación)
+NGINX_HTML="/var/www/html"
+NGINX_CONF="/etc/nginx/sites-available"
+
+# Copiar archivos a Nginx
 echo "Copiando archivos a Nginx..."
-cp -r dist/frontend/browser/* "$NGINX_DIR"/
+sudo mkdir -p /var/www/conteo-electoral
+sudo cp -r dist/conteo-electoral/* /var/www/conteo-electoral/
 
-# Configurar Nginx
-echo "Configurando Nginx..."
-cp "$PROJECT_DIR/frontend/nginx.conf" "$NGINX_CONFIG"
+# Copiar configuración de Nginx
+if [ -f "../frontend/nginx.conf" ]; then
+    echo "Configurando Nginx..."
+    sudo cp "../frontend/nginx.conf" "/etc/nginx/sites-available/conteo-electoral"
+    sudo ln -sf "/etc/nginx/sites-available/conteo-electoral" "/etc/nginx/sites-enabled/" 2>/dev/null || true
+    sudo nginx -t && sudo nginx -s reload
+fi
 
-# Reiniciar Nginx
-echo "Reiniciando Nginx..."
-systemctl restart nginx
-
-# Verificar estado
-echo "=== Estado de Nginx ==="
-systemctl status nginx --no-pager
-
-echo "=== Despliegue completado ==="
-echo "Frontend disponible en: http://localhost"
+echo ""
+echo "=== Frontend desplegado exitosamente ==="
+echo "Archivos en: /var/www/conteo-electoral"
+echo "Configuración Nginx: /etc/nginx/sites-available/conteo-electoral"
+echo ""
+echo "IMPORTANTE: Actualizar environment.prod.ts con la IP correcta del servidor"
