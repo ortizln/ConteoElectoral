@@ -40,6 +40,58 @@ CREATE INDEX idx_usuarios_username ON usuarios(username);
 CREATE INDEX idx_usuarios_rol ON usuarios(rol_id);
 
 -- =====================================================
+-- JERARQUÍA ELECTORAL (Zona → Provincia → Cantón → Parroquia → Institución)
+-- =====================================================
+CREATE TABLE zonas (
+    id BIGSERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    descripcion VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE provincias (
+    id BIGSERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    zona_id BIGINT NOT NULL REFERENCES zonas(id),
+    descripcion VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_provincias_zona ON provincias(zona_id);
+
+CREATE TABLE cantones (
+    id BIGSERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    provincia_id BIGINT NOT NULL REFERENCES provincias(id),
+    descripcion VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_cantones_provincia ON cantones(provincia_id);
+
+CREATE TABLE parroquias (
+    id BIGSERIAL PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    canton_id BIGINT NOT NULL REFERENCES cantones(id),
+    descripcion VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_parroquias_canton ON parroquias(canton_id);
+
+CREATE TABLE instituciones_educativas (
+    id BIGSERIAL PRIMARY KEY,
+    nombre VARCHAR(200) NOT NULL,
+    parroquia_id BIGINT NOT NULL REFERENCES parroquias(id),
+    direccion VARCHAR(500),
+    codigo VARCHAR(50),
+    tipo VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_instituciones_parroquia ON instituciones_educativas(parroquia_id);
+
+-- =====================================================
 -- GESTIÓN ELECTORAL
 -- =====================================================
 CREATE TABLE elecciones (
@@ -62,7 +114,7 @@ CREATE TABLE partidos (
     UNIQUE(nombre, elecciones_id)
 );
 
-CREATE INDEX idx_partidos_elccion ON partidos(elecciones_id);
+CREATE INDEX idx_partidos_eleccion ON partidos(elecciones_id);
 
 CREATE TABLE cargos (
     id BIGSERIAL PRIMARY KEY,
@@ -97,10 +149,12 @@ CREATE TABLE recintos (
     id BIGSERIAL PRIMARY KEY,
     nombre VARCHAR(200) NOT NULL,
     direccion VARCHAR(500),
+    institucion_id BIGINT NOT NULL REFERENCES instituciones_educativas(id),
     elecciones_id BIGINT NOT NULL REFERENCES elecciones(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX idx_recintos_institucion ON recintos(institucion_id);
 CREATE INDEX idx_recintos_eleccion ON recintos(elecciones_id);
 
 CREATE TABLE mesas (
@@ -108,7 +162,7 @@ CREATE TABLE mesas (
     numero VARCHAR(20) NOT NULL,
     sexo sexo_mesa NOT NULL,
     recinto_id BIGINT NOT NULL REFERENCES recintos(id),
-    elections_id BIGINT NOT NULL REFERENCES elecciones(id),
+    elecciones_id BIGINT NOT NULL REFERENCES elecciones(id),
     cerrada BOOLEAN DEFAULT false,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(numero, recinto_id)
@@ -235,7 +289,7 @@ $$ LANGUAGE plpgsql;
 -- =====================================================
 CREATE VIEW vw_estadisticas_generales AS
 SELECT 
-    e.nombre as elecciones_nombre,
+    e.nombre as eleccion_nombre,
     COUNT(DISTINCT p.id) as total_partidos,
     COUNT(DISTINCT c.id) as total_candidatos,
     COUNT(DISTINCT r.id) as total_recintos,
@@ -246,7 +300,7 @@ FROM elecciones e
 LEFT JOIN partidos p ON p.elecciones_id = e.id
 LEFT JOIN candidatos c ON c.elecciones_id = e.id
 LEFT JOIN recintos r ON r.elecciones_id = e.id
-LEFT JOIN mesas m ON m.elections_id = e.id
+LEFT JOIN mesas m ON m.elecciones_id = e.id
 LEFT JOIN votos v ON v.elecciones_id = e.id
 WHERE e.activa = true
 GROUP BY e.id, e.nombre;
@@ -258,6 +312,29 @@ GROUP BY e.id, e.nombre;
 INSERT INTO usuarios (username, password, nombre, apellido, email, rol_id, activo)
 VALUES ('admin', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 
         'Administrador', 'Sistema', 'admin@electoral.gob', 1, true);
+
+-- =====================================================
+-- TRIGGER PARA AUDITORÍA AUTOMÁTICA
+-- =====================================================
+CREATE OR REPLACE FUNCTION fn_auditoria_trigger()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO auditoria (usuario_id, accion, entidad, entidad_id, datos_anteriores, datos_nuevos)
+    VALUES (
+        COALESCE(current_setting('app.audit_user', true), '1')::BIGINT,
+        CASE 
+            WHEN TG_OP = 'INSERT' THEN 'CREATE'
+            WHEN TG_OP = 'UPDATE' THEN 'UPDATE'
+            WHEN TG_OP = 'DELETE' THEN 'DELETE'
+        END,
+        TG_TABLE_NAME,
+        NEW.id,
+        CASE WHEN TG_OP = 'UPDATE' OR TG_OP = 'DELETE' THEN row_to_json(OLD)::JSONB ELSE NULL END,
+        CASE WHEN TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN row_to_json(NEW)::JSONB ELSE NULL END
+    );
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
 -- Trigger para auditoría automática
 CREATE OR REPLACE FUNCTION fn_auditoria_trigger()

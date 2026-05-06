@@ -5,9 +5,9 @@ spring:
   application:
     name: conteo-electoral
   datasource:
-    url: jdbc:postgresql://localhost:5432/conteo_electoral
+    url: jdbc:postgresql://192.168.100.215:5432/conteo_electoral
     username: postgres
-    password: 12345
+    password: 086411421
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
@@ -26,7 +26,7 @@ jwt:
 
 # CORS Configuration
 cors:
-  allowed-origins: http://localhost:4200
+  allowed-origins: http://localhost:4200, *
 
 # Logging
 logging:
