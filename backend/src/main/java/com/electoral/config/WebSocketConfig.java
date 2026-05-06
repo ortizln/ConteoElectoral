@@ -20,12 +20,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*")
-                .setAllowedOrigins(
-                    "http://localhost:4200",
-                    "http://localhost:64051",
-                    "http://127.0.0.1:4200",
-                    "http://127.0.0.1:64051"
+                .setAllowedOriginPatterns(
+                    "http://localhost:*",
+                    "http://127.0.0.1:*",
+                    "http://10.0.2.2:*",
+                    "http://*.local:*",
+                    "http://*.ngrok.io:*"
                 )
                 .withSockJS();
     }

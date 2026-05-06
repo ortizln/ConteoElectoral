@@ -64,12 +64,62 @@ export interface Candidato {
   eleccionesId: number;
 }
 
+export interface Zona {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+}
+
+export interface Provincia {
+  id: number;
+  nombre: string;
+  zonaId: number;
+  zonaNombre?: string;
+  descripcion?: string;
+}
+
+export interface Canton {
+  id: number;
+  nombre: string;
+  provinciaId: number;
+  provinciaNombre?: string;
+  descripcion?: string;
+}
+
+export interface Parroquia {
+  id: number;
+  nombre: string;
+  cantonId: number;
+  cantonNombre?: string;
+  descripcion?: string;
+}
+
+export interface InstitucionEducativa {
+  id: number;
+  nombre: string;
+  parroquiaId: number;
+  parroquiaNombre?: string;
+  direccion?: string;
+  codigo?: string;
+  tipo?: string;
+}
+
 export interface Recinto {
   id: number;
   nombre: string;
-  direccion: string;
+  direccion?: string;
+  institucionId: number;
+  institucionNombre?: string;
+  parroquiaId?: number;
+  parroquiaNombre?: string;
+  cantonId?: number;
+  cantonNombre?: string;
+  provinciaId?: number;
+  provinciaNombre?: string;
+  zonaId?: number;
+  zonaNombre?: string;
   eleccionesId: number;
-  totalMesas: number;
+  totalMesas?: number;
 }
 
 export interface Mesa {

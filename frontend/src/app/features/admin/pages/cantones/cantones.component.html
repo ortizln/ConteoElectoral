@@ -1,0 +1,62 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Gestión de Cantones</h2>
+    <button class="btn btn-primary" (click)="openModal()">Nuevo Cantón</button>
+  </div>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Provincia</th>
+        <th>Descripción</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let c of cantones">
+        <td>{{ c.id }}</td>
+        <td>{{ c.nombre }}</td>
+        <td>{{ c.provinciaNombre || 'N/A' }}</td>
+        <td>{{ c.descripcion || '-' }}</td>
+        <td>
+          <button class="btn btn-sm btn-warning me-2" (click)="edit(c)">Editar</button>
+          <button class="btn btn-sm btn-danger" (click)="delete(c.id)">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="showModal" class="modal d-block" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ editMode ? 'Editar' : 'Nuevo' }} Cantón</h5>
+          <button type="button" class="btn-close" (click)="closeModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-control" [(ngModel)]="form.nombre" placeholder="Nombre del cantón">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Provincia</label>
+            <select class="form-control" [(ngModel)]="form.provinciaId">
+              <option value="">Seleccione provincia...</option>
+              <option *ngFor="let p of provincias" [value]="p.id">{{ p.nombre }}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea class="form-control" [(ngModel)]="form.descripcion" placeholder="Descripción"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+          <button type="button" class="btn btn-primary" (click)="save()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

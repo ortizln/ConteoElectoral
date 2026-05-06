@@ -22,6 +22,10 @@ public class Recinto {
     private String direccion;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "institucion_id", nullable = false)
+    private InstitucionEducativa institucion;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "elecciones_id", nullable = false)
     private Eleccion elecciones;
 

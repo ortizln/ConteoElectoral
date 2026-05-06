@@ -1,13 +1,115 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Eleccion, Partido, Cargo, Candidato, Recinto, Mesa, Voto, Usuario } from '../models';
+import { Eleccion, Partido, Cargo, Candidato, Recinto, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa } from '../models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  private readonly API_URL = 'http://localhost:8080/api';
+  private readonly API_URL = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
+
+  // Zonas
+  getZonas(): Observable<Zona[]> {
+    return this.http.get<Zona[]>(`${this.API_URL}/zonas`);
+  }
+
+  createZona(data: Partial<Zona>): Observable<Zona> {
+    return this.http.post<Zona>(`${this.API_URL}/zonas`, data);
+  }
+
+  updateZona(id: number, data: Partial<Zona>): Observable<Zona> {
+    return this.http.put<Zona>(`${this.API_URL}/zonas/${id}`, data);
+  }
+
+  deleteZona(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/zonas/${id}`);
+  }
+
+  // Provincias
+  getProvincias(): Observable<Provincia[]> {
+    return this.http.get<Provincia[]>(`${this.API_URL}/provincias`);
+  }
+
+  getProvinciasByZona(zonaId: number): Observable<Provincia[]> {
+    return this.http.get<Provincia[]>(`${this.API_URL}/provincias/zona/${zonaId}`);
+  }
+
+  createProvincia(data: Partial<Provincia>): Observable<Provincia> {
+    return this.http.post<Provincia>(`${this.API_URL}/provincias`, data);
+  }
+
+  updateProvincia(id: number, data: Partial<Provincia>): Observable<Provincia> {
+    return this.http.put<Provincia>(`${this.API_URL}/provincias/${id}`, data);
+  }
+
+  deleteProvincia(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/provincias/${id}`);
+  }
+
+  // Cantones
+  getCantones(): Observable<Canton[]> {
+    return this.http.get<Canton[]>(`${this.API_URL}/cantones`);
+  }
+
+  getCantonesByProvincia(provinciaId: number): Observable<Canton[]> {
+    return this.http.get<Canton[]>(`${this.API_URL}/cantones/provincia/${provinciaId}`);
+  }
+
+  createCanton(data: Partial<Canton>): Observable<Canton> {
+    return this.http.post<Canton>(`${this.API_URL}/cantones`, data);
+  }
+
+  updateCanton(id: number, data: Partial<Canton>): Observable<Canton> {
+    return this.http.put<Canton>(`${this.API_URL}/cantones/${id}`, data);
+  }
+
+  deleteCanton(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/cantones/${id}`);
+  }
+
+  // Parroquias
+  getParroquias(): Observable<Parroquia[]> {
+    return this.http.get<Parroquia[]>(`${this.API_URL}/parroquias`);
+  }
+
+  getParroquiasByCanton(cantonId: number): Observable<Parroquia[]> {
+    return this.http.get<Parroquia[]>(`${this.API_URL}/parroquias/canton/${cantonId}`);
+  }
+
+  createParroquia(data: Partial<Parroquia>): Observable<Parroquia> {
+    return this.http.post<Parroquia>(`${this.API_URL}/parroquias`, data);
+  }
+
+  updateParroquia(id: number, data: Partial<Parroquia>): Observable<Parroquia> {
+    return this.http.put<Parroquia>(`${this.API_URL}/parroquias/${id}`, data);
+  }
+
+  deleteParroquia(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/parroquias/${id}`);
+  }
+
+  // Instituciones Educativas
+  getInstituciones(): Observable<InstitucionEducativa[]> {
+    return this.http.get<InstitucionEducativa[]>(`${this.API_URL}/instituciones`);
+  }
+
+  getInstitucionesByParroquia(parroquiaId: number): Observable<InstitucionEducativa[]> {
+    return this.http.get<InstitucionEducativa[]>(`${this.API_URL}/instituciones/parroquia/${parroquiaId}`);
+  }
+
+  createInstitucion(data: Partial<InstitucionEducativa>): Observable<InstitucionEducativa> {
+    return this.http.post<InstitucionEducativa>(`${this.API_URL}/instituciones`, data);
+  }
+
+  updateInstitucion(id: number, data: Partial<InstitucionEducativa>): Observable<InstitucionEducativa> {
+    return this.http.put<InstitucionEducativa>(`${this.API_URL}/instituciones/${id}`, data);
+  }
+
+  deleteInstitucion(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/instituciones/${id}`);
+  }
 
   // Elecciones
   getElecciones(): Observable<Eleccion[]> {

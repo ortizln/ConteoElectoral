@@ -1,0 +1,74 @@
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Gestión de Instituciones Educativas</h2>
+    <button class="btn btn-primary" (click)="openModal()">Nueva Institución</button>
+  </div>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Parroquia</th>
+        <th>Dirección</th>
+        <th>Código</th>
+        <th>Tipo</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let i of instituciones">
+        <td>{{ i.id }}</td>
+        <td>{{ i.nombre }}</td>
+        <td>{{ i.parroquiaNombre || 'N/A' }}</td>
+        <td>{{ i.direccion || '-' }}</td>
+        <td>{{ i.codigo || '-' }}</td>
+        <td>{{ i.tipo || '-' }}</td>
+        <td>
+          <button class="btn btn-sm btn-warning me-2" (click)="edit(i)">Editar</button>
+          <button class="btn btn-sm btn-danger" (click)="delete(i.id)">Eliminar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="showModal" class="modal d-block" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ editMode ? 'Editar' : 'Nueva' }} Institución Educativa</h5>
+          <button type="button" class="btn-close" (click)="closeModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-control" [(ngModel)]="form.nombre" placeholder="Nombre de la institución">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Parroquia</label>
+            <select class="form-control" [(ngModel)]="form.parroquiaId">
+              <option value="">Seleccione parroquia...</option>
+              <option *ngFor="let p of parroquias" [value]="p.id">{{ p.nombre }}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Dirección</label>
+            <textarea class="form-control" [(ngModel)]="form.direccion" placeholder="Dirección"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Código</label>
+            <input type="text" class="form-control" [(ngModel)]="form.codigo" placeholder="Código">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tipo</label>
+            <input type="text" class="form-control" [(ngModel)]="form.tipo" placeholder="Tipo (Ej: Unidad Educativa)">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+          <button type="button" class="btn btn-primary" (click)="save()">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

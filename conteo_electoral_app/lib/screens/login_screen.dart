@@ -15,11 +15,13 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  final _serverController = TextEditingController();
 
   @override
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
+    _serverController.dispose();
     super.dispose();
   }
 
@@ -40,9 +42,69 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _showServerConfigDialog() async {
+    final provider = context.read<AppProvider>();
+    _serverController.text = provider.serverUrl.replaceAll('/api', '');
+
+    if (!mounted) return;
+
+    return showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Configuración del Servidor'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _serverController,
+              decoration: const InputDecoration(
+                labelText: 'URL del Servidor',
+                hintText: 'http://192.168.1.100:8080',
+                prefixIcon: Icon(Icons.language),
+                border: OutlineInputBorder(),
+              ),
+              autofocus: true,
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Ingrese la dirección IP o dominio del servidor',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final url = _serverController.text.trim();
+              if (url.isNotEmpty) {
+                await provider.setServerUrl(url);
+                if (mounted) Navigator.pop(context);
+              }
+            },
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Conteo Electoral'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Configurar Servidor',
+            onPressed: _showServerConfigDialog,
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -68,15 +130,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    'Inicie sesión para continuar',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
+                  Consumer<AppProvider>(
+                    builder: (context, provider, _) => Text(
+                      'Servidor: ${provider.serverUrl.replaceAll('/api', '')}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      softWrap: false,
                     ),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 32),
                   TextFormField(
                     controller: _usernameController,
                     decoration: const InputDecoration(
@@ -120,6 +186,34 @@ class _LoginScreenState extends State<LoginScreen> {
                         return 'Ingrese su contraseña';
                       }
                       return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  Consumer<AppProvider>(
+                    builder: (context, provider, _) {
+                      return OutlinedButton.icon(
+                        onPressed: provider.isLoading
+                            ? null
+                            : () async {
+                                final messenger = ScaffoldMessenger.of(context);
+                                final result = await provider.testServerConnection();
+                                if (!mounted) return;
+                                messenger.showSnackBar(
+                                  SnackBar(
+                                    content: Text(result['message']?.toString() ?? 'Error'),
+                                    backgroundColor: result['success'] == true
+                                        ? Colors.green
+                                        : Colors.red,
+                                  ),
+                                );
+                              },
+                        icon: const Icon(Icons.wifi_tethering),
+                        label: const Text('Probar Conexión'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          minimumSize: const Size(double.infinity, 0),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: 24),

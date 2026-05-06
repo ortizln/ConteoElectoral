@@ -17,6 +17,9 @@ public class RecintoRequest {
     
     private String direccion;
     
+    @NotNull(message = "La institución educativa es requerida")
+    private Long institucionId;
+    
     @NotNull(message = "La elección es requerida")
     private Long eleccionesId;
 }

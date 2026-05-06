@@ -47,11 +47,23 @@
 ## 📦 APK Generado
 - **Ruta**: `conteo_electoral_app/build/app/outputs/flutter-apk/app-debug.apk`
 - **Tamaño**: 155 MB
-- **Fecha**: 4 de mayo 2026, 15:46
+- **Fecha**: 4 de mayo 2026, 16:15
+- **Novedad**: Configuración de servidor integrada en login
+
+## ✅ Nueva Funcionalidad: Configuración de Servidor
+- **Archivo**: `lib/screens/login_screen.dart` - Botón de configuración (icono settings) en AppBar
+- **Archivo**: `lib/providers/app_provider.dart` - Métodos `setServerUrl()` y `_loadServerUrl()`
+- **Archivo**: `lib/services/api_service.dart` - Base URL configurable con persistencia
+- **Uso**: 
+  1. En la pantalla de login, tocar el icono de ajustes (⚙️)
+  2. Ingresar la URL del servidor (ej: `http://192.168.1.100:8080`)
+  3. La configuración se guarda automáticamente y se usa `/api` automáticamente
+  4. Para emulador Android usar: `http://10.0.2.2:8080`
+  5. Para dispositivo físico usar: `http://IP_DEL_PC:8080`
 
 ## 🚀 Próximos Pasos
 1. Instalar APK en dispositivo Android: `adb install app-debug.apk`
-2. Configurar IP del backend en `api_service.dart` (cambiar de `10.0.2.2` a IP real para dispositivo físico)
+2. Configurar URL del servidor en la app (botón de ajustes en login)
 3. Ejecutar backend: `cd backend && ./mvnw spring-boot:run`
 4. Ejecutar frontend: `cd frontend && ng serve`
 5. Probar flujo completo: login → sincronización → conteo offline → sincronización

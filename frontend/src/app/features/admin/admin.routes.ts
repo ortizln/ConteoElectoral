@@ -5,7 +5,27 @@ export const ADMIN_ROUTES: Routes = [
     path: '',
     loadComponent: () => import('./layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     children: [
-      { path: '', redirectTo: 'elecciones', pathMatch: 'full' },
+      { path: '', redirectTo: 'zonas', pathMatch: 'full' },
+      { 
+        path: 'zonas', 
+        loadComponent: () => import('./pages/zonas/zonas.component').then(m => m.ZonasComponent) 
+      },
+      { 
+        path: 'provincias', 
+        loadComponent: () => import('./pages/provincias/provincias.component').then(m => m.ProvinciasComponent) 
+      },
+      { 
+        path: 'cantones', 
+        loadComponent: () => import('./pages/cantones/cantones.component').then(m => m.CantonesComponent) 
+      },
+      { 
+        path: 'parroquias', 
+        loadComponent: () => import('./pages/parroquias/parroquias.component').then(m => m.ParroquiasComponent) 
+      },
+      { 
+        path: 'instituciones', 
+        loadComponent: () => import('./pages/instituciones/instituciones.component').then(m => m.InstitucionesComponent) 
+      },
       { 
         path: 'elecciones', 
         loadComponent: () => import('./pages/elecciones/elecciones.component').then(m => m.EleccionesComponent) 

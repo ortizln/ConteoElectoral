@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../database/database_helper.dart';
@@ -7,7 +8,9 @@ import '../database/database_helper.dart';
 class AppProvider extends ChangeNotifier {
   final DatabaseHelper _db = DatabaseHelper.instance;
   final ApiService _api = ApiService();
-  
+
+  ApiService get api => _api;
+
   Usuario? _usuario;
   Eleccion? _eleccionActual;
   Mesa? _mesaActual;
@@ -15,7 +18,8 @@ class AppProvider extends ChangeNotifier {
   bool _isOnline = true;
   bool _isLoading = false;
   String? _error;
-  
+  String _serverUrl = 'http://10.0.2.2:8080/api';
+
   List<Candidato> _candidatos = [];
   List<Partido> _partidos = [];
   List<Cargo> _cargos = [];
@@ -29,7 +33,8 @@ class AppProvider extends ChangeNotifier {
   bool get isOnline => _isOnline;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  
+  String get serverUrl => _serverUrl;
+
   List<Candidato> get candidatos => _candidatos;
   List<Partido> get partidos => _partidos;
   List<Cargo> get cargos => _cargos;
@@ -37,11 +42,30 @@ class AppProvider extends ChangeNotifier {
   int get totalVotos => _totalVotos;
 
   Future<void> init() async {
+    await _loadServerUrl();
     _usuario = await _db.getUsuarioSession();
     if (_usuario != null) {
       await _cargarEleccionActual();
     }
     _checkConnectivity();
+  }
+
+  Future<void> _loadServerUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    _serverUrl = prefs.getString('server_url') ?? 'http://10.0.2.2:8080/api';
+    await _api.setServerUrl(_serverUrl);
+  }
+
+  Future<void> setServerUrl(String url) async {
+    final prefs = await SharedPreferences.getInstance();
+    _serverUrl = url.endsWith('/api') ? url : '$url/api';
+    await prefs.setString('server_url', _serverUrl);
+    await _api.setServerUrl(url);
+    notifyListeners();
+  }
+
+  Future<Map<String, dynamic>> testServerConnection() async {
+    return await _api.testConnection();
   }
 
   Future<void> _checkConnectivity() async {

@@ -17,6 +17,7 @@ public class RecintoService {
     private final RecintoRepository recintoRepository;
     private final MesaRepository mesaRepository;
     private final EleccionService eleccionService;
+    private final InstitucionEducativaService institucionEducativaService;
 
     public List<RecintoResponse> getRecintosByEleccion(Long eleccionesId) {
         return recintoRepository.findByEleccionesId(eleccionesId).stream()
@@ -33,10 +34,15 @@ public class RecintoService {
     @Transactional
     public RecintoResponse createRecinto(RecintoRequest request) {
         Eleccion eleccion = eleccionService.getEleccionEntityById(request.getEleccionesId());
+        InstitucionEducativa institucion = null;
+        if (request.getInstitucionId() != null) {
+            institucion = institucionEducativaService.findById(request.getInstitucionId());
+        }
         Recinto recinto = Recinto.builder()
                 .nombre(request.getNombre())
                 .direccion(request.getDireccion())
                 .elecciones(eleccion)
+                .institucion(institucion)
                 .build();
         return mapToResponse(recintoRepository.save(recinto));
     }

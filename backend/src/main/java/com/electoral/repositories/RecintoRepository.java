@@ -8,4 +8,8 @@ import java.util.List;
 @Repository
 public interface RecintoRepository extends JpaRepository<Recinto, Long> {
     List<Recinto> findByEleccionesId(Long eleccionesId);
+    List<Recinto> findByInstitucionParroquiaId(Long parroquiaId);
+    List<Recinto> findByInstitucionParroquiaCantonId(Long cantonId);
+    List<Recinto> findByInstitucionParroquiaCantonProvinciaId(Long provinciaId);
+    List<Recinto> findByInstitucionParroquiaCantonProvinciaZonaId(Long zonaId);
 }

@@ -81,6 +81,12 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _navigateTo(String route) {
+    if (mounted) {
+      Navigator.pushNamed(context, route);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -176,6 +182,54 @@ class _HomeScreenState extends State<HomeScreen> {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (provider.usuario?.rol == 'ADMIN') ...[
+                            Card(
+                              child: ListTile(
+                                leading: const Icon(Icons.map, color: Colors.blue),
+                                title: const Text('Zonas'),
+                                subtitle: const Text('Gestionar zonas electorales'),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () => _navigateTo('/zonas'),
+                              ),
+                            ),
+                            Card(
+                              child: ListTile(
+                                leading: const Icon(Icons.location_city, color: Colors.green),
+                                title: const Text('Provincias'),
+                                subtitle: const Text('Gestionar provincias'),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () => _navigateTo('/provincias'),
+                              ),
+                            ),
+                            Card(
+                              child: ListTile(
+                                leading: const Icon(Icons.location_on, color: Colors.orange),
+                                title: const Text('Cantones'),
+                                subtitle: const Text('Gestionar cantones'),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () => _navigateTo('/cantones'),
+                              ),
+                            ),
+                            Card(
+                              child: ListTile(
+                                leading: const Icon(Icons.terrain, color: Colors.purple),
+                                title: const Text('Parroquias'),
+                                subtitle: const Text('Gestionar parroquias'),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () => _navigateTo('/parroquias'),
+                              ),
+                            ),
+                            Card(
+                              child: ListTile(
+                                leading: const Icon(Icons.school, color: Colors.indigo),
+                                title: const Text('Instituciones Educativas'),
+                                subtitle: const Text('Gestionar instituciones'),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () => _navigateTo('/instituciones'),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
                           Text(
                             'Mesas Asignadas (${snapshot.data!.length})',
                             style: const TextStyle(

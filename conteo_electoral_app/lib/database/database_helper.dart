@@ -31,11 +31,12 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY,
         nombre TEXT NOT NULL,
         descripcion TEXT,
-        fechaInicio TEXT NOT NULL,
-        fechaFin TEXT NOT NULL,
-        activa INTEGER NOT NULL DEFAULT 1
+        fecha_inicio TEXT NOT NULL,
+        fecha_fin TEXT NOT NULL,
+        activa INTEGER NOT NULL
       )
     ''');
+
 
     await db.execute('''
       CREATE TABLE partidos (
@@ -75,10 +76,12 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY,
         nombre TEXT NOT NULL,
         direccion TEXT,
+        institucionId INTEGER NOT NULL,
         eleccionesId INTEGER NOT NULL,
         totalMesas INTEGER DEFAULT 0
       )
     ''');
+
 
     await db.execute('''
       CREATE TABLE mesas (
@@ -272,13 +275,13 @@ class DatabaseHelper {
           'id': recinto.id,
           'nombre': recinto.nombre,
           'direccion': recinto.direccion,
+          'institucionId': recinto.institucionId,
           'eleccionesId': recinto.eleccionesId,
-          'totalMesas': recinto.totalMesas,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
-    await batch.commit(noResult: true);
+    await batch.commit();
   }
 
   Future<List<Recinto>> getRecintos(int eleccionesId) async {
@@ -292,6 +295,7 @@ class DatabaseHelper {
       id: m['id'] as int,
       nombre: m['nombre'] as String,
       direccion: m['direccion'] as String? ?? '',
+      institucionId: m['institucionId'] as int,
       eleccionesId: m['eleccionesId'] as int,
       totalMesas: m['totalMesas'] as int? ?? 0,
     )).toList();
@@ -306,6 +310,7 @@ class DatabaseHelper {
       id: m['id'] as int,
       nombre: m['nombre'] as String,
       direccion: m['direccion'] as String? ?? '',
+      institucionId: m['institucionId'] as int,
       eleccionesId: m['eleccionesId'] as int,
       totalMesas: m['totalMesas'] as int? ?? 0,
     );

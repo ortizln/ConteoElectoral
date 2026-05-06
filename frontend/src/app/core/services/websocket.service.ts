@@ -4,6 +4,7 @@ import SockJS from 'sockjs-client';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { DashboardData } from '../models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketService implements OnDestroy {
@@ -17,7 +18,7 @@ export class WebSocketService implements OnDestroy {
 
   private connect(): void {
     this.client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      webSocketFactory: () => new SockJS(`${environment.apiUrl.replace('/api', '')}/ws`),
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
