@@ -6,36 +6,9 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/conteo_electoral
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.100.215:5432/conteo_electoral
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=086411421
-    depends_on:
-      - db
-    networks:
-      - app-network
-
-  db:
-    image: postgres:16
-    environment:
-      - POSTGRES_DB=conteo_electoral
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=086411421
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - app-network
-
-  frontend:
-    image: nginx:alpine
-    volumes:
-      - ./frontend/dist/conteo-electoral:/var/www/conteo-electoral:ro
-      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
     networks:
       - app-network
 
