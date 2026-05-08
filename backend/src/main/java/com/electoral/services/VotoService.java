@@ -134,7 +134,7 @@ public class VotoService {
 
     @Transactional(readOnly = true)
     public DashboardResponse getDashboardData(Long eleccionId) {
-        return getDashboardDataConFiltros(eleccionId, null, null, null, null, null, null, null, null);
+        return getDashboardDataConFiltros(eleccionId, null, null, null, null, null, null, null);
     }
 
     @Transactional(readOnly = true)
