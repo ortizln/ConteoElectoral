@@ -79,11 +79,11 @@
           </div>
           <div class="mb-3">
             <label>Nombre:</label>
-            <input type="text" class="form-control" [(ngModel)]="form.nombre" />
+            <input type="text" class="form-control" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
           </div>
           <div class="mb-3">
             <label>Sigla:</label>
-            <input type="text" class="form-control" [(ngModel)]="form.sigla" />
+            <input type="text" class="form-control" [(ngModel)]="form.sigla" (input)="toUpper(form, 'sigla')" />
           </div>
         </div>
         <div class="modal-footer">

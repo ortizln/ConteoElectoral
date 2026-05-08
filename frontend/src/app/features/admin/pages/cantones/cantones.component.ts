@@ -108,6 +108,10 @@ export class CantonesComponent implements OnInit {
   nextPage(): void { this.goToPage(this.currentPage + 1); }
   onPageSizeChange(): void { this.currentPage = 1; }
 
+  toUpper(obj: any, prop: string): void {
+    if (obj[prop]) obj[prop] = obj[prop].toUpperCase();
+  }
+
   openModal(): void {
     this.editMode = false;
     this.form = { nombre: '', provinciaId: this.provincias[0]?.id || null, descripcion: '' };

@@ -83,7 +83,7 @@
           </div>
           <div class="mb-3">
             <label>Nombre:</label>
-            <input type="text" class="form-control" [(ngModel)]="form.nombre" />
+            <input type="text" class="form-control" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
           </div>
           <div class="mb-3">
             <label>Parroquia:</label>
@@ -94,15 +94,15 @@
           </div>
           <div class="mb-3">
             <label>Dirección:</label>
-            <textarea class="form-control" [(ngModel)]="form.direccion"></textarea>
+            <textarea class="form-control" [(ngModel)]="form.direccion" (input)="toUpper(form, 'direccion')"></textarea>
           </div>
           <div class="mb-3">
             <label>Código:</label>
-            <input type="text" class="form-control" [(ngModel)]="form.codigo" />
+            <input type="text" class="form-control" [(ngModel)]="form.codigo" (input)="toUpper(form, 'codigo')" />
           </div>
           <div class="mb-3">
             <label>Tipo:</label>
-            <input type="text" class="form-control" [(ngModel)]="form.tipo" />
+            <input type="text" class="form-control" [(ngModel)]="form.tipo" (input)="toUpper(form, 'tipo')" />
           </div>
         </div>
         <div class="modal-footer">

@@ -96,6 +96,10 @@ export class EleccionesComponent implements OnInit {
   nextPage(): void { this.goToPage(this.currentPage + 1); }
   onPageSizeChange(): void { this.currentPage = 1; }
 
+  toUpper(obj: any, prop: string): void {
+    if (obj[prop]) obj[prop] = obj[prop].toUpperCase();
+  }
+
   openModal(): void {
     this.form = { nombre: '', descripcion: '', fechaInicio: '', fechaFin: '', activa: true };
     this.editMode = false;

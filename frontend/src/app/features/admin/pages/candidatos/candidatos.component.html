@@ -83,11 +83,11 @@
           </div>
           <div class="mb-3">
             <label>Nombre:</label>
-            <input type="text" class="form-control" [(ngModel)]="form.nombre" />
+            <input type="text" class="form-control" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
           </div>
           <div class="mb-3">
             <label>Apellido:</label>
-            <input type="text" class="form-control" [(ngModel)]="form.apellido" />
+            <input type="text" class="form-control" [(ngModel)]="form.apellido" (input)="toUpper(form, 'apellido')" />
           </div>
           <div class="mb-3">
             <label>Partido:</label>
