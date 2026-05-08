@@ -7,24 +7,140 @@
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.1)
 
-2026-05-08T12:06:59.483-05:00  INFO 16848 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : Starting ConteoElectoralApplication using Java 21.0.10 with PID 16848 (C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\target\conteo-electoral-1.0.0.jar started by Alexi in C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral)
-2026-05-08T12:06:59.485-05:00 DEBUG 16848 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : Running with Spring Boot v3.2.1, Spring v6.1.2
-2026-05-08T12:06:59.486-05:00  INFO 16848 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : No active profile set, falling back to 1 default profile: "default"
-2026-05-08T12:07:00.386-05:00  INFO 16848 --- [conteo-electoral] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-05-08T12:07:00.448-05:00  INFO 16848 --- [conteo-electoral] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 55 ms. Found 16 JPA repository interfaces.
-2026-05-08T12:07:01.302-05:00  INFO 16848 --- [conteo-electoral] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8081 (http)
-2026-05-08T12:07:01.323-05:00  INFO 16848 --- [conteo-electoral] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-05-08T12:07:01.324-05:00  INFO 16848 --- [conteo-electoral] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.17]
-2026-05-08T12:07:01.396-05:00  INFO 16848 --- [conteo-electoral] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2026-05-08T12:07:01.397-05:00  INFO 16848 --- [conteo-electoral] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1853 ms
-2026-05-08T12:07:01.611-05:00  INFO 16848 --- [conteo-electoral] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-05-08T12:07:01.669-05:00  INFO 16848 --- [conteo-electoral] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.1.Final
-2026-05-08T12:07:01.694-05:00  INFO 16848 --- [conteo-electoral] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2026-05-08T12:07:01.987-05:00  INFO 16848 --- [conteo-electoral] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-05-08T12:07:02.024-05:00  INFO 16848 --- [conteo-electoral] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2026-05-08T12:07:02.353-05:00  INFO 16848 --- [conteo-electoral] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@e91facf
-2026-05-08T12:07:02.354-05:00  INFO 16848 --- [conteo-electoral] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-05-08T12:07:03.509-05:00  INFO 16848 --- [conteo-electoral] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-05-08T12:07:03.719-05:00  INFO 16848 --- [conteo-electoral] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-05-08T12:07:03.967-05:00  INFO 16848 --- [conteo-electoral] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-05-08T12:07:04.323-05:00 DEBUG 16848 --- [conteo-electoral] [           main] c.e.security.JwtAuthenticationFilter     : Filter 'jwtAuthenticationFilter' configured for use
+2026-05-08T15:47:49.120-05:00  INFO 29616 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : Starting ConteoElectoralApplication using Java 21.0.10 with PID 29616 (C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\target\conteo-electoral-1.0.0.jar started by Alexi in C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral)
+2026-05-08T15:47:49.123-05:00 DEBUG 29616 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : Running with Spring Boot v3.2.1, Spring v6.1.2
+2026-05-08T15:47:49.124-05:00  INFO 29616 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : No active profile set, falling back to 1 default profile: "default"
+2026-05-08T15:47:50.212-05:00  INFO 29616 --- [conteo-electoral] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-08T15:47:50.295-05:00  INFO 29616 --- [conteo-electoral] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 72 ms. Found 16 JPA repository interfaces.
+2026-05-08T15:47:50.931-05:00  INFO 29616 --- [conteo-electoral] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8081 (http)
+2026-05-08T15:47:50.956-05:00  INFO 29616 --- [conteo-electoral] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-05-08T15:47:50.957-05:00  INFO 29616 --- [conteo-electoral] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.17]
+2026-05-08T15:47:51.049-05:00  INFO 29616 --- [conteo-electoral] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-05-08T15:47:51.057-05:00  INFO 29616 --- [conteo-electoral] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1856 ms
+2026-05-08T15:47:51.333-05:00  INFO 29616 --- [conteo-electoral] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-08T15:47:51.413-05:00  INFO 29616 --- [conteo-electoral] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.1.Final
+2026-05-08T15:47:51.441-05:00  INFO 29616 --- [conteo-electoral] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-05-08T15:47:51.612-05:00  INFO 29616 --- [conteo-electoral] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-08T15:47:51.632-05:00  INFO 29616 --- [conteo-electoral] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-05-08T15:47:51.860-05:00  INFO 29616 --- [conteo-electoral] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@4b9f7edc
+2026-05-08T15:47:51.863-05:00  INFO 29616 --- [conteo-electoral] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-05-08T15:47:52.735-05:00  INFO 29616 --- [conteo-electoral] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-08T15:47:52.949-05:00  INFO 29616 --- [conteo-electoral] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-08T15:47:53.159-05:00  INFO 29616 --- [conteo-electoral] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-05-08T15:47:53.504-05:00 DEBUG 29616 --- [conteo-electoral] [           main] c.e.security.JwtAuthenticationFilter     : Filter 'jwtAuthenticationFilter' configured for use
+2026-05-08T15:47:54.621-05:00  INFO 29616 --- [conteo-electoral] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@1390db9e, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@f0ead61, org.springframework.security.web.context.SecurityContextHolderFilter@53ce41e7, org.springframework.security.web.header.HeaderWriterFilter@f7dc1aa, org.springframework.web.filter.CorsFilter@61ab2bcc, org.springframework.security.web.authentication.logout.LogoutFilter@2c43da32, com.electoral.security.JwtAuthenticationFilter@65595be7, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@55a869a9, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@2d739a6f, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@27551c3a, org.springframework.security.web.session.SessionManagementFilter@11a3ffe6, org.springframework.security.web.access.ExceptionTranslationFilter@3a5f0ed5, org.springframework.security.web.access.intercept.AuthorizationFilter@15f12e7b]
+2026-05-08T15:47:54.917-05:00  INFO 29616 --- [conteo-electoral] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8081 (http) with context path ''
+2026-05-08T15:47:54.921-05:00  INFO 29616 --- [conteo-electoral] [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
+2026-05-08T15:47:54.922-05:00  INFO 29616 --- [conteo-electoral] [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@28f6137b]]
+2026-05-08T15:47:54.923-05:00  INFO 29616 --- [conteo-electoral] [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
+2026-05-08T15:47:54.929-05:00  INFO 29616 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : Started ConteoElectoralApplication in 6.167 seconds (process running for 6.765)
+2026-05-08T15:47:54.932-05:00  INFO 29616 --- [conteo-electoral] [           main] com.electoral.DataInitializer            : === INICIANDO DATAINITIALIZER ===
+2026-05-08T15:47:55.118-05:00  INFO 29616 --- [conteo-electoral] [           main] com.electoral.DataInitializer            : Password de admin reseteado a: admin123
+2026-05-08T15:47:55.120-05:00  INFO 29616 --- [conteo-electoral] [           main] com.electoral.DataInitializer            : === DATAINITIALIZER COMPLETADO ===
+2026-05-08T15:47:55.122-05:00  INFO 29616 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : ===== APLICACIÓN INICIADA =====
+2026-05-08T15:48:54.916-05:00  INFO 29616 --- [conteo-electoral] [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2026-05-08T15:52:42.995-05:00  INFO 29616 --- [conteo-electoral] [nio-8081-exec-3] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-05-08T15:52:42.996-05:00  INFO 29616 --- [conteo-electoral] [nio-8081-exec-3] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-05-08T15:52:42.997-05:00  INFO 29616 --- [conteo-electoral] [nio-8081-exec-3] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-05-08T15:52:43.016-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/elecciones
+2026-05-08T15:52:43.016-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/instituciones
+2026-05-08T15:52:43.034-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/elecciones
+2026-05-08T15:52:43.034-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/instituciones
+2026-05-08T15:52:43.148-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/instituciones
+2026-05-08T15:52:43.148-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/elecciones
+2026-05-08T15:52:43.218-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/recintos/eleccion/1
+2026-05-08T15:52:43.222-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/recintos/eleccion/1
+2026-05-08T15:52:43.229-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/recintos/eleccion/1
+2026-05-08T15:52:45.415-05:00 DEBUG 29616 --- [conteo-electoral] [io-8081-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/instituciones
+2026-05-08T15:52:45.415-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/parroquias
+2026-05-08T15:52:45.417-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/parroquias
+2026-05-08T15:52:45.424-05:00 DEBUG 29616 --- [conteo-electoral] [io-8081-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/instituciones
+2026-05-08T15:52:45.425-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/parroquias
+2026-05-08T15:52:46.708-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/instituciones
+2026-05-08T15:52:46.708-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/elecciones
+2026-05-08T15:52:46.719-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/elecciones
+2026-05-08T15:52:46.719-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/instituciones
+2026-05-08T15:52:46.735-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/recintos/eleccion/1
+2026-05-08T15:52:46.744-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/recintos/eleccion/1
+2026-05-08T15:54:11.687-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/instituciones
+2026-05-08T15:54:11.687-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/parroquias
+2026-05-08T15:54:11.696-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/instituciones
+2026-05-08T15:54:11.696-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/parroquias
+2026-05-08T15:56:51.328-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/elecciones
+2026-05-08T15:56:51.339-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/elecciones
+2026-05-08T15:56:51.359-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/partidos/eleccion/1
+2026-05-08T15:56:51.362-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/partidos/eleccion/1
+2026-05-08T15:56:51.370-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/partidos/eleccion/1
+2026-05-08T15:56:53.468-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/elecciones
+2026-05-08T15:56:53.478-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/elecciones
+2026-05-08T15:56:53.494-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-5] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/cargos/eleccion/1
+2026-05-08T15:56:53.497-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/cargos/eleccion/1
+2026-05-08T15:56:53.503-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/cargos/eleccion/1
+2026-05-08T15:56:54.110-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/elecciones
+2026-05-08T15:56:54.121-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/elecciones
+2026-05-08T15:56:54.138-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/candidatos/eleccion/1
+2026-05-08T15:56:54.138-05:00 DEBUG 29616 --- [conteo-electoral] [io-8081-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/partidos/eleccion/1
+2026-05-08T15:56:54.139-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/cargos/eleccion/1
+2026-05-08T15:56:54.139-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/candidatos/eleccion/1
+2026-05-08T15:56:54.142-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/cargos/eleccion/1
+2026-05-08T15:56:54.143-05:00 DEBUG 29616 --- [conteo-electoral] [io-8081-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/partidos/eleccion/1
+2026-05-08T15:56:54.146-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/candidatos/eleccion/1
+2026-05-08T16:00:45.986-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/elecciones
+2026-05-08T16:00:45.986-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/instituciones
+2026-05-08T16:00:46.000-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/elecciones
+2026-05-08T16:00:46.000-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/instituciones
+2026-05-08T16:00:46.016-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/recintos/eleccion/1
+2026-05-08T16:00:46.022-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/recintos/eleccion/1
+2026-05-08T16:00:46.418-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/elecciones
+2026-05-08T16:00:46.426-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/elecciones
+2026-05-08T16:00:46.444-05:00 DEBUG 29616 --- [conteo-electoral] [io-8081-exec-10] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/mesas/eleccion/1
+2026-05-08T16:00:46.444-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/recintos/eleccion/1
+2026-05-08T16:00:46.447-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/mesas/eleccion/1
+2026-05-08T16:00:46.450-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/recintos/eleccion/1
+2026-05-08T16:00:46.452-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/mesas/eleccion/1
+2026-05-08T16:00:46.839-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/usuarios
+2026-05-08T16:00:46.845-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/usuarios
+2026-05-08T16:00:46.846-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-3] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.electoral.controllers.UsuarioController.getAllUsuarios(); target is of class [com.electoral.controllers.UsuarioController]
+2026-05-08T16:00:46.860-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-3] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.electoral.controllers.UsuarioController.getAllUsuarios(); target is of class [com.electoral.controllers.UsuarioController]
+2026-05-08T16:00:47.274-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/elecciones/activas
+2026-05-08T16:00:47.275-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/usuarios/rol/MIEMBRO_MESA
+2026-05-08T16:00:47.278-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/elecciones/activas
+2026-05-08T16:00:47.278-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/usuarios/rol/MIEMBRO_MESA
+2026-05-08T16:00:47.285-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/elecciones/activas
+2026-05-08T16:00:47.285-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/usuarios/rol/MIEMBRO_MESA
+2026-05-08T16:00:47.293-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-7] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.electoral.controllers.UsuarioController.getUsuariosByRol(java.lang.String); target is of class [com.electoral.controllers.UsuarioController]
+2026-05-08T16:00:47.294-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-7] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.electoral.controllers.UsuarioController.getUsuariosByRol(java.lang.String); target is of class [com.electoral.controllers.UsuarioController]
+2026-05-08T16:00:47.296-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/mesas/eleccion/1
+2026-05-08T16:00:47.301-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/mesas/eleccion/1
+2026-05-08T16:00:48.948-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/usuarios
+2026-05-08T16:00:48.957-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/usuarios
+2026-05-08T16:00:48.960-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-6] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.electoral.controllers.UsuarioController.getAllUsuarios(); target is of class [com.electoral.controllers.UsuarioController]
+2026-05-08T16:00:48.960-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-6] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.electoral.controllers.UsuarioController.getAllUsuarios(); target is of class [com.electoral.controllers.UsuarioController]
+2026-05-08T16:02:42.745-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/instituciones
+2026-05-08T16:02:42.745-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/elecciones
+2026-05-08T16:02:42.755-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/instituciones
+2026-05-08T16:02:42.755-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/elecciones
+2026-05-08T16:02:42.775-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/recintos/eleccion/1
+2026-05-08T16:02:42.785-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/recintos/eleccion/1
+2026-05-08T16:02:46.201-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/recintos/eleccion/1
+2026-05-08T16:02:46.212-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/recintos/eleccion/1
+2026-05-08T16:02:47.618-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/instituciones
+2026-05-08T16:02:47.618-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/parroquias
+2026-05-08T16:02:47.629-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/parroquias
+2026-05-08T16:02:47.629-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/instituciones
+2026-05-08T16:07:39.846-05:00 DEBUG 29616 --- [conteo-electoral] [io-8081-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/elecciones
+2026-05-08T16:07:39.859-05:00 DEBUG 29616 --- [conteo-electoral] [io-8081-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/elecciones
+2026-05-08T16:07:39.875-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/mesas/eleccion/1
+2026-05-08T16:07:39.876-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/recintos/eleccion/1
+2026-05-08T16:07:39.882-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/recintos/eleccion/1
+2026-05-08T16:07:39.882-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/mesas/eleccion/1
+2026-05-08T16:07:42.665-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/instituciones
+2026-05-08T16:07:42.665-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/elecciones
+2026-05-08T16:07:42.674-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/instituciones
+2026-05-08T16:07:42.674-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/elecciones
+2026-05-08T16:07:42.686-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/recintos/eleccion/1
+2026-05-08T16:07:42.692-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/recintos/eleccion/1
+2026-05-08T16:07:45.163-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/instituciones
+2026-05-08T16:07:45.163-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/parroquias
+2026-05-08T16:07:45.173-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/parroquias
+2026-05-08T16:07:45.173-05:00 DEBUG 29616 --- [conteo-electoral] [nio-8081-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/instituciones

@@ -138,53 +138,39 @@ public class VotoService {
     }
 
     @Transactional(readOnly = true)
-    public DashboardResponse getDashboardDataConFiltros(Long eleccionId, Long cargoId, Long partidoId, Long recintoId,
+    public DashboardResponse getDashboardDataConFiltros(Long eleccionId, Long cargoId, Long partidoId,
             Long zonaId, Long provinciaId, Long cantonId, Long parroquiaId, Long institucionId) {
         Eleccion eleccion = eleccionService.getEleccionEntityById(eleccionId);
 
         List<Mesa> mesas = mesaRepository.findByEleccionesId(eleccionId);
 
-        if (zonaId != null || provinciaId != null || cantonId != null || parroquiaId != null || institucionId != null) {
-            mesas = mesas.stream().filter(m -> {
-                Recinto recinto = m.getRecinto();
-                if (institucionId != null) {
-                    return recinto.getInstitucion() != null &&
-                            recinto.getInstitucion().getId().equals(institucionId);
-                }
-                if (parroquiaId != null) {
-                    return recinto.getInstitucion() != null &&
-                            recinto.getInstitucion().getParroquia() != null &&
-                            recinto.getInstitucion().getParroquia().getId().equals(parroquiaId);
-                }
-                if (cantonId != null) {
-                    return recinto.getInstitucion() != null &&
-                            recinto.getInstitucion().getParroquia() != null &&
-                            recinto.getInstitucion().getParroquia().getCanton() != null &&
-                            recinto.getInstitucion().getParroquia().getCanton().getId().equals(cantonId);
-                }
-                if (provinciaId != null) {
-                    return recinto.getInstitucion() != null &&
-                            recinto.getInstitucion().getParroquia() != null &&
-                            recinto.getInstitucion().getParroquia().getCanton() != null &&
-                            recinto.getInstitucion().getParroquia().getCanton().getProvincia() != null &&
-                            recinto.getInstitucion().getParroquia().getCanton().getProvincia().getId()
-                                    .equals(provinciaId);
-                }
-                if (zonaId != null) {
-                    return recinto.getInstitucion() != null &&
-                            recinto.getInstitucion().getParroquia() != null &&
-                            recinto.getInstitucion().getParroquia().getCanton() != null &&
-                            recinto.getInstitucion().getParroquia().getCanton().getProvincia() != null &&
-                            recinto.getInstitucion().getParroquia().getCanton().getProvincia().getZona() != null &&
-                            recinto.getInstitucion().getParroquia().getCanton().getProvincia().getZona().getId()
-                                    .equals(zonaId);
-                }
-                return true;
-            }).collect(Collectors.toList());
-        }
-
-        if (recintoId != null) {
-            mesas = mesas.stream().filter(m -> m.getRecinto().getId().equals(recintoId)).collect(Collectors.toList());
+        if (institucionId != null) {
+            mesas = mesas.stream().filter(m -> m.getInstitucion() != null &&
+                    m.getInstitucion().getId().equals(institucionId)).collect(Collectors.toList());
+        } else if (parroquiaId != null) {
+            mesas = mesas.stream().filter(m -> m.getInstitucion() != null &&
+                    m.getInstitucion().getParroquia() != null &&
+                    m.getInstitucion().getParroquia().getId().equals(parroquiaId)).collect(Collectors.toList());
+        } else if (cantonId != null) {
+            mesas = mesas.stream().filter(m -> m.getInstitucion() != null &&
+                    m.getInstitucion().getParroquia() != null &&
+                    m.getInstitucion().getParroquia().getCanton() != null &&
+                    m.getInstitucion().getParroquia().getCanton().getId().equals(cantonId)).collect(Collectors.toList());
+        } else if (provinciaId != null) {
+            mesas = mesas.stream().filter(m -> m.getInstitucion() != null &&
+                    m.getInstitucion().getParroquia() != null &&
+                    m.getInstitucion().getParroquia().getCanton() != null &&
+                    m.getInstitucion().getParroquia().getCanton().getProvincia() != null &&
+                    m.getInstitucion().getParroquia().getCanton().getProvincia().getId().equals(provinciaId))
+                    .collect(Collectors.toList());
+        } else if (zonaId != null) {
+            mesas = mesas.stream().filter(m -> m.getInstitucion() != null &&
+                    m.getInstitucion().getParroquia() != null &&
+                    m.getInstitucion().getParroquia().getCanton() != null &&
+                    m.getInstitucion().getParroquia().getCanton().getProvincia() != null &&
+                    m.getInstitucion().getParroquia().getCanton().getProvincia().getZona() != null &&
+                    m.getInstitucion().getParroquia().getCanton().getProvincia().getZona().getId().equals(zonaId))
+                    .collect(Collectors.toList());
         }
 
         List<Long> mesaIds = mesas.stream().map(Mesa::getId).collect(Collectors.toList());

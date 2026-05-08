@@ -83,7 +83,7 @@ public class ProvinciaController {
         Provincia provincia = provinciaService.findById(id);
         provincia.setNombre(request.getNombre());
         provincia.setDescripcion(request.getDescripcion());
-        Provincia updated = provinciaService.save(provincia);
+        Provincia updated = provinciaService.update(id, provincia);
         ProvinciaResponse response = ProvinciaResponse.builder()
                 .id(updated.getId())
                 .nombre(updated.getNombre())

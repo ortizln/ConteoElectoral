@@ -13,8 +13,8 @@ public class MesaResponse {
     private Long id;
     private String numero;
     private String sexo;
-    private Long recintoId;
-    private String recintoNombre;
+    private Long institucionId;
+    private String institucionNombre;
     private Long eleccionesId;
     private Boolean cerrada;
     private Long usuarioId;

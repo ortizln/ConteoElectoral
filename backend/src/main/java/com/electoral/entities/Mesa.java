@@ -23,8 +23,8 @@ public class Mesa {
     private SexoMesa sexo;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recinto_id", nullable = false)
-    private Recinto recinto;
+    @JoinColumn(name = "institucion_id", nullable = false)
+    private InstitucionEducativa institucion;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "elections_id", nullable = false)

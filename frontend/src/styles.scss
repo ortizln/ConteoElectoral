@@ -267,6 +267,18 @@ body {
   border: 1px solid #fecaca;
 }
 
+/* Info tooltip */
+.info-tooltip {
+  cursor: help;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-left: 0.25rem;
+}
+
+.info-tooltip:hover {
+  color: var(--secondary-color);
+}
+
 /* Utility classes */
 .text-center { text-align: center; }
 .py-3 { padding-top: 1rem; padding-bottom: 1rem; }

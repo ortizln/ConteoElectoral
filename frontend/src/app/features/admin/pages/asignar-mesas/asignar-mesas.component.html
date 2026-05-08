@@ -40,14 +40,14 @@
             <thead>
               <tr>
                 <th>Mesa</th>
-                <th>Recinto</th>
+                <th>Institución</th>
                 <th>Acción</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let m of mesasDisponibles">
                 <td>{{ m.numero }}</td>
-                <td>{{ m.recintoNombre }}</td>
+                <td>{{ m.institucionNombre }}</td>
                 <td>
                   <button class="btn btn-sm btn-primary" (click)="asignarMesa(m)">Asignar</button>
                 </td>
@@ -71,14 +71,14 @@
             <thead>
               <tr>
                 <th>Mesa</th>
-                <th>Recinto</th>
+                <th>Institución</th>
                 <th>Acción</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let m of mesasAsignadas">
                 <td>{{ m.numero }}</td>
-                <td>{{ m.recintoNombre }}</td>
+                <td>{{ m.institucionNombre }}</td>
                 <td>
                   <button class="btn btn-sm btn-danger" (click)="desasignarMesa(m)">Quitar</button>
                 </td>

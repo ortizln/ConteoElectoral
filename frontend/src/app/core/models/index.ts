@@ -104,30 +104,12 @@ export interface InstitucionEducativa {
   tipo?: string;
 }
 
-export interface Recinto {
-  id: number;
-  nombre: string;
-  direccion?: string;
-  institucionId: number;
-  institucionNombre?: string;
-  parroquiaId?: number;
-  parroquiaNombre?: string;
-  cantonId?: number;
-  cantonNombre?: string;
-  provinciaId?: number;
-  provinciaNombre?: string;
-  zonaId?: number;
-  zonaNombre?: string;
-  eleccionesId: number;
-  totalMesas?: number;
-}
-
 export interface Mesa {
   id: number;
   numero: string;
   sexo: string;
-  recintoId: number;
-  recintoNombre: string;
+  institucionId: number;
+  institucionNombre: string;
   eleccionesId: number;
   cerrada: boolean;
   usuarioId: number | null;

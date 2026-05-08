@@ -83,7 +83,7 @@ public class ParroquiaController {
         Parroquia parroquia = parroquiaService.findById(id);
         parroquia.setNombre(request.getNombre());
         parroquia.setDescripcion(request.getDescripcion());
-        Parroquia updated = parroquiaService.save(parroquia);
+        Parroquia updated = parroquiaService.update(id, parroquia);
         ParroquiaResponse response = ParroquiaResponse.builder()
                 .id(updated.getId())
                 .nombre(updated.getNombre())

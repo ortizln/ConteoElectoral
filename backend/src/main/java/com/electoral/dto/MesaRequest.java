@@ -18,8 +18,8 @@ public class MesaRequest {
     @NotNull(message = "El sexo es requerido")
     private String sexo;
     
-    @NotNull(message = "El recinto es requerido")
-    private Long recintoId;
+    @NotNull(message = "La institución es requerida")
+    private Long institucionId;
     
     @NotNull(message = "La elección es requerida")
     private Long eleccionesId;

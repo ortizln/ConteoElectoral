@@ -97,11 +97,17 @@
             <textarea class="form-control" [(ngModel)]="form.direccion" (input)="toUpper(form, 'direccion')"></textarea>
           </div>
           <div class="mb-3">
-            <label>Código:</label>
+            <label>
+              Código:
+              <span class="info-tooltip" title="Código único de identificación de la institución educativa (ej: 17H00160)">ⓘ</span>
+            </label>
             <input type="text" class="form-control" [(ngModel)]="form.codigo" (input)="toUpper(form, 'codigo')" />
           </div>
           <div class="mb-3">
-            <label>Tipo:</label>
+            <label>
+              Tipo:
+              <span class="info-tooltip" title="Tipo de institución educativa (ej: ESCUELA, COLEGIO, INSTITUTO)">ⓘ</span>
+            </label>
             <input type="text" class="form-control" [(ngModel)]="form.tipo" (input)="toUpper(form, 'tipo')" />
           </div>
         </div>

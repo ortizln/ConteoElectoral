@@ -15,7 +15,7 @@ import { Eleccion, Candidato, Mesa, Voto, Partido, Cargo } from '../../../core/m
       <header class="mesa-header">
         <div>
           <h1>Registro de Votos</h1>
-          <p>Mesa: {{ mesaActual?.numero }} - {{ mesaActual?.recintoNombre }}</p>
+          <p>Mesa: {{ mesaActual?.numero }} - {{ mesaActual?.institucionNombre }}</p>
         </div>
         <div class="header-actions">
           <span class="badge" [class.bg-success]="!mesaActual?.cerrada" [class.bg-danger]="mesaActual?.cerrada">

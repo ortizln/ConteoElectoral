@@ -60,7 +60,7 @@ public class ZonaController {
         Zona zona = zonaService.findById(id);
         zona.setNombre(request.getNombre());
         zona.setDescripcion(request.getDescripcion());
-        Zona updated = zonaService.save(zona);
+        Zona updated = zonaService.update(id, zona);
         ZonaResponse response = ZonaResponse.builder()
                 .id(updated.getId())
                 .nombre(updated.getNombre())

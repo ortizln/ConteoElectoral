@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Eleccion, Partido, Cargo, Candidato, Recinto, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa } from '../models';
+import { Eleccion, Partido, Cargo, Candidato, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -99,10 +99,6 @@ export class ApiService {
     return this.http.get<InstitucionEducativa[]>(`${this.API_URL}/instituciones/parroquia/${parroquiaId}`);
   }
 
-  getRecintosByInstitucion(institucionId: number): Observable<Recinto[]> {
-    return this.http.get<Recinto[]>(`${this.API_URL}/recintos/institucion/${institucionId}`);
-  }
-
   createInstitucion(data: Partial<InstitucionEducativa>): Observable<InstitucionEducativa> {
     return this.http.post<InstitucionEducativa>(`${this.API_URL}/instituciones`, data);
   }
@@ -191,34 +187,13 @@ export class ApiService {
     return this.http.delete<void>(`${this.API_URL}/candidatos/${id}`);
   }
 
-  // Recintos
-  getRecintos(): Observable<Recinto[]> {
-    return this.http.get<Recinto[]>(`${this.API_URL}/recintos`);
-  }
-
-  getRecintosByEleccion(eleccionId: number): Observable<Recinto[]> {
-    return this.http.get<Recinto[]>(`${this.API_URL}/recintos/eleccion/${eleccionId}`);
-  }
-
-  createRecinto(data: Partial<Recinto>): Observable<Recinto> {
-    return this.http.post<Recinto>(`${this.API_URL}/recintos`, data);
-  }
-
-  updateRecinto(id: number, data: Partial<Recinto>): Observable<Recinto> {
-    return this.http.put<Recinto>(`${this.API_URL}/recintos/${id}`, data);
-  }
-
-  deleteRecinto(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/recintos/${id}`);
-  }
-
   // Mesas
   getMesasByEleccion(eleccionId: number): Observable<Mesa[]> {
     return this.http.get<Mesa[]>(`${this.API_URL}/mesas/eleccion/${eleccionId}`);
   }
 
-  getMesasByRecinto(recintoId: number): Observable<Mesa[]> {
-    return this.http.get<Mesa[]>(`${this.API_URL}/mesas/recinto/${recintoId}`);
+  getMesasByInstitucion(institucionId: number): Observable<Mesa[]> {
+    return this.http.get<Mesa[]>(`${this.API_URL}/mesas/institucion/${institucionId}`);
   }
 
   asignarUsuarioAMesa(mesaId: number, usuarioId: number): Observable<void> {
@@ -296,7 +271,6 @@ export class ApiService {
     eleccionId: number, 
     cargoId?: number, 
     partidoId?: number, 
-    recintoId?: number,
     zonaId?: number,
     provinciaId?: number,
     cantonId?: number,
@@ -307,7 +281,6 @@ export class ApiService {
     const params = new URLSearchParams();
     if (cargoId !== undefined) params.set('cargoId', cargoId.toString());
     if (partidoId !== undefined) params.set('partidoId', partidoId.toString());
-    if (recintoId !== undefined) params.set('recintoId', recintoId.toString());
     if (zonaId !== undefined) params.set('zonaId', zonaId.toString());
     if (provinciaId !== undefined) params.set('provinciaId', provinciaId.toString());
     if (cantonId !== undefined) params.set('cantonId', cantonId.toString());

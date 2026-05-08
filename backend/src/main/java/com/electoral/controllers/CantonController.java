@@ -83,7 +83,7 @@ public class CantonController {
         Canton canton = cantonService.findById(id);
         canton.setNombre(request.getNombre());
         canton.setDescripcion(request.getDescripcion());
-        Canton updated = cantonService.save(canton);
+        Canton updated = cantonService.update(id, canton);
         CantonResponse response = CantonResponse.builder()
                 .id(updated.getId())
                 .nombre(updated.getNombre())

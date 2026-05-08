@@ -6,7 +6,7 @@ import { Chart, registerables } from 'chart.js';
 import { ApiService } from '../../core/services/api.service';
 import { WebSocketService } from '../../core/services/websocket.service';
 import { AuthService } from '../../core/services/auth.service';
-import { DashboardData, Eleccion, Cargo, Partido, Recinto, Zona, Provincia, Canton, Parroquia, InstitucionEducativa } from '../../core/models';
+import { DashboardData, Eleccion, Cargo, Partido, Zona, Provincia, Canton, Parroquia, InstitucionEducativa } from '../../core/models';
 import { Subscription } from 'rxjs';
 import { catchError, of } from 'rxjs';
 
@@ -34,7 +34,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   cantones: Canton[] = [];
   parroquias: Parroquia[] = [];
   instituciones: InstitucionEducativa[] = [];
-  recintos: Recinto[] = [];
   cargos: Cargo[] = [];
   partidos: Partido[] = [];
   
@@ -43,7 +42,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   filtroCantonId: number | null = null;
   filtroParroquiaId: number | null = null;
   filtroInstitucionId: number | null = null;
-  filtroRecintoId: number | null = null;
   filtroCargoId: number | null = null;
   filtroPartidoId: number | null = null;
   
@@ -108,12 +106,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.filtroCantonId = null;
     this.filtroParroquiaId = null;
     this.filtroInstitucionId = null;
-    this.filtroRecintoId = null;
     this.provincias = [];
     this.cantones = [];
     this.parroquias = [];
     this.instituciones = [];
-    this.recintos = [];
     
     if (this.filtroZonaId) {
       this.api.getProvinciasByZona(this.filtroZonaId).subscribe((data: Provincia[]) => {
@@ -127,11 +123,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.filtroCantonId = null;
     this.filtroParroquiaId = null;
     this.filtroInstitucionId = null;
-    this.filtroRecintoId = null;
     this.cantones = [];
     this.parroquias = [];
     this.instituciones = [];
-    this.recintos = [];
     
     if (this.filtroProvinciaId) {
       this.api.getCantonesByProvincia(this.filtroProvinciaId).subscribe((data: Canton[]) => {
@@ -144,10 +138,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   onCantonChange(): void {
     this.filtroParroquiaId = null;
     this.filtroInstitucionId = null;
-    this.filtroRecintoId = null;
     this.parroquias = [];
     this.instituciones = [];
-    this.recintos = [];
     
     if (this.filtroCantonId) {
       this.api.getParroquiasByCanton(this.filtroCantonId).subscribe((data: Parroquia[]) => {
@@ -159,9 +151,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   
   onParroquiaChange(): void {
     this.filtroInstitucionId = null;
-    this.filtroRecintoId = null;
     this.instituciones = [];
-    this.recintos = [];
     
     if (this.filtroParroquiaId) {
       this.api.getInstitucionesByParroquia(this.filtroParroquiaId).subscribe((data: InstitucionEducativa[]) => {
@@ -172,14 +162,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   
   onInstitucionChange(): void {
-    this.filtroRecintoId = null;
-    this.recintos = [];
-    
-    if (this.filtroInstitucionId) {
-      this.api.getRecintosByInstitucion(this.filtroInstitucionId).subscribe((data: Recinto[]) => {
-        this.recintos = data;
-      });
-    }
     this.aplicarFiltros();
   }
   
@@ -208,7 +190,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     const cantonId = this.filtroCantonId ?? undefined;
     const parroquiaId = this.filtroParroquiaId ?? undefined;
     const institucionId = this.filtroInstitucionId ?? undefined;
-    const recintoId = this.filtroRecintoId ?? undefined;
     const cargoId = this.filtroCargoId ?? undefined;
     const partidoId = this.filtroPartidoId ?? undefined;
     
@@ -216,7 +197,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.selectedEleccionId,
       cargoId,
       partidoId,
-      recintoId,
       zonaId,
       provinciaId,
       cantonId,
@@ -235,14 +215,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.filtroCantonId = null;
     this.filtroParroquiaId = null;
     this.filtroInstitucionId = null;
-    this.filtroRecintoId = null;
     this.filtroCargoId = null;
     this.filtroPartidoId = null;
     this.provincias = [];
     this.cantones = [];
     this.parroquias = [];
     this.instituciones = [];
-    this.recintos = [];
     this.loadDashboard();
   }
   

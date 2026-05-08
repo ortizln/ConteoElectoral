@@ -21,9 +21,9 @@ public class MesaController {
         return ResponseEntity.ok(mesaService.getMesasByEleccion(eleccionesId));
     }
 
-    @GetMapping("/recinto/{recintoId}")
-    public ResponseEntity<List<MesaResponse>> getMesasByRecinto(@PathVariable Long recintoId) {
-        return ResponseEntity.ok(mesaService.getMesasByRecinto(recintoId));
+    @GetMapping("/institucion/{institucionId}")
+    public ResponseEntity<List<MesaResponse>> getMesasByInstitucion(@PathVariable Long institucionId) {
+        return ResponseEntity.ok(mesaService.getMesasByInstitucion(institucionId));
     }
 
     @GetMapping("/{id}")

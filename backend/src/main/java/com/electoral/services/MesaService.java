@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("null")
 public class MesaService {
     private final MesaRepository mesaRepository;
-    private final RecintoRepository recintoRepository;
+    private final InstitucionEducativaRepository institucionRepository;
     private final EleccionService eleccionService;
     private final MesaUsuarioRepository mesaUsuarioRepository;
 
@@ -29,8 +29,8 @@ public class MesaService {
     }
 
     @Transactional(readOnly = true)
-    public List<MesaResponse> getMesasByRecinto(Long recintoId) {
-        return mesaRepository.findByRecintoId(recintoId).stream()
+    public List<MesaResponse> getMesasByInstitucion(Long institucionId) {
+        return mesaRepository.findByInstitucionId(institucionId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -49,17 +49,17 @@ public class MesaService {
 
     @Transactional
     public MesaResponse createMesa(MesaRequest request) {
-        if (mesaRepository.existsByNumeroAndRecintoId(request.getNumero(), request.getRecintoId())) {
-            throw new DuplicateEntityException("Ya existe una mesa con el número '" + request.getNumero() + "' en este recinto");
+        if (mesaRepository.existsByNumeroAndInstitucionId(request.getNumero(), request.getInstitucionId())) {
+            throw new DuplicateEntityException("Ya existe una mesa con el número '" + request.getNumero() + "' en esta institución");
         }
-        Recinto recinto = recintoRepository.findById(request.getRecintoId())
-                .orElseThrow(() -> new RecursoNoEncontradoException("Recinto no encontrado con ID: " + request.getRecintoId()));
+        InstitucionEducativa institucion = institucionRepository.findById(request.getInstitucionId())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Institución no encontrada con ID: " + request.getInstitucionId()));
         Eleccion eleccion = eleccionService.getEleccionEntityById(request.getEleccionesId());
 
         Mesa mesa = Mesa.builder()
                 .numero(request.getNumero())
                 .sexo(Mesa.SexoMesa.valueOf(request.getSexo()))
-                .recinto(recinto)
+                .institucion(institucion)
                 .elecciones(eleccion)
                 .cerrada(false)
                 .build();
@@ -73,8 +73,8 @@ public class MesaService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
 
         if (request.getNumero() != null && !mesa.getNumero().equals(request.getNumero()) &&
-                mesaRepository.existsByNumeroAndRecintoIdAndIdNot(request.getNumero(), mesa.getRecinto().getId(), id)) {
-            throw new DuplicateEntityException("Ya existe una mesa con el número '" + request.getNumero() + "' en este recinto");
+                mesaRepository.existsByNumeroAndInstitucionIdAndIdNot(request.getNumero(), mesa.getInstitucion().getId(), id)) {
+            throw new DuplicateEntityException("Ya existe una mesa con el número '" + request.getNumero() + "' en esta institución");
         }
         if (request.getNumero() != null) mesa.setNumero(request.getNumero());
         if (request.getSexo() != null) mesa.setSexo(Mesa.SexoMesa.valueOf(request.getSexo()));
@@ -148,8 +148,8 @@ public class MesaService {
                 .id(mesa.getId())
                 .numero(mesa.getNumero())
                 .sexo(mesa.getSexo().name())
-                .recintoId(mesa.getRecinto().getId())
-                .recintoNombre(mesa.getRecinto().getNombre())
+                .institucionId(mesa.getInstitucion().getId())
+                .institucionNombre(mesa.getInstitucion().getNombre())
                 .eleccionesId(mesa.getElecciones().getId())
                 .cerrada(mesa.getCerrada())
                 .usuarioId(usuarioId)

@@ -15,10 +15,10 @@
       </select>
     </div>
     <div class="filter-item">
-      <label>Recinto:</label>
-      <select class="form-select" [(ngModel)]="filterRecintoId" (change)="filtrarPorRecinto()">
-        <option [ngValue]="null">Todos</option>
-        <option *ngFor="let r of recintos" [value]="r.id">{{ r.nombre }}</option>
+      <label>Institución:</label>
+      <select class="form-select" [(ngModel)]="filterInstitucionId" (change)="filtrarPorInstitucion()">
+        <option [ngValue]="null">Todas</option>
+        <option *ngFor="let i of instituciones" [value]="i.id">{{ i.nombre }}</option>
       </select>
     </div>
     <div class="filter-item">
@@ -32,7 +32,7 @@
       <tr>
         <th>#</th>
         <th class="sortable" (click)="sort('numero')">Número {{ sortColumn === 'numero' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
-        <th class="sortable" (click)="sort('recintoNombre')">Recinto {{ sortColumn === 'recintoNombre' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
+        <th class="sortable" (click)="sort('institucionNombre')">Institución {{ sortColumn === 'institucionNombre' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('sexo')">Sexo {{ sortColumn === 'sexo' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('cerrada')">Estado {{ sortColumn === 'cerrada' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th>Acciones</th>
@@ -42,7 +42,7 @@
       <tr *ngFor="let m of mesasPaginadas; index as i">
         <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
         <td>{{ m.numero }}</td>
-        <td>{{ m.recintoNombre }}</td>
+        <td>{{ m.institucionNombre }}</td>
         <td><span class="badge" [class]="m.sexo === 'MIXTA' ? 'bg-info' : m.sexo === 'HOMBRES' ? 'bg-primary' : 'bg-warning'">{{ m.sexo }}</span></td>
         <td>
           <span [class]="m.cerrada ? 'badge bg-danger' : 'badge bg-success'">
@@ -98,10 +98,10 @@
             <input type="text" class="form-control" [(ngModel)]="form.numero" (input)="toUpper(form, 'numero')" />
           </div>
           <div class="mb-3">
-            <label>Recinto:</label>
-            <select class="form-select" [(ngModel)]="form.recintoId">
+            <label>Institución:</label>
+            <select class="form-select" [(ngModel)]="form.institucionId">
               <option [ngValue]="null">Seleccione...</option>
-              <option *ngFor="let r of recintos" [value]="r.id">{{ r.nombre }}</option>
+              <option *ngFor="let i of instituciones" [value]="i.id">{{ i.nombre }}</option>
             </select>
           </div>
           <div class="mb-3">

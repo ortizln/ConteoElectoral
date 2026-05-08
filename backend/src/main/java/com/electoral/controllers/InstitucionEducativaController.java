@@ -95,7 +95,7 @@ public class InstitucionEducativaController {
         institucion.setDireccion(request.getDireccion());
         institucion.setCodigo(request.getCodigo());
         institucion.setTipo(request.getTipo());
-        InstitucionEducativa updated = institucionService.save(institucion);
+        InstitucionEducativa updated = institucionService.update(id, institucion);
         InstitucionEducativaResponse response = InstitucionEducativaResponse.builder()
                 .id(updated.getId())
                 .nombre(updated.getNombre())

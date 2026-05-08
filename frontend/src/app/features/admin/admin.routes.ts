@@ -43,10 +43,6 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/candidatos/candidatos.component').then(m => m.CandidatosComponent) 
       },
       { 
-        path: 'recintos', 
-        loadComponent: () => import('./pages/recintos/recintos.component').then(m => m.RecintosComponent) 
-      },
-      { 
         path: 'mesas', 
         loadComponent: () => import('./pages/mesas/mesas.component').then(m => m.MesasComponent) 
       },

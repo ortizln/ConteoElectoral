@@ -3,7 +3,6 @@ package com.electoral.entities;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "instituciones_educativas")
@@ -34,9 +33,6 @@ public class InstitucionEducativa {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    @OneToMany(mappedBy = "institucion", cascade = CascadeType.ALL)
-    private List<Recinto> recintos;
 
     @PrePersist
     protected void onCreate() {

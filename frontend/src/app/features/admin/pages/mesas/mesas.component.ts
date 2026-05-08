@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
-import { Eleccion, Recinto, Mesa } from '../../../../core/models';
+import { Eleccion, InstitucionEducativa, Mesa } from '../../../../core/models';
 
 @Component({
   selector: 'app-mesas',
@@ -14,12 +14,12 @@ import { Eleccion, Recinto, Mesa } from '../../../../core/models';
 export class MesasComponent implements OnInit {
   mesas: Mesa[] = [];
   elecciones: Eleccion[] = [];
-  recintos: Recinto[] = [];
+  instituciones: InstitucionEducativa[] = [];
   showModal = false;
   editMode = false;
   selectedId: number | null = null;
-  form: any = { numero: '', sexo: 'MIXTA', recintoId: null, eleccionesId: null };
-  filterRecintoId: number | null = null;
+  form: any = { numero: '', sexo: 'MIXTA', institucionId: null, eleccionesId: null };
+  filterInstitucionId: number | null = null;
   sortColumn: string = '';
   sortDirection: string = 'asc';
   searchText: string = '';
@@ -32,6 +32,7 @@ export class MesasComponent implements OnInit {
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
+    this.api.getInstituciones().subscribe((d: InstitucionEducativa[]) => this.instituciones = d);
     this.api.getElecciones().subscribe((e: Eleccion[]) => {
       this.elecciones = e;
       if (e.length > 0) {
@@ -42,14 +43,13 @@ export class MesasComponent implements OnInit {
   }
 
   load(eleccionId: number): void {
-    const obs = this.filterRecintoId
-      ? this.api.getMesasByRecinto(this.filterRecintoId)
+    const obs = this.filterInstitucionId
+      ? this.api.getMesasByInstitucion(this.filterInstitucionId)
       : this.api.getMesasByEleccion(eleccionId);
     obs.subscribe((d: Mesa[]) => this.mesas = d);
-    this.api.getRecintosByEleccion(eleccionId).subscribe((d: Recinto[]) => this.recintos = d);
   }
 
-  filtrarPorRecinto(): void {
+  filtrarPorInstitucion(): void {
     if (this.form.eleccionesId) this.load(this.form.eleccionesId);
     this.currentPage = 1;
   }
@@ -120,7 +120,7 @@ export class MesasComponent implements OnInit {
 
   openModal(): void {
     this.editMode = false;
-    this.form = { numero: '', sexo: 'MIXTA', recintoId: this.recintos[0]?.id, eleccionesId: this.form.eleccionesId };
+    this.form = { numero: '', sexo: 'MIXTA', institucionId: this.instituciones[0]?.id, eleccionesId: this.form.eleccionesId };
     this.errorMessage = '';
     this.showModal = true;
   }
@@ -128,7 +128,7 @@ export class MesasComponent implements OnInit {
   edit(m: Mesa): void {
     this.editMode = true;
     this.selectedId = m.id;
-    this.form = { numero: m.numero, sexo: m.sexo, recintoId: m.recintoId, eleccionesId: m.eleccionesId };
+    this.form = { numero: m.numero, sexo: m.sexo, institucionId: m.institucionId, eleccionesId: m.eleccionesId };
     this.errorMessage = '';
     this.showModal = true;
   }
