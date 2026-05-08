@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 public interface ZonaRepository extends JpaRepository<Zona, Long> {
     boolean existsByNombre(String nombre);
     boolean existsByNombreAndIdNot(String nombre, Long id);
+    java.util.Optional<Zona> findByNombre(String nombre);
 }

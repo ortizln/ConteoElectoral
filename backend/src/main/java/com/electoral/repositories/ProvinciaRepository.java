@@ -10,4 +10,5 @@ public interface ProvinciaRepository extends JpaRepository<Provincia, Long> {
     List<Provincia> findByZonaId(Long zonaId);
     boolean existsByNombreAndZonaId(String nombre, Long zonaId);
     boolean existsByNombreAndZonaIdAndIdNot(String nombre, Long zonaId, Long id);
+    java.util.Optional<Provincia> findByNombreAndZonaId(String nombre, Long zonaId);
 }

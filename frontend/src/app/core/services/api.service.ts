@@ -262,6 +262,13 @@ export class ApiService {
     return this.http.put<Voto>(`${this.API_URL}/votos/${id}`, data);
   }
 
+  // Importar Excel
+  importarExcel(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<any>(`${this.API_URL}/import/excel`, formData);
+  }
+
   // Dashboard
   getDashboard(eleccionId: number): Observable<any> {
     return this.http.get<any>(`${this.API_URL}/dashboard/eleccion/${eleccionId}`);

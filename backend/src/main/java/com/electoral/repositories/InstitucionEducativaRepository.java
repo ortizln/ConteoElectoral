@@ -12,4 +12,5 @@ public interface InstitucionEducativaRepository extends JpaRepository<Institucio
     boolean existsByNombreAndIdNot(String nombre, Long id);
     boolean existsByCodigo(String codigo);
     boolean existsByCodigoAndIdNot(String codigo, Long id);
+    java.util.Optional<InstitucionEducativa> findByNombre(String nombre);
 }

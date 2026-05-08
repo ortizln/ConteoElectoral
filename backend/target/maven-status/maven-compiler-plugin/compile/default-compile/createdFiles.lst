@@ -16,10 +16,7 @@ com\electoral\controllers\AuthController.class
 com\electoral\dto\UsuarioRequest.class
 com\electoral\entities\Candidato$CandidatoBuilder.class
 com\electoral\exception\RecursoNoEncontradoException.class
-com\electoral\services\RecintoService.class
-com\electoral\entities\Recinto.class
 com\electoral\repositories\MesaRepository.class
-com\electoral\dto\RecintoRequest$RecintoRequestBuilder.class
 com\electoral\dto\MesaRequest.class
 com\electoral\repositories\ParroquiaRepository.class
 com\electoral\entities\Mesa$MesaBuilder.class
@@ -56,8 +53,8 @@ com\electoral\entities\Usuario$UsuarioBuilder.class
 com\electoral\dto\ResultadoCandidato$ResultadoCandidatoBuilder.class
 com\electoral\exception\MesaCerradaException.class
 com\electoral\entities\Partido.class
-com\electoral\dto\RecintoRequest.class
 com\electoral\controllers\CandidatoController.class
+com\electoral\services\ImportService$1.class
 com\electoral\dto\InstitucionEducativaResponse$InstitucionEducativaResponseBuilder.class
 com\electoral\services\ParroquiaService.class
 com\electoral\controllers\ZonaController.class
@@ -74,7 +71,6 @@ com\electoral\repositories\InstitucionEducativaRepository.class
 com\electoral\entities\Rol.class
 com\electoral\dto\CandidatoRequest$CandidatoRequestBuilder.class
 com\electoral\dto\ProvinciaResponse.class
-com\electoral\dto\RecintoResponse$RecintoResponseBuilder.class
 com\electoral\controllers\InstitucionEducativaController.class
 com\electoral\controllers\UsuarioController.class
 com\electoral\controllers\WebSocketController.class
@@ -87,7 +83,6 @@ com\electoral\dto\LoginRequest$LoginRequestBuilder.class
 com\electoral\controllers\CargoController.class
 com\electoral\services\PartidoService.class
 com\electoral\controllers\DashboardController.class
-com\electoral\repositories\RecintoRepository.class
 com\electoral\config\SecurityConfig.class
 com\electoral\dto\ResetPasswordRequest.class
 com\electoral\entities\Auditoria$AuditoriaBuilder.class
@@ -96,7 +91,6 @@ com\electoral\dto\LoginResponse.class
 com\electoral\dto\EleccionResponse$EleccionResponseBuilder.class
 com\electoral\entities\Voto.class
 com\electoral\dto\ZonaRequest.class
-com\electoral\controllers\RecintoController.class
 com\electoral\dto\CargoResponse.class
 com\electoral\entities\Provincia.class
 com\electoral\exception\AccesoDenegadoException.class
@@ -122,9 +116,7 @@ com\electoral\dto\DashboardResponse.class
 com\electoral\services\CargoService.class
 com\electoral\dto\DashboardResponse$DashboardResponseBuilder.class
 com\electoral\controllers\VotoController.class
-com\electoral\entities\Recinto$RecintoBuilder.class
 com\electoral\dto\PartidoResponse$PartidoResponseBuilder.class
-com\electoral\dto\RecintoResponse.class
 com\electoral\dto\CantonRequest$CantonRequestBuilder.class
 com\electoral\dto\InstitucionEducativaResponse.class
 com\electoral\dto\ParroquiaResponse$ParroquiaResponseBuilder.class

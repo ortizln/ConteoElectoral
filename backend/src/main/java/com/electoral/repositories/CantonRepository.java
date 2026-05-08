@@ -10,4 +10,5 @@ public interface CantonRepository extends JpaRepository<Canton, Long> {
     List<Canton> findByProvinciaId(Long provinciaId);
     boolean existsByNombreAndProvinciaId(String nombre, Long provinciaId);
     boolean existsByNombreAndProvinciaIdAndIdNot(String nombre, Long provinciaId, Long id);
+    java.util.Optional<Canton> findByNombreAndProvinciaId(String nombre, Long provinciaId);
 }
