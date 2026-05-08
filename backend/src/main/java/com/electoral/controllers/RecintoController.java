@@ -21,6 +21,11 @@ public class RecintoController {
         return ResponseEntity.ok(recintoService.getRecintosByEleccion(eleccionesId));
     }
 
+    @GetMapping("/institucion/{institucionId}")
+    public ResponseEntity<List<RecintoResponse>> getRecintosByInstitucion(@PathVariable Long institucionId) {
+        return ResponseEntity.ok(recintoService.getRecintosByInstitucion(institucionId));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<RecintoResponse> getRecintoById(@PathVariable Long id) {
         return ResponseEntity.ok(recintoService.getRecintoById(id));

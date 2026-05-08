@@ -2,6 +2,7 @@ package com.electoral.services;
 
 import com.electoral.dto.*;
 import com.electoral.entities.*;
+import com.electoral.exception.DuplicateEntityException;
 import com.electoral.exception.RecursoNoEncontradoException;
 import com.electoral.repositories.*;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,12 @@ public class RecintoService {
                 .collect(Collectors.toList());
     }
 
+    public List<RecintoResponse> getRecintosByInstitucion(Long institucionId) {
+        return recintoRepository.findByInstitucionId(institucionId).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     public RecintoResponse getRecintoById(Long id) {
         Recinto recinto = recintoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Recinto no encontrado con ID: " + id));
@@ -33,6 +40,9 @@ public class RecintoService {
 
     @Transactional
     public RecintoResponse createRecinto(RecintoRequest request) {
+        if (recintoRepository.existsByNombreAndEleccionesId(request.getNombre(), request.getEleccionesId())) {
+            throw new DuplicateEntityException("Ya existe un recinto con el nombre '" + request.getNombre() + "' en esta elección");
+        }
         Eleccion eleccion = eleccionService.getEleccionEntityById(request.getEleccionesId());
         InstitucionEducativa institucion = null;
         if (request.getInstitucionId() != null) {
@@ -51,6 +61,10 @@ public class RecintoService {
     public RecintoResponse updateRecinto(Long id, RecintoRequest request) {
         Recinto recinto = recintoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Recinto no encontrado con ID: " + id));
+        if (!recinto.getNombre().equals(request.getNombre()) &&
+                recintoRepository.existsByNombreAndEleccionesIdAndIdNot(request.getNombre(), recinto.getElecciones().getId(), id)) {
+            throw new DuplicateEntityException("Ya existe un recinto con el nombre '" + request.getNombre() + "' en esta elección");
+        }
         recinto.setNombre(request.getNombre());
         recinto.setDireccion(request.getDireccion());
         return mapToResponse(recintoRepository.save(recinto));

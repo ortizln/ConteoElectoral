@@ -16,7 +16,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    open-in-view: false
+    open-in-view: true
 
 # JWT Configuration - Base64 encoded secret key (minimum 256 bits)
 jwt:

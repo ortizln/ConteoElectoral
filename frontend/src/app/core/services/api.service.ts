@@ -222,11 +222,11 @@ export class ApiService {
   }
 
   asignarUsuarioAMesa(mesaId: number, usuarioId: number): Observable<void> {
-    return this.http.post<void>(`${this.API_URL}/mesas/${mesaId}/asignar-usuario`, { usuarioId });
+    return this.http.post<void>(`${this.API_URL}/mesas/${mesaId}/asignar-usuario/${usuarioId}`, {});
   }
 
   desasignarUsuarioDeMesa(mesaId: number, usuarioId: number): Observable<void> {
-    return this.http.post<void>(`${this.API_URL}/mesas/${mesaId}/desasignar-usuario`, { usuarioId });
+    return this.http.delete<void>(`${this.API_URL}/mesas/${mesaId}/asignar-usuario/${usuarioId}`);
   }
 
   createMesa(data: Partial<Mesa>): Observable<Mesa> {
@@ -238,7 +238,7 @@ export class ApiService {
   }
 
   cerrarMesa(id: number): Observable<void> {
-    return this.http.put<void>(`${this.API_URL}/mesas/${id}/cerrar`, {});
+    return this.http.post<void>(`${this.API_URL}/mesas/${id}/cerrar`, {});
   }
 
   deleteMesa(id: number): Observable<void> {

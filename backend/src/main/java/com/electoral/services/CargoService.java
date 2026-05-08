@@ -2,6 +2,7 @@ package com.electoral.services;
 
 import com.electoral.dto.*;
 import com.electoral.entities.*;
+import com.electoral.exception.DuplicateEntityException;
 import com.electoral.exception.RecursoNoEncontradoException;
 import com.electoral.repositories.*;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,9 @@ public class CargoService {
 
     @Transactional
     public CargoResponse createCargo(CargoRequest request) {
+        if (cargoRepository.existsByNombreAndEleccionesId(request.getNombre(), request.getEleccionesId())) {
+            throw new DuplicateEntityException("Ya existe un cargo con el nombre '" + request.getNombre() + "' en esta elección");
+        }
         Eleccion eleccion = eleccionService.getEleccionEntityById(request.getEleccionesId());
         Cargo cargo = Cargo.builder()
                 .nombre(request.getNombre())
@@ -44,6 +48,10 @@ public class CargoService {
     public CargoResponse updateCargo(Long id, CargoRequest request) {
         Cargo cargo = cargoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Cargo no encontrado con ID: " + id));
+        if (!cargo.getNombre().equals(request.getNombre()) &&
+                cargoRepository.existsByNombreAndEleccionesIdAndIdNot(request.getNombre(), cargo.getElecciones().getId(), id)) {
+            throw new DuplicateEntityException("Ya existe un cargo con el nombre '" + request.getNombre() + "' en esta elección");
+        }
         cargo.setNombre(request.getNombre());
         cargo.setDescripcion(request.getDescripcion());
         return mapToResponse(cargoRepository.save(cargo));

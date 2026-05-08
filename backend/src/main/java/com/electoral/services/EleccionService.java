@@ -2,6 +2,7 @@ package com.electoral.services;
 
 import com.electoral.dto.*;
 import com.electoral.entities.*;
+import com.electoral.exception.DuplicateEntityException;
 import com.electoral.exception.RecursoNoEncontradoException;
 import com.electoral.repositories.*;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,9 @@ public class EleccionService {
 
     @Transactional
     public EleccionResponse createEleccion(EleccionRequest request) {
+        if (eleccionRepository.existsByNombre(request.getNombre())) {
+            throw new DuplicateEntityException("Ya existe una elección con el nombre '" + request.getNombre() + "'");
+        }
         Eleccion eleccion = Eleccion.builder()
                 .nombre(request.getNombre())
                 .descripcion(request.getDescripcion())
@@ -62,7 +66,10 @@ public class EleccionService {
     public EleccionResponse updateEleccion(Long id, EleccionRequest request) {
         Eleccion eleccion = eleccionRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Elección no encontrada con ID: " + id));
-
+        if (!eleccion.getNombre().equals(request.getNombre()) &&
+                eleccionRepository.existsByNombreAndIdNot(request.getNombre(), id)) {
+            throw new DuplicateEntityException("Ya existe una elección con el nombre '" + request.getNombre() + "'");
+        }
         eleccion.setNombre(request.getNombre());
         eleccion.setDescripcion(request.getDescripcion());
         eleccion.setFechaInicio(request.getFechaInicio());

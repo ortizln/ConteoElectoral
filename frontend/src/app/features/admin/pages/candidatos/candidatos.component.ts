@@ -20,6 +20,14 @@ export class CandidatosComponent implements OnInit {
   editMode = false;
   selectedId: number | null = null;
   form: any = { nombre: '', apellido: '', partidoId: null, cargoId: null, eleccionesId: null };
+  sortColumn: string = '';
+  sortDirection: string = 'asc';
+  searchText: string = '';
+  currentPage: number = 1;
+  pageSize: number = 10;
+  pageSizes: number[] = [5, 10, 25, 50];
+  Math = Math;
+  errorMessage: string = '';
 
   constructor(private api: ApiService) {}
 
@@ -39,9 +47,66 @@ export class CandidatosComponent implements OnInit {
     this.api.getCargosByEleccion(eleccionId).subscribe((d: Cargo[]) => this.cargos = d);
   }
 
+  sort(column: string): void {
+    if (this.sortColumn === column) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = column;
+      this.sortDirection = 'asc';
+    }
+    this.currentPage = 1;
+  }
+
+  get candidatosOrdenados(): Candidato[] {
+    if (!this.sortColumn) return this.candidatos;
+    return [...this.candidatos].sort((a, b) => {
+      const valA = (a as any)[this.sortColumn];
+      const valB = (b as any)[this.sortColumn];
+      if (valA == null) return 1;
+      if (valB == null) return -1;
+      const cmp = String(valA).toLowerCase().localeCompare(String(valB).toLowerCase());
+      return this.sortDirection === 'asc' ? cmp : -cmp;
+    });
+  }
+
+  get candidatosFiltrados(): Candidato[] {
+    if (!this.searchText) return this.candidatosOrdenados;
+    const term = this.searchText.toLowerCase();
+    return this.candidatosOrdenados.filter(item =>
+      Object.values(item).some(v => v != null && String(v).toLowerCase().includes(term))
+    );
+  }
+
+  get candidatosPaginados(): Candidato[] {
+    const start = (this.currentPage - 1) * this.pageSize;
+    return this.candidatosFiltrados.slice(start, start + this.pageSize);
+  }
+
+  get totalPages(): number {
+    return Math.ceil(this.candidatosFiltrados.length / this.pageSize) || 1;
+  }
+
+  get pages(): number[] {
+    const total = this.totalPages;
+    const current = this.currentPage;
+    const maxVisible = 5;
+    let start = Math.max(1, current - 2);
+    let end = Math.min(total, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+    return Array.from({length: end - start + 1}, (_, i) => start + i);
+  }
+
+  goToPage(p: number): void { this.currentPage = Math.max(1, Math.min(p, this.totalPages)); }
+  prevPage(): void { this.goToPage(this.currentPage - 1); }
+  nextPage(): void { this.goToPage(this.currentPage + 1); }
+  onPageSizeChange(): void { this.currentPage = 1; }
+
   openModal(): void {
     this.editMode = false;
     this.form = { nombre: '', apellido: '', partidoId: null, cargoId: this.cargos[0]?.id, eleccionesId: this.form.eleccionesId };
+    this.errorMessage = '';
     this.showModal = true;
   }
 
@@ -49,21 +114,23 @@ export class CandidatosComponent implements OnInit {
     this.editMode = true;
     this.selectedId = c.id;
     this.form = { nombre: c.nombre, apellido: c.apellido, partidoId: c.partidoId, cargoId: c.cargoId, eleccionesId: c.eleccionesId };
+    this.errorMessage = '';
     this.showModal = true;
   }
 
-  closeModal(): void { this.showModal = false; this.selectedId = null; }
+  closeModal(): void { this.showModal = false; this.selectedId = null; this.errorMessage = ''; }
 
   save(): void {
+    this.errorMessage = '';
     if (this.editMode && this.selectedId) {
-      this.api.updateCandidato(this.selectedId, this.form).subscribe(() => {
-        this.load(this.form.eleccionesId);
-        this.closeModal();
+      this.api.updateCandidato(this.selectedId, this.form).subscribe({
+        next: () => { this.load(this.form.eleccionesId); this.closeModal(); },
+        error: (err) => { this.errorMessage = err.error?.message || 'Error al guardar. Intente de nuevo.'; }
       });
     } else {
-      this.api.createCandidato(this.form).subscribe(() => {
-        this.load(this.form.eleccionesId);
-        this.closeModal();
+      this.api.createCandidato(this.form).subscribe({
+        next: () => { this.load(this.form.eleccionesId); this.closeModal(); },
+        error: (err) => { this.errorMessage = err.error?.message || 'Error al guardar. Intente de nuevo.'; }
       });
     }
   }

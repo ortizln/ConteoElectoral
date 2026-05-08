@@ -2,8 +2,8 @@ package com.electoral.services;
 
 import com.electoral.dto.*;
 import com.electoral.entities.*;
+import com.electoral.exception.DuplicateEntityException;
 import com.electoral.exception.RecursoNoEncontradoException;
-import com.electoral.exception.ValidacionException;
 import com.electoral.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -55,7 +55,7 @@ public class CandidatoService {
             boolean existeCandidato = candidatoRepository.existsByEleccionesIdAndPartidoIdAndCargoId(
                 request.getEleccionesId(), request.getPartidoId(), request.getCargoId());
             if (existeCandidato) {
-                throw new ValidacionException("Ya existe un candidato del partido '" + partido.getNombre() + 
+                throw new DuplicateEntityException("Ya existe un candidato del partido '" + partido.getNombre() + 
                     "' para el cargo de '" + cargo.getNombre() + "' en esta elección");
             }
         }
@@ -76,7 +76,16 @@ public class CandidatoService {
     public CandidatoResponse updateCandidato(Long id, CandidatoRequest request) {
         Candidato candidato = candidatoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Candidato no encontrado con ID: " + id));
-        
+
+        Long partidoId = request.getPartidoId() != null ? request.getPartidoId() :
+                (candidato.getPartido() != null ? candidato.getPartido().getId() : null);
+        if (partidoId != null && request.getCargoId() != null &&
+                (!partidoId.equals(candidato.getPartido() != null ? candidato.getPartido().getId() : null) ||
+                 !request.getCargoId().equals(candidato.getCargo().getId())) &&
+                candidatoRepository.existsByEleccionesIdAndPartidoIdAndCargoId(
+                    candidato.getElecciones().getId(), partidoId, request.getCargoId())) {
+            throw new DuplicateEntityException("Ya existe un candidato para este partido y cargo en esta elección");
+        }
         candidato.setNombre(request.getNombre());
         candidato.setApellido(request.getApellido());
         candidato.setFotoUrl(request.getFotoUrl());

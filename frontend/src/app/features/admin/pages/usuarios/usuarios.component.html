@@ -5,21 +5,37 @@
       <span class="btn-icon">+</span> Nuevo Usuario
     </button>
   </div>
-  
+
+  <div class="filters-bar mb-4">
+    <div class="filter-item">
+      <label>Rol:</label>
+      <select class="form-select" [(ngModel)]="filterRol" (change)="filtrarPorRol()">
+        <option [ngValue]="null">Todos</option>
+        <option *ngFor="let r of roles" [value]="r.value">{{ r.label }}</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label>Buscar:</label>
+      <input type="text" class="form-control" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
+    </div>
+  </div>
+
   <table class="table table-striped">
     <thead>
       <tr>
-        <th>Username</th>
-        <th>Nombre</th>
-        <th>Apellido</th>
-        <th>Email</th>
-        <th>Rol</th>
-        <th>Estado</th>
+        <th>#</th>
+        <th class="sortable" (click)="sort('username')">Username {{ sortColumn === 'username' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
+        <th class="sortable" (click)="sort('nombre')">Nombre {{ sortColumn === 'nombre' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
+        <th class="sortable" (click)="sort('apellido')">Apellido {{ sortColumn === 'apellido' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
+        <th class="sortable" (click)="sort('email')">Email {{ sortColumn === 'email' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
+        <th class="sortable" (click)="sort('rol')">Rol {{ sortColumn === 'rol' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
+        <th class="sortable" (click)="sort('activo')">Estado {{ sortColumn === 'activo' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let u of usuarios">
+      <tr *ngFor="let u of usuariosPaginados; index as i">
+        <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
         <td>{{ u.username }}</td>
         <td>{{ u.nombre }}</td>
         <td>{{ u.apellido }}</td>
@@ -36,8 +52,32 @@
           <button class="btn btn-sm btn-danger" (click)="deleteUsuario(u)">Eliminar</button>
         </td>
       </tr>
+      <tr *ngIf="usuariosFiltrados.length === 0">
+        <td colspan="8" class="text-center py-3">No se encontraron registros</td>
+      </tr>
     </tbody>
   </table>
+
+  <div class="pagination-bar">
+    <div class="pagination-info">
+      Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, usuariosFiltrados.length) }} de {{ usuariosFiltrados.length }} registros
+    </div>
+    <div class="pagination-controls">
+      <button (click)="goToPage(1)" [disabled]="currentPage === 1">&laquo;&laquo;</button>
+      <button (click)="prevPage()" [disabled]="currentPage === 1">&laquo;</button>
+      <span *ngFor="let p of pages">
+        <button (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
+      </span>
+      <button (click)="nextPage()" [disabled]="currentPage === totalPages">&raquo;</button>
+      <button (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages">&raquo;&raquo;</button>
+    </div>
+    <div class="pagination-size">
+      <label>Filas:</label>
+      <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+        <option *ngFor="let s of pageSizes" [value]="s">{{ s }}</option>
+      </select>
+    </div>
+  </div>
 
   <!-- Create/Edit Modal -->
   <div class="modal" *ngIf="showModal">
@@ -48,6 +88,9 @@
           <button class="btn-close" (click)="closeModal()">×</button>
         </div>
         <div class="modal-body">
+          <div class="mb-3" *ngIf="errorMessage">
+            <div class="alert alert-danger">{{ errorMessage }}</div>
+          </div>
           <div class="mb-3" *ngIf="!editingUser">
             <label>Username:</label>
             <input type="text" class="form-control" [(ngModel)]="form.username" />

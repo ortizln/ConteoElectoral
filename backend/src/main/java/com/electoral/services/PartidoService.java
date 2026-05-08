@@ -2,6 +2,7 @@ package com.electoral.services;
 
 import com.electoral.dto.*;
 import com.electoral.entities.*;
+import com.electoral.exception.DuplicateEntityException;
 import com.electoral.exception.RecursoNoEncontradoException;
 import com.electoral.repositories.*;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,9 @@ public class PartidoService {
 
     @Transactional
     public PartidoResponse createPartido(PartidoRequest request) {
+        if (partidoRepository.existsByNombreAndEleccionesId(request.getNombre(), request.getEleccionesId())) {
+            throw new DuplicateEntityException("Ya existe un partido con el nombre '" + request.getNombre() + "' en esta elección");
+        }
         Eleccion eleccion = eleccionService.getEleccionEntityById(request.getEleccionesId());
         Partido partido = Partido.builder()
                 .nombre(request.getNombre())
@@ -45,6 +49,10 @@ public class PartidoService {
     public PartidoResponse updatePartido(Long id, PartidoRequest request) {
         Partido partido = partidoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Partido no encontrado con ID: " + id));
+        if (!partido.getNombre().equals(request.getNombre()) &&
+                partidoRepository.existsByNombreAndEleccionesIdAndIdNot(request.getNombre(), partido.getElecciones().getId(), id)) {
+            throw new DuplicateEntityException("Ya existe un partido con el nombre '" + request.getNombre() + "' en esta elección");
+        }
         partido.setNombre(request.getNombre());
         partido.setSigla(request.getSigla());
         partido.setLogoUrl(request.getLogoUrl());

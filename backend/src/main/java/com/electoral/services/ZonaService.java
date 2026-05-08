@@ -1,6 +1,7 @@
 package com.electoral.services;
 
 import com.electoral.entities.Zona;
+import com.electoral.exception.DuplicateEntityException;
 import com.electoral.repositories.ZonaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,22 @@ public class ZonaService {
 
     @Transactional
     public Zona save(Zona zona) {
+        if (zonaRepository.existsByNombre(zona.getNombre())) {
+            throw new DuplicateEntityException("Ya existe una zona con el nombre '" + zona.getNombre() + "'");
+        }
         return zonaRepository.save(zona);
+    }
+
+    @Transactional
+    public Zona update(Long id, Zona zona) {
+        Zona existing = zonaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Zona no encontrada"));
+        if (!existing.getNombre().equals(zona.getNombre()) && zonaRepository.existsByNombre(zona.getNombre())) {
+            throw new DuplicateEntityException("Ya existe una zona con el nombre '" + zona.getNombre() + "'");
+        }
+        existing.setNombre(zona.getNombre());
+        existing.setDescripcion(zona.getDescripcion());
+        return zonaRepository.save(existing);
     }
 
     @Transactional

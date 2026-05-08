@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface CargoRepository extends JpaRepository<Cargo, Long> {
     List<Cargo> findByEleccionesId(Long eleccionesId);
+    boolean existsByNombreAndEleccionesId(String nombre, Long eleccionesId);
+    boolean existsByNombreAndEleccionesIdAndIdNot(String nombre, Long eleccionesId, Long id);
 }

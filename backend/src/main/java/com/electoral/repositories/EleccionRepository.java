@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface EleccionRepository extends JpaRepository<Eleccion, Long> {
     List<Eleccion> findByActivaTrue();
     Optional<Eleccion> findFirstByActivaTrue();
+    boolean existsByNombre(String nombre);
+    boolean existsByNombreAndIdNot(String nombre, Long id);
 }

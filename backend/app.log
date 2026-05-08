@@ -1,0 +1,30 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.1)
+
+2026-05-08T12:06:59.483-05:00  INFO 16848 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : Starting ConteoElectoralApplication using Java 21.0.10 with PID 16848 (C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\target\conteo-electoral-1.0.0.jar started by Alexi in C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral)
+2026-05-08T12:06:59.485-05:00 DEBUG 16848 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : Running with Spring Boot v3.2.1, Spring v6.1.2
+2026-05-08T12:06:59.486-05:00  INFO 16848 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : No active profile set, falling back to 1 default profile: "default"
+2026-05-08T12:07:00.386-05:00  INFO 16848 --- [conteo-electoral] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-08T12:07:00.448-05:00  INFO 16848 --- [conteo-electoral] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 55 ms. Found 16 JPA repository interfaces.
+2026-05-08T12:07:01.302-05:00  INFO 16848 --- [conteo-electoral] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8081 (http)
+2026-05-08T12:07:01.323-05:00  INFO 16848 --- [conteo-electoral] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-05-08T12:07:01.324-05:00  INFO 16848 --- [conteo-electoral] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.17]
+2026-05-08T12:07:01.396-05:00  INFO 16848 --- [conteo-electoral] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-05-08T12:07:01.397-05:00  INFO 16848 --- [conteo-electoral] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1853 ms
+2026-05-08T12:07:01.611-05:00  INFO 16848 --- [conteo-electoral] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-08T12:07:01.669-05:00  INFO 16848 --- [conteo-electoral] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.1.Final
+2026-05-08T12:07:01.694-05:00  INFO 16848 --- [conteo-electoral] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-05-08T12:07:01.987-05:00  INFO 16848 --- [conteo-electoral] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-08T12:07:02.024-05:00  INFO 16848 --- [conteo-electoral] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-05-08T12:07:02.353-05:00  INFO 16848 --- [conteo-electoral] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@e91facf
+2026-05-08T12:07:02.354-05:00  INFO 16848 --- [conteo-electoral] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-05-08T12:07:03.509-05:00  INFO 16848 --- [conteo-electoral] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-08T12:07:03.719-05:00  INFO 16848 --- [conteo-electoral] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-08T12:07:03.967-05:00  INFO 16848 --- [conteo-electoral] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-05-08T12:07:04.323-05:00 DEBUG 16848 --- [conteo-electoral] [           main] c.e.security.JwtAuthenticationFilter     : Filter 'jwtAuthenticationFilter' configured for use

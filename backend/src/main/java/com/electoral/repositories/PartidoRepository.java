@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface PartidoRepository extends JpaRepository<Partido, Long> {
     List<Partido> findByEleccionesId(Long eleccionesId);
+    boolean existsByNombreAndEleccionesId(String nombre, Long eleccionesId);
+    boolean existsByNombreAndEleccionesIdAndIdNot(String nombre, Long eleccionesId, Long id);
 }

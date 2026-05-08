@@ -2,6 +2,7 @@ package com.electoral.services;
 
 import com.electoral.dto.*;
 import com.electoral.entities.*;
+import com.electoral.exception.DuplicateEntityException;
 import com.electoral.exception.RecursoNoEncontradoException;
 import com.electoral.repositories.*;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,9 @@ public class MesaService {
 
     @Transactional
     public MesaResponse createMesa(MesaRequest request) {
+        if (mesaRepository.existsByNumeroAndRecintoId(request.getNumero(), request.getRecintoId())) {
+            throw new DuplicateEntityException("Ya existe una mesa con el número '" + request.getNumero() + "' en este recinto");
+        }
         Recinto recinto = recintoRepository.findById(request.getRecintoId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Recinto no encontrado con ID: " + request.getRecintoId()));
         Eleccion eleccion = eleccionService.getEleccionEntityById(request.getEleccionesId());
@@ -68,6 +72,10 @@ public class MesaService {
         Mesa mesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
 
+        if (request.getNumero() != null && !mesa.getNumero().equals(request.getNumero()) &&
+                mesaRepository.existsByNumeroAndRecintoIdAndIdNot(request.getNumero(), mesa.getRecinto().getId(), id)) {
+            throw new DuplicateEntityException("Ya existe una mesa con el número '" + request.getNumero() + "' en este recinto");
+        }
         if (request.getNumero() != null) mesa.setNumero(request.getNumero());
         if (request.getSexo() != null) mesa.setSexo(Mesa.SexoMesa.valueOf(request.getSexo()));
 

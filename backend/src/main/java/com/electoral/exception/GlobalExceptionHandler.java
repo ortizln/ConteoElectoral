@@ -117,6 +117,19 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler(DuplicateEntityException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateEntityException(
+            DuplicateEntityException ex, WebRequest request) {
+        logger.error("Entidad duplicada: {}", ex.getMessage());
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.CONFLICT.value())
+                .message(ex.getMessage())
+                .path(request.getDescription(false).replace("uri=", ""))
+                .timestamp(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(AccesoDenegadoException.class)
     public ResponseEntity<ErrorResponse> handleAccesoDenegadoException(
             AccesoDenegadoException ex, WebRequest request) {

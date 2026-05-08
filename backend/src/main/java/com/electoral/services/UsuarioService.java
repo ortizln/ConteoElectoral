@@ -2,6 +2,7 @@ package com.electoral.services;
 
 import com.electoral.dto.*;
 import com.electoral.entities.*;
+import com.electoral.exception.DuplicateEntityException;
 import com.electoral.exception.RecursoNoEncontradoException;
 import com.electoral.repositories.*;
 import lombok.RequiredArgsConstructor;
@@ -35,10 +36,10 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponse createUsuario(UsuarioRequest request) {
         if (usuarioRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalArgumentException("El username ya existe");
+            throw new DuplicateEntityException("El username '" + request.getUsername() + "' ya existe");
         }
         if (request.getEmail() != null && usuarioRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("El email ya existe");
+            throw new DuplicateEntityException("El email '" + request.getEmail() + "' ya existe");
         }
 
         Rol rol = rolRepository.findById(request.getRolId())
@@ -62,6 +63,10 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con ID: " + id));
 
+        if (request.getEmail() != null && !request.getEmail().equals(usuario.getEmail()) &&
+                usuarioRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateEntityException("El email '" + request.getEmail() + "' ya existe");
+        }
         usuario.setNombre(request.getNombre());
         usuario.setApellido(request.getApellido());
         usuario.setEmail(request.getEmail());

@@ -30,6 +30,7 @@ C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\ele
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\exception\MesaCerradaException.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\CargoResponse.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\CargoRequest.java
+C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\exception\DuplicateEntityException.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\controllers\UsuarioController.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\entities\Voto.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\services\MesaService.java

@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface ParroquiaRepository extends JpaRepository<Parroquia, Long> {
     List<Parroquia> findByCantonId(Long cantonId);
+    boolean existsByNombreAndCantonId(String nombre, Long cantonId);
+    boolean existsByNombreAndCantonIdAndIdNot(String nombre, Long cantonId, Long id);
 }
