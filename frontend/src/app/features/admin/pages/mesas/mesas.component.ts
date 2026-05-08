@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
-import { Eleccion, InstitucionEducativa, Mesa } from '../../../../core/models';
+import { Eleccion, InstitucionEducativa, Mesa, Zona, Provincia, Canton, Parroquia } from '../../../../core/models';
 
 @Component({
   selector: 'app-mesas',
@@ -29,9 +29,21 @@ export class MesasComponent implements OnInit {
   Math = Math;
   errorMessage: string = '';
 
+  // Geographic filters for modal
+  zonas: Zona[] = [];
+  provinciasDisponibles: Provincia[] = [];
+  cantonesDisponibles: Canton[] = [];
+  parroquiasDisponibles: Parroquia[] = [];
+  filterZonaId: number | null = null;
+  filterProvinciaId: number | null = null;
+  filterCantonId: number | null = null;
+  filterParroquiaId: number | null = null;
+  buscarInstitucionText: string = '';
+
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
+    this.api.getZonas().subscribe((d: Zona[]) => this.zonas = d);
     this.api.getInstituciones().subscribe((d: InstitucionEducativa[]) => this.instituciones = d);
     this.api.getElecciones().subscribe((e: Eleccion[]) => {
       this.elecciones = e;
@@ -40,6 +52,18 @@ export class MesasComponent implements OnInit {
         this.load(e[0].id);
       }
     });
+  }
+
+  get filteredInstituciones(): InstitucionEducativa[] {
+    let result = this.instituciones;
+    if (this.filterParroquiaId) {
+      result = result.filter(i => i.parroquiaId === this.filterParroquiaId);
+    }
+    if (this.buscarInstitucionText) {
+      const term = this.buscarInstitucionText.toLowerCase();
+      result = result.filter(i => i.nombre.toLowerCase().includes(term));
+    }
+    return result;
   }
 
   load(eleccionId: number): void {
@@ -120,8 +144,9 @@ export class MesasComponent implements OnInit {
 
   openModal(): void {
     this.editMode = false;
-    this.form = { numero: '', sexo: 'MIXTA', institucionId: this.instituciones[0]?.id, eleccionesId: this.form.eleccionesId };
+    this.form = { numero: '', sexo: 'MIXTA', institucionId: null, eleccionesId: this.form.eleccionesId };
     this.errorMessage = '';
+    this.resetModalFilters();
     this.showModal = true;
   }
 
@@ -130,7 +155,56 @@ export class MesasComponent implements OnInit {
     this.selectedId = m.id;
     this.form = { numero: m.numero, sexo: m.sexo, institucionId: m.institucionId, eleccionesId: m.eleccionesId };
     this.errorMessage = '';
+    this.resetModalFilters();
     this.showModal = true;
+  }
+
+  resetModalFilters(): void {
+    this.filterZonaId = null;
+    this.filterProvinciaId = null;
+    this.filterCantonId = null;
+    this.filterParroquiaId = null;
+    this.provinciasDisponibles = [];
+    this.cantonesDisponibles = [];
+    this.parroquiasDisponibles = [];
+    this.buscarInstitucionText = '';
+  }
+
+  onModalZonaChange(): void {
+    this.filterProvinciaId = null;
+    this.filterCantonId = null;
+    this.filterParroquiaId = null;
+    this.form.institucionId = null;
+    this.provinciasDisponibles = [];
+    this.cantonesDisponibles = [];
+    this.parroquiasDisponibles = [];
+    if (this.filterZonaId) {
+      this.api.getProvinciasByZona(this.filterZonaId).subscribe((d: Provincia[]) => this.provinciasDisponibles = d);
+    }
+  }
+
+  onModalProvinciaChange(): void {
+    this.filterCantonId = null;
+    this.filterParroquiaId = null;
+    this.form.institucionId = null;
+    this.cantonesDisponibles = [];
+    this.parroquiasDisponibles = [];
+    if (this.filterProvinciaId) {
+      this.api.getCantonesByProvincia(this.filterProvinciaId).subscribe((d: Canton[]) => this.cantonesDisponibles = d);
+    }
+  }
+
+  onModalCantonChange(): void {
+    this.filterParroquiaId = null;
+    this.form.institucionId = null;
+    this.parroquiasDisponibles = [];
+    if (this.filterCantonId) {
+      this.api.getParroquiasByCanton(this.filterCantonId).subscribe((d: Parroquia[]) => this.parroquiasDisponibles = d);
+    }
+  }
+
+  onModalParroquiaChange(): void {
+    this.form.institucionId = null;
   }
 
   closeModal(): void { this.showModal = false; this.selectedId = null; this.errorMessage = ''; }

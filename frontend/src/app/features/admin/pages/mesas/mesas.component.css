@@ -30,11 +30,49 @@
 .bg-danger { background: #ef4444 !important; color: white !important; }
 .form-select, .form-control { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; transition: all 0.2s; }
 .form-select:focus, .form-control:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.text-muted { color: #64748b; font-size: 13px; margin-top: 4px; display: block; }
+
+/* Filter grid inside modal */
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.filter-grid .filter-item {
+  flex: unset;
+}
+
+.filter-grid .filter-item label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.filter-grid .form-select {
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.form-select:disabled {
+  background: #f1f5f9;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Modal */
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
 .modal-dialog { background: white; border-radius: 16px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+.modal-dialog.modal-lg { max-width: 640px; }
 .modal-header { padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
 .modal-header h5 { margin: 0; font-size: 18px; font-weight: 600; }
-.modal-body { padding: 24px; }
+.modal-body { padding: 24px; max-height: 70vh; overflow-y: auto; }
 .modal-footer { padding: 16px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 12px; }
 .btn-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
 .btn-close:hover { background: #f1f5f9; }
