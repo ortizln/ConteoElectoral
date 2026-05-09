@@ -48,6 +48,14 @@ public class VotoController {
         return ResponseEntity.ok(votoService.actualizarVoto(id, request, usuarioId));
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<Void> eliminarVoto(@PathVariable Long id) {
+        Long usuarioId = getCurrentUserId();
+        votoService.eliminarVoto(id, usuarioId);
+        return ResponseEntity.noContent().build();
+    }
+
     private Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();

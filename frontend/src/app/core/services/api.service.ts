@@ -192,6 +192,14 @@ export class ApiService {
     return this.http.get<Mesa[]>(`${this.API_URL}/mesas/eleccion/${eleccionId}`);
   }
 
+  getMesasByCurrentUser(eleccionId: number): Observable<Mesa[]> {
+    return this.http.get<Mesa[]>(`${this.API_URL}/mesas/usuario/actual/eleccion/${eleccionId}`);
+  }
+
+  getMesasByUsuario(usuarioId: number, eleccionId: number): Observable<Mesa[]> {
+    return this.http.get<Mesa[]>(`${this.API_URL}/mesas/usuario/${usuarioId}/eleccion/${eleccionId}`);
+  }
+
   getMesasByInstitucion(institucionId: number): Observable<Mesa[]> {
     return this.http.get<Mesa[]>(`${this.API_URL}/mesas/institucion/${institucionId}`);
   }
@@ -260,6 +268,10 @@ export class ApiService {
 
   actualizarVoto(id: number, data: { candidatoId: number; mesaId: number; cantidadVotos: number; eleccionesId: number }): Observable<Voto> {
     return this.http.put<Voto>(`${this.API_URL}/votos/${id}`, data);
+  }
+
+  deleteVoto(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/votos/${id}`);
   }
 
   // Importar Excel

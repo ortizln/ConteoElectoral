@@ -17,6 +17,6 @@ public interface MesaRepository extends JpaRepository<Mesa, Long> {
     List<Mesa> findByEleccionesIdAndCerrada(Long eleccionesId, Boolean cerrada);
     Long countByEleccionesId(Long eleccionesId);
     Long countByEleccionesIdAndCerrada(Long eleccionesId, Boolean cerrada);
-    boolean existsByNumeroAndInstitucionId(String numero, Long institucionId);
-    boolean existsByNumeroAndInstitucionIdAndIdNot(String numero, Long institucionId, Long id);
+    boolean existsByNumeroAndSexoAndInstitucionId(String numero, Mesa.SexoMesa sexo, Long institucionId);
+    boolean existsByNumeroAndSexoAndInstitucionIdAndIdNot(String numero, Mesa.SexoMesa sexo, Long institucionId, Long id);
 }

@@ -36,6 +36,15 @@ public class MesaService {
     }
 
     @Transactional(readOnly = true)
+    public List<MesaResponse> getMesasByUsuario(Long usuarioId, Long eleccionId) {
+        return mesaUsuarioRepository.findByUsuarioIdAndEleccionId(usuarioId, eleccionId)
+                .stream()
+                .map(MesaUsuario::getMesa)
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public List<MesaResponse> getMesasByInstitucion(Long institucionId) {
         return mesaRepository.findByInstitucionId(institucionId).stream()
                 .map(this::mapToResponse)
@@ -56,8 +65,9 @@ public class MesaService {
 
     @Transactional
     public MesaResponse createMesa(MesaRequest request) {
-        if (mesaRepository.existsByNumeroAndInstitucionId(request.getNumero(), request.getInstitucionId())) {
-            throw new DuplicateEntityException("Ya existe una mesa con el número '" + request.getNumero() + "' en esta institución");
+        Mesa.SexoMesa sexo = Mesa.SexoMesa.valueOf(request.getSexo());
+        if (mesaRepository.existsByNumeroAndSexoAndInstitucionId(request.getNumero(), sexo, request.getInstitucionId())) {
+            throw new DuplicateEntityException("Ya existe una mesa '" + request.getNumero() + "' del sexo '" + request.getSexo() + "' en esta institución");
         }
         InstitucionEducativa institucion = institucionRepository.findById(request.getInstitucionId())
                 .orElseThrow(() -> new RecursoNoEncontradoException("Institución no encontrada con ID: " + request.getInstitucionId()));
@@ -89,9 +99,15 @@ public class MesaService {
         Mesa mesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
 
-        if (request.getNumero() != null && !mesa.getNumero().equals(request.getNumero()) &&
-                mesaRepository.existsByNumeroAndInstitucionIdAndIdNot(request.getNumero(), mesa.getInstitucion().getId(), id)) {
-            throw new DuplicateEntityException("Ya existe una mesa con el número '" + request.getNumero() + "' en esta institución");
+        if (request.getNumero() != null || request.getSexo() != null) {
+            String nuevoNumero = request.getNumero() != null ? request.getNumero() : mesa.getNumero();
+            Mesa.SexoMesa nuevoSexo = request.getSexo() != null ? Mesa.SexoMesa.valueOf(request.getSexo()) : mesa.getSexo();
+            if ((request.getNumero() != null && !mesa.getNumero().equals(nuevoNumero)) ||
+                (request.getSexo() != null && !mesa.getSexo().equals(nuevoSexo))) {
+                if (mesaRepository.existsByNumeroAndSexoAndInstitucionIdAndIdNot(nuevoNumero, nuevoSexo, mesa.getInstitucion().getId(), id)) {
+                    throw new DuplicateEntityException("Ya existe una mesa '" + nuevoNumero + "' del sexo '" + nuevoSexo.name() + "' en esta institución");
+                }
+            }
         }
         log.info("Actualizando {} con ID: {}", "Mesa", id);
         Map<String, Object> datosAnteriores = Map.of("numero", mesa.getNumero(), "sexo", mesa.getSexo().name());

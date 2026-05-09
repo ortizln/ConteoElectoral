@@ -43,6 +43,6 @@ public class Mesa {
     }
 
     public enum SexoMesa {
-        MASCULINO, FEMENINO, MIXTA
+        HOMBRES, MUJERES, MIXTA
     }
 }

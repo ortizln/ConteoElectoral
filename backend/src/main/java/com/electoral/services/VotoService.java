@@ -124,6 +124,32 @@ public class VotoService {
         return mapToResponse(updatedVoto);
     }
 
+    @Transactional
+    public void eliminarVoto(Long id, Long usuarioId) {
+        Voto voto = votoRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Voto no encontrado con ID: " + id));
+
+        if (voto.getMesa().getCerrada()) {
+            throw new MesaCerradaException("No se puede eliminar votos en una mesa cerrada");
+        }
+
+        if (!mesaService.usuarioPerteneceAMesa(usuarioId, voto.getMesa().getId())) {
+            throw new AccesoDenegadoException("No tiene permisos para eliminar votos en esta mesa");
+        }
+
+        auditoriaService.registrarAccion(
+                usuarioId,
+                Auditoria.TipoAccion.DELETE,
+                "votos",
+                id,
+                mapToJson(voto),
+                null);
+
+        votoRepository.delete(voto);
+
+        notifyDashboardUpdate(voto.getElecciones().getId());
+    }
+
     private void notifyDashboardUpdate(Long eleccionId) {
         try {
             DashboardResponse dashboard = getDashboardData(eleccionId);

@@ -242,9 +242,8 @@ export class MesaVotacionComponent implements OnInit {
       this.cargos = data;
     });
 
-    const user = this.authService.getCurrentUser();
-    this.api.getMesasByEleccion(eleccionId).subscribe((mesas: Mesa[]) => {
-      this.mesaActual = mesas.find((m: Mesa) => m.usuarioId === user?.id) || null;
+    this.api.getMesasByCurrentUser(eleccionId).subscribe((mesas: Mesa[]) => {
+      this.mesaActual = mesas.length > 0 ? mesas[0] : null;
       if (this.mesaActual) {
         this.loadVotos();
       }
@@ -352,12 +351,7 @@ export class MesaVotacionComponent implements OnInit {
 
   eliminarVoto(id: number): void {
     if (confirm('¿Está seguro de eliminar este registro?')) {
-      this.api.actualizarVoto(id, {
-        candidatoId: 0,
-        mesaId: 0,
-        cantidadVotos: 0,
-        eleccionesId: 0
-      } as any).subscribe(() => this.loadVotos());
+      this.api.deleteVoto(id).subscribe(() => this.loadVotos());
     }
   }
 
