@@ -95,6 +95,14 @@
           </div>
 
           <div class="mb-3">
+            <label>Elección:</label>
+            <select class="form-select" [(ngModel)]="form.eleccionesId">
+              <option [ngValue]="null">Seleccione...</option>
+              <option *ngFor="let e of elecciones" [ngValue]="e.id">{{ e.nombre }}</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
             <label>Número:</label>
             <input type="text" class="form-control" [(ngModel)]="form.numero" (input)="toUpper(form, 'numero')" />
           </div>

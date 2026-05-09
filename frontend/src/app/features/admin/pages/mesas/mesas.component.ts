@@ -216,6 +216,10 @@ export class MesasComponent implements OnInit {
 
   save(): void {
     this.errorMessage = '';
+    if (!this.form.eleccionesId) {
+      this.errorMessage = 'Debe seleccionar una elección';
+      return;
+    }
     if (this.editMode && this.selectedId) {
       this.api.updateMesa(this.selectedId, this.form).subscribe({
         next: () => { this.load(this.form.eleccionesId); this.closeModal(); },
