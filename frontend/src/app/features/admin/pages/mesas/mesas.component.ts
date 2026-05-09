@@ -42,7 +42,7 @@ export class MesasComponent implements OnInit {
   institucionesCargadas = false;
   zonasCargadas = false;
 
-  constructor(private api: ApiService) {}
+  constructor(public api: ApiService) {}
 
   ngOnInit(): void {
     this.api.getZonas().subscribe((d: Zona[]) => { this.zonas = d; this.zonasCargadas = true; });

@@ -1,6 +1,10 @@
 <div class="container">
   <div class="page-header">
     <h2>Gestión de Cargos</h2>
+    <div class="export-buttons">
+      <button class="btn btn-excel" (click)="api.exportCargosExcel()" title="Exportar a Excel">📊 Excel</button>
+      <button class="btn btn-pdf" (click)="api.exportCargosPdf()" title="Exportar a PDF">📄 PDF</button>
+    </div>
     <button class="btn btn-primary btn-with-icon" (click)="openModal()">
       <span class="btn-icon">+</span> Nuevo Cargo
     </button>

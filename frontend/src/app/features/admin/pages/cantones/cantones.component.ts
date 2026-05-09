@@ -28,7 +28,7 @@ export class CantonesComponent implements OnInit {
   Math = Math;
   errorMessage: string = '';
 
-  constructor(private api: ApiService) {}
+  constructor(public api: ApiService) {}
 
   ngOnInit(): void {
     this.loadProvincias();

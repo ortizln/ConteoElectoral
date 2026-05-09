@@ -4,9 +4,13 @@ import com.electoral.dto.InstitucionEducativaRequest;
 import com.electoral.dto.InstitucionEducativaResponse;
 import com.electoral.entities.InstitucionEducativa;
 import com.electoral.entities.Parroquia;
+import com.electoral.services.ExcelExportService;
+import com.electoral.services.PdfExportService;
 import com.electoral.services.InstitucionEducativaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +22,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class InstitucionEducativaController {
     private final InstitucionEducativaService institucionService;
+    private final ExcelExportService excelExportService;
+    private final PdfExportService pdfExportService;
 
     @GetMapping
     public ResponseEntity<List<InstitucionEducativaResponse>> findAll() {
@@ -117,5 +123,35 @@ public class InstitucionEducativaController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         institucionService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/exportar-excel")
+    public ResponseEntity<byte[]> exportarExcel() {
+        List<InstitucionEducativa> instituciones = institucionService.findAll();
+        String[] headers = {"ID", "Nombre", "Parroquia", "Direccion", "Codigo", "Tipo"};
+        List<String[]> data = instituciones.stream()
+                .map(i -> new String[]{String.valueOf(i.getId()), i.getNombre(), i.getParroquia().getNombre(),
+                        i.getDireccion(), i.getCodigo(), i.getTipo()})
+                .collect(Collectors.toList());
+        byte[] excel = excelExportService.exportExcel("Instituciones", headers, data);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        httpHeaders.setContentDispositionFormData("attachment", "instituciones.xlsx");
+        return ResponseEntity.ok().headers(httpHeaders).body(excel);
+    }
+
+    @GetMapping("/exportar-pdf")
+    public ResponseEntity<byte[]> exportarPdf() {
+        List<InstitucionEducativa> instituciones = institucionService.findAll();
+        String[] headers = {"ID", "Nombre", "Parroquia", "Direccion", "Codigo", "Tipo"};
+        List<String[]> data = instituciones.stream()
+                .map(i -> new String[]{String.valueOf(i.getId()), i.getNombre(), i.getParroquia().getNombre(),
+                        i.getDireccion(), i.getCodigo(), i.getTipo()})
+                .collect(Collectors.toList());
+        byte[] pdf = pdfExportService.exportTablePdf("Instituciones Educativas", headers, data, new float[]{1, 3, 2, 3, 1, 1});
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_PDF);
+        httpHeaders.setContentDispositionFormData("attachment", "instituciones.pdf");
+        return ResponseEntity.ok().headers(httpHeaders).body(pdf);
     }
 }

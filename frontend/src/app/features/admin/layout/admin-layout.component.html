@@ -1,68 +1,49 @@
 <div class="admin-layout">
   <aside class="sidebar">
     <div class="sidebar-header">
-      <h2>Conteo Electoral</h2>
-      <span class="badge bg-primary">{{ userRole }}</span>
+      <div>
+        <h2>Conteo Electoral</h2>
+        <span class="sidebar-subtitle">Sistema de Votación</span>
+      </div>
     </div>
-    
+
+    <div class="user-info">
+      <div class="user-avatar">{{ userName[0] || 'U' }}</div>
+      <div class="user-details">
+        <span class="user-name">{{ userName }}</span>
+        <span class="user-role-badge" [class.admin]="userRole === 'ADMIN'" [class.supervisor]="userRole === 'SUPERVISOR'">
+          {{ userRole === 'ADMIN' ? 'Administrador' : 'Supervisor' }}
+        </span>
+      </div>
+    </div>
+
     <nav class="sidebar-nav">
-      <a routerLink="elecciones" routerLinkActive="active" class="nav-item">
-        <span class="nav-icon">🏛️</span>
-        <span class="nav-text">Elecciones</span>
-      </a>
-      <a routerLink="zonas" routerLinkActive="active" class="nav-item">
-        <span class="nav-icon">🌍</span>
-        <span class="nav-text">Zonas</span>
-      </a>
-      <a routerLink="provincias" routerLinkActive="active" class="nav-item">
-        <span class="nav-icon">📍</span>
-        <span class="nav-text">Provincias</span>
-      </a>
-      <a routerLink="cantones" routerLinkActive="active" class="nav-item">
-        <span class="nav-icon">🏘️</span>
-        <span class="nav-text">Cantones</span>
-      </a>
-      <a routerLink="parroquias" routerLinkActive="active" class="nav-item">
-        <span class="nav-icon">🏘️</span>
-        <span class="nav-text">Parroquias</span>
-      </a>
-      <a routerLink="instituciones" routerLinkActive="active" class="nav-item">
-        <span class="nav-icon">🏫</span>
-        <span class="nav-text">Instituciones</span>
-      </a>
-      <a routerLink="partidos" routerLinkActive="active" class="nav-item">
-        <span class="nav-icon">🎯</span>
-        <span class="nav-text">Partidos</span>
-      </a>
-      <a routerLink="cargos" routerLinkActive="active" class="nav-item">
-        <span class="nav-icon">📋</span>
-        <span class="nav-text">Cargos</span>
-      </a>
-      <a routerLink="candidatos" routerLinkActive="active" class="nav-item">
-        <span class="nav-icon">👤</span>
-        <span class="nav-text">Candidatos</span>
-      </a>
-      <a routerLink="mesas" routerLinkActive="active" class="nav-item">
-        <span class="nav-icon">🗳️</span>
-        <span class="nav-text">Mesas</span>
-      </a>
-      <a routerLink="usuarios" routerLinkActive="active" class="nav-item">
-        <span class="nav-icon">👥</span>
-        <span class="nav-text">Usuarios</span>
-      </a>
-      <a routerLink="asignar-mesas" routerLinkActive="active" class="nav-item">
-        <span class="nav-icon">📝</span>
-        <span class="nav-text">Asignar Mesas</span>
-      </a>
-      <a routerLink="importar" routerLinkActive="active" class="nav-item">
-        <span class="nav-icon">📥</span>
-        <span class="nav-text">Importar Datos</span>
+      <span class="nav-section-title">Menú Principal</span>
+      <a *ngFor="let item of filteredNavItems"
+         [routerLink]="item.path"
+         routerLinkActive="active"
+         class="nav-item">
+        <span class="nav-icon">{{ item.icon }}</span>
+        <span class="nav-text">{{ item.label }}</span>
+        <span class="nav-indicator"></span>
       </a>
     </nav>
 
+    <div class="extra-links">
+      <span class="nav-section-title">Enlaces Rápidos</span>
+      <a routerLink="/dashboard" class="nav-item">
+        <span class="nav-icon">📊</span>
+        <span class="nav-text">Dashboard Electoral</span>
+      </a>
+      <a routerLink="/mesa" class="nav-item">
+        <span class="nav-icon">🗳️</span>
+        <span class="nav-text">Módulo de Votación</span>
+      </a>
+    </div>
+
     <div class="sidebar-footer">
-      <button (click)="logout()" class="btn btn-outline-danger w-100">
-        Cerrar Sesión
+      <button (click)="logout()" class="btn-logout-sidebar">
+        <span>🚪</span> Cerrar Sesión
       </button>
     </div>
   </aside>

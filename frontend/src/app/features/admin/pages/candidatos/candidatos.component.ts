@@ -29,7 +29,7 @@ export class CandidatosComponent implements OnInit {
   Math = Math;
   errorMessage: string = '';
 
-  constructor(private api: ApiService) {}
+  constructor(public api: ApiService) {}
 
   ngOnInit(): void {
     this.api.getElecciones().subscribe((e: Eleccion[]) => {

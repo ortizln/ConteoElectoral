@@ -26,7 +26,7 @@ export class EleccionesComponent implements OnInit {
   Math = Math;
   errorMessage: string = '';
 
-  constructor(private api: ApiService) {}
+  constructor(public api: ApiService) {}
 
   ngOnInit(): void {
     this.load();

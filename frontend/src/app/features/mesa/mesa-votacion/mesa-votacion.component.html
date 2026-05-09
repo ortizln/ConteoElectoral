@@ -1,0 +1,188 @@
+<div class="mesa-container">
+  <header class="mesa-header">
+    <div class="header-left">
+      <h1><span class="header-icon">🗳️</span> Registro de Votos</h1>
+      <div class="header-meta">
+        <span *ngIf="mesaActual" [class]="'mesa-estado ' + getEstadoMesaClass()">
+          <span class="estado-dot"></span>
+          {{ getEstadoMesaText() }}
+        </span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-logout" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <div *ngIf="mesaActual?.cerrada" class="alert-cerrada">
+    <span class="alert-icon">🔒</span>
+    <div class="alert-content">
+      <strong>Mesa Cerrada</strong>
+      <p>Esta mesa ha sido cerrada. No se pueden registrar ni modificar votos.</p>
+    </div>
+  </div>
+
+  <div class="mesa-selector-card" *ngIf="mesasDisponibles.length > 1">
+    <div class="selector-label">📌 Selecciona una mesa para trabajar:</div>
+    <div class="mesa-opciones">
+      <button *ngFor="let m of mesasDisponibles"
+              class="mesa-opcion"
+              [class.active]="m.id === mesaActual?.id"
+              [class.cerrada]="m.cerrada"
+              (click)="seleccionarMesa(m)">
+        <span class="mesa-numero">Mesa #{{ m.numero }}</span>
+        <span class="mesa-sexo">{{ m.sexo === 'HOMBRES' ? '♂' : m.sexo === 'MUJERES' ? '♀' : '⚤' }} {{ m.sexo }}</span>
+        <span class="mesa-institucion">{{ m.institucionNombre }}</span>
+        <span class="mesa-estado-tag" [class.tag-cerrada]="m.cerrada" [class.tag-abierta]="!m.cerrada">
+          {{ m.cerrada ? 'Cerrada' : 'Activa' }}
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mesa-actual-card" *ngIf="mesaActual">
+    <div class="mesa-actual-info">
+      <div class="mesa-actual-numero">Mesa #{{ mesaActual.numero }}</div>
+      <div class="mesa-actual-detalles">
+        <span>📍 {{ mesaActual.institucionNombre }}</span>
+        <span>⚤ {{ mesaActual.sexo }}</span>
+        <span>📊 {{ totalVotos }} votos registrados</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <div class="card candidatos-card">
+      <div class="card-header">
+        <h3>👤 Candidatos</h3>
+        <span class="card-badge">{{ candidatosFiltrados.length }} candidatos</span>
+      </div>
+
+      <div class="filtros-rapidos">
+        <input type="text" class="search-input" [(ngModel)]="filtroTexto" (input)="aplicarFiltro()" placeholder="Buscar candidato...">
+        <select class="filter-select" [(ngModel)]="filtroPartidoId" (change)="aplicarFiltro()">
+          <option [ngValue]="null">Todos los Partidos</option>
+          <option *ngFor="let p of partidos" [ngValue]="p.id">{{ p.nombre }}</option>
+        </select>
+        <select class="filter-select" [(ngModel)]="filtroCargoId" (change)="aplicarFiltro()">
+          <option [ngValue]="null">Todos los Cargos</option>
+          <option *ngFor="let c of cargos" [ngValue]="c.id">{{ c.nombre }}</option>
+        </select>
+        <button class="btn btn-clean" (click)="limpiarFiltro()">Limpiar</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="table-candidatos">
+          <thead>
+            <tr>
+              <th style="width: 40px">#</th>
+              <th class="sortable" (click)="setSortCandidatos('nombre')">
+                Candidato <span class="sort-icon">{{ getSortIconCandidatos('nombre') }}</span>
+              </th>
+              <th class="sortable" (click)="setSortCandidatos('partido')">
+                Partido <span class="sort-icon">{{ getSortIconCandidatos('partido') }}</span>
+              </th>
+              <th class="sortable" (click)="setSortCandidatos('cargo')">
+                Cargo <span class="sort-icon">{{ getSortIconCandidatos('cargo') }}</span>
+              </th>
+              <th style="width: 140px" class="text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of candidatosFiltrados; let i = index"
+                [class.selected]="candidatoSeleccionado?.id === c.id"
+                [class.disabled]="mesaActual?.cerrada"
+                [style.animation-delay]="i * 0.02 + 's'">
+              <td><span class="row-num">{{ i + 1 }}</span></td>
+              <td>
+                <div class="candidato-cell">
+                  <div class="candidato-avatar" [style.background]="c.colorPartido">
+                    {{ c.nombre[0] }}{{ c.apellido[0] }}
+                  </div>
+                  <div>
+                    <div class="candidato-nombre">{{ c.nombre }} {{ c.apellido }}</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="partido-tag" [style.background]="c.colorPartido + '20'" [style.color]="c.colorPartido">{{ c.partidoNombre }}</span></td>
+              <td class="cargo-cell">{{ c.cargoNombre }}</td>
+              <td class="text-right">
+                <div *ngIf="candidatoSeleccionado?.id === c.id && !mesaActual?.cerrada" class="voto-input-group">
+                  <input type="number" class="voto-input" #cantidadInput
+                         [(ngModel)]="cantidadVotos" min="1"
+                         (keyup.enter)="registrarVoto()">
+                  <button class="btn btn-registrar" (click)="registrarVoto()" [disabled]="animando">
+                    {{ animando ? '...' : 'Registrar' }}
+                  </button>
+                </div>
+                <button *ngIf="candidatoSeleccionado?.id !== c.id && !mesaActual?.cerrada"
+                        class="btn btn-seleccionar" (click)="seleccionarCandidato(c)">
+                  Votar
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="candidatosFiltrados.length === 0">
+              <td colspan="5" class="empty-msg">No hay candidatos que coincidan</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card votos-card">
+      <div class="card-header">
+        <h3>📋 Votos Registrados</h3>
+        <div class="card-header-actions">
+          <span class="total-votos-badge">Total: <strong>{{ totalVotos }}</strong></span>
+          <button *ngIf="mesaActual?.cerrada" class="btn btn-acta" (click)="imprimirActa()">
+            📄 Imprimir Acta
+          </button>
+          <button *ngIf="!mesaActual?.cerrada" class="btn btn-cerrar" (click)="cerrarMesa()">
+            🔒 Cerrar Acta
+          </button>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="table-votos">
+          <thead>
+            <tr>
+              <th style="width: 40px">#</th>
+              <th class="sortable" (click)="setSortVotos('candidato')">
+                Candidato <span class="sort-icon">{{ getSortIconVotos('candidato') }}</span>
+              </th>
+              <th class="sortable" (click)="setSortVotos('partido')">
+                Partido <span class="sort-icon">{{ getSortIconVotos('partido') }}</span>
+              </th>
+              <th class="sortable text-right" (click)="setSortVotos('votos')" style="width: 100px">
+                Votos <span class="sort-icon">{{ getSortIconVotos('votos') }}</span>
+              </th>
+              <th *ngIf="!mesaActual?.cerrada" style="width: 80px" class="text-right">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let v of votosRegistrados; let i = index" [style.animation-delay]="i * 0.03 + 's'">
+              <td><span class="row-num">{{ i + 1 }}</span></td>
+              <td>{{ v.candidatoNombre }} {{ v.candidatoApellido }}</td>
+              <td><span class="partido-tag">{{ v.partidoNombre }}</span></td>
+              <td class="text-right"><strong class="voto-count">{{ v.cantidadVotos }}</strong></td>
+              <td *ngIf="!mesaActual?.cerrada" class="text-right">
+                <button class="btn btn-eliminar" (click)="eliminarVoto(v.id)">✕</button>
+              </td>
+            </tr>
+            <tr *ngIf="votosRegistrados.length === 0">
+              <td colspan="5" class="empty-msg">No hay votos registrados aún</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td colspan="3"><strong>TOTAL</strong></td>
+              <td class="text-right"><strong class="voto-count-total">{{ totalVotos }}</strong></td>
+              <td *ngIf="!mesaActual?.cerrada"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

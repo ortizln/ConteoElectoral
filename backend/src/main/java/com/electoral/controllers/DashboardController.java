@@ -2,6 +2,7 @@ package com.electoral.controllers;
 
 import com.electoral.dto.DashboardResponse;
 import com.electoral.dto.VotoResponse;
+import com.electoral.services.ExcelExportService;
 import com.electoral.services.PdfExportService;
 import com.electoral.services.VotoService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/dashboard")
@@ -20,6 +22,7 @@ import java.util.List;
 public class DashboardController {
     private final VotoService votoService;
     private final PdfExportService pdfExportService;
+    private final ExcelExportService excelExportService;
 
     @GetMapping("/eleccion/{eleccionesId}")
     public ResponseEntity<DashboardResponse> getDashboard(@PathVariable Long eleccionesId) {
@@ -58,12 +61,34 @@ public class DashboardController {
         DashboardResponse data = votoService.getDashboardDataConFiltros(eleccionesId, cargoId, partidoId,
                 zonaId, provinciaId, cantonId, parroquiaId, institucionId);
         byte[] pdf = pdfExportService.exportDashboardPdf(data);
-
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDispositionFormData("attachment", "resultados.pdf");
-
         return ResponseEntity.ok().headers(headers).body(pdf);
+    }
+
+    @GetMapping("/eleccion/{eleccionesId}/exportar-excel")
+    public ResponseEntity<byte[]> exportarExcel(
+            @PathVariable Long eleccionesId,
+            @RequestParam(required = false) Long cargoId,
+            @RequestParam(required = false) Long partidoId,
+            @RequestParam(required = false) Long zonaId,
+            @RequestParam(required = false) Long provinciaId,
+            @RequestParam(required = false) Long cantonId,
+            @RequestParam(required = false) Long parroquiaId,
+            @RequestParam(required = false) Long institucionId) {
+        DashboardResponse data = votoService.getDashboardDataConFiltros(eleccionesId, cargoId, partidoId,
+                zonaId, provinciaId, cantonId, parroquiaId, institucionId);
+        String[] headers = {"Candidato", "Partido", "Cargo", "Votos", "Porcentaje"};
+        List<String[]> rows = data.getResultados().stream()
+                .map(r -> new String[]{r.getNombreCompleto(), r.getPartidoNombre(), r.getCargoNombre(),
+                        String.valueOf(r.getTotalVotos()), String.format("%.2f%%", r.getPorcentaje())})
+                .collect(Collectors.toList());
+        byte[] excel = excelExportService.exportExcel("Resultados", headers, rows);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        httpHeaders.setContentDispositionFormData("attachment", "resultados.xlsx");
+        return ResponseEntity.ok().headers(httpHeaders).body(excel);
     }
 }
 

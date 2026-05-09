@@ -274,6 +274,116 @@ export class ApiService {
     return this.http.delete<void>(`${this.API_URL}/votos/${id}`);
   }
 
+  // Download helper
+  private downloadBlob(data: Blob, filename: string): void {
+    const url = window.URL.createObjectURL(data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
+
+  private exportPdf(url: string, filename: string): void {
+    this.http.get(url, { responseType: 'blob' }).subscribe({
+      next: (blob) => this.downloadBlob(blob, filename),
+      error: () => console.error('Error al descargar PDF')
+    });
+  }
+
+  private exportExcel(url: string, filename: string): void {
+    this.http.get(url, { responseType: 'blob' }).subscribe({
+      next: (blob) => this.downloadBlob(blob, filename),
+      error: () => console.error('Error al descargar Excel')
+    });
+  }
+
+  // Export Zonas
+  exportZonasPdf(): void { this.exportPdf(`${this.API_URL}/zonas/exportar-pdf`, 'zonas.pdf'); }
+  exportZonasExcel(): void { this.exportExcel(`${this.API_URL}/zonas/exportar-excel`, 'zonas.xlsx'); }
+
+  // Export Provincias
+  exportProvinciasPdf(): void { this.exportPdf(`${this.API_URL}/provincias/exportar-pdf`, 'provincias.pdf'); }
+  exportProvinciasExcel(): void { this.exportExcel(`${this.API_URL}/provincias/exportar-excel`, 'provincias.xlsx'); }
+
+  // Export Cantones
+  exportCantonesPdf(): void { this.exportPdf(`${this.API_URL}/cantones/exportar-pdf`, 'cantones.pdf'); }
+  exportCantonesExcel(): void { this.exportExcel(`${this.API_URL}/cantones/exportar-excel`, 'cantones.xlsx'); }
+
+  // Export Parroquias
+  exportParroquiasPdf(): void { this.exportPdf(`${this.API_URL}/parroquias/exportar-pdf`, 'parroquias.pdf'); }
+  exportParroquiasExcel(): void { this.exportExcel(`${this.API_URL}/parroquias/exportar-excel`, 'parroquias.xlsx'); }
+
+  // Export Instituciones
+  exportInstitucionesPdf(): void { this.exportPdf(`${this.API_URL}/instituciones/exportar-pdf`, 'instituciones.pdf'); }
+  exportInstitucionesExcel(): void { this.exportExcel(`${this.API_URL}/instituciones/exportar-excel`, 'instituciones.xlsx'); }
+
+  // Export Elecciones
+  exportEleccionesPdf(): void { this.exportPdf(`${this.API_URL}/elecciones/exportar-pdf`, 'elecciones.pdf'); }
+  exportEleccionesExcel(): void { this.exportExcel(`${this.API_URL}/elecciones/exportar-excel`, 'elecciones.xlsx'); }
+
+  // Export Partidos
+  exportPartidosPdf(eleccionId?: number): void { this.exportPdf(`${this.API_URL}/partidos/exportar-pdf${eleccionId ? '?eleccionesId='+eleccionId : ''}`, 'partidos.pdf'); }
+  exportPartidosExcel(eleccionId?: number): void { this.exportExcel(`${this.API_URL}/partidos/exportar-excel${eleccionId ? '?eleccionesId='+eleccionId : ''}`, 'partidos.xlsx'); }
+
+  // Export Cargos
+  exportCargosPdf(eleccionId?: number): void { this.exportPdf(`${this.API_URL}/cargos/exportar-pdf${eleccionId ? '?eleccionesId='+eleccionId : ''}`, 'cargos.pdf'); }
+  exportCargosExcel(eleccionId?: number): void { this.exportExcel(`${this.API_URL}/cargos/exportar-excel${eleccionId ? '?eleccionesId='+eleccionId : ''}`, 'cargos.xlsx'); }
+
+  // Export Candidatos
+  exportCandidatosPdf(eleccionId?: number): void { this.exportPdf(`${this.API_URL}/candidatos/exportar-pdf${eleccionId ? '?eleccionesId='+eleccionId : ''}`, 'candidatos.pdf'); }
+  exportCandidatosExcel(eleccionId?: number): void { this.exportExcel(`${this.API_URL}/candidatos/exportar-excel${eleccionId ? '?eleccionesId='+eleccionId : ''}`, 'candidatos.xlsx'); }
+
+  // Export Mesas
+  exportMesasPdf(eleccionId?: number): void { this.exportPdf(`${this.API_URL}/mesas/exportar-pdf${eleccionId ? '?eleccionesId='+eleccionId : ''}`, 'mesas.pdf'); }
+  exportMesasExcel(eleccionId?: number): void { this.exportExcel(`${this.API_URL}/mesas/exportar-excel${eleccionId ? '?eleccionesId='+eleccionId : ''}`, 'mesas.xlsx'); }
+
+  // Export Usuarios
+  exportUsuariosPdf(): void { this.exportPdf(`${this.API_URL}/usuarios/exportar-pdf`, 'usuarios.pdf'); }
+  exportUsuariosExcel(): void { this.exportExcel(`${this.API_URL}/usuarios/exportar-excel`, 'usuarios.xlsx'); }
+
+  // Export Dashboard
+  exportDashboardPdf(eleccionId: number, filtros?: any): void {
+    let url = `${this.API_URL}/dashboard/eleccion/${eleccionId}/exportar-pdf`;
+    const params = new URLSearchParams();
+    if (filtros) {
+      if (filtros.cargoId) params.set('cargoId', filtros.cargoId);
+      if (filtros.partidoId) params.set('partidoId', filtros.partidoId);
+      if (filtros.zonaId) params.set('zonaId', filtros.zonaId);
+      if (filtros.provinciaId) params.set('provinciaId', filtros.provinciaId);
+      if (filtros.cantonId) params.set('cantonId', filtros.cantonId);
+      if (filtros.parroquiaId) params.set('parroquiaId', filtros.parroquiaId);
+      if (filtros.institucionId) params.set('institucionId', filtros.institucionId);
+    }
+    const qs = params.toString();
+    if (qs) url += '?' + qs;
+    this.exportPdf(url, 'resultados.pdf');
+  }
+
+  exportDashboardExcel(eleccionId: number, filtros?: any): void {
+    let url = `${this.API_URL}/dashboard/eleccion/${eleccionId}/exportar-excel`;
+    const params = new URLSearchParams();
+    if (filtros) {
+      if (filtros.cargoId) params.set('cargoId', filtros.cargoId);
+      if (filtros.partidoId) params.set('partidoId', filtros.partidoId);
+      if (filtros.zonaId) params.set('zonaId', filtros.zonaId);
+      if (filtros.provinciaId) params.set('provinciaId', filtros.provinciaId);
+      if (filtros.cantonId) params.set('cantonId', filtros.cantonId);
+      if (filtros.parroquiaId) params.set('parroquiaId', filtros.parroquiaId);
+      if (filtros.institucionId) params.set('institucionId', filtros.institucionId);
+    }
+    const qs = params.toString();
+    if (qs) url += '?' + qs;
+    this.exportExcel(url, 'resultados.xlsx');
+  }
+
+  // Export Acta de Cierre
+  exportActaMesaPdf(mesaId: number): void {
+    this.exportPdf(`${this.API_URL}/mesas/${mesaId}/exportar-acta`, `acta_mesa_${mesaId}.pdf`);
+  }
+
   // Importar Excel
   importarExcel(file: File): Observable<any> {
     const formData = new FormData();

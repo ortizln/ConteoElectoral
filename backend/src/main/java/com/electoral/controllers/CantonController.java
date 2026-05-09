@@ -5,8 +5,12 @@ import com.electoral.dto.CantonResponse;
 import com.electoral.entities.Canton;
 import com.electoral.entities.Provincia;
 import com.electoral.services.CantonService;
+import com.electoral.services.ExcelExportService;
+import com.electoral.services.PdfExportService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +22,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CantonController {
     private final CantonService cantonService;
+    private final ExcelExportService excelExportService;
+    private final PdfExportService pdfExportService;
 
     @GetMapping
     public ResponseEntity<List<CantonResponse>> findAll() {
@@ -103,5 +109,33 @@ public class CantonController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         cantonService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/exportar-excel")
+    public ResponseEntity<byte[]> exportarExcel() {
+        List<Canton> cantones = cantonService.findAll();
+        String[] headers = {"ID", "Nombre", "Provincia", "Descripcion"};
+        List<String[]> data = cantones.stream()
+                .map(c -> new String[]{String.valueOf(c.getId()), c.getNombre(), c.getProvincia().getNombre(), c.getDescripcion()})
+                .collect(Collectors.toList());
+        byte[] excel = excelExportService.exportExcel("Cantones", headers, data);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        httpHeaders.setContentDispositionFormData("attachment", "cantones.xlsx");
+        return ResponseEntity.ok().headers(httpHeaders).body(excel);
+    }
+
+    @GetMapping("/exportar-pdf")
+    public ResponseEntity<byte[]> exportarPdf() {
+        List<Canton> cantones = cantonService.findAll();
+        String[] headers = {"ID", "Nombre", "Provincia", "Descripcion"};
+        List<String[]> data = cantones.stream()
+                .map(c -> new String[]{String.valueOf(c.getId()), c.getNombre(), c.getProvincia().getNombre(), c.getDescripcion()})
+                .collect(Collectors.toList());
+        byte[] pdf = pdfExportService.exportTablePdf("Cantones", headers, data, new float[]{1, 3, 3, 3});
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_PDF);
+        httpHeaders.setContentDispositionFormData("attachment", "cantones.pdf");
+        return ResponseEntity.ok().headers(httpHeaders).body(pdf);
     }
 }

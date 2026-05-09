@@ -54,7 +54,6 @@ com\electoral\entities\Usuario$UsuarioBuilder.class
 com\electoral\dto\ResultadoCandidato$ResultadoCandidatoBuilder.class
 com\electoral\exception\MesaCerradaException.class
 com\electoral\entities\Partido.class
-com\electoral\controllers\CandidatoController.class
 com\electoral\services\ImportService$1.class
 com\electoral\dto\InstitucionEducativaResponse$InstitucionEducativaResponseBuilder.class
 com\electoral\services\ParroquiaService.class
@@ -64,7 +63,6 @@ com\electoral\repositories\RolRepository.class
 com\electoral\dto\CantonResponse$CantonResponseBuilder.class
 com\electoral\dto\ProvinciaRequest$ProvinciaRequestBuilder.class
 com\electoral\repositories\ZonaRepository.class
-com\electoral\controllers\EleccionController.class
 com\electoral\security\CustomUserDetails$CustomUserDetailsBuilder.class
 com\electoral\services\InstitucionEducativaService.class
 com\electoral\dto\ResetPasswordRequest$ResetPasswordRequestBuilder.class
@@ -81,7 +79,6 @@ com\electoral\dto\LoginResponse$LoginResponseBuilder.class
 com\electoral\dto\CantonRequest.class
 com\electoral\dto\ParroquiaRequest.class
 com\electoral\dto\LoginRequest$LoginRequestBuilder.class
-com\electoral\controllers\CargoController.class
 com\electoral\services\PartidoService.class
 com\electoral\controllers\DashboardController.class
 com\electoral\config\SecurityConfig.class
@@ -110,7 +107,6 @@ com\electoral\dto\UsuarioResponse.class
 com\electoral\dto\CandidatoResponse.class
 com\electoral\exception\ErrorResponse$ErrorResponseBuilder.class
 com\electoral\repositories\ProvinciaRepository.class
-com\electoral\controllers\PartidoController.class
 com\electoral\services\ProvinciaService.class
 com\electoral\repositories\MesaUsuarioRepository.class
 com\electoral\dto\DashboardResponse.class

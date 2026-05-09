@@ -5,7 +5,7 @@ export const ADMIN_ROUTES: Routes = [
     path: '',
     loadComponent: () => import('./layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     children: [
-      { path: '', redirectTo: 'zonas', pathMatch: 'full' },
+      { path: '', redirectTo: 'elecciones', pathMatch: 'full' },
       { 
         path: 'zonas', 
         loadComponent: () => import('./pages/zonas/zonas.component').then(m => m.ZonasComponent) 

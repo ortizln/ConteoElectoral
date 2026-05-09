@@ -31,7 +31,7 @@ export class ParroquiasComponent implements OnInit {
   Math = Math;
   errorMessage: string = '';
 
-  constructor(private api: ApiService) {}
+  constructor(public api: ApiService) {}
 
   ngOnInit(): void {
     this.api.getProvincias().subscribe((d: Provincia[]) => this.provincias = d);

@@ -3,9 +3,13 @@ package com.electoral.controllers;
 import com.electoral.dto.ZonaRequest;
 import com.electoral.dto.ZonaResponse;
 import com.electoral.entities.Zona;
+import com.electoral.services.ExcelExportService;
+import com.electoral.services.PdfExportService;
 import com.electoral.services.ZonaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +21,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ZonaController {
     private final ZonaService zonaService;
+    private final ExcelExportService excelExportService;
+    private final PdfExportService pdfExportService;
 
     @GetMapping
     public ResponseEntity<List<ZonaResponse>> findAll() {
@@ -78,5 +84,33 @@ public class ZonaController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         zonaService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/exportar-excel")
+    public ResponseEntity<byte[]> exportarExcel() {
+        List<Zona> zonas = zonaService.findAll();
+        String[] headers = {"ID", "Nombre", "Descripcion"};
+        List<String[]> data = zonas.stream()
+                .map(z -> new String[]{String.valueOf(z.getId()), z.getNombre(), z.getDescripcion()})
+                .collect(Collectors.toList());
+        byte[] excel = excelExportService.exportExcel("Zonas", headers, data);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        httpHeaders.setContentDispositionFormData("attachment", "zonas.xlsx");
+        return ResponseEntity.ok().headers(httpHeaders).body(excel);
+    }
+
+    @GetMapping("/exportar-pdf")
+    public ResponseEntity<byte[]> exportarPdf() {
+        List<Zona> zonas = zonaService.findAll();
+        String[] headers = {"ID", "Nombre", "Descripcion"};
+        List<String[]> data = zonas.stream()
+                .map(z -> new String[]{String.valueOf(z.getId()), z.getNombre(), z.getDescripcion()})
+                .collect(Collectors.toList());
+        byte[] pdf = pdfExportService.exportTablePdf("Zonas", headers, data, new float[]{1, 3, 4});
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_PDF);
+        httpHeaders.setContentDispositionFormData("attachment", "zonas.pdf");
+        return ResponseEntity.ok().headers(httpHeaders).body(pdf);
     }
 }
