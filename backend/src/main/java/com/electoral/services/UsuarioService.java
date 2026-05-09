@@ -12,7 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.Map;
+import com.electoral.util.SecurityUtil;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @SuppressWarnings("null")
@@ -20,6 +25,8 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditoriaService auditoriaService;
+    private final SecurityUtil securityUtil;
 
     public List<UsuarioResponse> getAllUsuarios() {
         return usuarioRepository.findAll().stream()
@@ -55,7 +62,17 @@ public class UsuarioService {
                 .activo(request.getActivo())
                 .build();
 
-        return mapToResponse(usuarioRepository.save(usuario));
+        log.info("Creando {}: {}", "Usuario", usuario.getUsername());
+        Usuario saved = usuarioRepository.save(usuario);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.CREATE,
+            "Usuario",
+            saved.getId(),
+            null,
+            Map.of("username", saved.getUsername(), "nombre", saved.getNombre(), "apellido", saved.getApellido(), "email", saved.getEmail())
+        );
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -67,6 +84,8 @@ public class UsuarioService {
                 usuarioRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateEntityException("El email '" + request.getEmail() + "' ya existe");
         }
+        log.info("Actualizando {} con ID: {}", "Usuario", id);
+        Map<String, Object> datosAnteriores = Map.of("nombre", usuario.getNombre(), "apellido", usuario.getApellido(), "email", usuario.getEmail());
         usuario.setNombre(request.getNombre());
         usuario.setApellido(request.getApellido());
         usuario.setEmail(request.getEmail());
@@ -82,7 +101,16 @@ public class UsuarioService {
             usuario.setRol(rol);
         }
 
-        return mapToResponse(usuarioRepository.save(usuario));
+        Usuario saved = usuarioRepository.save(usuario);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.UPDATE,
+            "Usuario",
+            id,
+            datosAnteriores,
+            Map.of("nombre", saved.getNombre(), "apellido", saved.getApellido(), "email", saved.getEmail())
+        );
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -90,6 +118,15 @@ public class UsuarioService {
         if (!usuarioRepository.existsById(id)) {
             throw new RecursoNoEncontradoException("Usuario no encontrado con ID: " + id);
         }
+        log.warn("Eliminando {} con ID: {}", "Usuario", id);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.DELETE,
+            "Usuario",
+            id,
+            null,
+            null
+        );
         usuarioRepository.deleteById(id);
     }
 

@@ -10,13 +10,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.Map;
+import com.electoral.util.SecurityUtil;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @SuppressWarnings("null")
 public class CargoService {
     private final CargoRepository cargoRepository;
     private final EleccionService eleccionService;
+    private final AuditoriaService auditoriaService;
+    private final SecurityUtil securityUtil;
 
     public List<CargoResponse> getCargosByEleccion(Long eleccionesId) {
         return cargoRepository.findByEleccionesId(eleccionesId).stream()
@@ -41,7 +48,17 @@ public class CargoService {
                 .descripcion(request.getDescripcion())
                 .elecciones(eleccion)
                 .build();
-        return mapToResponse(cargoRepository.save(cargo));
+        log.info("Creando {}: {}", "Cargo", cargo.getNombre());
+        Cargo saved = cargoRepository.save(cargo);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.CREATE,
+            "Cargo",
+            saved.getId(),
+            null,
+            Map.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion())
+        );
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -52,9 +69,20 @@ public class CargoService {
                 cargoRepository.existsByNombreAndEleccionesIdAndIdNot(request.getNombre(), cargo.getElecciones().getId(), id)) {
             throw new DuplicateEntityException("Ya existe un cargo con el nombre '" + request.getNombre() + "' en esta elección");
         }
+        log.info("Actualizando {} con ID: {}", "Cargo", id);
+        Map<String, Object> datosAnteriores = Map.of("nombre", cargo.getNombre(), "descripcion", cargo.getDescripcion());
         cargo.setNombre(request.getNombre());
         cargo.setDescripcion(request.getDescripcion());
-        return mapToResponse(cargoRepository.save(cargo));
+        Cargo saved = cargoRepository.save(cargo);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.UPDATE,
+            "Cargo",
+            id,
+            datosAnteriores,
+            Map.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion())
+        );
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -62,6 +90,15 @@ public class CargoService {
         if (!cargoRepository.existsById(id)) {
             throw new RecursoNoEncontradoException("Cargo no encontrado con ID: " + id);
         }
+        log.warn("Eliminando {} con ID: {}", "Cargo", id);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.DELETE,
+            "Cargo",
+            id,
+            null,
+            null
+        );
         cargoRepository.deleteById(id);
     }
 

@@ -10,13 +10,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.Map;
+import com.electoral.util.SecurityUtil;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @SuppressWarnings("null")
 public class PartidoService {
     private final PartidoRepository partidoRepository;
     private final EleccionService eleccionService;
+    private final AuditoriaService auditoriaService;
+    private final SecurityUtil securityUtil;
 
     public List<PartidoResponse> getPartidosByEleccion(Long eleccionesId) {
         return partidoRepository.findByEleccionesId(eleccionesId).stream()
@@ -42,7 +49,17 @@ public class PartidoService {
                 .logoUrl(request.getLogoUrl())
                 .elecciones(eleccion)
                 .build();
-        return mapToResponse(partidoRepository.save(partido));
+        log.info("Creando {}: {}", "Partido", partido.getNombre());
+        Partido saved = partidoRepository.save(partido);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.CREATE,
+            "Partido",
+            saved.getId(),
+            null,
+            Map.of("nombre", saved.getNombre(), "sigla", saved.getSigla(), "logoUrl", saved.getLogoUrl())
+        );
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -53,10 +70,21 @@ public class PartidoService {
                 partidoRepository.existsByNombreAndEleccionesIdAndIdNot(request.getNombre(), partido.getElecciones().getId(), id)) {
             throw new DuplicateEntityException("Ya existe un partido con el nombre '" + request.getNombre() + "' en esta elección");
         }
+        log.info("Actualizando {} con ID: {}", "Partido", id);
+        Map<String, Object> datosAnteriores = Map.of("nombre", partido.getNombre(), "sigla", partido.getSigla(), "logoUrl", partido.getLogoUrl());
         partido.setNombre(request.getNombre());
         partido.setSigla(request.getSigla());
         partido.setLogoUrl(request.getLogoUrl());
-        return mapToResponse(partidoRepository.save(partido));
+        Partido saved = partidoRepository.save(partido);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.UPDATE,
+            "Partido",
+            id,
+            datosAnteriores,
+            Map.of("nombre", saved.getNombre(), "sigla", saved.getSigla(), "logoUrl", saved.getLogoUrl())
+        );
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -64,6 +92,15 @@ public class PartidoService {
         if (!partidoRepository.existsById(id)) {
             throw new RecursoNoEncontradoException("Partido no encontrado con ID: " + id);
         }
+        log.warn("Eliminando {} con ID: {}", "Partido", id);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.DELETE,
+            "Partido",
+            id,
+            null,
+            null
+        );
         partidoRepository.deleteById(id);
     }
 

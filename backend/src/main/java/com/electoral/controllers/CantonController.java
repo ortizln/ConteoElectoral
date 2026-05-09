@@ -5,8 +5,10 @@ import com.electoral.dto.CantonResponse;
 import com.electoral.entities.Canton;
 import com.electoral.entities.Provincia;
 import com.electoral.services.CantonService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,7 +63,8 @@ public class CantonController {
     }
 
     @PostMapping
-    public ResponseEntity<CantonResponse> save(@RequestBody CantonRequest request) {
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<CantonResponse> save(@Valid @RequestBody CantonRequest request) {
         Canton canton = Canton.builder()
                 .nombre(request.getNombre())
                 .provincia(Provincia.builder().id(request.getProvinciaId()).build())
@@ -79,7 +82,8 @@ public class CantonController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CantonResponse> update(@PathVariable Long id, @RequestBody CantonRequest request) {
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<CantonResponse> update(@PathVariable Long id, @Valid @RequestBody CantonRequest request) {
         Canton canton = cantonService.findById(id);
         canton.setNombre(request.getNombre());
         canton.setDescripcion(request.getDescripcion());
@@ -95,6 +99,7 @@ public class CantonController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         cantonService.delete(id);
         return ResponseEntity.noContent().build();

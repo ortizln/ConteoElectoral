@@ -8,11 +8,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import com.electoral.entities.Auditoria;
+import com.electoral.util.SecurityUtil;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class InstitucionEducativaService {
     private final InstitucionEducativaRepository institucionRepository;
+    private final AuditoriaService auditoriaService;
+    private final SecurityUtil securityUtil;
 
     @Transactional(readOnly = true)
     public List<InstitucionEducativa> findAll() {
@@ -39,7 +47,17 @@ public class InstitucionEducativaService {
                 && institucionRepository.existsByCodigo(institucion.getCodigo())) {
             throw new DuplicateEntityException("Ya existe una institución educativa con el código '" + institucion.getCodigo() + "'");
         }
-        return institucionRepository.save(institucion);
+        log.info("Creando {}: {}", "InstitucionEducativa", institucion.getNombre());
+        InstitucionEducativa saved = institucionRepository.save(institucion);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.CREATE,
+            "InstitucionEducativa",
+            saved.getId(),
+            null,
+            Map.of("nombre", saved.getNombre(), "direccion", saved.getDireccion(), "codigo", saved.getCodigo(), "tipo", saved.getTipo())
+        );
+        return saved;
     }
 
     @Transactional
@@ -55,16 +73,35 @@ public class InstitucionEducativaService {
                 && institucionRepository.existsByCodigo(institucion.getCodigo())) {
             throw new DuplicateEntityException("Ya existe una institución educativa con el código '" + institucion.getCodigo() + "'");
         }
+        log.info("Actualizando {} con ID: {}", "InstitucionEducativa", id);
+        Map<String, Object> datosAnteriores = Map.of("nombre", existing.getNombre(), "direccion", existing.getDireccion(), "codigo", existing.getCodigo(), "tipo", existing.getTipo());
         existing.setNombre(institucion.getNombre());
         existing.setDireccion(institucion.getDireccion());
         existing.setParroquia(institucion.getParroquia());
         existing.setCodigo(institucion.getCodigo());
         existing.setTipo(institucion.getTipo());
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.UPDATE,
+            "InstitucionEducativa",
+            id,
+            datosAnteriores,
+            Map.of("nombre", existing.getNombre(), "direccion", existing.getDireccion(), "codigo", existing.getCodigo(), "tipo", existing.getTipo())
+        );
         return institucionRepository.save(existing);
     }
 
     @Transactional
     public void delete(Long id) {
+        log.warn("Eliminando {} con ID: {}", "InstitucionEducativa", id);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.DELETE,
+            "InstitucionEducativa",
+            id,
+            null,
+            null
+        );
         institucionRepository.deleteById(id);
     }
 }

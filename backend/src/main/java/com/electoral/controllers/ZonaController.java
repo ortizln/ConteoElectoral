@@ -4,8 +4,10 @@ import com.electoral.dto.ZonaRequest;
 import com.electoral.dto.ZonaResponse;
 import com.electoral.entities.Zona;
 import com.electoral.services.ZonaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,7 +43,8 @@ public class ZonaController {
     }
 
     @PostMapping
-    public ResponseEntity<ZonaResponse> save(@RequestBody ZonaRequest request) {
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<ZonaResponse> save(@Valid @RequestBody ZonaRequest request) {
         Zona zona = Zona.builder()
                 .nombre(request.getNombre())
                 .descripcion(request.getDescripcion())
@@ -56,7 +59,8 @@ public class ZonaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ZonaResponse> update(@PathVariable Long id, @RequestBody ZonaRequest request) {
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<ZonaResponse> update(@PathVariable Long id, @Valid @RequestBody ZonaRequest request) {
         Zona zona = zonaService.findById(id);
         zona.setNombre(request.getNombre());
         zona.setDescripcion(request.getDescripcion());
@@ -70,6 +74,7 @@ public class ZonaController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         zonaService.delete(id);
         return ResponseEntity.noContent().build();

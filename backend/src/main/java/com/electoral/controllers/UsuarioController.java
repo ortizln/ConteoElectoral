@@ -48,7 +48,7 @@ public class UsuarioController {
 
     @PostMapping("/{id}/reset-password")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> resetPassword(@PathVariable Long id, @RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<Void> resetPassword(@PathVariable Long id, @Valid @RequestBody ResetPasswordRequest request) {
         usuarioService.resetPassword(id, request.getNuevaPassword());
         return ResponseEntity.ok().build();
     }

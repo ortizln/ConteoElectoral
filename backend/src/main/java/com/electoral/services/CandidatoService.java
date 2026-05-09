@@ -10,7 +10,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.Map;
+import com.electoral.util.SecurityUtil;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @SuppressWarnings("null")
@@ -19,6 +24,8 @@ public class CandidatoService {
     private final PartidoRepository partidoRepository;
     private final CargoRepository cargoRepository;
     private final EleccionService eleccionService;
+    private final AuditoriaService auditoriaService;
+    private final SecurityUtil securityUtil;
 
     @Transactional(readOnly = true)
     public List<CandidatoResponse> getCandidatosByEleccion(Long eleccionesId) {
@@ -69,7 +76,17 @@ public class CandidatoService {
                 .elecciones(eleccion)
                 .build();
         
-        return mapToResponse(candidatoRepository.save(candidato));
+        log.info("Creando {}: {}", "Candidato", candidato.getNombre() + " " + candidato.getApellido());
+        Candidato saved = candidatoRepository.save(candidato);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.CREATE,
+            "Candidato",
+            saved.getId(),
+            null,
+            Map.of("nombre", saved.getNombre(), "apellido", saved.getApellido())
+        );
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -86,6 +103,8 @@ public class CandidatoService {
                     candidato.getElecciones().getId(), partidoId, request.getCargoId())) {
             throw new DuplicateEntityException("Ya existe un candidato para este partido y cargo en esta elección");
         }
+        log.info("Actualizando {} con ID: {}", "Candidato", id);
+        Map<String, Object> datosAnteriores = Map.of("nombre", candidato.getNombre(), "apellido", candidato.getApellido());
         candidato.setNombre(request.getNombre());
         candidato.setApellido(request.getApellido());
         candidato.setFotoUrl(request.getFotoUrl());
@@ -102,7 +121,16 @@ public class CandidatoService {
             candidato.setPartido(partido);
         }
         
-        return mapToResponse(candidatoRepository.save(candidato));
+        Candidato saved = candidatoRepository.save(candidato);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.UPDATE,
+            "Candidato",
+            id,
+            datosAnteriores,
+            Map.of("nombre", saved.getNombre(), "apellido", saved.getApellido())
+        );
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -110,6 +138,15 @@ public class CandidatoService {
         if (!candidatoRepository.existsById(id)) {
             throw new RecursoNoEncontradoException("Candidato no encontrado con ID: " + id);
         }
+        log.warn("Eliminando {} con ID: {}", "Candidato", id);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.DELETE,
+            "Candidato",
+            id,
+            null,
+            null
+        );
         candidatoRepository.deleteById(id);
     }
 

@@ -5,8 +5,10 @@ import com.electoral.dto.InstitucionEducativaResponse;
 import com.electoral.entities.InstitucionEducativa;
 import com.electoral.entities.Parroquia;
 import com.electoral.services.InstitucionEducativaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -67,7 +69,8 @@ public class InstitucionEducativaController {
     }
 
     @PostMapping
-    public ResponseEntity<InstitucionEducativaResponse> save(@RequestBody InstitucionEducativaRequest request) {
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<InstitucionEducativaResponse> save(@Valid @RequestBody InstitucionEducativaRequest request) {
         InstitucionEducativa institucion = InstitucionEducativa.builder()
                 .nombre(request.getNombre())
                 .parroquia(Parroquia.builder().id(request.getParroquiaId()).build())
@@ -89,7 +92,8 @@ public class InstitucionEducativaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<InstitucionEducativaResponse> update(@PathVariable Long id, @RequestBody InstitucionEducativaRequest request) {
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<InstitucionEducativaResponse> update(@PathVariable Long id, @Valid @RequestBody InstitucionEducativaRequest request) {
         InstitucionEducativa institucion = institucionService.findById(id);
         institucion.setNombre(request.getNombre());
         institucion.setDireccion(request.getDireccion());
@@ -109,6 +113,7 @@ public class InstitucionEducativaController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         institucionService.delete(id);
         return ResponseEntity.noContent().build();

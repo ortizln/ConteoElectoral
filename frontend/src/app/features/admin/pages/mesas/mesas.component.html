@@ -11,14 +11,14 @@
       <label>Elección:</label>
       <select class="form-select" (change)="load(form.eleccionesId); currentPage = 1" [(ngModel)]="form.eleccionesId">
         <option [ngValue]="null">Seleccione...</option>
-        <option *ngFor="let e of elecciones" [value]="e.id">{{ e.nombre }}</option>
+        <option *ngFor="let e of elecciones" [ngValue]="e.id">{{ e.nombre }}</option>
       </select>
     </div>
     <div class="filter-item">
       <label>Institución:</label>
       <select class="form-select" [(ngModel)]="filterInstitucionId" (change)="filtrarPorInstitucion()">
         <option [ngValue]="null">Todas</option>
-        <option *ngFor="let i of instituciones" [value]="i.id">{{ i.nombre }}</option>
+        <option *ngFor="let i of instituciones" [ngValue]="i.id">{{ i.nombre }}</option>
       </select>
     </div>
     <div class="filter-item">
@@ -104,28 +104,28 @@
               <label>Zona:</label>
               <select class="form-select" [(ngModel)]="filterZonaId" (change)="onModalZonaChange()">
                 <option [ngValue]="null">Todas</option>
-                <option *ngFor="let z of zonas" [value]="z.id">{{ z.nombre }}</option>
+                <option *ngFor="let z of zonas" [ngValue]="z.id">{{ z.nombre }}</option>
               </select>
             </div>
             <div class="filter-item">
               <label>Provincia:</label>
               <select class="form-select" [(ngModel)]="filterProvinciaId" (change)="onModalProvinciaChange()" [disabled]="!filterZonaId">
                 <option [ngValue]="null">Todas</option>
-                <option *ngFor="let p of provinciasDisponibles" [value]="p.id">{{ p.nombre }}</option>
+                <option *ngFor="let p of provinciasDisponibles" [ngValue]="p.id">{{ p.nombre }}</option>
               </select>
             </div>
             <div class="filter-item">
               <label>Cantón:</label>
               <select class="form-select" [(ngModel)]="filterCantonId" (change)="onModalCantonChange()" [disabled]="!filterProvinciaId">
                 <option [ngValue]="null">Todos</option>
-                <option *ngFor="let c of cantonesDisponibles" [value]="c.id">{{ c.nombre }}</option>
+                <option *ngFor="let c of cantonesDisponibles" [ngValue]="c.id">{{ c.nombre }}</option>
               </select>
             </div>
             <div class="filter-item">
               <label>Parroquia:</label>
               <select class="form-select" [(ngModel)]="filterParroquiaId" (change)="onModalParroquiaChange()" [disabled]="!filterCantonId">
                 <option [ngValue]="null">Todas</option>
-                <option *ngFor="let p of parroquiasDisponibles" [value]="p.id">{{ p.nombre }}</option>
+                <option *ngFor="let p of parroquiasDisponibles" [ngValue]="p.id">{{ p.nombre }}</option>
               </select>
             </div>
           </div>
@@ -133,15 +133,17 @@
           <div class="mb-3">
             <label>Buscar institución:</label>
             <input type="text" class="form-control" [(ngModel)]="buscarInstitucionText" placeholder="Escriba nombre para filtrar..." (input)="form.institucionId = null" />
+            <small class="text-muted">{{ instituciones.length }} instituciones cargadas</small>
           </div>
 
           <div class="mb-3">
             <label>Institución:</label>
             <select class="form-select" [(ngModel)]="form.institucionId">
-              <option [ngValue]="null" disabled>Seleccione una institución...</option>
-              <option *ngFor="let i of filteredInstituciones" [value]="i.id">{{ i.nombre }}</option>
+              <option [ngValue]="null">Seleccione una institución...</option>
+              <option *ngFor="let i of filteredInstituciones" [ngValue]="i.id">{{ i.nombre }}</option>
             </select>
-            <small *ngIf="filteredInstituciones.length === 0" class="text-muted">No se encontraron instituciones con los filtros aplicados</small>
+            <small *ngIf="filteredInstituciones.length === 0 && institucionesCargadas" class="text-muted">No se encontraron instituciones con los filtros aplicados</small>
+            <small *ngIf="!institucionesCargadas" class="text-muted">Cargando instituciones...</small>
           </div>
 
           <div class="mb-3">

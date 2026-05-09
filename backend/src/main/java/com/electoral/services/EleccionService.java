@@ -11,7 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.Map;
+import com.electoral.util.SecurityUtil;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @SuppressWarnings("null")
@@ -19,6 +24,8 @@ public class EleccionService {
     private final EleccionRepository eleccionRepository;
     private final MesaRepository mesaRepository;
     private final VotoRepository votoRepository;
+    private final AuditoriaService auditoriaService;
+    private final SecurityUtil securityUtil;
 
     public List<EleccionResponse> getAllElecciones() {
         return eleccionRepository.findAll().stream()
@@ -59,7 +66,17 @@ public class EleccionService {
                 .activa(request.getActiva())
                 .build();
         
-        return mapToResponse(eleccionRepository.save(eleccion));
+        log.info("Creando {}: {}", "Eleccion", eleccion.getNombre());
+        Eleccion saved = eleccionRepository.save(eleccion);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.CREATE,
+            "Eleccion",
+            saved.getId(),
+            null,
+            Map.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion())
+        );
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -70,13 +87,24 @@ public class EleccionService {
                 eleccionRepository.existsByNombreAndIdNot(request.getNombre(), id)) {
             throw new DuplicateEntityException("Ya existe una elección con el nombre '" + request.getNombre() + "'");
         }
+        log.info("Actualizando {} con ID: {}", "Eleccion", id);
+        Map<String, Object> datosAnteriores = Map.of("nombre", eleccion.getNombre(), "descripcion", eleccion.getDescripcion());
         eleccion.setNombre(request.getNombre());
         eleccion.setDescripcion(request.getDescripcion());
         eleccion.setFechaInicio(request.getFechaInicio());
         eleccion.setFechaFin(request.getFechaFin());
         eleccion.setActiva(request.getActiva());
 
-        return mapToResponse(eleccionRepository.save(eleccion));
+        Eleccion saved = eleccionRepository.save(eleccion);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.UPDATE,
+            "Eleccion",
+            id,
+            datosAnteriores,
+            Map.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion())
+        );
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -84,6 +112,15 @@ public class EleccionService {
         if (!eleccionRepository.existsById(id)) {
             throw new RecursoNoEncontradoException("Elección no encontrada con ID: " + id);
         }
+        log.warn("Eliminando {} con ID: {}", "Eleccion", id);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.DELETE,
+            "Eleccion",
+            id,
+            null,
+            null
+        );
         eleccionRepository.deleteById(id);
     }
 

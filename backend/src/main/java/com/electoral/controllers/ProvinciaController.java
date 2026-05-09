@@ -5,8 +5,10 @@ import com.electoral.dto.ProvinciaResponse;
 import com.electoral.entities.Provincia;
 import com.electoral.entities.Zona;
 import com.electoral.services.ProvinciaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,7 +63,8 @@ public class ProvinciaController {
     }
 
     @PostMapping
-    public ResponseEntity<ProvinciaResponse> save(@RequestBody ProvinciaRequest request) {
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<ProvinciaResponse> save(@Valid @RequestBody ProvinciaRequest request) {
         Provincia provincia = Provincia.builder()
                 .nombre(request.getNombre())
                 .zona(Zona.builder().id(request.getZonaId()).build())
@@ -79,7 +82,8 @@ public class ProvinciaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProvinciaResponse> update(@PathVariable Long id, @RequestBody ProvinciaRequest request) {
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<ProvinciaResponse> update(@PathVariable Long id, @Valid @RequestBody ProvinciaRequest request) {
         Provincia provincia = provinciaService.findById(id);
         provincia.setNombre(request.getNombre());
         provincia.setDescripcion(request.getDescripcion());
@@ -95,6 +99,7 @@ public class ProvinciaController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         provinciaService.delete(id);
         return ResponseEntity.noContent().build();

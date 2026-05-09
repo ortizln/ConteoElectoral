@@ -11,7 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import java.util.HashMap;
+import java.util.Map;
+import com.electoral.util.SecurityUtil;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @SuppressWarnings("null")
@@ -20,6 +25,8 @@ public class MesaService {
     private final InstitucionEducativaRepository institucionRepository;
     private final EleccionService eleccionService;
     private final MesaUsuarioRepository mesaUsuarioRepository;
+    private final AuditoriaService auditoriaService;
+    private final SecurityUtil securityUtil;
 
     @Transactional(readOnly = true)
     public List<MesaResponse> getMesasByEleccion(Long eleccionesId) {
@@ -64,7 +71,17 @@ public class MesaService {
                 .cerrada(false)
                 .build();
 
-        return mapToResponse(mesaRepository.save(mesa));
+        log.info("Creando {}: {}", "Mesa", mesa.getNumero());
+        Mesa saved = mesaRepository.save(mesa);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.CREATE,
+            "Mesa",
+            saved.getId(),
+            null,
+            Map.of("numero", saved.getNumero(), "sexo", saved.getSexo().name())
+        );
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -76,10 +93,21 @@ public class MesaService {
                 mesaRepository.existsByNumeroAndInstitucionIdAndIdNot(request.getNumero(), mesa.getInstitucion().getId(), id)) {
             throw new DuplicateEntityException("Ya existe una mesa con el número '" + request.getNumero() + "' en esta institución");
         }
+        log.info("Actualizando {} con ID: {}", "Mesa", id);
+        Map<String, Object> datosAnteriores = Map.of("numero", mesa.getNumero(), "sexo", mesa.getSexo().name());
         if (request.getNumero() != null) mesa.setNumero(request.getNumero());
         if (request.getSexo() != null) mesa.setSexo(Mesa.SexoMesa.valueOf(request.getSexo()));
 
-        return mapToResponse(mesaRepository.save(mesa));
+        Mesa saved = mesaRepository.save(mesa);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.UPDATE,
+            "Mesa",
+            id,
+            datosAnteriores,
+            Map.of("numero", saved.getNumero(), "sexo", saved.getSexo().name())
+        );
+        return mapToResponse(saved);
     }
 
     @Transactional
@@ -87,6 +115,15 @@ public class MesaService {
         if (!mesaRepository.existsById(id)) {
             throw new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id);
         }
+        log.warn("Eliminando {} con ID: {}", "Mesa", id);
+        auditoriaService.registrarAccion(
+            securityUtil.getCurrentUserId(),
+            Auditoria.TipoAccion.DELETE,
+            "Mesa",
+            id,
+            null,
+            null
+        );
         mesaRepository.deleteById(id);
     }
 

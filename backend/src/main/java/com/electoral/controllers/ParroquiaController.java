@@ -5,8 +5,10 @@ import com.electoral.dto.ParroquiaResponse;
 import com.electoral.entities.Canton;
 import com.electoral.entities.Parroquia;
 import com.electoral.services.ParroquiaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -61,7 +63,8 @@ public class ParroquiaController {
     }
 
     @PostMapping
-    public ResponseEntity<ParroquiaResponse> save(@RequestBody ParroquiaRequest request) {
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<ParroquiaResponse> save(@Valid @RequestBody ParroquiaRequest request) {
         Parroquia parroquia = Parroquia.builder()
                 .nombre(request.getNombre())
                 .canton(Canton.builder().id(request.getCantonId()).build())
@@ -79,7 +82,8 @@ public class ParroquiaController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ParroquiaResponse> update(@PathVariable Long id, @RequestBody ParroquiaRequest request) {
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<ParroquiaResponse> update(@PathVariable Long id, @Valid @RequestBody ParroquiaRequest request) {
         Parroquia parroquia = parroquiaService.findById(id);
         parroquia.setNombre(request.getNombre());
         parroquia.setDescripcion(request.getDescripcion());
@@ -95,6 +99,7 @@ public class ParroquiaController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         parroquiaService.delete(id);
         return ResponseEntity.noContent().build();

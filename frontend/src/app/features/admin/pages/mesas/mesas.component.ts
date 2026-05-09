@@ -39,12 +39,17 @@ export class MesasComponent implements OnInit {
   filterCantonId: number | null = null;
   filterParroquiaId: number | null = null;
   buscarInstitucionText: string = '';
+  institucionesCargadas = false;
+  zonasCargadas = false;
 
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
-    this.api.getZonas().subscribe((d: Zona[]) => this.zonas = d);
-    this.api.getInstituciones().subscribe((d: InstitucionEducativa[]) => this.instituciones = d);
+    this.api.getZonas().subscribe((d: Zona[]) => { this.zonas = d; this.zonasCargadas = true; });
+    this.api.getInstituciones().subscribe((d: InstitucionEducativa[]) => {
+      this.instituciones = d;
+      this.institucionesCargadas = true;
+    });
     this.api.getElecciones().subscribe((e: Eleccion[]) => {
       this.elecciones = e;
       if (e.length > 0) {
@@ -57,11 +62,11 @@ export class MesasComponent implements OnInit {
   get filteredInstituciones(): InstitucionEducativa[] {
     let result = this.instituciones;
     if (this.filterParroquiaId) {
-      result = result.filter(i => i.parroquiaId === this.filterParroquiaId);
+      result = result.filter(i => Number(i.parroquiaId) === Number(this.filterParroquiaId));
     }
     if (this.buscarInstitucionText) {
       const term = this.buscarInstitucionText.toLowerCase();
-      result = result.filter(i => i.nombre.toLowerCase().includes(term));
+      result = result.filter(i => i.nombre && i.nombre.toLowerCase().includes(term));
     }
     return result;
   }
