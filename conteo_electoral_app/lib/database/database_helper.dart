@@ -20,8 +20,9 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
@@ -31,8 +32,8 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY,
         nombre TEXT NOT NULL,
         descripcion TEXT,
-        fecha_inicio TEXT NOT NULL,
-        fecha_fin TEXT NOT NULL,
+        fechaInicio TEXT NOT NULL,
+        fechaFin TEXT NOT NULL,
         activa INTEGER NOT NULL
       )
     ''');
@@ -88,7 +89,8 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY,
         numero TEXT NOT NULL,
         sexo TEXT NOT NULL,
-        recintoId INTEGER NOT NULL,
+        institucionId INTEGER NOT NULL,
+        institucionNombre TEXT,
         eleccionesId INTEGER NOT NULL,
         cerrada INTEGER NOT NULL DEFAULT 0,
         usuarioId INTEGER
@@ -118,6 +120,18 @@ class DatabaseHelper {
 
     await db.execute('CREATE INDEX idx_votos_mesa ON votos(mesaId)');
     await db.execute('CREATE INDEX idx_votos_sinc ON votos(sincronizado)');
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE mesas ADD COLUMN institucionId INTEGER DEFAULT 0');
+      await db.execute('UPDATE mesas SET institucionId = recintoId');
+      await db.execute('ALTER TABLE mesas ADD COLUMN institucionNombre TEXT');
+      await db.execute('ALTER TABLE elecciones ADD COLUMN fechaInicio TEXT');
+      await db.execute('UPDATE elecciones SET fechaInicio = fecha_inicio');
+      await db.execute('ALTER TABLE elecciones ADD COLUMN fechaFin TEXT');
+      await db.execute('UPDATE elecciones SET fechaFin = fecha_fin');
+    }
   }
 
   Future<void> guardarElecciones(List<Eleccion> elecciones) async {
@@ -326,7 +340,8 @@ class DatabaseHelper {
           'id': mesa.id,
           'numero': mesa.numero,
           'sexo': mesa.sexo,
-          'recintoId': mesa.recintoId,
+          'institucionId': mesa.institucionId,
+          'institucionNombre': mesa.institucionNombre,
           'eleccionesId': mesa.eleccionesId,
           'cerrada': mesa.cerrada ? 1 : 0,
           'usuarioId': mesa.usuarioId,
@@ -348,7 +363,8 @@ class DatabaseHelper {
       id: m['id'] as int,
       numero: m['numero'] as String,
       sexo: m['sexo'] as String,
-      recintoId: m['recintoId'] as int,
+      institucionId: m['institucionId'] as int,
+      institucionNombre: m['institucionNombre'] as String?,
       eleccionesId: m['eleccionesId'] as int,
       cerrada: (m['cerrada'] as int) == 1,
       usuarioId: m['usuarioId'] as int?,
@@ -364,7 +380,8 @@ class DatabaseHelper {
       id: m['id'] as int,
       numero: m['numero'] as String,
       sexo: m['sexo'] as String,
-      recintoId: m['recintoId'] as int,
+      institucionId: m['institucionId'] as int,
+      institucionNombre: m['institucionNombre'] as String?,
       eleccionesId: m['eleccionesId'] as int,
       cerrada: (m['cerrada'] as int) == 1,
       usuarioId: m['usuarioId'] as int?,
@@ -462,6 +479,32 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<void> guardarVotosSincronizados(List<Voto> votos) async {
+    final db = await database;
+    final batch = db.batch();
+    for (var voto in votos) {
+      batch.insert(
+        'votos',
+        {
+          'id': voto.id,
+          'candidatoId': voto.candidatoId,
+          'mesaId': voto.mesaId,
+          'cantidadVotos': voto.cantidadVotos,
+          'eleccionesId': voto.eleccionesId,
+          'sincronizado': 1,
+          'fechaRegistro': voto.fechaRegistro.toIso8601String(),
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  Future<void> limpiarVotosSincronizadosByMesa(int mesaId) async {
+    final db = await database;
+    await db.delete('votos', where: 'mesaId = ? AND sincronizado = 1', whereArgs: [mesaId]);
   }
 
   Future<void> eliminarVoto(int id) async {

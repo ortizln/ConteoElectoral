@@ -161,7 +161,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
                   style: const TextStyle(fontSize: 16),
                 ),
                 Text(
-                  provider.recintoActual?.nombre ?? '',
+                  provider.mesaActual?.institucionNombre ?? '',
                   style: const TextStyle(fontSize: 12),
                 ),
               ],
@@ -439,7 +439,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
       ),
       floatingActionButton: Consumer<AppProvider>(
         builder: (context, provider, _) {
-          if (provider.mesaActual?.cerrada == true || provider.totalVotos == 0) {
+          if (provider.mesaActual?.cerrada == true || provider.totalVotos == 0 || _candidatoSeleccionado != null) {
             return const SizedBox.shrink();
           }
           return FloatingActionButton.extended(

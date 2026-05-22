@@ -523,6 +523,40 @@ class ApiService {
     }
   }
 
+  Future<List<Mesa>> getMesasByCurrentUser(int eleccionesId, {String? token}) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/mesas/usuario/actual/eleccion/$eleccionesId'),
+        headers: _headers(token: token),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((e) => Mesa.fromJson(e)).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<Voto>> getVotosByMesa(int mesaId, {String? token}) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/votos/mesa/$mesaId'),
+        headers: _headers(token: token),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((e) => Voto.fromJson(e)).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   Future<bool> registrarVoto(Voto voto, {String? token}) async {
     try {
       final response = await http.post(
@@ -579,17 +613,13 @@ class ApiService {
 
   Future<Map<String, dynamic>> testConnection() async {
     try {
-      final response = await http.get(
+      final response = await http.post(
         Uri.parse('$baseUrl/auth/login'),
         headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'username': 'test', 'password': 'test'}),
       ).timeout(const Duration(seconds: 5));
 
-      if (response.statusCode == 405 || response.statusCode == 200) {
-        return {'success': true, 'message': 'Conexión exitosa al servidor'};
-      } else if (response.statusCode == 401 || response.statusCode == 403) {
-        return {'success': true, 'message': 'Servidor responde (auth requerida)'};
-      }
-      return {'success': false, 'message': 'Servidor responde con código: ${response.statusCode}'};
+      return {'success': true, 'message': 'Conexión exitosa al servidor'};
     } catch (e) {
       return {'success': false, 'message': 'No se pudo conectar: $e'};
     }

@@ -2,7 +2,8 @@ class Mesa {
   final int id;
   final String numero;
   final String sexo;
-  final int recintoId;
+  final int institucionId;
+  final String? institucionNombre;
   final int eleccionesId;
   final bool cerrada;
   final int? usuarioId;
@@ -11,7 +12,8 @@ class Mesa {
     required this.id,
     required this.numero,
     required this.sexo,
-    required this.recintoId,
+    required this.institucionId,
+    this.institucionNombre,
     required this.eleccionesId,
     required this.cerrada,
     this.usuarioId,
@@ -22,7 +24,8 @@ class Mesa {
       id: json['id'],
       numero: json['numero'],
       sexo: json['sexo'],
-      recintoId: json['recintoId'],
+      institucionId: json['institucionId'] ?? json['recintoId'] ?? 0,
+      institucionNombre: json['institucionNombre'],
       eleccionesId: json['eleccionesId'],
       cerrada: json['cerrada'] ?? false,
       usuarioId: json['usuarioId'],
@@ -34,7 +37,8 @@ class Mesa {
       'id': id,
       'numero': numero,
       'sexo': sexo,
-      'recintoId': recintoId,
+      'institucionId': institucionId,
+      'institucionNombre': institucionNombre,
       'eleccionesId': eleccionesId,
       'cerrada': cerrada,
       'usuarioId': usuarioId,

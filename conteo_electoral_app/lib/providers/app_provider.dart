@@ -18,7 +18,7 @@ class AppProvider extends ChangeNotifier {
   bool _isOnline = true;
   bool _isLoading = false;
   String? _error;
-  String _serverUrl = 'http://10.0.2.2:8080/api';
+  String _serverUrl = 'http://10.0.2.2:8081/api';
 
   List<Candidato> _candidatos = [];
   List<Partido> _partidos = [];
@@ -52,7 +52,7 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> _loadServerUrl() async {
     final prefs = await SharedPreferences.getInstance();
-    _serverUrl = prefs.getString('server_url') ?? 'http://10.0.2.2:8080/api';
+    _serverUrl = prefs.getString('server_url') ?? 'http://10.0.2.2:8081/api';
     await _api.setServerUrl(_serverUrl);
   }
 
@@ -142,8 +142,16 @@ class AppProvider extends ChangeNotifier {
         final recintos = await _api.getRecintosByEleccion(_eleccionActual!.id, token: token);
         await _db.guardarRecintos(recintos);
         
-        final mesas = await _api.getMesasByEleccion(_eleccionActual!.id, token: token);
+        final mesas = await _api.getMesasByCurrentUser(_eleccionActual!.id, token: token);
         await _db.guardarMesas(mesas);
+
+        for (var mesa in mesas) {
+          await _db.limpiarVotosSincronizadosByMesa(mesa.id);
+          final votosServer = await _api.getVotosByMesa(mesa.id, token: token);
+          if (votosServer.isNotEmpty) {
+            await _db.guardarVotosSincronizados(votosServer);
+          }
+        }
         
         _partidos = partidos;
         _cargos = cargos;
@@ -175,7 +183,7 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> seleccionarMesa(Mesa mesa) async {
     _mesaActual = mesa;
-    _recintoActual = await _db.getRecinto(mesa.recintoId);
+    _recintoActual = null;
     _votosMesa = await _db.getVotosByMesa(mesa.id);
     _totalVotos = _votosMesa.fold(0, (sum, v) => sum + v.cantidadVotos);
     notifyListeners();

@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mesas.isNotEmpty && mounted) {
       await _provider.seleccionarMesa(mesas.first);
       if (mounted) {
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const VotacionScreen()),
         );
@@ -255,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 final navigator = Navigator.of(context);
                                 provider.seleccionarMesa(mesa).then((_) {
                                   if (!mounted) return;
-                                  navigator.pushReplacement(
+                                  navigator.push(
                                     MaterialPageRoute(
                                       builder: (_) => const VotacionScreen(),
                                     ),
