@@ -39,7 +39,7 @@ public class UsuarioController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UsuarioResponse> updateUsuario(@PathVariable Long id, @Valid @RequestBody UsuarioRequest request) {
+    public ResponseEntity<UsuarioResponse> updateUsuario(@PathVariable Long id, @Valid @RequestBody UsuarioUpdateRequest request) {
         return ResponseEntity.ok(usuarioService.updateUsuario(id, request));
     }
 

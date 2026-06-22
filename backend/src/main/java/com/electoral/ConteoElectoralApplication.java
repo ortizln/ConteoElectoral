@@ -11,6 +11,5 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class ConteoElectoralApplication {
     public static void main(String[] args) {
         SpringApplication.run(ConteoElectoralApplication.class, args);
-        log.info("===== APLICACIÓN INICIADA =====");
     }
 }

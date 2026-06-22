@@ -76,7 +76,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioResponse updateUsuario(Long id, UsuarioRequest request) {
+    public UsuarioResponse updateUsuario(Long id, UsuarioUpdateRequest request) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con ID: " + id));
 

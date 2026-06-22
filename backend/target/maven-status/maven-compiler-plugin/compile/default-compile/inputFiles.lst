@@ -58,6 +58,7 @@ C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\ele
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\ProvinciaResponse.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\PartidoResponse.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\controllers\InstitucionEducativaController.java
+C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\UsuarioUpdateRequest.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\repositories\EleccionRepository.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\security\CustomUserDetails.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\DataInitializer.java
