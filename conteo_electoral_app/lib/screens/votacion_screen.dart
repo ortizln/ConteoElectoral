@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
+import '../theme/app_theme.dart';
+import '../widgets/widgets.dart';
 import '../models/models.dart';
 
 class VotacionScreen extends StatefulWidget {
@@ -11,420 +13,337 @@ class VotacionScreen extends StatefulWidget {
 }
 
 class _VotacionScreenState extends State<VotacionScreen> {
-  Candidato? _candidatoSeleccionado;
-  final _cantidadController = TextEditingController(text: '1');
+  Candidato? _selected;
+  final _cantidadCtrl = TextEditingController(text: '1');
   String _filtroPartido = '';
   String _filtroCargo = '';
   String _busqueda = '';
-  String _ordenarPor = 'cargo';
+  String _ordenPor = 'cargo';
 
   @override
   void dispose() {
-    _cantidadController.dispose();
+    _cantidadCtrl.dispose();
     super.dispose();
   }
 
   List<Candidato> get _candidatosFiltrados {
     final provider = context.read<AppProvider>();
-    var candidatos = provider.candidatos;
+    var list = List<Candidato>.from(provider.candidatos);
 
     if (_busqueda.isNotEmpty) {
-      final texto = _busqueda.toLowerCase();
-      candidatos = candidatos.where((c) =>
-        c.nombre.toLowerCase().contains(texto) ||
-        c.apellido.toLowerCase().contains(texto)
-      ).toList();
+      final q = _busqueda.toLowerCase();
+      list = list.where((c) => c.nombreCompleto.toLowerCase().contains(q)).toList();
     }
-
     if (_filtroPartido.isNotEmpty) {
-      candidatos = candidatos.where((c) =>
-        c.partidoNombre == _filtroPartido
-      ).toList();
+      list = list.where((c) => c.partidoNombre == _filtroPartido).toList();
     }
-
     if (_filtroCargo.isNotEmpty) {
-      candidatos = candidatos.where((c) =>
-        c.cargoNombre == _filtroCargo
-      ).toList();
+      list = list.where((c) => c.cargoNombre == _filtroCargo).toList();
     }
 
-    switch (_ordenarPor) {
+    switch (_ordenPor) {
       case 'partido':
-        candidatos.sort((a, b) => a.partidoNombre.compareTo(b.partidoNombre));
+        list.sort((a, b) => a.partidoNombre.compareTo(b.partidoNombre));
         break;
       case 'candidato':
-        candidatos.sort((a, b) => a.nombreCompleto.compareTo(b.nombreCompleto));
+        list.sort((a, b) => a.nombreCompleto.compareTo(b.nombreCompleto));
         break;
       default:
-        candidatos.sort((a, b) => a.cargoNombre.compareTo(b.cargoNombre));
+        list.sort((a, b) => a.cargoNombre.compareTo(b.cargoNombre));
     }
-
-    return candidatos;
+    return list;
   }
 
   List<String> get _partidosUnicos {
-    final provider = context.read<AppProvider>();
-    return provider.candidatos
-        .map((c) => c.partidoNombre)
-        .toSet()
-        .toList()
-      ..sort();
+    final p = context.read<AppProvider>();
+    return p.candidatos.map((c) => c.partidoNombre).toSet().toList()..sort();
   }
 
-  List<String> get _cargosUnicos {
-    final provider = context.read<AppProvider>();
-    return provider.candidatos
-        .map((c) => c.cargoNombre)
-        .toSet()
-        .toList()
-      ..sort();
-  }
-
-  Future<void> _registrarVoto() async {
-    if (_candidatoSeleccionado == null) return;
-
-    final cantidad = int.tryParse(_cantidadController.text) ?? 1;
+  Future<void> _registrar() async {
+    if (_selected == null) return;
+    final cantidad = int.tryParse(_cantidadCtrl.text) ?? 1;
     if (cantidad <= 0) return;
 
     final provider = context.read<AppProvider>();
-    await provider.registrarVoto(_candidatoSeleccionado!, cantidad);
+    await provider.registrarVoto(_selected!, cantidad);
 
     setState(() {
-      _candidatoSeleccionado = null;
-      _cantidadController.text = '1';
+      _selected = null;
+      _cantidadCtrl.text = '1';
     });
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Voto registrado'),
-          duration: Duration(seconds: 1),
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Voto registrado'),
+        duration: Duration(seconds: 1),
+      ));
     }
   }
 
-  Future<void> _cerrarActa() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cerrar Acta'),
-        content: const Text(
-          '¿Está seguro de cerrar el acta? Una vez cerrada no podrá modificar los votos.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Cerrar Acta'),
-          ),
-        ],
-      ),
+  Future<void> _cerrar() async {
+    final confirm = await showConfirmDialog(
+      context,
+      title: 'Cerrar Acta',
+      message: 'Una vez cerrada no podrá modificar los votos.\n¿Está seguro?',
+      confirmText: 'Cerrar Acta',
+      confirmColor: AppColors.error,
     );
-
-    if (confirm == true && mounted) {
-      final provider = context.read<AppProvider>();
-      await provider.cerrarActa();
+    if (confirm && mounted) {
+      await context.read<AppProvider>().cerrarActa();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Acta cerrada')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Acta cerrada')));
       }
     }
   }
 
   Future<void> _sincronizar() async {
-    final provider = context.read<AppProvider>();
-    await provider.sincronizarVotos();
+    await context.read<AppProvider>().sincronizarVotos();
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Datos sincronizados')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sincronizado')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Consumer<AppProvider>(
-          builder: (context, provider, _) {
-            return Column(
+    return Consumer<AppProvider>(
+      builder: (context, provider, _) {
+        if (provider.mesaActual?.cerrada == true) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Mesa Cerrada')),
+            body: const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.lock_outline, size: 64, color: AppColors.error),
+                  SizedBox(height: 16),
+                  Text('Acta cerrada', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.error)),
+                  SizedBox(height: 8),
+                  Text('No se pueden modificar los votos', style: TextStyle(color: AppColors.gray)),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Mesa ${provider.mesaActual?.numero ?? ''}',
-                  style: const TextStyle(fontSize: 16),
-                ),
-                Text(
-                  provider.mesaActual?.institucionNombre ?? '',
-                  style: const TextStyle(fontSize: 12),
-                ),
+                Text('Mesa ${provider.mesaActual?.numero ?? ''}', style: const TextStyle(fontSize: 16)),
+                if (provider.mesaActual?.institucionNombre != null)
+                  Text(provider.mesaActual!.institucionNombre!, style: const TextStyle(fontSize: 11, color: AppColors.gray)),
               ],
-            );
-          },
-        ),
-        actions: [
-          Consumer<AppProvider>(
-            builder: (context, provider, _) {
-              if (provider.mesaActual?.cerrada == true) {
-                return Container(
-                  margin: const EdgeInsets.only(right: 16),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Text(
-                    'CERRADA',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.sync),
-            tooltip: 'Sincronizar',
-            onPressed: _sincronizar,
-          ),
-        ],
-      ),
-      body: Consumer<AppProvider>(
-        builder: (context, provider, _) {
-          if (provider.mesaActual?.cerrada == true) {
-            return const Center(
-              child: Card(
-                color: Colors.red,
-                child: Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Text(
-                    'Esta mesa ha sido cerrada',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                    ),
-                  ),
+            ),
+            actions: [
+              if (provider.totalVotos > 0)
+                TextButton.icon(
+                  onPressed: _cerrar,
+                  icon: const Icon(Icons.lock_outline, size: 18, color: AppColors.error),
+                  label: const Text('Cerrar', style: TextStyle(color: AppColors.error, fontSize: 13)),
                 ),
-              ),
-            );
-          }
-
-          return Column(
+              IconButton(icon: const Icon(Icons.sync), tooltip: 'Sincronizar', onPressed: _sincronizar),
+            ],
+          ),
+          body: Column(
             children: [
+              // Filters
               Container(
-                padding: const EdgeInsets.all(12),
-                color: Colors.grey[100],
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                color: AppColors.surface,
                 child: Column(
                   children: [
                     TextField(
                       decoration: const InputDecoration(
                         hintText: 'Buscar candidato...',
-                        prefixIcon: Icon(Icons.search),
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
+                        prefixIcon: Icon(Icons.search, size: 20),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         isDense: true,
                       ),
-                      onChanged: (value) {
-                        setState(() => _busqueda = value);
-                      },
+                      onChanged: (v) => setState(() => _busqueda = v),
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              isDense: true,
-                            ),
-                            hint: const Text('Partido'),
-                            items: [
-                              const DropdownMenuItem(
-                                value: '',
-                                child: Text('Todos'),
-                              ),
-                              ..._partidosUnicos.map((p) => DropdownMenuItem(
-                                value: p,
-                                child: Text(p),
-                              )),
-                            ],
-                            onChanged: (value) {
-                              setState(() => _filtroPartido = value ?? '');
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            decoration: const InputDecoration(
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
-                              ),
-                              isDense: true,
-                            ),
-                            hint: const Text('Cargo'),
-                            items: [
-                              const DropdownMenuItem(
-                                value: '',
-                                child: Text('Todos'),
-                              ),
-                              ..._cargosUnicos.map((c) => DropdownMenuItem(
-                                value: c,
-                                child: Text(c),
-                              )),
-                            ],
-                            onChanged: (value) {
-                              setState(() => _filtroCargo = value ?? '');
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        DropdownButton<String>(
-                          value: _ordenarPor,
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'cargo',
-                              child: Text('Cargo'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'partido',
-                              child: Text('Partido'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'candidato',
-                              child: Text('Nombre'),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            setState(() => _ordenarPor = value ?? 'cargo');
-                          },
-                        ),
-                      ],
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _filterChip('Todos', '', _filtroPartido.isEmpty && _filtroCargo.isEmpty, () {
+                            setState(() { _filtroPartido = ''; _filtroCargo = ''; });
+                          }),
+                          const SizedBox(width: 6),
+                          ..._partidosUnicos.take(5).map((p) => Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: _filterChip(p, p, _filtroPartido == p, () => setState(() {
+                              _filtroPartido = _filtroPartido == p ? '' : p;
+                            })),
+                          )),
+                        ],
+                      ),
                     ),
+                    if (_partidosUnicos.length > 5) ...[
+                      const SizedBox(height: 6),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            ..._partidosUnicos.skip(5).map((p) => Padding(
+                              padding: const EdgeInsets.only(right: 6),
+                              child: _filterChip(p, p, _filtroPartido == p, () => setState(() {
+                                _filtroPartido = _filtroPartido == p ? '' : p;
+                              })),
+                            )),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _candidatosFiltrados.length,
-                  itemBuilder: (context, index) {
-                    final candidato = _candidatosFiltrados[index];
-                    final votos = provider.getVotosCandidato(candidato);
 
-                    return ListTile(
-                      leading: _candidatoSeleccionado?.id == candidato.id
-                          ? const CircleAvatar(
-                              backgroundColor: Colors.blue,
-                              child: Icon(Icons.check, color: Colors.white),
-                            )
-                          : CircleAvatar(
-                              backgroundColor: Colors.grey[300],
-                              child: Text(
-                                candidato.nombre[0] + candidato.apellido[0],
+              // Candidate list
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: () async => _sincronizar(),
+                  child: _candidatosFiltrados.isEmpty
+                      ? const EmptyState(icon: Icons.person_search_outlined, title: 'Sin candidatos', subtitle: 'No se encontraron candidatos')
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                          itemCount: _candidatosFiltrados.length,
+                          itemBuilder: (context, index) {
+                            final c = _candidatosFiltrados[index];
+                            final votos = provider.getVotosCandidato(c);
+                            final isSelected = _selected?.id == c.id;
+                            final partyColor = AppColors.chartColors[index % AppColors.chartColors.length];
+
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(
+                                  color: isSelected ? AppColors.primary : AppColors.border,
+                                  width: isSelected ? 2 : 1,
+                                ),
                               ),
-                            ),
-                      title: Text(candidato.nombreCompleto),
-                      subtitle: Text(
-                        '${candidato.partidoNombre} - ${candidato.cargoNombre}',
-                      ),
-                      trailing: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(12),
+                                onTap: () => setState(() => _selected = isSelected ? null : c),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 44, height: 44,
+                                        decoration: BoxDecoration(
+                                          color: isSelected ? AppColors.primary : partyColor.withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Center(
+                                          child: isSelected
+                                              ? const Icon(Icons.check, color: Colors.white, size: 22)
+                                              : Text(c.nombreCompleto[0], style: TextStyle(
+                                                  fontWeight: FontWeight.bold, color: partyColor, fontSize: 18)),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(c.nombreCompleto, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                                            const SizedBox(height: 2),
+                                            Text('${c.partidoNombre} · ${c.cargoNombre}', style: AppTextStyles.bodySmall),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                        decoration: BoxDecoration(
+                                          color: votos > 0 ? AppColors.success.withValues(alpha: 0.1) : AppColors.muted,
+                                          borderRadius: BorderRadius.circular(16),
+                                        ),
+                                        child: Text(
+                                          '$votos',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: votos > 0 ? AppColors.success : AppColors.lightGray,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                        decoration: BoxDecoration(
-                          color: votos > 0 ? Colors.green[100] : Colors.grey[200],
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          '$votos',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: votos > 0 ? Colors.green[800] : Colors.grey[600],
-                          ),
-                        ),
-                      ),
-                      selected: _candidatoSeleccionado?.id == candidato.id,
-                      onTap: () {
-                        setState(() {
-                          _candidatoSeleccionado = candidato;
-                        });
-                      },
-                    );
-                  },
                 ),
               ),
-              if (_candidatoSeleccionado != null)
-                Container(
-                  padding: const EdgeInsets.all(16),
+            ],
+          ),
+
+          // Bottom vote panel
+          bottomSheet: _selected != null
+              ? Container(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, -2),
-                      ),
-                    ],
+                    color: AppColors.surface,
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, -4))],
                   ),
                   child: SafeArea(
+                    top: false,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          _candidatoSeleccionado!.nombreCompleto,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(_selected!.nombreCompleto, style: AppTextStyles.h3),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              onPressed: () => setState(() => _selected = null),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _cantidadController,
-                                decoration: const InputDecoration(
-                                  labelText: 'Cantidad de Votos',
-                                  border: OutlineInputBorder(),
+                            // Quantity controls
+                            Row(
+                              children: [
+                                _quantityBtn(Icons.remove, () {
+                                  final v = int.tryParse(_cantidadCtrl.text) ?? 1;
+                                  if (v > 1) _cantidadCtrl.text = '${v - 1}';
+                                }),
+                                const SizedBox(width: 8),
+                                SizedBox(
+                                  width: 70,
+                                  child: TextField(
+                                    controller: _cantidadCtrl,
+                                    textAlign: TextAlign.center,
+                                    keyboardType: TextInputType.number,
+                                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                    decoration: InputDecoration(
+                                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                    ),
+                                  ),
                                 ),
-                                keyboardType: TextInputType.number,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                                const SizedBox(width: 8),
+                                _quantityBtn(Icons.add, () {
+                                  final v = int.tryParse(_cantidadCtrl.text) ?? 1;
+                                  _cantidadCtrl.text = '${v + 1}';
+                                }),
+                              ],
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: _registrarVoto,
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                ),
-                                child: const Text(
-                                  'Registrar',
-                                  style: TextStyle(fontSize: 16),
-                                ),
+                            const Spacer(),
+                            ElevatedButton.icon(
+                              onPressed: _registrar,
+                              icon: const Icon(Icons.how_to_vote, size: 20),
+                              label: const Text('Registrar'),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                               ),
                             ),
                           ],
@@ -432,23 +351,45 @@ class _VotacionScreenState extends State<VotacionScreen> {
                       ],
                     ),
                   ),
-                ),
-            ],
-          );
-        },
+                )
+              : null,
+        );
+      },
+    );
+  }
+
+  Widget _filterChip(String label, String value, bool selected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary.withValues(alpha: 0.15) : AppColors.muted,
+          borderRadius: BorderRadius.circular(20),
+          border: selected ? Border.all(color: AppColors.primary.withValues(alpha: 0.3)) : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+            color: selected ? AppColors.primary : AppColors.gray,
+          ),
+        ),
       ),
-      floatingActionButton: Consumer<AppProvider>(
-        builder: (context, provider, _) {
-          if (provider.mesaActual?.cerrada == true || provider.totalVotos == 0 || _candidatoSeleccionado != null) {
-            return const SizedBox.shrink();
-          }
-          return FloatingActionButton.extended(
-            onPressed: _cerrarActa,
-            backgroundColor: Colors.red,
-            icon: const Icon(Icons.lock),
-            label: const Text('Cerrar Acta'),
-          );
-        },
+    );
+  }
+
+  Widget _quantityBtn(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: AppColors.muted,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, size: 20, color: AppColors.dark),
       ),
     );
   }

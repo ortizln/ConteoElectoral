@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
+import '../theme/app_theme.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -10,30 +11,39 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
   final _serverController = TextEditingController();
+  bool _obscurePassword = true;
+  late AnimationController _animController;
+  late Animation<double> _fadeAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeIn);
+    _animController.forward();
+  }
 
   @override
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
     _serverController.dispose();
+    _animController.dispose();
     super.dispose();
   }
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
-
     final provider = context.read<AppProvider>();
-    final success = await provider.login(
-      _usernameController.text,
-      _passwordController.text,
-    );
-
+    final success = await provider.login(_usernameController.text, _passwordController.text);
     if (success && mounted) {
       Navigator.pushReplacement(
         context,
@@ -42,47 +52,54 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  Future<void> _showServerConfigDialog() async {
-    final provider = context.read<AppProvider>();
-    _serverController.text = provider.serverUrl.replaceAll('/api', '');
-
-    if (!mounted) return;
-
-    return showDialog(
+  void _showServerConfig() {
+    _serverController.text = context.read<AppProvider>().serverUrl.replaceAll('/api', '');
+    showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Configuración del Servidor'),
+      builder: (ctx) => AlertDialog(
+        title: const Text('Configurar Servidor'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: _serverController,
               decoration: const InputDecoration(
-                labelText: 'URL del Servidor',
-                hintText: 'http://192.168.1.100:8080',
+                labelText: 'URL del servidor',
+                hintText: 'http://192.168.1.100:8081',
                 prefixIcon: Icon(Icons.language),
-                border: OutlineInputBorder(),
               ),
-              autofocus: true,
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Ingrese la dirección IP o dominio del servidor',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+            Consumer<AppProvider>(
+              builder: (context, provider, _) => provider.isLoading
+                  ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                  : SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final messenger = ScaffoldMessenger.of(context);
+                          final result = await provider.testServerConnection();
+                          if (!context.mounted) return;
+                          messenger.showSnackBar(SnackBar(
+                            content: Text(result['message']?.toString() ?? ''),
+                            backgroundColor: result['success'] == true ? AppColors.success : AppColors.error,
+                          ));
+                        },
+                        icon: const Icon(Icons.wifi_tethering, size: 18),
+                        label: const Text('Probar conexión'),
+                      ),
+                    ),
             ),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancelar'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () async {
               final url = _serverController.text.trim();
               if (url.isNotEmpty) {
-                await provider.setServerUrl(url);
-                if (mounted) Navigator.pop(context);
+                await context.read<AppProvider>().setServerUrl(url);
+                if (mounted) Navigator.pop(ctx);
               }
             },
             child: const Text('Guardar'),
@@ -95,169 +112,138 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Conteo Electoral'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: 'Configurar Servidor',
-            onPressed: _showServerConfigDialog,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.gradientStart, AppColors.gradientEnd],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Icon(
-                    Icons.how_to_vote,
-                    size: 80,
-                    color: Colors.blue,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Conteo Electoral',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Consumer<AppProvider>(
-                    builder: (context, provider, _) => Text(
-                      'Servidor: ${provider.serverUrl.replaceAll('/api', '')}',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: FadeTransition(
+                opacity: _fadeAnim,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Logo
+                    Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(24),
                       ),
-                      overflow: TextOverflow.ellipsis,
-                      softWrap: false,
+                      child: const Icon(Icons.how_to_vote, size: 48, color: Colors.white),
                     ),
-                  ),
-                  const SizedBox(height: 32),
-                  TextFormField(
-                    controller: _usernameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Usuario',
-                      prefixIcon: Icon(Icons.person),
-                      border: OutlineInputBorder(),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Conteo Electoral',
+                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
-                    textInputAction: TextInputAction.next,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Ingrese su usuario';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _passwordController,
-                    decoration: InputDecoration(
-                      labelText: 'Contraseña',
-                      prefixIcon: const Icon(Icons.lock),
-                      border: const OutlineInputBorder(),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          _obscurePassword
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
+                    const SizedBox(height: 4),
+                    Consumer<AppProvider>(
+                      builder: (context, provider, _) => Text(
+                        provider.serverUrl.replaceAll('/api', ''),
+                        style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.7)),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    obscureText: _obscurePassword,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => _login(),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Ingrese su contraseña';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  Consumer<AppProvider>(
-                    builder: (context, provider, _) {
-                      return OutlinedButton.icon(
-                        onPressed: provider.isLoading
-                            ? null
-                            : () async {
-                                final messenger = ScaffoldMessenger.of(context);
-                                final result = await provider.testServerConnection();
-                                if (!mounted) return;
-                                messenger.showSnackBar(
-                                  SnackBar(
-                                    content: Text(result['message']?.toString() ?? 'Error'),
-                                    backgroundColor: result['success'] == true
-                                        ? Colors.green
-                                        : Colors.red,
-                                  ),
-                                );
-                              },
-                        icon: const Icon(Icons.wifi_tethering),
-                        label: const Text('Probar Conexión'),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          minimumSize: const Size(double.infinity, 0),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  Consumer<AppProvider>(
-                    builder: (context, provider, _) {
-                      if (provider.error != null) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Text(
-                            provider.error!,
-                            style: const TextStyle(
-                              color: Colors.red,
-                            ),
-                            textAlign: TextAlign.center,
+                    const SizedBox(height: 40),
+
+                    // Login Card
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.95),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
                           ),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                  Consumer<AppProvider>(
-                    builder: (context, provider, _) {
-                      return ElevatedButton(
-                        onPressed: provider.isLoading ? null : _login,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        child: provider.isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text(
-                                'Iniciar Sesión',
-                                style: TextStyle(fontSize: 16),
+                        ],
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text('Iniciar Sesión', style: AppTextStyles.h3, textAlign: TextAlign.center),
+                            const SizedBox(height: 24),
+                            TextFormField(
+                              controller: _usernameController,
+                              decoration: const InputDecoration(
+                                labelText: 'Usuario',
+                                prefixIcon: Icon(Icons.person_outline),
                               ),
-                      );
-                    },
-                  ),
-                ],
+                              textInputAction: TextInputAction.next,
+                              validator: (v) => (v == null || v.isEmpty) ? 'Ingrese su usuario' : null,
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _passwordController,
+                              decoration: InputDecoration(
+                                labelText: 'Contraseña',
+                                prefixIcon: const Icon(Icons.lock_outline),
+                                suffixIcon: IconButton(
+                                  icon: Icon(_obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                ),
+                              ),
+                              obscureText: _obscurePassword,
+                              textInputAction: TextInputAction.done,
+                              onFieldSubmitted: (_) => _login(),
+                              validator: (v) => (v == null || v.isEmpty) ? 'Ingrese su contraseña' : null,
+                            ),
+                            const SizedBox(height: 8),
+                            Consumer<AppProvider>(
+                              builder: (context, provider, _) {
+                                if (provider.error != null) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 8),
+                                    child: Text(provider.error!, style: const TextStyle(color: AppColors.error, fontSize: 13), textAlign: TextAlign.center),
+                                  );
+                                }
+                                return const SizedBox.shrink();
+                              },
+                            ),
+                            const SizedBox(height: 12),
+                            Consumer<AppProvider>(
+                              builder: (context, provider, _) => ElevatedButton(
+                                onPressed: provider.isLoading ? null : _login,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                child: provider.isLoading
+                                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                    : const Text('Ingresar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Server config link
+                    TextButton.icon(
+                      onPressed: _showServerConfig,
+                      icon: const Icon(Icons.settings_outlined, size: 18),
+                      label: const Text('Configurar servidor'),
+                      style: TextButton.styleFrom(foregroundColor: Colors.white70),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

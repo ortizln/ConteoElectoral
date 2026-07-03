@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/models.dart';
 import '../providers/app_provider.dart';
+import '../theme/app_theme.dart';
+import '../widgets/widgets.dart';
 
 class InstitucionesScreen extends StatefulWidget {
   const InstitucionesScreen({super.key});
@@ -11,189 +13,118 @@ class InstitucionesScreen extends StatefulWidget {
 }
 
 class _InstitucionesScreenState extends State<InstitucionesScreen> {
-  List<InstitucionEducativa> _instituciones = [];
+  List<InstitucionEducativa> _items = [];
   List<Parroquia> _parroquias = [];
-  bool _isLoading = false;
+  bool _loading = false;
+  String _search = '';
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _load();
   }
 
-  Future<void> _loadData() async {
-    setState(() => _isLoading = true);
+  Future<void> _load() async {
+    setState(() => _loading = true);
     final api = context.read<AppProvider>().api;
-    final parroquias = await api.getParroquias();
-    final instituciones = await api.getInstituciones();
-    setState(() {
-      _parroquias = parroquias;
-      _instituciones = instituciones;
-      _isLoading = false;
-    });
+    _parroquias = await api.getParroquias();
+    _items = await api.getInstituciones();
+    if (mounted) setState(() => _loading = false);
   }
 
-  Future<void> _showForm({InstitucionEducativa? institucion}) async {
-    final nombreController = TextEditingController(text: institucion?.nombre ?? '');
-    final direccionController = TextEditingController(text: institucion?.direccion ?? '');
-    final codigoController = TextEditingController(text: institucion?.codigo ?? '');
-    final tipoController = TextEditingController(text: institucion?.tipo ?? '');
-    int? selectedParroquiaId = institucion?.parroquiaId ?? _parroquias.first.id;
+  List<InstitucionEducativa> get _filtered {
+    if (_search.isEmpty) return _items;
+    final q = _search.toLowerCase();
+    return _items.where((i) => i.nombre.toLowerCase().contains(q) || (i.parroquiaNombre ?? '').toLowerCase().contains(q)).toList();
+  }
 
-    await showDialog(
+  Future<void> _showForm({InstitucionEducativa? item}) async {
+    final nombreCtrl = TextEditingController(text: item?.nombre ?? '');
+    final codCtrl = TextEditingController(text: item?.codigo ?? '');
+    int? parroquiaId = item?.parroquiaId ?? _parroquias.firstOrNull?.id;
+    final formKey = GlobalKey<FormState>();
+
+    final saved = await showModalBottomSheet<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(institucion == null ? 'Nueva Institución' : 'Editar Institución'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButton<int>(
-                value: selectedParroquiaId,
-                isExpanded: true,
-                hint: const Text('Seleccione Parroquia'),
-                items: _parroquias.map((p) => DropdownMenuItem(
-                  value: p.id,
-                  child: Text(p.nombre),
-                )).toList(),
-                onChanged: (value) => selectedParroquiaId = value,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocalState) => Padding(
+          padding: EdgeInsets.only(left: 24, right: 24, top: 24, bottom: MediaQuery.of(ctx).viewInsets.bottom + 24),
+          child: Form(
+            key: formKey,
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Text(item == null ? 'Nueva Institución' : 'Editar Institución', style: AppTextStyles.h3),
+              const SizedBox(height: 20),
+              DropdownButtonFormField<int>(
+                initialValue: parroquiaId,
+                decoration: const InputDecoration(labelText: 'Parroquia', prefixIcon: Icon(Icons.terrain_outlined)),
+                items: _parroquias.map((p) => DropdownMenuItem(value: p.id, child: Text(p.nombre))).toList(),
+                onChanged: (v) => setLocalState(() => parroquiaId = v),
+                validator: (v) => v == null ? 'Seleccione una parroquia' : null,
               ),
               const SizedBox(height: 16),
-              TextField(
-                controller: nombreController,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre',
-                  border: OutlineInputBorder(),
-                ),
-              ),
+              TextFormField(controller: nombreCtrl, decoration: const InputDecoration(labelText: 'Nombre', prefixIcon: Icon(Icons.school_outlined)), validator: (v) => (v == null || v.isEmpty) ? 'Requerido' : null),
               const SizedBox(height: 16),
-              TextField(
-                controller: direccionController,
-                decoration: const InputDecoration(
-                  labelText: 'Dirección',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 2,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: codigoController,
-                decoration: const InputDecoration(
-                  labelText: 'Código',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: tipoController,
-                decoration: const InputDecoration(
-                  labelText: 'Tipo (Ej: Unidad Educativa)',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ],
+              TextFormField(controller: codCtrl, decoration: const InputDecoration(labelText: 'Código', prefixIcon: Icon(Icons.tag_outlined))),
+              const SizedBox(height: 24),
+              Row(children: [
+                Expanded(child: OutlinedButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar'))),
+                const SizedBox(width: 12),
+                Expanded(child: ElevatedButton(onPressed: () async {
+                  if (!formKey.currentState!.validate() || parroquiaId == null) return;
+                  final api = context.read<AppProvider>().api;
+                  final i = InstitucionEducativa(id: item?.id ?? 0, nombre: nombreCtrl.text, parroquiaId: parroquiaId!, codigo: codCtrl.text);
+                  if (item == null) await api.createInstitucion(i); else await api.updateInstitucion(i.id, i);
+                  if (ctx.mounted) Navigator.pop(ctx, true);
+                }, child: const Text('Guardar'))),
+              ]),
+            ]),
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final api = context.read<AppProvider>().api;
-              final institucionNueva = InstitucionEducativa(
-                id: institucion?.id ?? 0,
-                nombre: nombreController.text,
-                parroquiaId: selectedParroquiaId!,
-                direccion: direccionController.text,
-                codigo: codigoController.text,
-                tipo: tipoController.text,
-              );
-
-              if (institucion == null) {
-                await api.createInstitucion(institucionNueva);
-              } else {
-                await api.updateInstitucion(institucion.id, institucionNueva);
-              }
-
-              if (mounted) {
-                Navigator.pop(context);
-                _loadData();
-              }
-            },
-            child: const Text('Guardar'),
-          ),
-        ],
       ),
     );
+    if (saved == true) _load();
   }
 
-  Future<void> _deleteInstitucion(int id) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmar'),
-        content: const Text('¿Está seguro de eliminar esta institución?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      final api = context.read<AppProvider>().api;
-      await api.deleteInstitucion(id);
-      _loadData();
-    }
+  Future<void> _delete(InstitucionEducativa item) async {
+    final confirm = await showConfirmDialog(context, title: 'Eliminar', message: '¿Eliminar "${item.nombre}"?', confirmText: 'Eliminar', confirmColor: AppColors.error);
+    if (confirm) { await context.read<AppProvider>().api.deleteInstitucion(item.id); _load(); }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Instituciones Educativas'),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: _instituciones.length,
-              itemBuilder: (context, index) {
-                final i = _instituciones[index];
-                return ListTile(
-                  title: Text(i.nombre),
-                  subtitle: Text(
-                    'Parroquia: ${i.parroquiaNombre ?? 'N/A'}\n'
-                    '${i.direccion ?? ''} - Código: ${i.codigo ?? 'N/A'} - Tipo: ${i.tipo ?? 'N/A'}',
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () => _showForm(institucion: i),
+      appBar: AppBar(title: const Text('Instituciones')),
+      body: Column(children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: TextField(
+            decoration: const InputDecoration(hintText: 'Buscar instituciones...', prefixIcon: Icon(Icons.search, size: 20), isDense: true),
+            onChanged: (v) => setState(() => _search = v),
+          ),
+        ),
+        Expanded(
+          child: _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _filtered.isEmpty
+                  ? EmptyState(icon: Icons.school_outlined, title: 'Sin instituciones', subtitle: 'Agregue la primera institución', actionLabel: 'Agregar', onAction: () => _showForm())
+                  : RefreshIndicator(
+                      onRefresh: _load,
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: _filtered.length,
+                        itemBuilder: (_, i) => CrudListTile(
+                          title: _filtered[i].nombre,
+                          subtitle: 'Parroquia: ${_filtered[i].parroquiaNombre ?? "N/A"}',
+                          icon: Icons.school_outlined, iconColor: AppColors.accent,
+                          onEdit: () => _showForm(item: _filtered[i]), onDelete: () => _delete(_filtered[i]),
+                        ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () => _deleteInstitucion(i.id),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showForm(),
-        child: const Icon(Icons.add),
-      ),
+                    ),
+        ),
+      ]),
+      floatingActionButton: FloatingActionButton(onPressed: () => _showForm(), child: const Icon(Icons.add)),
     );
   }
 }

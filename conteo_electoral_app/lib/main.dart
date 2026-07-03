@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'theme/app_theme.dart';
 import 'providers/app_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/votacion_screen.dart';
 import 'screens/zonas_screen.dart';
 import 'screens/provincias_screen.dart';
 import 'screens/cantones_screen.dart';
@@ -11,37 +13,34 @@ import 'screens/instituciones_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+  runApp(const ConteoElectoralApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class ConteoElectoralApp extends StatelessWidget {
+  const ConteoElectoralApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => AppProvider()..init(),
-      child: MaterialApp(
-        title: 'Conteo Electoral',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true,
-        ),
-        home: Consumer<AppProvider>(
-          builder: (context, provider, _) {
-            if (provider.usuario == null) {
-              return const LoginScreen();
-            }
-            return const HomeScreen();
-          },
-        ),
-        routes: {
-          '/zonas': (context) => const ZonasScreen(),
-          '/provincias': (context) => const ProvinciasScreen(),
-          '/cantones': (context) => const CantonesScreen(),
-          '/parroquias': (context) => const ParroquiasScreen(),
-          '/instituciones': (context) => const InstitucionesScreen(),
+      child: Consumer<AppProvider>(
+        builder: (context, provider, _) {
+          return MaterialApp(
+            title: 'Conteo Electoral',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.light,
+            home: provider.usuario == null
+                ? const LoginScreen()
+                : const HomeScreen(),
+            routes: {
+              '/votacion': (context) => const VotacionScreen(),
+              '/zonas': (context) => const ZonasScreen(),
+              '/provincias': (context) => const ProvinciasScreen(),
+              '/cantones': (context) => const CantonesScreen(),
+              '/parroquias': (context) => const ParroquiasScreen(),
+              '/instituciones': (context) => const InstitucionesScreen(),
+            },
+          );
         },
       ),
     );
