@@ -23,6 +23,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   currentIndex = 0;
   private intervalId: any;
   private readonly API_URL = environment.apiUrl;
+  apkDownloadUrl = `${environment.apiUrl}/configuracion/apk`;
 
   constructor(
     private authService: AuthService,

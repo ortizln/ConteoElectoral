@@ -435,6 +435,16 @@ export class ApiService {
     return this.http.delete<void>(`${this.API_URL}/configuracion/logo`);
   }
 
+  uploadApk(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<any>(`${this.API_URL}/configuracion/apk`, formData);
+  }
+
+  deleteApk(): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/configuracion/apk`);
+  }
+
   // Dashboard
   getDashboard(eleccionId: number): Observable<any> {
     return this.http.get<any>(`${this.API_URL}/dashboard/eleccion/${eleccionId}`);

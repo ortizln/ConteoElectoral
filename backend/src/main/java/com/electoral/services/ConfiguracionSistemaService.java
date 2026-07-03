@@ -37,6 +37,20 @@ public class ConfiguracionSistemaService {
                 .orElse(null);
     }
 
+    @Transactional(readOnly = true)
+    public byte[] getApkData() {
+        return repository.findById(1L)
+                .map(ConfiguracionSistema::getApkData)
+                .orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public String getApkNombre() {
+        return repository.findById(1L)
+                .map(ConfiguracionSistema::getApkNombre)
+                .orElse(null);
+    }
+
     @Transactional
     public ConfiguracionResponse updateConfiguracion(ConfiguracionRequest request) {
         ConfiguracionSistema config = repository.findById(1L)
@@ -67,12 +81,35 @@ public class ConfiguracionSistemaService {
         repository.save(config);
     }
 
+    @Transactional
+    public ConfiguracionResponse uploadApk(MultipartFile file) throws IOException {
+        ConfiguracionSistema config = repository.findById(1L)
+                .orElseGet(() -> ConfiguracionSistema.builder().id(1L).build());
+
+        config.setApkData(file.getBytes());
+        config.setApkNombre(file.getOriginalFilename());
+        repository.save(config);
+        return mapToResponse(config);
+    }
+
+    @Transactional
+    public void deleteApk() {
+        ConfiguracionSistema config = repository.findById(1L)
+                .orElseGet(() -> ConfiguracionSistema.builder().id(1L).build());
+
+        config.setApkData(null);
+        config.setApkNombre(null);
+        repository.save(config);
+    }
+
     private ConfiguracionResponse mapToResponse(ConfiguracionSistema config) {
         return ConfiguracionResponse.builder()
                 .id(config.getId())
                 .nombrePartido(config.getNombrePartido())
                 .descripcion(config.getDescripcion())
                 .tieneLogo(config.getLogo() != null && config.getLogo().length > 0)
+                .tieneApk(config.getApkData() != null && config.getApkData().length > 0)
+                .apkNombre(config.getApkNombre())
                 .updatedAt(config.getUpdatedAt())
                 .build();
     }

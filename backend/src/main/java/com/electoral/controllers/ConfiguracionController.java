@@ -57,4 +57,33 @@ public class ConfiguracionController {
         configuracionService.deleteLogo();
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/apk")
+    public ResponseEntity<byte[]> getApk() {
+        byte[] apkData = configuracionService.getApkData();
+        String apkNombre = configuracionService.getApkNombre();
+        if (apkData == null) {
+            return ResponseEntity.notFound().build();
+        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", apkNombre != null ? apkNombre : "app.apk");
+        return ResponseEntity.ok().headers(headers).body(apkData);
+    }
+
+    @PostMapping("/apk")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ConfiguracionResponse> uploadApk(@RequestParam("file") MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(configuracionService.uploadApk(file));
+    }
+
+    @DeleteMapping("/apk")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteApk() {
+        configuracionService.deleteApk();
+        return ResponseEntity.noContent().build();
+    }
 }

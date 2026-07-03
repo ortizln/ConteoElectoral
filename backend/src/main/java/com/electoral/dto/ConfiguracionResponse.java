@@ -15,5 +15,7 @@ public class ConfiguracionResponse {
     private String nombrePartido;
     private String descripcion;
     private boolean tieneLogo;
+    private boolean tieneApk;
+    private String apkNombre;
     private LocalDateTime updatedAt;
 }

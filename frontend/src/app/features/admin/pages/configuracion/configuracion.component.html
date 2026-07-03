@@ -65,6 +65,28 @@
         </button>
       </div>
     </div>
+    <div class="card card-apk">
+      <h5><span>📱</span> App Móvil (APK)</h5>
+      <div class="apk-status">
+        <div *ngIf="tieneApk" class="apk-info">
+          <span class="apk-file-name">📦 {{ apkNombre }}</span>
+          <div class="apk-actions">
+            <a [href]="getApkDownloadUrl()" class="btn btn-sm btn-success" download>Descargar APK</a>
+            <button class="btn btn-sm btn-outline-danger" (click)="deleteApk()" [disabled]="uploadingApk">Eliminar</button>
+          </div>
+        </div>
+        <div *ngIf="!tieneApk" class="apk-empty">
+          <span>No hay APK cargado</span>
+        </div>
+      </div>
+      <div class="upload-section">
+        <input type="file" (change)="onApkSelected($event)" accept=".apk" id="apkInput" />
+        <label for="apkInput" class="file-label">{{ selectedApk ? selectedApk.name : 'Seleccionar archivo APK...' }}</label>
+        <button class="btn btn-primary" (click)="uploadApk()" [disabled]="!selectedApk || uploadingApk">
+          {{ uploadingApk ? 'Subiendo...' : 'Subir APK' }}
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Tab: Carrusel -->

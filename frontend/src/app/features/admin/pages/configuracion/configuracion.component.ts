@@ -26,6 +26,12 @@ export class ConfiguracionComponent implements OnInit {
   errorMsg = '';
   private readonly API_URL = environment.apiUrl;
 
+  // APK
+  apkNombre: string | null = null;
+  tieneApk = false;
+  selectedApk: File | null = null;
+  uploadingApk = false;
+
   // Carousel
   carouselImages: CarouselImage[] = [];
   carouselLoading = false;
@@ -50,6 +56,8 @@ export class ConfiguracionComponent implements OnInit {
       next: (res) => {
         this.config = res;
         this.logoUrl = res.tieneLogo ? `${this.API_URL}/configuracion/logo?t=${new Date().getTime()}` : null;
+        this.tieneApk = res.tieneApk;
+        this.apkNombre = res.apkNombre || null;
         this.loading = false;
       },
       error: () => {
@@ -111,6 +119,54 @@ export class ConfiguracionComponent implements OnInit {
       error: (err) => {
         this.saving = false;
         this.errorMsg = err.error?.message || 'Error al guardar la configuración';
+      }
+    });
+  }
+
+  // APK methods
+  getApkDownloadUrl(): string {
+    return `${this.API_URL}/configuracion/apk?t=${new Date().getTime()}`;
+  }
+
+  onApkSelected(event: any): void {
+    this.selectedApk = event.target.files?.[0] || null;
+  }
+
+  uploadApk(): void {
+    if (!this.selectedApk) return;
+    this.uploadingApk = true;
+    this.errorMsg = '';
+    this.successMsg = '';
+    this.api.uploadApk(this.selectedApk).subscribe({
+      next: (res) => {
+        this.uploadingApk = false;
+        this.selectedApk = null;
+        this.tieneApk = true;
+        this.apkNombre = res.apkNombre || 'app.apk';
+        this.successMsg = 'APK subido correctamente';
+      },
+      error: (err) => {
+        this.uploadingApk = false;
+        this.errorMsg = err.error?.message || 'Error al subir el APK';
+      }
+    });
+  }
+
+  deleteApk(): void {
+    if (!confirm('¿Eliminar el archivo APK?')) return;
+    this.uploadingApk = true;
+    this.errorMsg = '';
+    this.successMsg = '';
+    this.api.deleteApk().subscribe({
+      next: () => {
+        this.uploadingApk = false;
+        this.tieneApk = false;
+        this.apkNombre = null;
+        this.successMsg = 'APK eliminado correctamente';
+      },
+      error: (err) => {
+        this.uploadingApk = false;
+        this.errorMsg = err.error?.message || 'Error al eliminar el APK';
       }
     });
   }

@@ -23,6 +23,12 @@ public class ConfiguracionSistema {
     @Column(name = "logo", columnDefinition = "bytea")
     private byte[] logo;
 
+    @Column(name = "apk_data", columnDefinition = "bytea")
+    private byte[] apkData;
+
+    @Column(name = "apk_nombre", length = 255)
+    private String apkNombre;
+
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
