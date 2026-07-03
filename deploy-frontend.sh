@@ -40,26 +40,13 @@ fi
 
 echo "Build completado: frontend/dist/conteo-electoral"
 
-# Ruta de Nginx (ajustar según tu instalación)
-NGINX_HTML="/var/www/html"
-NGINX_CONF="/etc/nginx/sites-available"
-
 # Copiar archivos a Nginx
 echo "Copiando archivos a Nginx..."
 sudo mkdir -p /var/www/conteo-electoral
 sudo cp -r dist/conteo-electoral/* /var/www/conteo-electoral/
 
-# Copiar configuración de Nginx
-if [ -f "../frontend/nginx.conf" ]; then
-    echo "Configurando Nginx..."
-    sudo cp "../frontend/nginx.conf" "/etc/nginx/sites-available/conteo-electoral"
-    sudo ln -sf "/etc/nginx/sites-available/conteo-electoral" "/etc/nginx/sites-enabled/" 2>/dev/null || true
-    sudo nginx -t && sudo nginx -s reload
-fi
-
 echo ""
 echo "=== Frontend desplegado exitosamente ==="
 echo "Archivos en: /var/www/conteo-electoral"
-echo "Configuración Nginx: /etc/nginx/sites-available/conteo-electoral"
 echo ""
 echo "IMPORTANTE: Actualizar environment.prod.ts con la IP correcta del servidor"
