@@ -167,7 +167,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let r of resultadosOrdenados; let i = index" [style.animation-delay]="i * 0.03 + 's'">
+          <tr *ngFor="let r of resultadosOrdenados; let i = index" [style.animation-delay]="i * 0.03 + 's'" class="candidato-row" (click)="verDetalleCandidato(r.candidatoId)">
             <td>
               <div class="candidato-info-cell">
                 <span class="candidato-rank">{{ i + 1 }}</span>
@@ -186,6 +186,60 @@
           </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- Candidate Detail Modal -->
+  <div class="modal" *ngIf="showDetalle">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 *ngIf="detalleCandidato">📊 {{ detalleCandidato.nombreCompleto }}</h5>
+          <button class="btn-close" (click)="cerrarDetalle()">×</button>
+        </div>
+        <div class="modal-body">
+          <div *ngIf="detalleLoading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div>
+          </div>
+          <div *ngIf="detalleCandidato && !detalleLoading">
+            <div class="detalle-header">
+              <div class="detalle-info">
+                <span><strong>Partido:</strong> {{ detalleCandidato.partidoNombre }}</span>
+                <span><strong>Cargo:</strong> {{ detalleCandidato.cargoNombre }}</span>
+                <span><strong>Total Votos:</strong> <span class="detalle-total">{{ detalleCandidato.totalVotos | number }}</span></span>
+              </div>
+            </div>
+            <div class="detalle-tabla-wrapper">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Mesa</th>
+                    <th>Institución</th>
+                    <th>Parroquia</th>
+                    <th class="text-right">Votos</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let v of detalleCandidato.votosPorMesa; let i = index">
+                    <td>{{ i + 1 }}</td>
+                    <td><strong>{{ v.mesaNumero }}</strong></td>
+                    <td>{{ v.institucion }}</td>
+                    <td>{{ v.parroquia }}</td>
+                    <td class="text-right"><strong>{{ v.votos | number }}</strong></td>
+                  </tr>
+                  <tr *ngIf="detalleCandidato.votosPorMesa.length === 0">
+                    <td colspan="5" class="text-center py-3">Sin votos registrados</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="cerrarDetalle()">Cerrar</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>

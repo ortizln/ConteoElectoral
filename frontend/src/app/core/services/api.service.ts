@@ -262,6 +262,10 @@ export class ApiService {
     return this.http.get<Voto[]>(`${this.API_URL}/votos/eleccion/${eleccionId}`);
   }
 
+  getDetalleCandidato(candidatoId: number, eleccionId: number): Observable<any> {
+    return this.http.get<any>(`${this.API_URL}/votos/candidato/${candidatoId}/detalle?eleccionId=${eleccionId}`);
+  }
+
   registrarVoto(data: { candidatoId: number; mesaId: number; cantidadVotos: number; eleccionesId: number }): Observable<Voto> {
     return this.http.post<Voto>(`${this.API_URL}/votos`, data);
   }

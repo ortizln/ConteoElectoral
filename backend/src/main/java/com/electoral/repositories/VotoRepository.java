@@ -42,4 +42,7 @@ public interface VotoRepository extends JpaRepository<Voto, Long> {
      
     @Query("SELECT v.mesa.institucion.id, SUM(v.cantidadVotos) FROM Voto v WHERE v.elecciones.id = :eleccionId GROUP BY v.mesa.institucion.id")
     List<Object[]> sumVotosGroupByInstitucion(Long eleccionId);
+
+    @Query("SELECT v.mesa.id, v.mesa.numero, v.mesa.institucion.nombre, v.mesa.institucion.parroquia.nombre, v.cantidadVotos FROM Voto v WHERE v.candidato.id = :candidatoId AND v.elecciones.id = :eleccionId ORDER BY v.mesa.institucion.parroquia.nombre, v.mesa.numero")
+    List<Object[]> findVotosByCandidatoAndEleccion(@Param("candidatoId") Long candidatoId, @Param("eleccionId") Long eleccionId);
 }

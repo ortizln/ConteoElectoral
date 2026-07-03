@@ -55,6 +55,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   animando = false;
   filtrosMinimized = false;
 
+  // Candidate detail modal
+  showDetalle = false;
+  detalleCandidato: any = null;
+  detalleLoading = false;
+
   private barChart?: Chart;
   private pieChart?: Chart;
   private wsSubscription?: Subscription;
@@ -316,6 +321,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   initCharts(): void {
+    this.barChart?.destroy();
+    this.pieChart?.destroy();
+    this.barChart = undefined;
+    this.pieChart = undefined;
     if (this.barChartRef?.nativeElement) {
       this.barChart = new Chart(this.barChartRef.nativeElement, {
         type: 'bar',
@@ -376,6 +385,21 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.selectedEleccionId) {
       this.api.exportDashboardExcel(this.selectedEleccionId, this.getFiltrosActuales());
     }
+  }
+
+  verDetalleCandidato(candidatoId: number): void {
+    if (!this.selectedEleccionId) return;
+    this.detalleLoading = true;
+    this.showDetalle = true;
+    this.api.getDetalleCandidato(candidatoId, this.selectedEleccionId).subscribe({
+      next: (data) => { this.detalleCandidato = data; this.detalleLoading = false; },
+      error: () => { this.detalleLoading = false; }
+    });
+  }
+
+  cerrarDetalle(): void {
+    this.showDetalle = false;
+    this.detalleCandidato = null;
   }
 
   logout(): void {

@@ -159,6 +159,34 @@ public class VotoService {
     }
 
     @Transactional(readOnly = true)
+    public CandidatoDetalleResponse getDetalleCandidato(Long candidatoId, Long eleccionId) {
+        Candidato candidato = candidatoRepository.findById(candidatoId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Candidato no encontrado"));
+
+        List<Object[]> rows = votoRepository.findVotosByCandidatoAndEleccion(candidatoId, eleccionId);
+        Long totalVotos = rows.stream().mapToLong(r -> ((Number) r[4]).longValue()).sum();
+
+        List<CandidatoDetalleResponse.VotoPorMesa> votosPorMesa = rows.stream()
+                .map(r -> CandidatoDetalleResponse.VotoPorMesa.builder()
+                        .mesaId(((Number) r[0]).longValue())
+                        .mesaNumero((String) r[1])
+                        .institucion((String) r[2])
+                        .parroquia(r[3] != null ? (String) r[3] : "")
+                        .votos(((Number) r[4]).longValue())
+                        .build())
+                .collect(Collectors.toList());
+
+        return CandidatoDetalleResponse.builder()
+                .candidatoId(candidatoId)
+                .nombreCompleto(candidato.getNombreCompleto())
+                .partidoNombre(candidato.getPartido() != null ? candidato.getPartido().getNombre() : "Independiente")
+                .cargoNombre(candidato.getCargo().getNombre())
+                .totalVotos(totalVotos)
+                .votosPorMesa(votosPorMesa)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
     public DashboardResponse getDashboardData(Long eleccionId) {
         return getDashboardDataConFiltros(eleccionId, null, null, null, null, null, null, null);
     }

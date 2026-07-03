@@ -20,13 +20,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns(
-                        "http://localhost:*",
-                        "http://127.0.0.1:*",
-                        "http://10.0.2.2:*",
-                        "http://*.local:*",
-                        "http://*.ngrok.io:*",
-                        "http://192.168.100.215:*")
+                .setAllowedOriginPatterns("*")
                 .withSockJS();
     }
 }

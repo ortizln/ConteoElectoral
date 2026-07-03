@@ -101,6 +101,17 @@
 
 .empty-msg { padding: 40px !important; color: #94a3b8; font-size: 15px; }
 
+.candidato-row { cursor: pointer; transition: background 0.15s; }
+.candidato-row:hover td { background: #eef2ff !important; }
+
+.detalle-header { background: #f8fafc; border-radius: 10px; padding: 16px 20px; margin-bottom: 16px; }
+.detalle-info { display: flex; gap: 24px; flex-wrap: wrap; }
+.detalle-info span { font-size: 14px; color: #475569; }
+.detalle-total { color: #3b82f6; font-size: 18px; font-weight: 700; }
+.detalle-tabla-wrapper { max-height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 10px; }
+.detalle-tabla-wrapper .table { margin-top: 0; }
+.detalle-tabla-wrapper .table th { position: sticky; top: 0; z-index: 1; }
+
 @media (max-width: 1024px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .charts-grid { grid-template-columns: 1fr; }

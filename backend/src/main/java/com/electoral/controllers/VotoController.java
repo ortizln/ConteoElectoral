@@ -34,6 +34,13 @@ public class VotoController {
         return ResponseEntity.ok(votoService.getVotoById(id));
     }
 
+    @GetMapping("/candidato/{candidatoId}/detalle")
+    public ResponseEntity<CandidatoDetalleResponse> getDetalleCandidato(
+            @PathVariable Long candidatoId,
+            @RequestParam Long eleccionId) {
+        return ResponseEntity.ok(votoService.getDetalleCandidato(candidatoId, eleccionId));
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<VotoResponse> registrarVoto(@Valid @RequestBody VotoRequest request) {
