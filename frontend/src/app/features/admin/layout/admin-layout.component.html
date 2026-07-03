@@ -7,22 +7,9 @@
       </div>
     </div>
 
-    <div class="user-info">
-      <div class="user-avatar">{{ userName[0] || 'U' }}</div>
-      <div class="user-details">
-        <span class="user-name">{{ userName }}</span>
-        <span class="user-role-badge" [class.admin]="userRole === 'ADMIN'" [class.supervisor]="userRole === 'SUPERVISOR'">
-          {{ userRole === 'ADMIN' ? 'Administrador' : 'Supervisor' }}
-        </span>
-      </div>
-    </div>
-
     <nav class="sidebar-nav">
       <span class="nav-section-title">Menú Principal</span>
-      <a *ngFor="let item of filteredNavItems"
-         [routerLink]="item.path"
-         routerLinkActive="active"
-         class="nav-item">
+      <a *ngFor="let item of filteredNavItems" [routerLink]="item.path" routerLinkActive="active" class="nav-item">
         <span class="nav-icon">{{ item.icon }}</span>
         <span class="nav-text">{{ item.label }}</span>
         <span class="nav-indicator"></span>
@@ -40,15 +27,37 @@
         <span class="nav-text">Módulo de Votación</span>
       </a>
     </div>
-
-    <div class="sidebar-footer">
-      <button (click)="logout()" class="btn-logout-sidebar">
-        <span>🚪</span> Cerrar Sesión
-      </button>
-    </div>
   </aside>
 
-  <main class="main-content">
-    <router-outlet></router-outlet>
-  </main>
+  <div class="content-wrapper">
+    <header class="top-header">
+      <div class="header-left">
+        <span class="header-brand">Conteo Electoral</span>
+      </div>
+      <div class="header-right">
+        <div class="header-user-info">
+          <span class="header-user-name">{{ userName }}</span>
+          <span class="header-role-badge" [class.admin]="userRole === 'ADMIN'"
+            [class.supervisor]="userRole === 'SUPERVISOR'">
+            {{ userRole === 'ADMIN' ? 'Administrador' : 'Supervisor' }}
+          </span>
+        </div>
+        <button (click)="logout()" class="btn btn-outline-light btn-sm header-logout">
+          <span>🚪</span> Salir
+        </button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <router-outlet></router-outlet>
+    </main>
+
+    <footer class="app-footer">
+      <div class="footer-brand">
+        <span class="footer-logo-placeholder"></span>
+        <strong>NEXORA</strong>
+      </div>
+      <span>&copy; 2026 Sistema de Conteo Electoral. Todos los derechos reservados.</span>
+    </footer>
+  </div>
 </div>

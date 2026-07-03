@@ -1,5 +1,5 @@
 <div class="dashboard-container">
-  <header class="dashboard-header">
+  <div class="dashboard-header">
     <div class="header-left">
       <h1><span class="header-icon">📊</span> Dashboard Electoral</h1>
       <div class="header-badges">
@@ -17,9 +17,8 @@
       <button class="btn btn-excel" (click)="exportarExcel()" title="Exportar a Excel">📊 Excel</button>
       <button class="btn btn-pdf" (click)="exportarPdf()" title="Exportar a PDF">📄 PDF</button>
       <button class="btn btn-refresh" (click)="recargarSilencioso()" [class.spinning]="animando">↻</button>
-      <button class="btn btn-logout" (click)="logout()">Cerrar Sesión</button>
     </div>
-  </header>
+  </div>
 
   <div class="eleccion-selector">
     <label>Elección Activa:</label>
@@ -31,10 +30,15 @@
 
   <div class="filtros-card">
     <div class="filtros-header">
-      <h3>🔍 Filtros de Búsqueda</h3>
+      <div class="filtros-title">
+        <button class="btn btn-minimize" (click)="filtrosMinimized = !filtrosMinimized" [class.minimized]="filtrosMinimized">
+          ▾
+        </button>
+        <h3>🔍 Filtros de Búsqueda</h3>
+      </div>
       <button class="btn btn-clean" (click)="limpiarFiltros()">Limpiar Filtros</button>
     </div>
-    <div class="filtros-grid">
+    <div class="filtros-grid" [class.hidden]="filtrosMinimized">
       <div class="filtro-group">
         <label>Zona</label>
         <select class="form-select" [(ngModel)]="filtroZonaId" (change)="onZonaChange()">

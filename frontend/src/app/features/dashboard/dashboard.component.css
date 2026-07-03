@@ -19,8 +19,6 @@
 .btn-refresh:hover { background: #f8fafc; color: #3b82f6; border-color: #3b82f6; }
 .btn-refresh.spinning { animation: spin 0.8s ease-in-out; }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-.btn-logout { padding: 8px 20px; border: 1px solid #fca5a5; background: transparent; color: #ef4444; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
-.btn-logout:hover { background: #ef4444; color: white; }
 
 .eleccion-selector { margin-bottom: 20px; }
 .eleccion-selector label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; color: #374151; }
@@ -28,12 +26,17 @@
 .eleccion-selector select:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
 
 .filtros-card { background: white; border-radius: 16px; padding: 20px 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #f1f5f9; }
-.filtros-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.filtros-header { display: flex; justify-content: space-between; align-items: center; }
+.filtros-title { display: flex; align-items: center; gap: 8px; }
 .filtros-header h3 { margin: 0; font-size: 16px; color: #0f172a; }
+.btn-minimize { background: none; border: none; cursor: pointer; font-size: 12px; color: #94a3b8; padding: 4px 6px; border-radius: 6px; transition: all 0.2s; line-height: 1; }
+.btn-minimize:hover { background: #f1f5f9; color: #475569; }
+.btn-minimize.minimized { transform: rotate(-90deg); }
 .btn-clean { padding: 6px 16px; border: 1px solid #e2e8f0; background: white; border-radius: 8px; color: #64748b; font-size: 13px; cursor: pointer; transition: all 0.2s; }
 .btn-clean:hover { background: #f1f5f9; color: #ef4444; border-color: #fca5a5; }
 
-.filtros-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.filtros-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease; max-height: 300px; opacity: 1; margin-top: 16px; }
+.filtros-grid.hidden { max-height: 0; opacity: 0; margin-top: 0; pointer-events: none; }
 .filtro-group label { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.3px; }
 .form-select { width: 100%; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; background: #fafafa; transition: all 0.2s; cursor: pointer; }
 .form-select:focus { border-color: #3b82f6; outline: none; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); background: white; }

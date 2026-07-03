@@ -1,0 +1,204 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ApiService } from '../../../../core/services/api.service';
+import { environment } from '../../../../../environments/environment';
+import { CarouselImage } from '../../../../core/models';
+import { UsuariosComponent } from '../usuarios/usuarios.component';
+import { ImportarComponent } from '../importar/importar.component';
+
+@Component({
+  selector: 'app-configuracion',
+  standalone: true,
+  imports: [CommonModule, FormsModule, UsuariosComponent, ImportarComponent],
+  templateUrl: './configuracion.component.html',
+  styleUrl: './configuracion.component.css'
+})
+export class ConfiguracionComponent implements OnInit {
+  activeTab: 'config' | 'carousel' | 'usuarios' | 'importar' = 'config';
+  config: any = { nombrePartido: '', descripcion: '' };
+  logoUrl: string | null = null;
+  selectedLogo: File | null = null;
+  loading = false;
+  saving = false;
+  uploading = false;
+  successMsg = '';
+  errorMsg = '';
+  private readonly API_URL = environment.apiUrl;
+
+  // Carousel
+  carouselImages: CarouselImage[] = [];
+  carouselLoading = false;
+  carouselFile: File | null = null;
+  carouselPreviewUrl: string | null = null;
+  carouselCaption = '';
+  carouselDragOver = false;
+  editingCarouselId: number | null = null;
+  editCaption = '';
+  editOrden = 0;
+
+  constructor(private api: ApiService) {}
+
+  ngOnInit(): void {
+    this.loadConfig();
+    this.loadCarousel();
+  }
+
+  loadConfig(): void {
+    this.loading = true;
+    this.api.getConfiguracion().subscribe({
+      next: (res) => {
+        this.config = res;
+        this.logoUrl = res.tieneLogo ? `${this.API_URL}/configuracion/logo?t=${new Date().getTime()}` : null;
+        this.loading = false;
+      },
+      error: () => {
+        this.errorMsg = 'Error al cargar la configuración';
+        this.loading = false;
+      }
+    });
+  }
+
+  onLogoSelected(event: any): void {
+    this.selectedLogo = event.target.files?.[0] || null;
+  }
+
+  uploadLogo(): void {
+    if (!this.selectedLogo) return;
+    this.uploading = true;
+    this.errorMsg = '';
+    this.successMsg = '';
+    this.api.uploadLogo(this.selectedLogo).subscribe({
+      next: () => {
+        this.uploading = false;
+        this.selectedLogo = null;
+        this.successMsg = 'Logo actualizado correctamente';
+        this.logoUrl = `${this.API_URL}/configuracion/logo?t=${new Date().getTime()}`;
+      },
+      error: (err) => {
+        this.uploading = false;
+        this.errorMsg = err.error?.message || 'Error al subir el logo';
+      }
+    });
+  }
+
+  deleteLogo(): void {
+    this.uploading = true;
+    this.errorMsg = '';
+    this.successMsg = '';
+    this.api.deleteLogo().subscribe({
+      next: () => {
+        this.uploading = false;
+        this.logoUrl = null;
+        this.successMsg = 'Logo eliminado correctamente';
+      },
+      error: (err) => {
+        this.uploading = false;
+        this.errorMsg = err.error?.message || 'Error al eliminar el logo';
+      }
+    });
+  }
+
+  saveConfig(): void {
+    this.saving = true;
+    this.errorMsg = '';
+    this.successMsg = '';
+    this.api.updateConfiguracion(this.config).subscribe({
+      next: () => {
+        this.saving = false;
+        this.successMsg = 'Configuración guardada correctamente';
+      },
+      error: (err) => {
+        this.saving = false;
+        this.errorMsg = err.error?.message || 'Error al guardar la configuración';
+      }
+    });
+  }
+
+  // Carousel methods
+  loadCarousel(): void {
+    this.carouselLoading = true;
+    this.api.getCarouselImages().subscribe({
+      next: (res) => { this.carouselImages = res; this.carouselLoading = false; },
+      error: () => { this.carouselLoading = false; }
+    });
+  }
+
+  getCarouselImageUrl(id: number): string {
+    return `${this.API_URL}/carousel/${id}/image`;
+  }
+
+  setCarouselFile(file: File | null): void {
+    this.carouselFile = file;
+    if (this.carouselPreviewUrl) { URL.revokeObjectURL(this.carouselPreviewUrl); this.carouselPreviewUrl = null; }
+    if (file) this.carouselPreviewUrl = URL.createObjectURL(file);
+  }
+
+  onCarouselFileSelected(event: any): void {
+    this.setCarouselFile(event.target.files?.[0] || null);
+  }
+
+  onCarouselDrop(event: DragEvent): void {
+    event.preventDefault();
+    this.carouselDragOver = false;
+    this.setCarouselFile(event.dataTransfer?.files?.[0] || null);
+  }
+
+  clearCarouselFile(): void {
+    this.setCarouselFile(null);
+  }
+
+  uploadCarouselImage(): void {
+    if (!this.carouselFile || !this.carouselCaption.trim()) return;
+    this.uploading = true;
+    this.errorMsg = '';
+    this.successMsg = '';
+    const nextOrden = this.carouselImages.length > 0 ? Math.max(...this.carouselImages.map(i => i.orden)) + 1 : 1;
+    this.api.uploadCarouselImage(this.carouselFile, this.carouselCaption, nextOrden).subscribe({
+      next: () => {
+        this.uploading = false;
+        this.setCarouselFile(null);
+        this.carouselCaption = '';
+        this.successMsg = 'Imagen del carrusel subida correctamente';
+        this.loadCarousel();
+      },
+      error: (err) => {
+        this.uploading = false;
+        this.errorMsg = err.error?.message || 'Error al subir imagen';
+      }
+    });
+  }
+
+  startEditCarousel(img: CarouselImage): void {
+    this.editingCarouselId = img.id;
+    this.editCaption = img.caption;
+    this.editOrden = img.orden;
+  }
+
+  cancelEditCarousel(): void {
+    this.editingCarouselId = null;
+  }
+
+  saveCarouselEdit(id: number): void {
+    if (!this.editCaption.trim()) return;
+    this.api.updateCarouselImage(id, { caption: this.editCaption, orden: this.editOrden }).subscribe({
+      next: () => {
+        this.editingCarouselId = null;
+        this.successMsg = 'Imagen actualizada correctamente';
+        this.loadCarousel();
+      },
+      error: (err) => { this.errorMsg = err.error?.message || 'Error al actualizar'; }
+    });
+  }
+
+  deleteCarouselImage(id: number): void {
+    if (!confirm('¿Eliminar esta imagen del carrusel?')) return;
+    this.api.deleteCarouselImage(id).subscribe({
+      next: () => {
+        this.successMsg = 'Imagen eliminada correctamente';
+        this.loadCarousel();
+      },
+      error: (err) => { this.errorMsg = err.error?.message || 'Error al eliminar'; }
+    });
+  }
+}

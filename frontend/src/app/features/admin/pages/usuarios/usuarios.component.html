@@ -1,13 +1,16 @@
-<div class="container">
   <div class="page-header">
     <h2>Gestión de Usuarios</h2>
-    <div class="export-buttons">
-      <button class="btn btn-excel" (click)="api.exportUsuariosExcel()" title="Exportar a Excel">📊 Excel</button>
-      <button class="btn btn-pdf" (click)="api.exportUsuariosPdf()" title="Exportar a PDF">📄 PDF</button>
+    <div class="dropdown">
+      <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
+        Opciones
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><button class="dropdown-item fw-bold" (click)="openModal()">+ Nuevo Usuario</button></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><button class="dropdown-item" (click)="api.exportUsuariosPdf()">📄 Imprimir PDF</button></li>
+        <li><button class="dropdown-item" (click)="api.exportUsuariosExcel()">📊 Exportar Excel</button></li>
+      </ul>
     </div>
-    <button class="btn btn-primary btn-with-icon" (click)="openModal()">
-      <span class="btn-icon">+</span> Nuevo Usuario
-    </button>
   </div>
 
   <div class="filters-bar mb-4">
@@ -51,9 +54,17 @@
           </span>
         </td>
         <td>
-          <button class="btn btn-sm btn-warning" (click)="openEditModal(u)">Editar</button>
-          <button class="btn btn-sm btn-info" (click)="openResetPasswordModal(u)">Reset Pass</button>
-          <button class="btn btn-sm btn-danger" (click)="deleteUsuario(u)">Eliminar</button>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
+              Acciones
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><button class="dropdown-item" (click)="openEditModal(u)">Editar</button></li>
+              <li><button class="dropdown-item" (click)="openResetPasswordModal(u)">Reset Pass</button></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><button class="dropdown-item text-danger" (click)="deleteUsuario(u)">Eliminar</button></li>
+            </ul>
+          </div>
         </td>
       </tr>
       <tr *ngIf="usuariosFiltrados.length === 0">
@@ -166,4 +177,3 @@
       </div>
     </div>
   </div>
-</div>

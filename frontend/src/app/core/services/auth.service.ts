@@ -53,6 +53,10 @@ export class AuthService {
     return !!this.getToken();
   }
 
+  verifyToken(): Observable<any> {
+    return this.http.get(`${this.API_URL}/me`);
+  }
+
   getCurrentUser(): Usuario | null {
     return this.currentUserSubject.value;
   }

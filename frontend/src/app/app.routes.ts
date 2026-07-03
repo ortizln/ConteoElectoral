@@ -17,13 +17,25 @@ export const routes: Routes = [
   { 
     path: 'dashboard', 
     canActivate: [authGuard],
-    loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) 
+    loadComponent: () => import('./features/shared/layouts/content-layout.component').then(m => m.ContentLayoutComponent),
+    children: [
+      { 
+        path: '', 
+        loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) 
+      }
+    ]
   },
   { 
     path: 'mesa', 
     canActivate: [authGuard, roleGuard],
     data: { roles: ['MIEMBRO_MESA', 'ADMIN', 'SUPERVISOR'] },
-    loadComponent: () => import('./features/mesa/mesa-votacion/mesa-votacion.component').then(m => m.MesaVotacionComponent) 
+    loadComponent: () => import('./features/shared/layouts/content-layout.component').then(m => m.ContentLayoutComponent),
+    children: [
+      { 
+        path: '', 
+        loadComponent: () => import('./features/mesa/mesa-votacion/mesa-votacion.component').then(m => m.MesaVotacionComponent) 
+      }
+    ]
   },
   { path: '**', redirectTo: 'login' }
 ];

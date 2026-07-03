@@ -1,0 +1,151 @@
+<div class="container">
+  <div class="page-header">
+    <h2>Configuración del Sistema</h2>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <div *ngIf="successMsg" class="alert alert-success">{{ successMsg }}</div>
+  <div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
+
+  <!-- Tabs -->
+  <div class="tabs" *ngIf="!loading">
+    <button class="tab" [class.active]="activeTab === 'config'" (click)="activeTab = 'config'">
+      <span>⚙️</span> Configuración
+    </button>
+    <button class="tab" [class.active]="activeTab === 'carousel'" (click)="activeTab = 'carousel'">
+      <span>📷</span> Carrusel
+    </button>
+    <button class="tab" [class.active]="activeTab === 'usuarios'" (click)="activeTab = 'usuarios'">
+      <span>👥</span> Usuarios
+    </button>
+    <button class="tab" [class.active]="activeTab === 'importar'" (click)="activeTab = 'importar'">
+      <span>📥</span> Importar Datos
+    </button>
+  </div>
+
+  <!-- Tab: Configuración -->
+  <div *ngIf="!loading && activeTab === 'config'" class="config-grid">
+    <div class="card">
+      <h5><span>🏷️</span> Información del Partido</h5>
+      <div class="form-group">
+        <label for="nombrePartido">Nombre del Partido</label>
+        <input id="nombrePartido" type="text" class="form-control" [(ngModel)]="config.nombrePartido"
+          placeholder="Nombre del partido político" />
+      </div>
+      <div class="form-group">
+        <label for="descripcion">Descripción</label>
+        <textarea id="descripcion" class="form-control" rows="3" [(ngModel)]="config.descripcion"
+          placeholder="Descripción breve del partido"></textarea>
+      </div>
+      <button class="btn btn-primary" (click)="saveConfig()" [disabled]="saving">
+        {{ saving ? 'Guardando...' : 'Guardar Cambios' }}
+      </button>
+    </div>
+    <div class="card">
+      <h5><span>🖼️</span> Logo del Partido</h5>
+      <div class="logo-preview">
+        <div *ngIf="logoUrl" class="logo-display">
+          <img [src]="logoUrl" class="logo-img" alt="Logo del partido" />
+          <button class="btn btn-outline-danger btn-sm" (click)="deleteLogo()" [disabled]="uploading">
+            Eliminar Logo
+          </button>
+        </div>
+        <div *ngIf="!logoUrl" class="logo-placeholder"><span>Sin logo</span></div>
+      </div>
+      <div class="upload-section">
+        <input type="file" (change)="onLogoSelected($event)" accept="image/png,image/jpeg,image/webp" id="logoInput" />
+        <label for="logoInput" class="file-label">{{ selectedLogo ? selectedLogo.name : 'Seleccionar imagen...' }}</label>
+        <button class="btn btn-primary" (click)="uploadLogo()" [disabled]="!selectedLogo || uploading">
+          {{ uploading ? 'Subiendo...' : 'Subir Logo' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Carrusel -->
+  <div *ngIf="!loading && activeTab === 'carousel'" class="tab-content">
+    <div class="carousel-upload-card">
+      <div class="upload-header">
+        <h4>📷 Agregar Nueva Imagen</h4>
+      </div>
+      <div class="drop-zone"
+        [class.drag-over]="carouselDragOver"
+        [class.has-file]="carouselFile"
+        (dragover)="$event.preventDefault(); carouselDragOver = true"
+        (dragleave)="carouselDragOver = false"
+        (drop)="onCarouselDrop($event)">
+        <input type="file" (change)="onCarouselFileSelected($event)" accept="image/png,image/jpeg,image/webp" id="carouselFileInput" />
+        <div class="drop-content" *ngIf="!carouselFile">
+          <div class="drop-icon">🖼️</div>
+          <p class="drop-text">Arrastra una imagen aquí o <span class="drop-link">haz clic para seleccionar</span></p>
+          <p class="drop-hint">PNG, JPEG o WebP</p>
+        </div>
+        <div class="drop-preview" *ngIf="carouselFile && carouselPreviewUrl">
+          <img [src]="carouselPreviewUrl" alt="Preview" class="drop-preview-img" />
+          <div class="drop-preview-info">
+            <span class="drop-preview-name">{{ carouselFile.name }}</span>
+            <span class="drop-preview-size">{{ (carouselFile.size / 1024 / 1024).toFixed(1) }} MB</span>
+          </div>
+          <button class="btn-clear-file" (click)="clearCarouselFile(); $event.preventDefault()">✕</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <input type="text" class="form-control" [(ngModel)]="carouselCaption" placeholder="Descripción de la imagen" />
+        </div>
+        <button class="btn btn-primary" (click)="uploadCarouselImage()" [disabled]="!carouselFile || !carouselCaption.trim() || uploading">
+          {{ uploading ? 'Subiendo...' : 'Agregar Imagen' }}
+        </button>
+      </div>
+    </div>
+
+    <div *ngIf="carouselLoading" class="text-center py-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>
+
+    <div *ngIf="!carouselLoading && carouselImages.length === 0" class="empty-carousel">
+      <p>No hay imágenes en el carrusel. Agrega una usando el formulario de arriba.</p>
+    </div>
+
+    <div *ngIf="!carouselLoading && carouselImages.length > 0" class="carousel-grid">
+      <div *ngFor="let img of carouselImages" class="carousel-image-card">
+        <div class="carousel-img-preview">
+          <img [src]="getCarouselImageUrl(img.id)" [alt]="img.caption" />
+        </div>
+        <div class="carousel-img-info">
+          <div *ngIf="editingCarouselId !== img.id" class="carousel-img-details">
+            <span class="carousel-img-caption">{{ img.caption }}</span>
+            <span class="carousel-img-orden">Orden: {{ img.orden }}</span>
+          </div>
+          <div *ngIf="editingCarouselId === img.id" class="carousel-img-edit">
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="editCaption" placeholder="Descripción" />
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="editOrden" min="0" placeholder="Orden" />
+          </div>
+          <div class="carousel-img-actions">
+            <div *ngIf="editingCarouselId !== img.id" class="btn-group">
+              <button class="btn btn-sm btn-outline-primary" (click)="startEditCarousel(img)">Editar</button>
+              <button class="btn btn-sm btn-outline-danger" (click)="deleteCarouselImage(img.id)">Eliminar</button>
+            </div>
+            <div *ngIf="editingCarouselId === img.id" class="btn-group">
+              <button class="btn btn-sm btn-primary" (click)="saveCarouselEdit(img.id)">Guardar</button>
+              <button class="btn btn-sm btn-outline-secondary" (click)="cancelEditCarousel()">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Usuarios -->
+  <div *ngIf="!loading && activeTab === 'usuarios'" class="tab-content">
+    <app-usuarios></app-usuarios>
+  </div>
+
+  <!-- Tab: Importar Datos -->
+  <div *ngIf="!loading && activeTab === 'importar'" class="tab-content">
+    <app-importar></app-importar>
+  </div>
+</div>

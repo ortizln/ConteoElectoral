@@ -47,16 +47,12 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/mesas/mesas.component').then(m => m.MesasComponent) 
       },
       { 
-        path: 'usuarios', 
-        loadComponent: () => import('./pages/usuarios/usuarios.component').then(m => m.UsuariosComponent) 
-      },
-      { 
         path: 'asignar-mesas', 
         loadComponent: () => import('./pages/asignar-mesas/asignar-mesas.component').then(m => m.AsignarMesasComponent) 
       },
       { 
-        path: 'importar', 
-        loadComponent: () => import('./pages/importar/importar.component').then(m => m.ImportarComponent) 
+        path: 'configuracion', 
+        loadComponent: () => import('./pages/configuracion/configuracion.component').then(m => m.ConfiguracionComponent) 
       }
     ]
   }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Eleccion, Partido, Cargo, Candidato, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa } from '../models';
+import { Eleccion, Partido, Cargo, Candidato, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -389,6 +389,50 @@ export class ApiService {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post<any>(`${this.API_URL}/import/excel`, formData);
+  }
+
+  // Carousel
+  getCarouselImages(): Observable<CarouselImage[]> {
+    return this.http.get<CarouselImage[]>(`${this.API_URL}/carousel`);
+  }
+
+  getCarouselImageUrl(id: number): string {
+    return `${this.API_URL}/carousel/${id}/image`;
+  }
+
+  uploadCarouselImage(file: File, caption: string, orden?: number): Observable<any> {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('caption', caption);
+    if (orden !== undefined) formData.append('orden', orden.toString());
+    return this.http.post<any>(`${this.API_URL}/carousel`, formData);
+  }
+
+  updateCarouselImage(id: number, data: Partial<CarouselImage>): Observable<any> {
+    return this.http.put<any>(`${this.API_URL}/carousel/${id}`, data);
+  }
+
+  deleteCarouselImage(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/carousel/${id}`);
+  }
+
+  // Configuracion del Sistema
+  getConfiguracion(): Observable<any> {
+    return this.http.get<any>(`${this.API_URL}/configuracion`);
+  }
+
+  updateConfiguracion(data: { nombrePartido: string; descripcion: string }): Observable<any> {
+    return this.http.put<any>(`${this.API_URL}/configuracion`, data);
+  }
+
+  uploadLogo(file: File): Observable<any> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<any>(`${this.API_URL}/configuracion/logo`, formData);
+  }
+
+  deleteLogo(): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/configuracion/logo`);
   }
 
   // Dashboard

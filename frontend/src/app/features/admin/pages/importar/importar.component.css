@@ -1,4 +1,3 @@
-.container { max-width: 800px; margin: 0 auto; padding: 20px; }
 .page-header { margin-bottom: 24px; }
 .page-header h2 { color: #1e293b; margin: 0; font-size: 24px; font-weight: 600; }
 .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
@@ -7,6 +6,9 @@
 .card ul li { margin-bottom: 4px; }
 .card p { color: #475569; font-size: 14px; margin: 8px 0; }
 .upload-section { background: white; border-radius: 12px; padding: 32px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px; }
+.upload-actions { display: flex; gap: 12px; justify-content: center; }
+.btn-success { background: linear-gradient(135deg, #22c55e, #16a34a); color: white; box-shadow: 0 2px 8px rgba(34,197,94,0.3); }
+.btn-success:hover { background: linear-gradient(135deg, #16a34a, #15803d); box-shadow: 0 4px 12px rgba(34,197,94,0.4); transform: translateY(-1px); }
 .file-input-area { margin-bottom: 20px; }
 .file-input-area input[type="file"] { display: none; }
 .file-label { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 10px; cursor: pointer; font-size: 15px; color: #475569; transition: all 0.2s; min-width: 300px; }

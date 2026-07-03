@@ -1,13 +1,17 @@
 <div class="container">
   <div class="page-header">
     <h2>Gestión de Mesas</h2>
-    <div class="export-buttons">
-      <button class="btn btn-excel" (click)="api.exportMesasExcel()" title="Exportar a Excel">📊 Excel</button>
-      <button class="btn btn-pdf" (click)="api.exportMesasPdf()" title="Exportar a PDF">📄 PDF</button>
+    <div class="dropdown">
+      <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
+        Opciones
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><button class="dropdown-item fw-bold" (click)="openModal()">+ Nueva Mesa</button></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><button class="dropdown-item" (click)="api.exportMesasPdf()">📄 Imprimir PDF</button></li>
+        <li><button class="dropdown-item" (click)="api.exportMesasExcel()">📊 Exportar Excel</button></li>
+      </ul>
     </div>
-    <button class="btn btn-primary btn-with-icon" (click)="openModal()">
-      <span class="btn-icon">+</span> Nueva Mesa
-    </button>
   </div>
 
   <div class="filters-bar mb-4">
@@ -54,9 +58,17 @@
           </span>
         </td>
         <td>
-          <button class="btn btn-sm btn-warning" (click)="edit(m)">Editar</button>
-          <button class="btn btn-sm btn-danger" (click)="delete(m.id)">Eliminar</button>
-          <button *ngIf="!m.cerrada" class="btn btn-sm btn-secondary" (click)="cerrar(m.id)">Cerrar</button>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
+              Acciones
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><button class="dropdown-item" (click)="edit(m)">Editar</button></li>
+              <li><button class="dropdown-item" (click)="cerrar(m.id)" *ngIf="!m.cerrada">Cerrar</button></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><button class="dropdown-item text-danger" (click)="delete(m.id)">Eliminar</button></li>
+            </ul>
+          </div>
         </td>
       </tr>
       <tr *ngIf="mesasFiltradas.length === 0">

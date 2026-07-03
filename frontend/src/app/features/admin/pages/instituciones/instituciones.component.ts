@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import * as XLSX from 'xlsx';
 import { ApiService } from '../../../../core/services/api.service';
 import { InstitucionEducativa, Parroquia } from '../../../../core/models';
 
@@ -27,6 +28,12 @@ export class InstitucionesComponent implements OnInit {
   pageSizes: number[] = [5, 10, 25, 50];
   Math = Math;
   errorMessage: string = '';
+  showImportModal = false;
+  importFile: File | null = null;
+  importing = false;
+  importPreview: any[] | null = null;
+  importSuccess = '';
+  importErrors: string[] = [];
 
   constructor(public api: ApiService) {}
 
@@ -148,5 +155,71 @@ export class InstitucionesComponent implements OnInit {
     if (confirm('¿Está seguro de eliminar esta institución?')) {
       this.api.deleteInstitucion(id).subscribe(() => this.load());
     }
+  }
+
+  descargarTemplate(): void {
+    const data: any[][] = [['nombre', 'parroquia'], ['INSTITUCION EJEMPLO', 'PARROQUIA EJEMPLO']];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!cols'] = [{ wch: 30 }, { wch: 30 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Instituciones');
+    XLSX.writeFile(wb, 'plantilla_instituciones.xlsx');
+  }
+
+  openImportModal(): void {
+    this.showImportModal = true;
+    this.importFile = null;
+    this.importPreview = null;
+    this.importSuccess = '';
+    this.importErrors = [];
+  }
+
+  closeImportModal(): void {
+    this.showImportModal = false;
+    this.importFile = null;
+    this.importPreview = null;
+  }
+
+  onImportFileSelected(event: any): void {
+    this.importFile = event.target.files?.[0] || null;
+    this.importPreview = null;
+    this.importSuccess = '';
+    this.importErrors = [];
+    if (!this.importFile) return;
+    this.api.getParroquias().subscribe((parroquias: Parroquia[]) => this.parroquias = parroquias);
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json: any[] = XLSX.utils.sheet_to_json(sheet);
+      this.importPreview = json.map((row, i) => ({ index: i + 2, nombre: row['nombre'] || '', parroquia: row['parroquia'] || '' }));
+    };
+    reader.readAsArrayBuffer(this.importFile);
+  }
+
+  importar(): void {
+    if (!this.importPreview || this.importPreview.length === 0) return;
+    this.importing = true;
+    this.importSuccess = '';
+    this.importErrors = [];
+    let completed = 0;
+    let errors = 0;
+    this.importPreview.forEach(item => {
+      if (!item.nombre) { errors++; this.importErrors.push(`Fila ${item.index}: nombre requerido`); completed++; return; }
+      const parroquia = this.parroquias.find(p => p.nombre === item.parroquia);
+      if (!item.parroquia || !parroquia) { errors++; this.importErrors.push(`Fila ${item.index}: parroquia "${item.parroquia}" no encontrada`); completed++; return; }
+      this.api.createInstitucion({ nombre: item.nombre, parroquiaId: parroquia.id }).subscribe({
+        next: () => { completed++; if (completed === this.importPreview!.length) this.finishImport(errors); },
+        error: (err) => { errors++; this.importErrors.push(`Fila ${item.index}: ${err.error?.message || 'Error'}`); completed++; if (completed === this.importPreview!.length) this.finishImport(errors); }
+      });
+    });
+  }
+
+  private finishImport(errors: number): void {
+    this.importing = false;
+    if (errors === 0) this.importSuccess = `✅ ${this.importPreview!.length} registros importados correctamente.`;
+    else this.importSuccess = `⚠️ Importación completada con ${errors} error(es).`;
+    this.load();
   }
 }

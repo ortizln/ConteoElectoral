@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import * as XLSX from 'xlsx';
 import { ApiService } from '../../../../core/services/api.service';
 
 @Component({
@@ -40,5 +41,16 @@ export class ImportarComponent {
         this.importing = false;
       }
     });
+  }
+
+  descargarTemplate(): void {
+    const header = ['zona', 'provincia', 'canton', 'parroquia', 'institucion'];
+    const exampleRow = ['Zona 1', 'Pichincha', 'Quito', 'La Mariscal', 'Unidad Educativa Central'];
+    const data: any[][] = [header, exampleRow];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!cols'] = header.map(() => ({ wch: 25 }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Plantilla');
+    XLSX.writeFile(wb, 'plantilla_importacion.xlsx');
   }
 }

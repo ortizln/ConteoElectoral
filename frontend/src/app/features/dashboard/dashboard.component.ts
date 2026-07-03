@@ -53,6 +53,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   autoRefresh = true;
   ultimaActualizacion = '';
   animando = false;
+  filtrosMinimized = false;
 
   private barChart?: Chart;
   private pieChart?: Chart;

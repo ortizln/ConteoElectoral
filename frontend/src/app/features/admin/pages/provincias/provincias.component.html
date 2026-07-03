@@ -1,13 +1,20 @@
 <div class="container">
   <div class="page-header">
     <h2>Gestión de Provincias</h2>
-    <div class="export-buttons">
-      <button class="btn btn-excel" (click)="api.exportProvinciasExcel()" title="Exportar a Excel">📊 Excel</button>
-      <button class="btn btn-pdf" (click)="api.exportProvinciasPdf()" title="Exportar a PDF">📄 PDF</button>
+    <div class="dropdown">
+      <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
+        Opciones
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><button class="dropdown-item fw-bold" (click)="openModal()">+ Nueva Provincia</button></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><button class="dropdown-item" (click)="descargarTemplate()">📄 Descargar Plantilla</button></li>
+        <li><button class="dropdown-item" (click)="openImportModal()">📥 Importar desde Excel</button></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><button class="dropdown-item" (click)="api.exportProvinciasPdf()">📄 Imprimir PDF</button></li>
+        <li><button class="dropdown-item" (click)="api.exportProvinciasExcel()">📊 Exportar Excel</button></li>
+      </ul>
     </div>
-    <button class="btn btn-primary btn-with-icon" (click)="openModal()">
-      <span class="btn-icon">+</span> Nueva Provincia
-    </button>
   </div>
 
   <div class="filters-bar mb-4">
@@ -41,8 +48,16 @@
         <td>{{ p.zonaNombre }}</td>
         <td>{{ p.descripcion || 'N/A' }}</td>
         <td>
-          <button class="btn btn-sm btn-warning" (click)="edit(p)">Editar</button>
-          <button class="btn btn-sm btn-danger" (click)="delete(p.id)">Eliminar</button>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
+              Acciones
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><button class="dropdown-item" (click)="edit(p)">Editar</button></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><button class="dropdown-item text-danger" (click)="delete(p.id)">Eliminar</button></li>
+            </ul>
+          </div>
         </td>
       </tr>
       <tr *ngIf="provinciasFiltradas.length === 0">
@@ -69,6 +84,52 @@
       <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
         <option *ngFor="let s of pageSizes" [value]="s">{{ s }}</option>
       </select>
+    </div>
+  </div>
+
+  <!-- Import Modal -->
+  <div class="modal" *ngIf="showImportModal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5>📥 Importar Provincias desde Excel</h5>
+          <button class="btn-close" (click)="closeImportModal()">×</button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted mb-3">Selecciona un archivo Excel (.xlsx) con las columnas: <strong>nombre</strong>, <strong>zona</strong>.</p>
+          <div class="upload-section mb-3">
+            <input type="file" (change)="onImportFileSelected($event)" accept=".xlsx,.xls" id="importFileInput" />
+            <label for="importFileInput" class="file-label">
+              <span *ngIf="!importFile">📂 Seleccionar archivo Excel...</span>
+              <span *ngIf="importFile">📄 {{ importFile.name }}</span>
+            </label>
+          </div>
+          <div *ngIf="importPreview && importPreview.length > 0" class="import-preview">
+            <p><strong>Vista previa ({{ importPreview.length }} filas):</strong></p>
+            <div class="preview-table-wrapper">
+              <table class="table table-sm">
+                <thead><tr><th>#</th><th>nombre</th><th>zona</th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let row of importPreview">
+                    <td>{{ row.index }}</td><td>{{ row.nombre }}</td><td>{{ row.zona }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div *ngIf="importSuccess" class="alert" [class.alert-success]="importErrors.length === 0" [class.alert-warning]="importErrors.length > 0">{{ importSuccess }}</div>
+          <div *ngIf="importErrors.length > 0" class="errores-list">
+            <p><strong>Errores:</strong></p>
+            <ul><li *ngFor="let err of importErrors">{{ err }}</li></ul>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeImportModal()">Cerrar</button>
+          <button class="btn btn-primary" (click)="importar()" [disabled]="!importPreview || importPreview.length === 0 || importing">
+            {{ importing ? 'Importando...' : 'Importar Datos' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 

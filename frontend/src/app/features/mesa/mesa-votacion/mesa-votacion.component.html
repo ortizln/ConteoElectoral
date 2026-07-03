@@ -1,5 +1,5 @@
 <div class="mesa-container">
-  <header class="mesa-header">
+  <div class="mesa-header">
     <div class="header-left">
       <h1><span class="header-icon">🗳️</span> Registro de Votos</h1>
       <div class="header-meta">
@@ -9,10 +9,7 @@
         </span>
       </div>
     </div>
-    <div class="header-actions">
-      <button class="btn btn-logout" (click)="logout()">Cerrar Sesión</button>
-    </div>
-  </header>
+  </div>
 
   <div *ngIf="mesaActual?.cerrada" class="alert-cerrada">
     <span class="alert-icon">🔒</span>

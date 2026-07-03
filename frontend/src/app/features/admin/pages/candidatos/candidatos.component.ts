@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import * as XLSX from 'xlsx';
 import { ApiService } from '../../../../core/services/api.service';
 import { Eleccion, Candidato, Partido, Cargo } from '../../../../core/models';
 
@@ -28,6 +29,12 @@ export class CandidatosComponent implements OnInit {
   pageSizes: number[] = [5, 10, 25, 50];
   Math = Math;
   errorMessage: string = '';
+  showImportModal = false;
+  importFile: File | null = null;
+  importing = false;
+  importPreview: any[] | null = null;
+  importSuccess = '';
+  importErrors: string[] = [];
 
   constructor(public api: ApiService) {}
 
@@ -143,5 +150,78 @@ export class CandidatosComponent implements OnInit {
     if (confirm('Esta seguro de eliminar este candidato?')) {
       this.api.deleteCandidato(id).subscribe(() => this.load(this.form.eleccionesId));
     }
+  }
+
+  descargarTemplate(): void {
+    const data: any[][] = [['nombre', 'apellido', 'partido', 'cargo'], ['NOMBRE EJEMPLO', 'APELLIDO EJEMPLO', 'PARTIDO EJEMPLO', 'CARGO EJEMPLO']];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!cols'] = [{ wch: 25 }, { wch: 25 }, { wch: 25 }, { wch: 25 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Candidatos');
+    XLSX.writeFile(wb, 'plantilla_candidatos.xlsx');
+  }
+
+  openImportModal(): void {
+    this.showImportModal = true;
+    this.importFile = null;
+    this.importPreview = null;
+    this.importSuccess = '';
+    this.importErrors = [];
+  }
+
+  closeImportModal(): void {
+    this.showImportModal = false;
+    this.importFile = null;
+    this.importPreview = null;
+  }
+
+  onImportFileSelected(event: any): void {
+    this.importFile = event.target.files?.[0] || null;
+    this.importPreview = null;
+    this.importSuccess = '';
+    this.importErrors = [];
+    if (!this.importFile) return;
+    const elecId = this.form.eleccionesId;
+    if (elecId) {
+      this.api.getPartidosByEleccion(elecId).subscribe((d: Partido[]) => this.partidos = d);
+      this.api.getCargosByEleccion(elecId).subscribe((d: Cargo[]) => this.cargos = d);
+    }
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json: any[] = XLSX.utils.sheet_to_json(sheet);
+      this.importPreview = json.map((row, i) => ({ index: i + 2, nombre: row['nombre'] || '', apellido: row['apellido'] || '', partido: row['partido'] || '', cargo: row['cargo'] || '' }));
+    };
+    reader.readAsArrayBuffer(this.importFile);
+  }
+
+  importar(): void {
+    if (!this.importPreview || this.importPreview.length === 0) return;
+    this.importing = true;
+    this.importSuccess = '';
+    this.importErrors = [];
+    let completed = 0;
+    let errors = 0;
+    this.importPreview.forEach(item => {
+      if (!item.nombre) { errors++; this.importErrors.push(`Fila ${item.index}: nombre requerido`); completed++; return; }
+      if (!item.apellido) { errors++; this.importErrors.push(`Fila ${item.index}: apellido requerido`); completed++; return; }
+      const partido = this.partidos.find(p => p.nombre === item.partido);
+      if (!item.partido || !partido) { errors++; this.importErrors.push(`Fila ${item.index}: partido "${item.partido}" no encontrado`); completed++; return; }
+      const cargo = this.cargos.find(c => c.nombre === item.cargo);
+      if (!item.cargo || !cargo) { errors++; this.importErrors.push(`Fila ${item.index}: cargo "${item.cargo}" no encontrado`); completed++; return; }
+      this.api.createCandidato({ nombre: item.nombre, apellido: item.apellido, partidoId: partido.id, cargoId: cargo.id }).subscribe({
+        next: () => { completed++; if (completed === this.importPreview!.length) this.finishImport(errors); },
+        error: (err) => { errors++; this.importErrors.push(`Fila ${item.index}: ${err.error?.message || 'Error'}`); completed++; if (completed === this.importPreview!.length) this.finishImport(errors); }
+      });
+    });
+  }
+
+  private finishImport(errors: number): void {
+    this.importing = false;
+    if (errors === 0) this.importSuccess = `✅ ${this.importPreview!.length} registros importados correctamente.`;
+    else this.importSuccess = `⚠️ Importación completada con ${errors} error(es).`;
+    this.load(this.form.eleccionesId);
   }
 }

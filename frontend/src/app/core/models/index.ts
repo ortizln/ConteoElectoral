@@ -139,6 +139,13 @@ export interface DashboardData {
   resultados: ResultadoCandidato[];
 }
 
+export interface CarouselImage {
+  id: number;
+  caption: string;
+  orden: number;
+  createdAt?: string;
+}
+
 export interface ResultadoCandidato {
   candidatoId: number;
   nombreCompleto: string;

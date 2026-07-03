@@ -29,9 +29,8 @@ export class AdminLayoutComponent {
     { path: 'cargos', icon: '📋', label: 'Cargos', roles: ['ADMIN', 'SUPERVISOR'] },
     { path: 'candidatos', icon: '👤', label: 'Candidatos', roles: ['ADMIN', 'SUPERVISOR'] },
     { path: 'mesas', icon: '🗳️', label: 'Mesas', roles: ['ADMIN', 'SUPERVISOR'] },
-    { path: 'usuarios', icon: '👥', label: 'Usuarios', roles: ['ADMIN'] },
     { path: 'asignar-mesas', icon: '📝', label: 'Asignar Mesas', roles: ['ADMIN', 'SUPERVISOR'] },
-    { path: 'importar', icon: '📥', label: 'Importar Datos', roles: ['ADMIN'] }
+    { path: 'configuracion', icon: '⚙️', label: 'Configuración', roles: ['ADMIN'] }
   ];
 
   get userRole(): string {
