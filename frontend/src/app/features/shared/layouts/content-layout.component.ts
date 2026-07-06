@@ -31,7 +31,7 @@ import { AuthService } from '../../../core/services/auth.service';
       <footer class="app-footer">
         <div class="footer-brand">
           <span class="footer-logo-placeholder"></span>
-          <strong>NEXORA</strong>
+          <strong>ALANTEK</strong>
         </div>
         <span>&copy; 2026 Sistema de Conteo Electoral. Todos los derechos reservados.</span>
       </footer>

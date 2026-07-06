@@ -110,7 +110,7 @@ public class PdfExportService {
                 }
                 hc.add(new Paragraph(partyName).setFontSize(10).setBold().setTextAlignment(TextAlignment.CENTER)
                         .setFixedPosition(ps.getLeft() + 36 + cw, ps.getTop() - 48, cw));
-                hc.add(new Paragraph("NEXORA").setFontSize(9).setBold().setTextAlignment(TextAlignment.RIGHT)
+                hc.add(new Paragraph("ALANTEK").setFontSize(9).setBold().setTextAlignment(TextAlignment.RIGHT)
                         .setFixedPosition(ps.getLeft() + 36 + cw * 2, ps.getTop() - 48, cw));
             }
             canvas.setStrokeColor(ColorConstants.LIGHT_GRAY);
