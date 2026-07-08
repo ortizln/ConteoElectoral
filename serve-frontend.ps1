@@ -29,7 +29,9 @@ try {
         $response = $context.Response
         
         $path = $request.Url.LocalPath
-        if ($path -eq "/") { $path = "/index.html" }
+        $basePrefix = "/conteo-electoral"
+        if ($path.StartsWith($basePrefix)) { $path = $path.Substring($basePrefix.Length) }
+        if ($path -eq "" -or $path -eq "/") { $path = "/index.html" }
         
         $filePath = Join-Path $webRoot $path.TrimStart('/')
         

@@ -54,6 +54,9 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "buildTarget": "conteo-electoral:build:development"
+          },
           "configurations": {
             "production": {
               "buildTarget": "conteo-electoral:build:production"

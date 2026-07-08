@@ -19,7 +19,12 @@ const mimeTypes = {
 };
 
 const server = http.createServer((req, res) => {
-  let filePath = path.join(WEB_ROOT, req.url === '/' ? 'index.html' : req.url);
+  let urlPath = req.url;
+  const basePrefix = '/conteo-electoral';
+  if (urlPath.startsWith(basePrefix)) {
+    urlPath = urlPath.slice(basePrefix.length) || '/';
+  }
+  let filePath = path.join(WEB_ROOT, urlPath === '/' ? 'index.html' : urlPath);
   
   const ext = path.extname(filePath);
   const contentType = mimeTypes[ext] || 'application/octet-stream';
