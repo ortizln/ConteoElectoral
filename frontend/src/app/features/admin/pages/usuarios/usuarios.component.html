@@ -37,7 +37,7 @@
         <th class="sortable" (click)="sort('email')">Email {{ sortColumn === 'email' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('rol')">Rol {{ sortColumn === 'rol' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('activo')">Estado {{ sortColumn === 'activo' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
-        <th>Acciones</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -55,8 +55,8 @@
         </td>
         <td>
           <div class="dropdown">
-            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
-              Acciones
+            <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
+              <i class="bi bi-three-dots-vertical"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
               <li><button class="dropdown-item" (click)="openEditModal(u)">Editar</button></li>

@@ -101,8 +101,8 @@
         (dragover)="$event.preventDefault(); carouselDragOver = true"
         (dragleave)="carouselDragOver = false"
         (drop)="onCarouselDrop($event)">
-        <input type="file" (change)="onCarouselFileSelected($event)" accept="image/png,image/jpeg,image/webp" id="carouselFileInput" />
-        <div class="drop-content" *ngIf="!carouselFile">
+        <input type="file" (change)="onCarouselFileSelected($event)" accept="image/png,image/jpeg,image/webp" #carouselFileInput />
+        <div class="drop-content" *ngIf="!carouselFile" (click)="carouselFileInput.click()">
           <div class="drop-icon">🖼️</div>
           <p class="drop-text">Arrastra una imagen aquí o <span class="drop-link">haz clic para seleccionar</span></p>
           <p class="drop-hint">PNG, JPEG o WebP</p>

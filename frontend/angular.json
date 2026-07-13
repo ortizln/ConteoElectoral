@@ -29,6 +29,7 @@
           },
           "configurations": {
             "production": {
+              "baseHref": "/conteo-electoral/",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",

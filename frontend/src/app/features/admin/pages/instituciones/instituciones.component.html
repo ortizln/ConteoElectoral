@@ -39,7 +39,7 @@
         <th class="sortable" (click)="sort('parroquiaNombre')">Parroquia {{ sortColumn === 'parroquiaNombre' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('codigo')">Código {{ sortColumn === 'codigo' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('tipo')">Tipo {{ sortColumn === 'tipo' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
-        <th>Acciones</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -51,8 +51,8 @@
         <td>{{ i.tipo || 'N/A' }}</td>
         <td>
           <div class="dropdown">
-            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
-              Acciones
+            <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
+              <i class="bi bi-three-dots-vertical"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
               <li><button class="dropdown-item" (click)="edit(i)">Editar</button></li>

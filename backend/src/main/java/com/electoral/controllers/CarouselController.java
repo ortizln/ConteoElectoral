@@ -13,11 +13,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/carousel")
 @RequiredArgsConstructor
 public class CarouselController {
+    private static final Logger log = LoggerFactory.getLogger(CarouselController.class);
     private final CarouselImageService service;
 
     @GetMapping
@@ -48,12 +51,18 @@ public class CarouselController {
     public ResponseEntity<?> createImage(
             @RequestParam("image") MultipartFile file,
             @RequestParam("caption") String caption,
-            @RequestParam(value = "orden", required = false) Integer orden) throws IOException {
-        if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "El archivo está vacío"));
+            @RequestParam(value = "orden", required = false) Integer orden) {
+        try {
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "El archivo está vacío"));
+            }
+            log.info("Subiendo imagen carrusel: caption={}, size={}, orden={}", caption, file.getSize(), orden);
+            CarouselImage saved = service.saveImage(caption, file.getBytes(), orden);
+            return ResponseEntity.ok(Map.of("id", saved.getId(), "caption", saved.getCaption(), "orden", saved.getOrden()));
+        } catch (Exception e) {
+            log.error("Error al subir imagen del carrusel", e);
+            return ResponseEntity.internalServerError().body(Map.of("message", "Error al subir imagen: " + e.getMessage()));
         }
-        CarouselImage saved = service.saveImage(caption, file.getBytes(), orden);
-        return ResponseEntity.ok(Map.of("id", saved.getId(), "caption", saved.getCaption(), "orden", saved.getOrden()));
     }
 
     @PutMapping("/{id}")

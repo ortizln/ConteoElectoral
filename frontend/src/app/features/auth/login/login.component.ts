@@ -17,6 +17,7 @@ import { environment } from '../../../../environments/environment';
 export class LoginComponent implements OnInit, OnDestroy {
   username = '';
   password = '';
+  showPassword = false;
   loading = false;
   error = '';
   images: CarouselImage[] = [];
