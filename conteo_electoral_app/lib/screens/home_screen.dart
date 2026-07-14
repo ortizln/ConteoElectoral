@@ -4,6 +4,7 @@ import '../providers/app_provider.dart';
 import '../database/database_helper.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
+import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -46,7 +47,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     if (confirm && mounted) {
       await context.read<AppProvider>().logout();
-      if (mounted) Navigator.pop(context);
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
+        );
+      }
     }
   }
 
