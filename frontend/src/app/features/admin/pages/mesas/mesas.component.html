@@ -6,7 +6,7 @@
         Opciones
       </button>
       <ul class="dropdown-menu dropdown-menu-end">
-        <li><button class="dropdown-item fw-bold" (click)="openModal()">+ Nueva Mesa</button></li>
+        <li *ngIf="isAdmin"><button class="dropdown-item fw-bold" (click)="openModal()">+ Nueva Mesa</button></li>
         <li><hr class="dropdown-divider"></li>
         <li><button class="dropdown-item" (click)="api.exportMesasPdf()">📄 Imprimir PDF</button></li>
         <li><button class="dropdown-item" (click)="api.exportMesasExcel()">📊 Exportar Excel</button></li>
@@ -31,7 +31,7 @@
     </div>
     <div class="filter-item">
       <label>Buscar:</label>
-      <input type="text" class="form-control" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
+      <input type="text" class="form-control" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
     </div>
   </div>
 
@@ -63,10 +63,10 @@
               <i class="bi bi-three-dots-vertical"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li><button class="dropdown-item" (click)="edit(m)">Editar</button></li>
+              <li *ngIf="isAdmin"><button class="dropdown-item" (click)="edit(m)">Editar</button></li>
               <li><button class="dropdown-item" (click)="cerrar(m.id)" *ngIf="!m.cerrada">Cerrar</button></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><button class="dropdown-item text-danger" (click)="delete(m.id)">Eliminar</button></li>
+              <li><hr class="dropdown-divider" *ngIf="isAdmin"></li>
+              <li *ngIf="isAdmin"><button class="dropdown-item text-danger" (click)="delete(m.id)">Eliminar</button></li>
             </ul>
           </div>
         </td>
@@ -120,7 +120,7 @@
 
           <div class="mb-3">
             <label>Número:</label>
-            <input type="text" class="form-control" [(ngModel)]="form.numero" (input)="toUpper(form, 'numero')" />
+            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.numero" (input)="toUpper(form, 'numero')" />
           </div>
 
           <div class="filter-grid mb-3">
@@ -156,7 +156,7 @@
 
           <div class="mb-3">
             <label>Buscar institución:</label>
-            <input type="text" class="form-control" [(ngModel)]="buscarInstitucionText" placeholder="Escriba nombre para filtrar..." (input)="form.institucionId = null" />
+            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="buscarInstitucionText" placeholder="Escriba nombre para filtrar..." (input)="form.institucionId = null" />
             <small class="text-muted">{{ instituciones.length }} instituciones cargadas</small>
           </div>
 

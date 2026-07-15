@@ -17,7 +17,7 @@ public class ImportController {
     private final ImportService importService;
 
     @PostMapping("/excel")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ImportResponse> importarExcel(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(

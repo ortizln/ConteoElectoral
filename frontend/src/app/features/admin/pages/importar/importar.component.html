@@ -17,7 +17,7 @@
 
   <div class="upload-section">
     <div class="file-input-area">
-      <input type="file" (change)="onFileSelected($event)" accept=".xlsx,.xls" id="fileInput" />
+      <input type="file" autocomplete="off" (change)="onFileSelected($event)" accept=".xlsx,.xls" id="fileInput" />
       <label for="fileInput" class="file-label">
         <span *ngIf="!selectedFile">&#128193; Seleccionar archivo Excel...</span>
         <span *ngIf="selectedFile">&#128196; {{ selectedFile.name }}</span>

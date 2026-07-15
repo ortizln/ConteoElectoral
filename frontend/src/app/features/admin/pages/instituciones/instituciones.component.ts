@@ -37,6 +37,13 @@ export class InstitucionesComponent implements OnInit {
 
   constructor(public api: ApiService) {}
 
+  get isAdmin(): boolean {
+    try {
+      const user = JSON.parse(localStorage.getItem('electoral_user') || '{}');
+      return user.rol === 'ADMIN';
+    } catch { return false; }
+  }
+
   ngOnInit(): void {
     this.loadParroquias();
     this.load();

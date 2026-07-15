@@ -42,21 +42,21 @@ public class VotoController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN')")
     public ResponseEntity<VotoResponse> registrarVoto(@Valid @RequestBody VotoRequest request) {
         Long usuarioId = getCurrentUserId();
         return ResponseEntity.ok(votoService.registrarVoto(request, usuarioId));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN')")
     public ResponseEntity<VotoResponse> actualizarVoto(@PathVariable Long id, @Valid @RequestBody VotoRequest request) {
         Long usuarioId = getCurrentUserId();
         return ResponseEntity.ok(votoService.actualizarVoto(id, request, usuarioId));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN')")
     public ResponseEntity<Void> eliminarVoto(@PathVariable Long id) {
         Long usuarioId = getCurrentUserId();
         votoService.eliminarVoto(id, usuarioId);

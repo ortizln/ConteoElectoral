@@ -69,7 +69,7 @@ public class CantonController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CantonResponse> save(@Valid @RequestBody CantonRequest request) {
         Canton canton = Canton.builder()
                 .nombre(request.getNombre())
@@ -88,7 +88,7 @@ public class CantonController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CantonResponse> update(@PathVariable Long id, @Valid @RequestBody CantonRequest request) {
         Canton canton = cantonService.findById(id);
         canton.setNombre(request.getNombre());

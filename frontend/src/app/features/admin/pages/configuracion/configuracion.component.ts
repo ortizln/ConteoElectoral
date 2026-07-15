@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
 import { environment } from '../../../../../environments/environment';
-import { CarouselImage } from '../../../../core/models';
+import { CarouselImage, Rol, RolPermiso } from '../../../../core/models';
 import { UsuariosComponent } from '../usuarios/usuarios.component';
 import { ImportarComponent } from '../importar/importar.component';
 
@@ -15,7 +15,7 @@ import { ImportarComponent } from '../importar/importar.component';
   styleUrl: './configuracion.component.css'
 })
 export class ConfiguracionComponent implements OnInit {
-  activeTab: 'config' | 'carousel' | 'usuarios' | 'importar' = 'config';
+  activeTab: 'config' | 'carousel' | 'usuarios' | 'importar' | 'permisos' = 'config';
   config: any = { nombrePartido: '', descripcion: '' };
   logoUrl: string | null = null;
   selectedLogo: File | null = null;
@@ -43,11 +43,35 @@ export class ConfiguracionComponent implements OnInit {
   editCaption = '';
   editOrden = 0;
 
+  // Permisos
+  roles: Rol[] = [];
+  permisos: RolPermiso[] = [];
+  permisosLoading = false;
+  permisosSaving = false;
+
+  // Modulos disponibles
+  readonly MODULOS = [
+    { key: 'ELECCIONES', label: 'Elecciones' },
+    { key: 'ZONAS', label: 'Zonas' },
+    { key: 'PROVINCIAS', label: 'Provincias' },
+    { key: 'CANTONES', label: 'Cantones' },
+    { key: 'PARROQUIAS', label: 'Parroquias' },
+    { key: 'INSTITUCIONES', label: 'Instituciones' },
+    { key: 'PARTIDOS', label: 'Partidos' },
+    { key: 'CARGOS', label: 'Cargos' },
+    { key: 'CANDIDATOS', label: 'Candidatos' },
+    { key: 'MESAS', label: 'Mesas' },
+    { key: 'USUARIOS', label: 'Usuarios' },
+    { key: 'CONFIGURACION', label: 'Configuración' },
+  ];
+
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
     this.loadConfig();
     this.loadCarousel();
+    this.loadRoles();
+    this.loadPermisos();
   }
 
   loadConfig(): void {
@@ -255,6 +279,62 @@ export class ConfiguracionComponent implements OnInit {
         this.loadCarousel();
       },
       error: (err) => { this.errorMsg = err.error?.message || 'Error al eliminar'; }
+    });
+  }
+
+  // Permisos
+  loadRoles(): void {
+    this.api.getRoles().subscribe({
+      next: (res) => { this.roles = res; },
+      error: () => {}
+    });
+  }
+
+  loadPermisos(): void {
+    this.permisosLoading = true;
+    this.api.getPermisos().subscribe({
+      next: (res) => { this.permisos = res; this.permisosLoading = false; },
+      error: () => { this.permisosLoading = false; }
+    });
+  }
+
+  getPermiso(rolId: number, modulo: string): RolPermiso | undefined {
+    return this.permisos.find(p => p.rolId === rolId && p.modulo === modulo);
+  }
+
+  togglePermiso(permiso: RolPermiso | undefined, campo: 'puedeCrear' | 'puedeEditar' | 'puedeEliminar' | 'puedeVer'): void {
+    if (!permiso) return;
+    (permiso as any)[campo] = !(permiso as any)[campo];
+  }
+
+  savePermisos(): void {
+    this.permisosSaving = true;
+    this.errorMsg = '';
+    this.successMsg = '';
+    let completed = 0;
+    const total = this.permisos.length;
+    this.permisos.forEach(p => {
+      this.api.updatePermiso(p.id, {
+        rolId: p.rolId,
+        modulo: p.modulo,
+        puedeVer: p.puedeVer,
+        puedeCrear: p.puedeCrear,
+        puedeEditar: p.puedeEditar,
+        puedeEliminar: p.puedeEliminar
+      }).subscribe({
+        next: () => {
+          completed++;
+          if (completed === total) {
+            this.permisosSaving = false;
+            this.successMsg = 'Permisos guardados correctamente';
+          }
+        },
+        error: () => {
+          completed++;
+          this.errorMsg = 'Error al guardar algunos permisos';
+          if (completed === total) this.permisosSaving = false;
+        }
+      });
     });
   }
 }

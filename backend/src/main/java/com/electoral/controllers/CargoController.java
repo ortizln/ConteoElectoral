@@ -31,13 +31,13 @@ public class CargoController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CargoResponse> createCargo(@Valid @RequestBody CargoRequest request) {
         return ResponseEntity.ok(cargoService.createCargo(request));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CargoResponse> updateCargo(@PathVariable Long id, @Valid @RequestBody CargoRequest request) {
         return ResponseEntity.ok(cargoService.updateCargo(id, request));
     }

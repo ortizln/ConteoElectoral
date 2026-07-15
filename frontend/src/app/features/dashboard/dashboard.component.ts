@@ -6,7 +6,7 @@ import { Chart, registerables } from 'chart.js';
 import { ApiService } from '../../core/services/api.service';
 import { WebSocketService } from '../../core/services/websocket.service';
 import { AuthService } from '../../core/services/auth.service';
-import { DashboardData, Eleccion, Cargo, Partido, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, ResultadoCandidato } from '../../core/models';
+import { DashboardData, Eleccion, Cargo, Partido, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, Mesa, ResultadoCandidato } from '../../core/models';
 import { Subscription, interval } from 'rxjs';
 import { catchError, of } from 'rxjs';
 
@@ -49,6 +49,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   filtroInstitucionId: number | null = null;
   filtroCargoId: number | null = null;
   filtroPartidoId: number | null = null;
+  filtroMesaId: number | null = null;
+
+  mesas: Mesa[] = [];
+  userRole: string = '';
 
   autoRefresh = true;
   ultimaActualizacion = '';
@@ -71,7 +75,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     private authService: AuthService,
     private router: Router,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    const user = this.authService.getCurrentUser();
+    this.userRole = user?.rol || '';
+  }
 
   ngOnInit(): void {
     this.api.getEleccionesActivas().subscribe((elecciones: Eleccion[]) => {
@@ -80,6 +87,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.selectedEleccionId = elecciones[0].id;
         this.eleccionNombre = elecciones[0].nombre;
         this.loadZonas();
+        this.loadMesas();
         this.loadDashboard();
         this.subscribeToUpdates();
         this.startPolling();
@@ -127,9 +135,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   recargarSilencioso(): void {
     if (!this.selectedEleccionId) return;
-    this.animando = true;
     const tieneFiltros = this.filtroZonaId || this.filtroProvinciaId || this.filtroCantonId ||
-                         this.filtroParroquiaId || this.filtroInstitucionId || this.filtroCargoId || this.filtroPartidoId;
+                         this.filtroParroquiaId || this.filtroInstitucionId || this.filtroCargoId || this.filtroPartidoId || this.filtroMesaId;
     const obs = tieneFiltros ? this.api.getDashboardConFiltros(
       this.selectedEleccionId,
       this.filtroCargoId ?? undefined,
@@ -138,7 +145,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.filtroProvinciaId ?? undefined,
       this.filtroCantonId ?? undefined,
       this.filtroParroquiaId ?? undefined,
-      this.filtroInstitucionId ?? undefined
+      this.filtroInstitucionId ?? undefined,
+      this.filtroMesaId ?? undefined
     ) : this.api.getDashboard(this.selectedEleccionId);
 
     obs.subscribe((data: DashboardData) => {
@@ -147,7 +155,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.ordenarResultados();
       this.cdr.detectChanges();
       this.loadDataComplete();
-      setTimeout(() => this.animando = false, 500);
     });
   }
 
@@ -242,6 +249,13 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
+  loadMesas(): void {
+    if (!this.selectedEleccionId) return;
+    this.api.getMesasByCurrentUser(this.selectedEleccionId).subscribe((data: Mesa[]) => {
+      this.mesas = data;
+    });
+  }
+
   aplicarFiltros(): void {
     if (!this.selectedEleccionId) return;
     this.api.getDashboardConFiltros(
@@ -252,7 +266,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.filtroProvinciaId ?? undefined,
       this.filtroCantonId ?? undefined,
       this.filtroParroquiaId ?? undefined,
-      this.filtroInstitucionId ?? undefined
+      this.filtroInstitucionId ?? undefined,
+      this.filtroMesaId ?? undefined
     ).subscribe((data: DashboardData) => {
       this.dashboard = data;
       this.resultados = data.resultados || [];
@@ -260,6 +275,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.cdr.detectChanges();
       this.loadDataComplete();
     });
+  }
+
+  onMesaChange(): void {
+    this.aplicarFiltros();
   }
 
   limpiarFiltros(): void {
@@ -270,6 +289,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.filtroInstitucionId = null;
     this.filtroCargoId = null;
     this.filtroPartidoId = null;
+    this.filtroMesaId = null;
     this.provincias = [];
     this.cantones = [];
     this.parroquias = [];

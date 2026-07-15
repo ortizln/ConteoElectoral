@@ -6,7 +6,7 @@
         Opciones
       </button>
       <ul class="dropdown-menu dropdown-menu-end">
-        <li><button class="dropdown-item fw-bold" (click)="openModal()">+ Nuevo Partido</button></li>
+        <li *ngIf="isAdmin"><button class="dropdown-item fw-bold" (click)="openModal()">+ Nuevo Partido</button></li>
         <li><hr class="dropdown-divider"></li>
         <li><button class="dropdown-item" (click)="descargarTemplate()">📄 Descargar Plantilla</button></li>
         <li><button class="dropdown-item" (click)="openImportModal()">📥 Importar desde Excel</button></li>
@@ -27,7 +27,7 @@
     </div>
     <div class="filter-item">
       <label>Buscar:</label>
-      <input type="text" class="form-control" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
+      <input type="text" class="form-control" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
     </div>
   </div>
 
@@ -51,9 +51,9 @@
               <i class="bi bi-three-dots-vertical"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li><button class="dropdown-item" (click)="edit(p)">Editar</button></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><button class="dropdown-item text-danger" (click)="delete(p.id)">Eliminar</button></li>
+              <li *ngIf="isAdmin"><button class="dropdown-item" (click)="edit(p)">Editar</button></li>
+              <li><hr class="dropdown-divider" *ngIf="isAdmin"></li>
+              <li *ngIf="isAdmin"><button class="dropdown-item text-danger" (click)="delete(p.id)">Eliminar</button></li>
             </ul>
           </div>
         </td>
@@ -96,7 +96,7 @@
         <div class="modal-body">
           <p class="text-muted mb-3">Selecciona un archivo Excel (.xlsx) con las columnas: <strong>nombre</strong>, <strong>siglas</strong>.</p>
           <div class="upload-section mb-3">
-            <input type="file" (change)="onImportFileSelected($event)" accept=".xlsx,.xls" id="importFileInput" />
+            <input type="file" autocomplete="off" (change)="onImportFileSelected($event)" accept=".xlsx,.xls" id="importFileInput" />
             <label for="importFileInput" class="file-label">
               <span *ngIf="!importFile">📂 Seleccionar archivo Excel...</span>
               <span *ngIf="importFile">📄 {{ importFile.name }}</span>
@@ -123,7 +123,7 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" (click)="closeImportModal()">Cerrar</button>
-          <button class="btn btn-primary" (click)="importar()" [disabled]="!importPreview || importPreview.length === 0 || importing">
+          <button class="btn btn-primary" (click)="importar()" [disabled]="!importPreview || importPreview.length === 0 || importing" *ngIf="isAdmin">
             {{ importing ? 'Importando...' : 'Importar Datos' }}
           </button>
         </div>
@@ -144,11 +144,11 @@
           </div>
           <div class="mb-3">
             <label>Nombre:</label>
-            <input type="text" class="form-control" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
+            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
           </div>
           <div class="mb-3">
             <label>Sigla:</label>
-            <input type="text" class="form-control" [(ngModel)]="form.sigla" (input)="toUpper(form, 'sigla')" />
+            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.sigla" (input)="toUpper(form, 'sigla')" />
           </div>
         </div>
         <div class="modal-footer">

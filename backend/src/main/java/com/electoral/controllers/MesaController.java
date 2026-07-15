@@ -56,13 +56,13 @@ public class MesaController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MesaResponse> createMesa(@Valid @RequestBody MesaRequest request) {
         return ResponseEntity.ok(mesaService.createMesa(request));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<MesaResponse> updateMesa(@PathVariable Long id, @Valid @RequestBody MesaRequest request) {
         return ResponseEntity.ok(mesaService.updateMesa(id, request));
     }
@@ -81,14 +81,14 @@ public class MesaController {
     }
 
     @PostMapping("/{mesaId}/asignar-usuario/{usuarioId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> asignarUsuario(@PathVariable Long mesaId, @PathVariable Long usuarioId) {
         mesaService.asignarUsuario(mesaId, usuarioId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{mesaId}/asignar-usuario/{usuarioId}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> desasignarUsuario(@PathVariable Long mesaId, @PathVariable Long usuarioId) {
         mesaService.desasignarUsuario(mesaId, usuarioId);
         return ResponseEntity.ok().build();

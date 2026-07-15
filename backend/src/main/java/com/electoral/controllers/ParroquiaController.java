@@ -69,7 +69,7 @@ public class ParroquiaController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ParroquiaResponse> save(@Valid @RequestBody ParroquiaRequest request) {
         Parroquia parroquia = Parroquia.builder()
                 .nombre(request.getNombre())
@@ -88,7 +88,7 @@ public class ParroquiaController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ParroquiaResponse> update(@PathVariable Long id, @Valid @RequestBody ParroquiaRequest request) {
         Parroquia parroquia = parroquiaService.findById(id);
         parroquia.setNombre(request.getNombre());

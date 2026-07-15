@@ -36,13 +36,13 @@ public class CandidatoController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CandidatoResponse> createCandidato(@Valid @RequestBody CandidatoRequest request) {
         return ResponseEntity.ok(candidatoService.createCandidato(request));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CandidatoResponse> updateCandidato(@PathVariable Long id, @Valid @RequestBody CandidatoRequest request) {
         return ResponseEntity.ok(candidatoService.updateCandidato(id, request));
     }

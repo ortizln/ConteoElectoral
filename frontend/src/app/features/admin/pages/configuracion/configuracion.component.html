@@ -26,6 +26,9 @@
     <button class="tab" [class.active]="activeTab === 'importar'" (click)="activeTab = 'importar'">
       <span>📥</span> Importar Datos
     </button>
+    <button class="tab" [class.active]="activeTab === 'permisos'" (click)="activeTab = 'permisos'">
+      <span>🔐</span> Permisos
+    </button>
   </div>
 
   <!-- Tab: Configuración -->
@@ -34,12 +37,12 @@
       <h5><span>🏷️</span> Información del Partido</h5>
       <div class="form-group">
         <label for="nombrePartido">Nombre del Partido</label>
-        <input id="nombrePartido" type="text" class="form-control" [(ngModel)]="config.nombrePartido"
+        <input id="nombrePartido" type="text" class="form-control" autocomplete="off" [(ngModel)]="config.nombrePartido"
           placeholder="Nombre del partido político" />
       </div>
       <div class="form-group">
         <label for="descripcion">Descripción</label>
-        <textarea id="descripcion" class="form-control" rows="3" [(ngModel)]="config.descripcion"
+        <textarea id="descripcion" class="form-control" autocomplete="off" rows="3" [(ngModel)]="config.descripcion"
           placeholder="Descripción breve del partido"></textarea>
       </div>
       <button class="btn btn-primary" (click)="saveConfig()" [disabled]="saving">
@@ -58,7 +61,7 @@
         <div *ngIf="!logoUrl" class="logo-placeholder"><span>Sin logo</span></div>
       </div>
       <div class="upload-section">
-        <input type="file" (change)="onLogoSelected($event)" accept="image/png,image/jpeg,image/webp" id="logoInput" />
+        <input type="file" autocomplete="off" (change)="onLogoSelected($event)" accept="image/png,image/jpeg,image/webp" id="logoInput" />
         <label for="logoInput" class="file-label">{{ selectedLogo ? selectedLogo.name : 'Seleccionar imagen...' }}</label>
         <button class="btn btn-primary" (click)="uploadLogo()" [disabled]="!selectedLogo || uploading">
           {{ uploading ? 'Subiendo...' : 'Subir Logo' }}
@@ -80,7 +83,7 @@
         </div>
       </div>
       <div class="upload-section">
-        <input type="file" (change)="onApkSelected($event)" accept=".apk" id="apkInput" />
+        <input type="file" autocomplete="off" (change)="onApkSelected($event)" accept=".apk" id="apkInput" />
         <label for="apkInput" class="file-label">{{ selectedApk ? selectedApk.name : 'Seleccionar archivo APK...' }}</label>
         <button class="btn btn-primary" (click)="uploadApk()" [disabled]="!selectedApk || uploadingApk">
           {{ uploadingApk ? 'Subiendo...' : 'Subir APK' }}
@@ -101,7 +104,7 @@
         (dragover)="$event.preventDefault(); carouselDragOver = true"
         (dragleave)="carouselDragOver = false"
         (drop)="onCarouselDrop($event)">
-        <input type="file" (change)="onCarouselFileSelected($event)" accept="image/png,image/jpeg,image/webp" #carouselFileInput />
+        <input type="file" autocomplete="off" (change)="onCarouselFileSelected($event)" accept="image/png,image/jpeg,image/webp" #carouselFileInput />
         <div class="drop-content" *ngIf="!carouselFile" (click)="carouselFileInput.click()">
           <div class="drop-icon">🖼️</div>
           <p class="drop-text">Arrastra una imagen aquí o <span class="drop-link">haz clic para seleccionar</span></p>
@@ -118,7 +121,7 @@
       </div>
       <div class="form-row">
         <div class="form-group">
-          <input type="text" class="form-control" [(ngModel)]="carouselCaption" placeholder="Descripción de la imagen" />
+          <input type="text" class="form-control" autocomplete="off" [(ngModel)]="carouselCaption" placeholder="Descripción de la imagen" />
         </div>
         <button class="btn btn-primary" (click)="uploadCarouselImage()" [disabled]="!carouselFile || !carouselCaption.trim() || uploading">
           {{ uploading ? 'Subiendo...' : 'Agregar Imagen' }}
@@ -143,8 +146,8 @@
             <span class="carousel-img-orden">Orden: {{ img.orden }}</span>
           </div>
           <div *ngIf="editingCarouselId === img.id" class="carousel-img-edit">
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="editCaption" placeholder="Descripción" />
-            <input type="number" class="form-control form-control-sm" [(ngModel)]="editOrden" min="0" placeholder="Orden" />
+            <input type="text" class="form-control form-control-sm" autocomplete="off" [(ngModel)]="editCaption" placeholder="Descripción" />
+            <input type="number" class="form-control form-control-sm" autocomplete="off" [(ngModel)]="editOrden" min="0" placeholder="Orden" />
           </div>
           <div class="carousel-img-actions">
             <div *ngIf="editingCarouselId !== img.id" class="btn-group">
@@ -169,5 +172,56 @@
   <!-- Tab: Importar Datos -->
   <div *ngIf="!loading && activeTab === 'importar'" class="tab-content">
     <app-importar></app-importar>
+  </div>
+
+  <!-- Tab: Permisos -->
+  <div *ngIf="!loading && activeTab === 'permisos'" class="tab-content">
+    <div class="permisos-header">
+      <h3>Gestión de Permisos por Rol</h3>
+      <p class="text-muted">Define qué acciones puede realizar cada rol en cada módulo del sistema.</p>
+    </div>
+
+    <div *ngIf="permisosLoading" class="text-center py-3">
+      <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div>
+    </div>
+
+    <div *ngIf="!permisosLoading && roles.length > 0" class="permisos-matrix">
+      <div class="table-responsive">
+        <table class="table table-bordered table-permisos">
+          <thead>
+            <tr>
+              <th>Módulo</th>
+              <th *ngFor="let rol of roles" class="text-center rol-header">{{ rol.nombre }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let mod of MODULOS">
+              <td class="modulo-name">{{ mod.label }}</td>
+              <td *ngFor="let rol of roles" class="text-center">
+                <div class="permiso-group" *ngIf="getPermiso(rol.id, mod.key) as p">
+                  <label class="permiso-check" title="Ver">
+                    <input type="checkbox" [(ngModel)]="p.puedeVer" /> V
+                  </label>
+                  <label class="permiso-check" title="Crear">
+                    <input type="checkbox" [(ngModel)]="p.puedeCrear" /> C
+                  </label>
+                  <label class="permiso-check" title="Editar">
+                    <input type="checkbox" [(ngModel)]="p.puedeEditar" /> E
+                  </label>
+                  <label class="permiso-check" title="Eliminar">
+                    <input type="checkbox" [(ngModel)]="p.puedeEliminar" /> D
+                  </label>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="permisos-actions">
+        <button class="btn btn-primary" (click)="savePermisos()" [disabled]="permisosSaving">
+          {{ permisosSaving ? 'Guardando...' : 'Guardar Permisos' }}
+        </button>
+      </div>
+    </div>
   </div>
 </div>

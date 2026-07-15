@@ -58,7 +58,7 @@ public class UsuarioController {
     }
 
     @GetMapping("/rol/{rolNombre}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UsuarioResponse>> getUsuariosByRol(@PathVariable String rolNombre) {
         return ResponseEntity.ok(usuarioService.getUsuariosByRol(rolNombre));
     }

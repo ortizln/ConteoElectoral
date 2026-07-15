@@ -188,17 +188,19 @@ public class VotoService {
 
     @Transactional(readOnly = true)
     public DashboardResponse getDashboardData(Long eleccionId) {
-        return getDashboardDataConFiltros(eleccionId, null, null, null, null, null, null, null);
+        return getDashboardDataConFiltros(eleccionId, null, null, null, null, null, null, null, null);
     }
 
     @Transactional(readOnly = true)
     public DashboardResponse getDashboardDataConFiltros(Long eleccionId, Long cargoId, Long partidoId,
-            Long zonaId, Long provinciaId, Long cantonId, Long parroquiaId, Long institucionId) {
+            Long zonaId, Long provinciaId, Long cantonId, Long parroquiaId, Long institucionId, Long mesaId) {
         Eleccion eleccion = eleccionService.getEleccionEntityById(eleccionId);
 
         List<Mesa> mesas = mesaRepository.findByEleccionesId(eleccionId);
 
-        if (institucionId != null) {
+        if (mesaId != null) {
+            mesas = mesas.stream().filter(m -> m.getId().equals(mesaId)).collect(Collectors.toList());
+        } else if (institucionId != null) {
             mesas = mesas.stream().filter(m -> m.getInstitucion() != null &&
                     m.getInstitucion().getId().equals(institucionId)).collect(Collectors.toList());
         } else if (parroquiaId != null) {

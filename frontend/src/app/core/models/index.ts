@@ -146,6 +146,23 @@ export interface CarouselImage {
   createdAt?: string;
 }
 
+export interface Rol {
+  id: number;
+  nombre: string;
+  descripcion: string;
+}
+
+export interface RolPermiso {
+  id: number;
+  rolId: number;
+  rolNombre: string;
+  modulo: string;
+  puedeVer: boolean;
+  puedeCrear: boolean;
+  puedeEditar: boolean;
+  puedeEliminar: boolean;
+}
+
 export interface ResultadoCandidato {
   candidatoId: number;
   nombreCompleto: string;

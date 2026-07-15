@@ -69,7 +69,7 @@ public class ProvinciaController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProvinciaResponse> save(@Valid @RequestBody ProvinciaRequest request) {
         Provincia provincia = Provincia.builder()
                 .nombre(request.getNombre())
@@ -88,7 +88,7 @@ public class ProvinciaController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProvinciaResponse> update(@PathVariable Long id, @Valid @RequestBody ProvinciaRequest request) {
         Provincia provincia = provinciaService.findById(id);
         provincia.setNombre(request.getNombre());

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Eleccion, Partido, Cargo, Candidato, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage } from '../models';
+import { Eleccion, Partido, Cargo, Candidato, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -449,6 +449,23 @@ export class ApiService {
     return this.http.delete<void>(`${this.API_URL}/configuracion/apk`);
   }
 
+  // Roles y Permisos
+  getRoles(): Observable<Rol[]> {
+    return this.http.get<Rol[]>(`${this.API_URL}/permisos/roles`);
+  }
+
+  getPermisos(): Observable<RolPermiso[]> {
+    return this.http.get<RolPermiso[]>(`${this.API_URL}/permisos`);
+  }
+
+  getPermisosByRol(rolId: number): Observable<RolPermiso[]> {
+    return this.http.get<RolPermiso[]>(`${this.API_URL}/permisos/rol/${rolId}`);
+  }
+
+  updatePermiso(id: number, data: Partial<RolPermiso>): Observable<RolPermiso> {
+    return this.http.put<RolPermiso>(`${this.API_URL}/permisos/${id}`, data);
+  }
+
   // Dashboard
   getDashboard(eleccionId: number): Observable<any> {
     return this.http.get<any>(`${this.API_URL}/dashboard/eleccion/${eleccionId}`);
@@ -462,7 +479,8 @@ export class ApiService {
     provinciaId?: number,
     cantonId?: number,
     parroquiaId?: number,
-    institucionId?: number
+    institucionId?: number,
+    mesaId?: number
   ): Observable<any> {
     let url = `${this.API_URL}/dashboard/eleccion/${eleccionId}/filtrar`;
     const params = new URLSearchParams();
@@ -473,6 +491,7 @@ export class ApiService {
     if (cantonId !== undefined) params.set('cantonId', cantonId.toString());
     if (parroquiaId !== undefined) params.set('parroquiaId', parroquiaId.toString());
     if (institucionId !== undefined) params.set('institucionId', institucionId.toString());
+    if (mesaId !== undefined) params.set('mesaId', mesaId.toString());
     const queryString = params.toString();
     if (queryString) url += '?' + queryString;
     return this.http.get<any>(url);

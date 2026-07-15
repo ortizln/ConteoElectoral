@@ -75,7 +75,7 @@ public class InstitucionEducativaController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<InstitucionEducativaResponse> save(@Valid @RequestBody InstitucionEducativaRequest request) {
         InstitucionEducativa institucion = InstitucionEducativa.builder()
                 .nombre(request.getNombre())
@@ -98,7 +98,7 @@ public class InstitucionEducativaController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<InstitucionEducativaResponse> update(@PathVariable Long id, @Valid @RequestBody InstitucionEducativaRequest request) {
         InstitucionEducativa institucion = institucionService.findById(id);
         institucion.setNombre(request.getNombre());

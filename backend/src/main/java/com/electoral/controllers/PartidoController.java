@@ -31,13 +31,13 @@ public class PartidoController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PartidoResponse> createPartido(@Valid @RequestBody PartidoRequest request) {
         return ResponseEntity.ok(partidoService.createPartido(request));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PartidoResponse> updatePartido(@PathVariable Long id, @Valid @RequestBody PartidoRequest request) {
         return ResponseEntity.ok(partidoService.updatePartido(id, request));
     }

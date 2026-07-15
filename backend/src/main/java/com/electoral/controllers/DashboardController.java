@@ -38,9 +38,10 @@ public class DashboardController {
             @RequestParam(required = false) Long provinciaId,
             @RequestParam(required = false) Long cantonId,
             @RequestParam(required = false) Long parroquiaId,
-            @RequestParam(required = false) Long institucionId) {
+            @RequestParam(required = false) Long institucionId,
+            @RequestParam(required = false) Long mesaId) {
         return ResponseEntity.ok(votoService.getDashboardDataConFiltros(eleccionesId, cargoId, partidoId, 
-                zonaId, provinciaId, cantonId, parroquiaId, institucionId));
+                zonaId, provinciaId, cantonId, parroquiaId, institucionId, mesaId));
     }
 
     @GetMapping("/eleccion/{eleccionesId}/resultados")
@@ -57,9 +58,10 @@ public class DashboardController {
             @RequestParam(required = false) Long provinciaId,
             @RequestParam(required = false) Long cantonId,
             @RequestParam(required = false) Long parroquiaId,
-            @RequestParam(required = false) Long institucionId) {
+            @RequestParam(required = false) Long institucionId,
+            @RequestParam(required = false) Long mesaId) {
         DashboardResponse data = votoService.getDashboardDataConFiltros(eleccionesId, cargoId, partidoId,
-                zonaId, provinciaId, cantonId, parroquiaId, institucionId);
+                zonaId, provinciaId, cantonId, parroquiaId, institucionId, mesaId);
         byte[] pdf = pdfExportService.exportDashboardPdf(data);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
@@ -76,9 +78,10 @@ public class DashboardController {
             @RequestParam(required = false) Long provinciaId,
             @RequestParam(required = false) Long cantonId,
             @RequestParam(required = false) Long parroquiaId,
-            @RequestParam(required = false) Long institucionId) {
+            @RequestParam(required = false) Long institucionId,
+            @RequestParam(required = false) Long mesaId) {
         DashboardResponse data = votoService.getDashboardDataConFiltros(eleccionesId, cargoId, partidoId,
-                zonaId, provinciaId, cantonId, parroquiaId, institucionId);
+                zonaId, provinciaId, cantonId, parroquiaId, institucionId, mesaId);
         String[] headers = {"Candidato", "Partido", "Cargo", "Votos", "Porcentaje"};
         List<String[]> rows = data.getResultados().stream()
                 .map(r -> new String[]{r.getNombreCompleto(), r.getPartidoNombre(), r.getCargoNombre(),

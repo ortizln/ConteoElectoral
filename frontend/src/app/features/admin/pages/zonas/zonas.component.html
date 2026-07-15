@@ -20,7 +20,7 @@
   <div class="filters-bar mb-4">
     <div class="filter-item">
       <label>Buscar:</label>
-      <input type="text" class="form-control" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
+      <input type="text" class="form-control" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
     </div>
   </div>
 
@@ -89,7 +89,7 @@
         <div class="modal-body">
           <p class="text-muted mb-3">Selecciona un archivo Excel (.xlsx) con las columnas: <strong>nombre</strong>, <strong>descripcion</strong>.</p>
           <div class="upload-section mb-3">
-            <input type="file" (change)="onImportFileSelected($event)" accept=".xlsx,.xls" id="importFileInput" />
+            <input type="file" autocomplete="off" (change)="onImportFileSelected($event)" accept=".xlsx,.xls" id="importFileInput" />
             <label for="importFileInput" class="file-label">
               <span *ngIf="!importFile">📂 Seleccionar archivo Excel...</span>
               <span *ngIf="importFile">📄 {{ importFile.name }}</span>
@@ -137,11 +137,11 @@
           </div>
           <div class="mb-3">
             <label>Nombre:</label>
-            <input type="text" class="form-control" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
+            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
           </div>
           <div class="mb-3">
             <label>Descripción:</label>
-            <textarea class="form-control" [(ngModel)]="form.descripcion" (input)="toUpper(form, 'descripcion')"></textarea>
+            <textarea class="form-control" autocomplete="off" [(ngModel)]="form.descripcion" (input)="toUpper(form, 'descripcion')"></textarea>
           </div>
         </div>
         <div class="modal-footer">

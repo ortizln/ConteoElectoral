@@ -49,7 +49,7 @@ public class ZonaController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ZonaResponse> save(@Valid @RequestBody ZonaRequest request) {
         Zona zona = Zona.builder()
                 .nombre(request.getNombre())
@@ -65,7 +65,7 @@ public class ZonaController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ZonaResponse> update(@PathVariable Long id, @Valid @RequestBody ZonaRequest request) {
         Zona zona = zonaService.findById(id);
         zona.setNombre(request.getNombre());

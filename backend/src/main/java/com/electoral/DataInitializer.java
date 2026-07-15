@@ -4,6 +4,7 @@ import com.electoral.entities.Rol;
 import com.electoral.entities.Usuario;
 import com.electoral.repositories.RolRepository;
 import com.electoral.repositories.UsuarioRepository;
+import com.electoral.services.PermisoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -17,6 +18,7 @@ public class DataInitializer implements CommandLineRunner {
     private final RolRepository rolRepository;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PermisoService permisoService;
 
     @Override
     @SuppressWarnings("null")
@@ -55,6 +57,9 @@ public class DataInitializer implements CommandLineRunner {
                 log.info("Password de admin reseteado a: admin123");
             });
         }
+        
+        // Inicializar permisos por defecto
+        permisoService.initDefaultPermisos();
         
         log.info("=== DATAINITIALIZER COMPLETADO ===");
     }
