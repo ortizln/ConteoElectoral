@@ -34,6 +34,10 @@ public class Mesa {
     @Column(nullable = false)
     private Boolean cerrada = false;
 
+    @Builder.Default
+    @Column(name = "votos_nulos", columnDefinition = "integer default 0")
+    private Integer votosNulos = 0;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

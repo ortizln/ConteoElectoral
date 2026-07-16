@@ -15,6 +15,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -51,5 +53,14 @@ public class AuthController {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         
         return ResponseEntity.ok(usuarioService.getUsuarioById(userDetails.getId()));
+    }
+
+    @PostMapping("/verify-password")
+    public ResponseEntity<Map<String, Boolean>> verifyPassword(@RequestBody Map<String, String> body) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        String password = body.get("password");
+        boolean valid = usuarioService.verifyPassword(userDetails.getId(), password);
+        return ResponseEntity.ok(Map.of("valid", valid));
     }
 }

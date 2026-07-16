@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
 import com.electoral.util.SecurityUtil;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 @Slf4j
 @Service
@@ -27,6 +28,7 @@ public class MesaService {
     private final MesaUsuarioRepository mesaUsuarioRepository;
     private final AuditoriaService auditoriaService;
     private final SecurityUtil securityUtil;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional(readOnly = true)
     public List<MesaResponse> getMesasByEleccion(Long eleccionesId) {
@@ -58,6 +60,7 @@ public class MesaService {
         return mapToResponse(mesa);
     }
 
+    @Transactional(readOnly = true)
     public Mesa getMesaEntityById(Long id) {
         return mesaRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
@@ -144,6 +147,14 @@ public class MesaService {
     }
 
     @Transactional
+    public MesaResponse actualizarVotosNulos(Long id, Integer votosNulos) {
+        Mesa mesa = mesaRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
+        mesa.setVotosNulos(votosNulos != null ? votosNulos : 0);
+        return mapToResponse(mesaRepository.save(mesa));
+    }
+
+    @Transactional
     public MesaResponse cerrarMesa(Long id) {
         Mesa mesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
@@ -153,7 +164,36 @@ public class MesaService {
         }
         
         mesa.setCerrada(true);
-        return mapToResponse(mesaRepository.save(mesa));
+        MesaResponse response = mapToResponse(mesaRepository.save(mesa));
+        notifyMesaEstado(mesa.getElecciones().getId(), id, true);
+        return response;
+    }
+
+    @Transactional
+    public MesaResponse reabrirMesa(Long id) {
+        Mesa mesa = mesaRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
+        
+        if (!mesa.getCerrada()) {
+            throw new IllegalStateException("La mesa no está cerrada");
+        }
+        
+        mesa.setCerrada(false);
+        MesaResponse response = mapToResponse(mesaRepository.save(mesa));
+        notifyMesaEstado(mesa.getElecciones().getId(), id, false);
+        return response;
+    }
+
+    private void notifyMesaEstado(Long eleccionId, Long mesaId, boolean cerrada) {
+        try {
+            Map<String, Object> message = new HashMap<>();
+            message.put("tipo", "mesa-estado");
+            message.put("mesaId", mesaId);
+            message.put("cerrada", cerrada);
+            messagingTemplate.convertAndSend("/topic/mesa-estado/" + eleccionId, message);
+        } catch (Exception e) {
+            log.warn("Error sending WS notification: {}", e.getMessage());
+        }
     }
 
     @Transactional
@@ -205,6 +245,7 @@ public class MesaService {
                 .institucionNombre(mesa.getInstitucion().getNombre())
                 .eleccionesId(mesa.getElecciones().getId())
                 .cerrada(mesa.getCerrada())
+                .votosNulos(mesa.getVotosNulos())
                 .usuarioId(usuarioId)
                 .usuarioNombre(usuarioNombre)
                 .build();

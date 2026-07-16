@@ -2,6 +2,8 @@ package com.electoral.controllers;
 
 import com.electoral.dto.*;
 import com.electoral.entities.Mesa;
+import com.electoral.repositories.MesaRepository;
+import com.electoral.repositories.VotoRepository;
 import com.electoral.security.CustomUserDetails;
 import com.electoral.services.*;
 import jakarta.validation.Valid;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -26,6 +29,8 @@ public class MesaController {
     private final VotoService votoService;
     private final ExcelExportService excelExportService;
     private final PdfExportService pdfExportService;
+    private final MesaRepository mesaRepository;
+    private final VotoRepository votoRepository;
 
     @GetMapping("/eleccion/{eleccionesId}")
     public ResponseEntity<List<MesaResponse>> getMesasByEleccion(@PathVariable Long eleccionesId) {
@@ -74,10 +79,22 @@ public class MesaController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{id}/votos-nulos")
+    @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<MesaResponse> actualizarVotosNulos(@PathVariable Long id, @RequestBody Map<String, Integer> body) {
+        return ResponseEntity.ok(mesaService.actualizarVotosNulos(id, body.get("votosNulos")));
+    }
+
     @PostMapping("/{id}/cerrar")
     @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<MesaResponse> cerrarMesa(@PathVariable Long id) {
         return ResponseEntity.ok(mesaService.cerrarMesa(id));
+    }
+
+    @PostMapping("/{id}/reabrir")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<MesaResponse> reabrirMesa(@PathVariable Long id) {
+        return ResponseEntity.ok(mesaService.reabrirMesa(id));
     }
 
     @PostMapping("/{mesaId}/asignar-usuario/{usuarioId}")
@@ -132,6 +149,37 @@ public class MesaController {
         httpHeaders.setContentType(MediaType.APPLICATION_PDF);
         httpHeaders.setContentDispositionFormData("attachment", "mesas.pdf");
         return ResponseEntity.ok().headers(httpHeaders).body(pdf);
+    }
+
+    @GetMapping("/cerradas")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<List<MesaCerradaResponse>> getMesasCerradas(@RequestParam Long eleccionId) {
+        List<Mesa> mesas = mesaRepository.findByEleccionesIdAndCerrada(eleccionId, true);
+        List<MesaCerradaResponse> response = mesas.stream().map(m -> {
+            Long votos = votoRepository.sumVotosByMesaAndEleccion(m.getId(), eleccionId);
+            return MesaCerradaResponse.builder()
+                    .id(m.getId())
+                    .numero(m.getNumero())
+                    .sexo(m.getSexo().name())
+                    .institucionNombre(m.getInstitucion() != null ? m.getInstitucion().getNombre() : "")
+                    .parroquiaNombre(m.getInstitucion() != null && m.getInstitucion().getParroquia() != null
+                            ? m.getInstitucion().getParroquia().getNombre() : "")
+                    .cantonNombre(m.getInstitucion() != null && m.getInstitucion().getParroquia() != null
+                            && m.getInstitucion().getParroquia().getCanton() != null
+                            ? m.getInstitucion().getParroquia().getCanton().getNombre() : "")
+                    .provinciaNombre(m.getInstitucion() != null && m.getInstitucion().getParroquia() != null
+                            && m.getInstitucion().getParroquia().getCanton() != null
+                            && m.getInstitucion().getParroquia().getCanton().getProvincia() != null
+                            ? m.getInstitucion().getParroquia().getCanton().getProvincia().getNombre() : "")
+                    .zonaNombre(m.getInstitucion() != null && m.getInstitucion().getParroquia() != null
+                            && m.getInstitucion().getParroquia().getCanton() != null
+                            && m.getInstitucion().getParroquia().getCanton().getProvincia() != null
+                            && m.getInstitucion().getParroquia().getCanton().getProvincia().getZona() != null
+                            ? m.getInstitucion().getParroquia().getCanton().getProvincia().getZona().getNombre() : "")
+                    .totalVotos(votos != null ? votos : 0L)
+                    .build();
+        }).collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}/exportar-acta")

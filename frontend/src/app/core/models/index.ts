@@ -112,6 +112,7 @@ export interface Mesa {
   institucionNombre: string;
   eleccionesId: number;
   cerrada: boolean;
+  votosNulos: number;
   usuarioId: number | null;
   usuarioNombre: string | null;
 }
@@ -132,11 +133,14 @@ export interface DashboardData {
   eleccionId: number;
   eleccionNombre: string;
   totalVotos: number;
+  totalVotosNulos: number;
   totalMesas: number;
   mesasCerradas: number;
   mesasAbiertas: number;
   porcentajeMesasCerradas: number;
   resultados: ResultadoCandidato[];
+  resultadosProvincia?: ResultadoGeo[];
+  resultadosParroquia?: ResultadoGeo[];
 }
 
 export interface CarouselImage {
@@ -161,6 +165,54 @@ export interface RolPermiso {
   puedeCrear: boolean;
   puedeEditar: boolean;
   puedeEliminar: boolean;
+}
+
+export interface CandidatoDetalleResponse {
+  candidatoId: number;
+  nombreCompleto: string;
+  partidoNombre: string;
+  cargoNombre: string;
+  totalVotos: number;
+  votosPorMesa: VotoPorMesa[];
+  zonas: GeoGroup[];
+  provincias: GeoGroup[];
+  cantones: GeoGroup[];
+  parroquias: GeoGroup[];
+  instituciones: GeoGroup[];
+}
+
+export interface VotoPorMesa {
+  mesaId: number;
+  mesaNumero: string;
+  institucion: string;
+  parroquia: string;
+  votos: number;
+}
+
+export interface GeoGroup {
+  id: number;
+  nombre: string;
+  votos: number;
+  porcentaje: number;
+}
+
+export interface ResultadoGeo {
+  id: number;
+  nombre: string;
+  totalVotos: number;
+  porcentaje: number;
+}
+
+export interface MesaCerradaResponse {
+  id: number;
+  numero: string;
+  sexo: string;
+  institucionNombre: string;
+  parroquiaNombre: string;
+  cantonNombre: string;
+  provinciaNombre: string;
+  zonaNombre: string;
+  totalVotos: number;
 }
 
 export interface ResultadoCandidato {

@@ -9,15 +9,14 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MesaResponse {
+public class MesaCerradaResponse {
     private Long id;
     private String numero;
     private String sexo;
-    private Long institucionId;
     private String institucionNombre;
-    private Long eleccionesId;
-    private Boolean cerrada;
-    private Integer votosNulos;
-    private Long usuarioId;
-    private String usuarioNombre;
+    private String parroquiaNombre;
+    private String cantonNombre;
+    private String provinciaNombre;
+    private String zonaNombre;
+    private Long totalVotos;
 }

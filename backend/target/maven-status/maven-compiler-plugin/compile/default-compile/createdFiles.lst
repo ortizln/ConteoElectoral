@@ -1,5 +1,5 @@
 com\electoral\entities\Zona$ZonaBuilder.class
+com\electoral\services\CantonService.class
 com\electoral\entities\Zona.class
 com\electoral\controllers\CantonController.class
-com\electoral\services\CantonService.class
 com\electoral\services\ImportService$1.class

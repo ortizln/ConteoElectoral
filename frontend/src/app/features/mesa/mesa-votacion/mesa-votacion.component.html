@@ -88,8 +88,7 @@
           <tbody>
             <tr *ngFor="let c of candidatosFiltrados; let i = index"
                 [class.selected]="candidatoSeleccionado?.id === c.id"
-                [class.disabled]="mesaActual?.cerrada"
-                [style.animation-delay]="i * 0.02 + 's'">
+                [class.disabled]="mesaActual?.cerrada">
               <td><span class="row-num">{{ i + 1 }}</span></td>
               <td>
                 <div class="candidato-cell">
@@ -111,6 +110,7 @@
                   <button class="btn btn-registrar" (click)="registrarVoto()" [disabled]="animando">
                     {{ animando ? '...' : 'Registrar' }}
                   </button>
+                  <button class="btn btn-cancelar" (click)="cancelarSeleccion()">Cancelar</button>
                 </div>
                 <button *ngIf="candidatoSeleccionado?.id !== c.id && !mesaActual?.cerrada"
                         class="btn btn-seleccionar" (click)="seleccionarCandidato(c)">
@@ -158,7 +158,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let v of votosRegistrados; let i = index" [style.animation-delay]="i * 0.03 + 's'">
+            <tr *ngFor="let v of votosRegistrados; let i = index">
               <td><span class="row-num">{{ i + 1 }}</span></td>
               <td>{{ v.candidatoNombre }} {{ v.candidatoApellido }}</td>
               <td><span class="partido-tag">{{ v.partidoNombre }}</span></td>
@@ -177,8 +177,49 @@
               <td class="text-right"><strong class="voto-count-total">{{ totalVotos }}</strong></td>
               <td *ngIf="!mesaActual?.cerrada"></td>
             </tr>
+            <tr class="nulos-row">
+              <td></td>
+              <td colspan="2">
+                <span class="nulos-label">🗳️ Votos Nulos</span>
+              </td>
+              <td class="text-right">
+                <span *ngIf="!mesaActual?.cerrada" class="nulos-input-group">
+                  <button class="btn-nulos-minus" (click)="decrementarNulos()">−</button>
+                  <input type="number" class="nulos-input" [(ngModel)]="votosNulos" min="0"
+                         (change)="guardarVotosNulos()">
+                  <button class="btn-nulos-plus" (click)="incrementarNulos()">+</button>
+                </span>
+                <strong *ngIf="mesaActual?.cerrada" class="voto-count-nulos">{{ votosNulos }}</strong>
+              </td>
+              <td *ngIf="!mesaActual?.cerrada"></td>
+            </tr>
           </tfoot>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Vote Confirmation Modal -->
+  <div class="modal-backdrop show" *ngIf="showDeleteConfirm"></div>
+  <div class="modal show" *ngIf="showDeleteConfirm" style="display:block;">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5>🗑️ Eliminar voto</h5>
+          <button type="button" class="btn-close" (click)="cancelarDeleteVoto()"></button>
+        </div>
+        <div class="modal-body">
+          <p>Ingrese su contraseña para confirmar la eliminación:</p>
+          <input type="password" class="form-control" [(ngModel)]="deletePassword" placeholder="Contraseña"
+                 (keyup.enter)="ejecutarDeleteVoto()" autofocus>
+          <div *ngIf="deleteError" class="text-danger mt-2 small">{{ deleteError }}</div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="cancelarDeleteVoto()">Cancelar</button>
+          <button class="btn btn-danger" (click)="ejecutarDeleteVoto()" [disabled]="deleteCargando">
+            {{ deleteCargando ? '...' : 'Eliminar' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>

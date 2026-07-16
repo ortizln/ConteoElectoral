@@ -176,6 +176,12 @@ public class VotoService {
                         .build())
                 .collect(Collectors.toList());
 
+        List<CandidatoDetalleResponse.GeoGroup> zonas = mapGeoGroup(votoRepository.sumVotosByZona(candidatoId, eleccionId), totalVotos);
+        List<CandidatoDetalleResponse.GeoGroup> provincias = mapGeoGroup(votoRepository.sumVotosByProvincia(candidatoId, eleccionId), totalVotos);
+        List<CandidatoDetalleResponse.GeoGroup> cantones = mapGeoGroup(votoRepository.sumVotosByCanton(candidatoId, eleccionId), totalVotos);
+        List<CandidatoDetalleResponse.GeoGroup> parroquias = mapGeoGroup(votoRepository.sumVotosByParroquia(candidatoId, eleccionId), totalVotos);
+        List<CandidatoDetalleResponse.GeoGroup> instituciones = mapGeoGroup(votoRepository.sumVotosByInstitucion(candidatoId, eleccionId), totalVotos);
+
         return CandidatoDetalleResponse.builder()
                 .candidatoId(candidatoId)
                 .nombreCompleto(candidato.getNombreCompleto())
@@ -183,7 +189,23 @@ public class VotoService {
                 .cargoNombre(candidato.getCargo().getNombre())
                 .totalVotos(totalVotos)
                 .votosPorMesa(votosPorMesa)
+                .zonas(zonas)
+                .provincias(provincias)
+                .cantones(cantones)
+                .parroquias(parroquias)
+                .instituciones(instituciones)
                 .build();
+    }
+
+    private List<CandidatoDetalleResponse.GeoGroup> mapGeoGroup(List<Object[]> rows, Long totalVotos) {
+        return rows.stream()
+                .map(r -> CandidatoDetalleResponse.GeoGroup.builder()
+                        .id(((Number) r[0]).longValue())
+                        .nombre((String) r[1])
+                        .votos(((Number) r[2]).longValue())
+                        .porcentaje(totalVotos > 0 ? Math.round(((Number) r[2]).longValue() * 10000.0 / totalVotos) / 100.0 : 0)
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
@@ -232,6 +254,7 @@ public class VotoService {
         List<Long> mesaIds = mesas.stream().map(Mesa::getId).collect(Collectors.toList());
 
         Long totalVotos = votoRepository.sumVotosByEleccionAndMesaIds(eleccionId, mesaIds);
+        Long totalVotosNulos = mesaIds.isEmpty() ? 0L : mesaRepository.sumVotosNulosByMesaIds(mesaIds);
         Long mesasCerradas = mesas.stream().filter(Mesa::getCerrada).count();
 
         List<Object[]> votosPorCandidato = votoRepository.sumVotosGroupByCandidatoAndMesaIds(eleccionId, mesaIds);
@@ -268,16 +291,39 @@ public class VotoService {
                 .sorted((a, b) -> Long.compare(b.getTotalVotos(), a.getTotalVotos()))
                 .collect(Collectors.toList());
 
+        List<ResultadoGeo> resultadosProvincia = mesaIds.isEmpty() ? List.of()
+                : votoRepository.sumVotosByProvinciaDashboard(eleccionId, mesaIds)
+                .stream().map(r -> ResultadoGeo.builder()
+                        .id(((Number) r[0]).longValue())
+                        .nombre((String) r[1])
+                        .totalVotos(((Number) r[2]).longValue())
+                        .porcentaje(totalVotos > 0 ? Math.round(((Number) r[2]).longValue() * 10000.0 / totalVotos) / 100.0 : 0)
+                        .build())
+                .collect(Collectors.toList());
+
+        List<ResultadoGeo> resultadosParroquia = mesaIds.isEmpty() ? List.of()
+                : votoRepository.sumVotosByParroquiaDashboard(eleccionId, mesaIds)
+                .stream().map(r -> ResultadoGeo.builder()
+                        .id(((Number) r[0]).longValue())
+                        .nombre((String) r[1])
+                        .totalVotos(((Number) r[2]).longValue())
+                        .porcentaje(totalVotos > 0 ? Math.round(((Number) r[2]).longValue() * 10000.0 / totalVotos) / 100.0 : 0)
+                        .build())
+                .collect(Collectors.toList());
+
         return DashboardResponse.builder()
                 .eleccionId(eleccion.getId())
                 .eleccionNombre(eleccion.getNombre())
                 .totalVotos(totalVotos)
+                .totalVotosNulos(totalVotosNulos)
                 .totalMesas((long) mesas.size())
                 .mesasCerradas(mesasCerradas)
                 .mesasAbiertas((long) mesas.size() - mesasCerradas)
                 .porcentajeMesasCerradas(
                         mesas.isEmpty() ? 0.0 : Math.round((mesasCerradas * 100.0 / mesas.size()) * 100.0) / 100.0)
                 .resultados(resultados)
+                .resultadosProvincia(resultadosProvincia)
+                .resultadosParroquia(resultadosParroquia)
                 .build();
     }
 

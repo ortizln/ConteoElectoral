@@ -2,6 +2,7 @@ package com.electoral.services;
 
 import com.electoral.dto.DashboardResponse;
 import com.electoral.dto.ResultadoCandidato;
+import com.electoral.dto.ResultadoGeo;
 import com.electoral.dto.ResultadoRecinto;
 import com.electoral.entities.Mesa;
 import com.itextpdf.io.image.ImageDataFactory;
@@ -170,8 +171,18 @@ public class PdfExportService {
             doc.add(new AreaBreak());
             addDetailTable(doc, data);
 
+            if (data.getResultadosProvincia() != null && !data.getResultadosProvincia().isEmpty()) {
+                doc.add(new AreaBreak());
+                addGeoTable(doc, "Resultados por Provincia", data.getResultadosProvincia());
+            }
+
+            if (data.getResultadosParroquia() != null && !data.getResultadosParroquia().isEmpty()) {
+                doc.add(new AreaBreak());
+                addGeoTable(doc, "Resultados por Parroquia", data.getResultadosParroquia());
+            }
+
             if (data.getResultadosRecinto() != null && !data.getResultadosRecinto().isEmpty()) {
-                doc.add(new Paragraph(" ").setFontSize(10));
+                doc.add(new AreaBreak());
                 addRecintoTable(doc, data);
             }
 
@@ -393,6 +404,30 @@ public class PdfExportService {
         return c;
     }
 
+    // ── Geo Table (Provincia / Parroquia) ────────────────────────────
+
+    private void addGeoTable(Document doc, String title, List<ResultadoGeo> items) {
+        doc.add(new Paragraph(title).setFontSize(14).setBold().setFontColor(C_DARK));
+
+        Table t = new Table(UnitValue.createPercentArray(new float[]{0.5f, 4f, 1.5f, 1.5f}));
+        t.setWidth(UnitValue.createPercentValue(100));
+        String[] hd = {"#", "Nombre", "Votos", "%"};
+        for (String h : hd) {
+            Cell hc = new Cell().add(new Paragraph(h).setBold().setFontSize(8).setFontColor(C_WHITE));
+            hc.setBackgroundColor(C_HEADER_BG); hc.setPadding(6); hc.setTextAlignment(TextAlignment.CENTER);
+            t.addHeaderCell(hc);
+        }
+        for (int i = 0; i < items.size(); i++) {
+            ResultadoGeo r = items.get(i);
+            boolean odd = i % 2 == 1;
+            t.addCell(td(String.valueOf(i + 1), odd, TextAlignment.CENTER));
+            t.addCell(td(r.getNombre(), odd, TextAlignment.LEFT));
+            t.addCell(td(String.format("%,d", r.getTotalVotos()), odd, TextAlignment.RIGHT));
+            t.addCell(td(String.format("%.1f%%", r.getPorcentaje()), odd, TextAlignment.RIGHT));
+        }
+        doc.add(t);
+    }
+
     // ── Recinto Table ─────────────────────────────────────────────────
 
     private void addRecintoTable(Document doc, DashboardResponse data) {
@@ -459,73 +494,125 @@ public class PdfExportService {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PdfWriter writer = new PdfWriter(baos);
              PdfDocument pdf = new PdfDocument(writer);
-             Document document = new Document(pdf)) {
+             Document doc = new Document(pdf)) {
 
-            configurarDocumento(pdf, document, "ACTA DE CIERRE DE MESA");
+            configurarDocumento(pdf, doc, "ACTA DE CIERRE DE MESA");
 
-            document.add(new Paragraph(" ").setFontSize(14));
-            document.add(new Paragraph("ACTA DE CIERRE DE MESA")
-                    .setFontSize(22).setBold().setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph(" ").setFontSize(4));
+            // ── Top accent line ──
+            PdfCanvas cv = new PdfCanvas(pdf.getFirstPage().newContentStreamBefore(), pdf.getFirstPage().getResources(), pdf);
+            cv.saveState(); cv.setFillColor(C_PRIMARY);
+            cv.rectangle(36, pdf.getFirstPage().getPageSize().getHeight() - 64,
+                    pdf.getFirstPage().getPageSize().getWidth() - 72, 3);
+            cv.fill(); cv.restoreState();
 
-            document.add(new Paragraph("DATOS DE LA ELECCION").setFontSize(14).setBold()
-                    .setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph(eleccionNombre).setFontSize(12).setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph(" "));
+            // ── Title ──
+            doc.add(new Paragraph(" ").setFontSize(16));
+            doc.add(new Paragraph("ACTA DE CIERRE DE MESA")
+                    .setFontSize(22).setBold().setTextAlignment(TextAlignment.CENTER).setFontColor(C_DARK));
+            doc.add(new Paragraph(" ").setFontSize(2));
+            doc.add(new Paragraph(eleccionNombre)
+                    .setFontSize(12).setTextAlignment(TextAlignment.CENTER).setFontColor(C_GRAY));
+            doc.add(new Paragraph(" ").setFontSize(6));
 
-            document.add(new Paragraph("INFORMACION DE LA MESA").setFontSize(14).setBold().setUnderline());
-            document.add(new Paragraph("Mesa Nro: " + mesa.getNumero()));
-            document.add(new Paragraph("Sexo: " + mesa.getSexo().name()));
-            document.add(new Paragraph("Institucion: " + institucionNombre));
-            document.add(new Paragraph("Parroquia: " + parroquiaNombre));
-            document.add(new Paragraph("Canton: " + cantonNombre));
-            document.add(new Paragraph("Provincia: " + provinciaNombre));
-            document.add(new Paragraph("Zona: " + zonaNombre));
-            document.add(new Paragraph("Fecha de Cierre: " + fechaCierre.format(DATE_FMT)));
-            document.add(new Paragraph(" "));
+            // ── Divider ──
+            PdfCanvas cv2 = new PdfCanvas(pdf.getFirstPage().newContentStreamBefore(), pdf.getFirstPage().getResources(), pdf);
+            cv2.saveState(); cv2.setStrokeColor(C_BORDER); cv2.setLineWidth(0.5f);
+            cv2.moveTo(36, pdf.getFirstPage().getPageSize().getHeight() - 134);
+            cv2.lineTo(pdf.getFirstPage().getPageSize().getWidth() - 36, pdf.getFirstPage().getPageSize().getHeight() - 134);
+            cv2.stroke(); cv2.restoreState();
 
-            document.add(new Paragraph("RESULTADOS DE VOTACION").setFontSize(14).setBold().setUnderline());
-            document.add(new Paragraph("Total Votos Emitidos: " + totalVotos));
-            document.add(new Paragraph(" "));
+            // ── Mesa Info Card ──
+            Table infoCard = new Table(UnitValue.createPercentArray(new float[]{1, 1}));
+            infoCard.setWidth(UnitValue.createPercentValue(100));
+            infoCard.setBackgroundColor(C_LIGHT_BG);
+            infoCard.addCell(infoCell("Mesa N°", mesa.getNumero()));
+            infoCard.addCell(infoCell("Sexo", mesa.getSexo().name()));
+            infoCard.addCell(infoCell("Institución", institucionNombre));
+            infoCard.addCell(infoCell("Parroquia", parroquiaNombre));
+            infoCard.addCell(infoCell("Cantón", cantonNombre));
+            infoCard.addCell(infoCell("Provincia", provinciaNombre));
+            infoCard.addCell(infoCell("Zona", zonaNombre));
+            infoCard.addCell(infoCell("Fecha de Cierre", fechaCierre.format(DATE_FMT)));
+            doc.add(infoCard);
+            doc.add(new Paragraph(" ").setFontSize(8));
 
-            float[] colWidths = {4, 3, 2, 2};
-            Table table = new Table(UnitValue.createPercentArray(colWidths));
-            table.setWidth(UnitValue.createPercentValue(100));
-            String[] hdrs = {"Candidato", "Partido", "Cargo", "Votos"};
+            // ── Results section ──
+            Table resHeader = new Table(UnitValue.createPercentArray(new float[]{1, 1}));
+            resHeader.setWidth(UnitValue.createPercentValue(100));
+            Cell leftLabel = new Cell().setBorder(Border.NO_BORDER);
+            leftLabel.add(new Paragraph("RESULTADOS DE VOTACIÓN").setFontSize(13).setBold().setFontColor(C_DARK));
+            resHeader.addCell(leftLabel);
+            Cell rightLabel = new Cell().setBorder(Border.NO_BORDER).setTextAlignment(TextAlignment.RIGHT);
+            rightLabel.add(new Paragraph("Total Votos: " + totalVotos).setFontSize(13).setBold().setFontColor(C_PRIMARY));
+            resHeader.addCell(rightLabel);
+            doc.add(resHeader);
+
+            // Results table
+            float[] colW = {0.5f, 3.5f, 2.5f, 1.5f};
+            Table resTable = new Table(UnitValue.createPercentArray(colW));
+            resTable.setWidth(UnitValue.createPercentValue(100));
+            String[] hdrs = {"#", "Candidato", "Partido", "Votos"};
             for (String h : hdrs) {
-                table.addHeaderCell(new Cell().add(new Paragraph(h).setBold()));
+                Cell hc = new Cell().add(new Paragraph(h).setBold().setFontSize(8).setFontColor(C_WHITE));
+                hc.setBackgroundColor(C_HEADER_BG); hc.setPadding(6); hc.setTextAlignment(TextAlignment.CENTER);
+                resTable.addHeaderCell(hc);
             }
             if (resultados != null) {
-                for (String[] row : resultados) {
-                    for (String cell : row) {
-                        table.addCell(new Cell().add(new Paragraph(cell != null ? cell : "")));
-                    }
+                for (int i = 0; i < resultados.size(); i++) {
+                    String[] row = resultados.get(i);
+                    boolean odd = i % 2 == 1;
+                    resTable.addCell(td(String.valueOf(i + 1), odd, TextAlignment.CENTER));
+                    resTable.addCell(td(row[0], odd, TextAlignment.LEFT));
+                    resTable.addCell(td(row[1], odd, TextAlignment.LEFT));
+                    resTable.addCell(td(row[3], odd, TextAlignment.RIGHT));
                 }
             }
-            document.add(table);
-            document.add(new Paragraph(" "));
+            doc.add(resTable);
+            doc.add(new Paragraph(" ").setFontSize(10));
 
-            document.add(new Paragraph("FIRMAS DE RESPONSABILIDAD").setFontSize(14).setBold().setUnderline());
-            document.add(new Paragraph(" "));
+            // ── Signature section ──
+            doc.add(new Paragraph("FIRMAS DE RESPONSABILIDAD")
+                    .setFontSize(13).setBold().setFontColor(C_DARK));
+            doc.add(new Paragraph(" ").setFontSize(4));
 
-            float[] sigCols = {3, 3, 3};
+            float[] sigCols = {1, 1, 1};
             Table sigTable = new Table(UnitValue.createPercentArray(sigCols));
             sigTable.setWidth(UnitValue.createPercentValue(100));
-            String[] cargos = {"PRESIDENTE", "SECRETARIO", "VOCAL"};
-            for (String cargo : cargos) {
-                Cell cell = new Cell();
-                cell.add(new Paragraph(" ").setFontSize(8));
-                cell.add(new Paragraph("____________________________").setTextAlignment(TextAlignment.CENTER));
-                cell.add(new Paragraph(cargo).setBold().setTextAlignment(TextAlignment.CENTER));
-                cell.add(new Paragraph(" ").setFontSize(4));
-                cell.add(new Paragraph("Nombres: ___________________").setFontSize(10));
-                cell.add(new Paragraph("C.I.: _______________________").setFontSize(10));
-                sigTable.addCell(cell);
+            String[][] firmas = {
+                {"PRESIDENTE", "Nombres: ___________________", "C.I.: _______________________"},
+                {"SECRETARIO", "Nombres: ___________________", "C.I.: _______________________"},
+                {"VOCAL",      "Nombres: ___________________", "C.I.: _______________________"}
+            };
+            for (String[] f : firmas) {
+                Cell sc = new Cell().setPadding(8).setBackgroundColor(C_LIGHT_BG);
+                sc.setBorder(new com.itextpdf.layout.borders.SolidBorder(C_BORDER, 0.5f));
+                sc.add(new Paragraph(" ").setFontSize(10));
+                sc.add(new Paragraph("____________________________")
+                        .setFontSize(12).setTextAlignment(TextAlignment.CENTER));
+                sc.add(new Paragraph(f[0]).setBold().setFontSize(10)
+                        .setTextAlignment(TextAlignment.CENTER).setFontColor(C_PRIMARY));
+                sc.add(new Paragraph(" ").setFontSize(6));
+                sc.add(new Paragraph(f[1]).setFontSize(9).setFontColor(C_GRAY));
+                sc.add(new Paragraph(f[2]).setFontSize(9).setFontColor(C_GRAY));
+                sc.add(new Paragraph(" ").setFontSize(4));
+                sigTable.addCell(sc);
             }
-            document.add(sigTable);
+            doc.add(sigTable);
+
         } catch (Exception e) {
             throw new RuntimeException("Error al generar acta de cierre", e);
         }
         return baos.toByteArray();
+    }
+
+    private Cell infoCell(String label, String value) {
+        Cell c = new Cell();
+        c.setBorder(Border.NO_BORDER);
+        c.setPadding(5);
+        c.add(new Paragraph(label).setFontSize(7).setBold().setFontColor(C_GRAY)
+                .setTextAlignment(TextAlignment.LEFT));
+        c.add(new Paragraph(value).setFontSize(10).setFontColor(C_DARK)
+                .setTextAlignment(TextAlignment.LEFT));
+        return c;
     }
 }

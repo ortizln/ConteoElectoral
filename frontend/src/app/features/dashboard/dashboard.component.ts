@@ -6,8 +6,9 @@ import { Chart, registerables } from 'chart.js';
 import { ApiService } from '../../core/services/api.service';
 import { WebSocketService } from '../../core/services/websocket.service';
 import { AuthService } from '../../core/services/auth.service';
-import { DashboardData, Eleccion, Cargo, Partido, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, Mesa, ResultadoCandidato } from '../../core/models';
-import { Subscription, interval } from 'rxjs';
+import { DashboardData, Eleccion, Cargo, Partido, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, Mesa, ResultadoCandidato, CandidatoDetalleResponse, GeoGroup, MesaCerradaResponse } from '../../core/models';
+import { GeoGroupTableComponent } from './geo-group-table.component';
+import { Subscription } from 'rxjs';
 import { catchError, of } from 'rxjs';
 
 Chart.register(...registerables);
@@ -15,7 +16,7 @@ Chart.register(...registerables);
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, GeoGroupTableComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -54,20 +55,39 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   mesas: Mesa[] = [];
   userRole: string = '';
 
-  autoRefresh = true;
   ultimaActualizacion = '';
-  animando = false;
-  filtrosMinimized = false;
+  filtrosMinimized = true;
+
+  // Card toggle states
+  barChartMinimized = false;
+  barChartFullscreen = false;
+  pieChartMinimized = false;
+  pieChartFullscreen = false;
+  resultadosMinimized = false;
+  resultadosFullscreen = false;
 
   // Candidate detail modal
   showDetalle = false;
-  detalleCandidato: any = null;
+  detalleCandidato: CandidatoDetalleResponse | null = null;
   detalleLoading = false;
+  geoDetalleTab = 'mesas';
+  geoDetalleTabs: { key: string; label: string; count: number }[] = [];
+
+  // Closed mesas modal
+  showMesasCerradas = false;
+  mesasCerradasList: MesaCerradaResponse[] = [];
+  mesasCerradasLoading = false;
+
+  // Reabrir mesa - password confirmation
+  showReabrirConfirm = false;
+  reabrirMesaSeleccionada: MesaCerradaResponse | null = null;
+  reabrirPassword = '';
+  reabrirError = '';
+  reabrirCargando = false;
 
   private barChart?: Chart;
   private pieChart?: Chart;
   private wsSubscription?: Subscription;
-  private pollingSubscription?: Subscription;
 
   constructor(
     private api: ApiService,
@@ -80,6 +100,33 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.userRole = user?.rol || '';
   }
 
+  toggleMinimize(card: string): void {
+    if (card === 'barChart') this.barChartMinimized = !this.barChartMinimized;
+    else if (card === 'pieChart') this.pieChartMinimized = !this.pieChartMinimized;
+    else if (card === 'resultados') this.resultadosMinimized = !this.resultadosMinimized;
+  }
+
+  toggleFullscreen(card: string): void {
+    const activating = card === 'barChart' ? !this.barChartFullscreen
+      : card === 'pieChart' ? !this.pieChartFullscreen
+      : !this.resultadosFullscreen;
+    this.barChartFullscreen = false;
+    this.pieChartFullscreen = false;
+    this.resultadosFullscreen = false;
+    if (activating) {
+      if (card === 'barChart') this.barChartFullscreen = true;
+      else if (card === 'pieChart') this.pieChartFullscreen = true;
+      else if (card === 'resultados') this.resultadosFullscreen = true;
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    setTimeout(() => {
+      this.barChart?.resize();
+      this.pieChart?.resize();
+    }, 100);
+  }
+
   ngOnInit(): void {
     this.api.getEleccionesActivas().subscribe((elecciones: Eleccion[]) => {
       this.elecciones = elecciones;
@@ -90,47 +137,60 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.loadMesas();
         this.loadDashboard();
         this.subscribeToUpdates();
-        this.startPolling();
+        this.subscribeToMesaEstado();
       }
     });
   }
 
+  private procesarResultados(data: DashboardData): void {
+    const resultados = [...(data.resultados || [])];
+    const totalVotosNulos = data.totalVotosNulos || 0;
+    if (totalVotosNulos > 0) {
+      const totalGeneral = data.totalVotos + totalVotosNulos;
+      resultados.push({
+        candidatoId: 0,
+        nombreCompleto: 'Votos Nulos',
+        partidoNombre: '—',
+        cargoNombre: '—',
+        totalVotos: totalVotosNulos,
+        porcentaje: totalGeneral > 0 ? Math.round(totalVotosNulos * 10000 / totalGeneral) / 100 : 0
+      });
+    }
+    this.resultados = resultados;
+  }
+
+  private subscribeToMesaEstado(): void {
+    if (!this.selectedEleccionId) return;
+    this.wsService.subscribeToMesaEstado(this.selectedEleccionId).subscribe({
+      next: (msg: any) => {
+        if (msg.tipo === 'mesa-estado') {
+          this.loadDashboard();
+          if (this.showMesasCerradas && !msg.cerrada) {
+            this.mesasCerradasList = this.mesasCerradasList.filter(m => m.id !== msg.mesaId);
+          }
+        }
+      },
+      error: () => {}
+    });
+  }
+
   ngAfterViewInit(): void {
-    setTimeout(() => this.initCharts(), 100);
+    setTimeout(() => {
+      this.initCharts();
+      this.updateCharts();
+    }, 100);
   }
 
   loadDataComplete(): void {
-    if (!this.barChart && this.barChartRef?.nativeElement) {
-      this.initCharts();
-    }
     this.updateCharts();
     this.ultimaActualizacion = new Date().toLocaleTimeString();
   }
 
   ngOnDestroy(): void {
     this.wsSubscription?.unsubscribe();
-    this.pollingSubscription?.unsubscribe();
     this.barChart?.destroy();
     this.pieChart?.destroy();
-  }
-
-  toggleAutoRefresh(): void {
-    this.autoRefresh = !this.autoRefresh;
-    if (this.autoRefresh) {
-      this.startPolling();
-    } else {
-      this.pollingSubscription?.unsubscribe();
-      this.pollingSubscription = undefined;
-    }
-  }
-
-  startPolling(): void {
-    this.pollingSubscription?.unsubscribe();
-    this.pollingSubscription = interval(15000).subscribe(() => {
-      if (this.autoRefresh && this.selectedEleccionId) {
-        this.recargarSilencioso();
-      }
-    });
+    document.body.style.overflow = '';
   }
 
   recargarSilencioso(): void {
@@ -151,9 +211,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
     obs.subscribe((data: DashboardData) => {
       this.dashboard = data;
-      this.resultados = data.resultados || [];
+      this.procesarResultados(data);
       this.ordenarResultados();
-      this.cdr.detectChanges();
       this.loadDataComplete();
     });
   }
@@ -236,7 +295,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!this.selectedEleccionId) return;
     this.api.getDashboard(this.selectedEleccionId).subscribe((data: DashboardData) => {
       this.dashboard = data;
-      this.resultados = data.resultados || [];
+      this.procesarResultados(data);
       this.ordenarResultados();
       this.cdr.detectChanges();
       this.loadDataComplete();
@@ -270,7 +329,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.filtroMesaId ?? undefined
     ).subscribe((data: DashboardData) => {
       this.dashboard = data;
-      this.resultados = data.resultados || [];
+      this.procesarResultados(data);
       this.ordenarResultados();
       this.cdr.detectChanges();
       this.loadDataComplete();
@@ -305,7 +364,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       .subscribe((data: DashboardData | null) => {
         if (data) {
           this.dashboard = data;
-          this.resultados = data.resultados || [];
+          this.procesarResultados(data);
           this.ordenarResultados();
           this.loadDataComplete();
         }
@@ -323,6 +382,27 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         default: return dir * (a.totalVotos - b.totalVotos);
       }
     });
+    this.computeTop3();
+  }
+
+  top3Cargos: Map<string, Set<string>> = new Map();
+
+  private computeTop3(): void {
+    const grupos = new Map<string, any[]>();
+    for (const r of this.resultadosOrdenados) {
+      if (r.candidatoId === 0) continue;
+      const key = r.cargoNombre;
+      if (!grupos.has(key)) grupos.set(key, []);
+      grupos.get(key)!.push(r);
+    }
+    const top3 = new Map<string, Set<string>>();
+    for (const [cargo, items] of grupos) {
+      const sorted = [...items].sort((a, b) => b.totalVotos - a.totalVotos);
+      const top = new Set<string>();
+      sorted.slice(0, 3).forEach(r => top.add(r.nombreCompleto));
+      top3.set(cargo, top);
+    }
+    this.top3Cargos = top3;
   }
 
   setSortColumn(col: string): void {
@@ -335,28 +415,62 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.ordenarResultados();
   }
 
+  getRowClass(r: any): string {
+    if (r.candidatoId === 0) return 'nulos-row';
+    const topSet = this.top3Cargos.get(r.cargoNombre);
+    if (topSet?.has(r.nombreCompleto)) {
+      const idx = [...this.resultadosOrdenados.filter(x => x.cargoNombre === r.cargoNombre && x.candidatoId !== 0)]
+        .sort((a, b) => b.totalVotos - a.totalVotos)
+        .findIndex(x => x.nombreCompleto === r.nombreCompleto);
+      return 'candidato-row top-' + (idx + 1);
+    }
+    return 'candidato-row';
+  }
+
+  getRankClass(r: any): string {
+    if (r.candidatoId === 0) return 'candidato-rank rank-nulos';
+    const topSet = this.top3Cargos.get(r.cargoNombre);
+    if (topSet?.has(r.nombreCompleto)) {
+      const idx = [...this.resultadosOrdenados.filter(x => x.cargoNombre === r.cargoNombre && x.candidatoId !== 0)]
+        .sort((a, b) => b.totalVotos - a.totalVotos)
+        .findIndex(x => x.nombreCompleto === r.nombreCompleto);
+      return 'candidato-rank rank-top-' + (idx + 1);
+    }
+    return 'candidato-rank';
+  }
+
+  getRankLabel(r: any, i: number): string {
+    if (r.candidatoId === 0) return '✗';
+    const topSet = this.top3Cargos.get(r.cargoNombre);
+    if (topSet?.has(r.nombreCompleto)) {
+      const idx = [...this.resultadosOrdenados.filter(x => x.cargoNombre === r.cargoNombre && x.candidatoId !== 0)]
+        .sort((a, b) => b.totalVotos - a.totalVotos)
+        .findIndex(x => x.nombreCompleto === r.nombreCompleto);
+      return ['🥇', '🥈', '🥉'][idx] || (i + 1).toString();
+    }
+    return (i + 1).toString();
+  }
+
   getSortIcon(col: string): string {
     if (this.sortColumn !== col) return '⇅';
     return this.sortDirection === 'asc' ? '↑' : '↓';
   }
 
   initCharts(): void {
-    this.barChart?.destroy();
-    this.pieChart?.destroy();
-    this.barChart = undefined;
-    this.pieChart = undefined;
     if (this.barChartRef?.nativeElement) {
+      if (this.barChart) this.barChart.destroy();
       this.barChart = new Chart(this.barChartRef.nativeElement, {
         type: 'bar',
         data: { labels: [], datasets: [] },
-        options: { responsive: true, plugins: { legend: { display: false } } }
+        options: { responsive: true, animation: false, plugins: { legend: { display: false } } }
       });
     }
     if (this.pieChartRef?.nativeElement) {
+      if (this.pieChart) this.pieChart.destroy();
       this.pieChart = new Chart(this.pieChartRef.nativeElement, {
         type: 'pie',
         data: { labels: [], datasets: [] },
-        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        options: { responsive: true, animation: false, plugins: { legend: { position: 'bottom' } } }
       });
     }
   }
@@ -371,7 +485,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         data: resultados.map((r: any) => r.totalVotos),
         backgroundColor: colors.slice(0, resultados.length)
       }];
-      this.barChart.update();
+      this.barChart.update('none');
     }
     if (this.pieChart) {
       this.pieChart.data.labels = resultados.map((r: any) => r.nombreCompleto);
@@ -379,7 +493,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         data: resultados.map((r: any) => r.totalVotos),
         backgroundColor: colors.slice(0, resultados.length)
       }];
-      this.pieChart.update();
+      this.pieChart.update('none');
     }
   }
 
@@ -411,8 +525,20 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!this.selectedEleccionId) return;
     this.detalleLoading = true;
     this.showDetalle = true;
+    this.geoDetalleTab = 'mesas';
     this.api.getDetalleCandidato(candidatoId, this.selectedEleccionId).subscribe({
-      next: (data) => { this.detalleCandidato = data; this.detalleLoading = false; },
+      next: (data) => {
+        this.detalleCandidato = data;
+        this.detalleLoading = false;
+        this.geoDetalleTabs = [
+          { key: 'mesas', label: 'Mesas', count: data.votosPorMesa?.length || 0 },
+          { key: 'zonas', label: 'Zonas', count: data.zonas?.length || 0 },
+          { key: 'provincias', label: 'Provincias', count: data.provincias?.length || 0 },
+          { key: 'cantones', label: 'Cantones', count: data.cantones?.length || 0 },
+          { key: 'parroquias', label: 'Parroquias', count: data.parroquias?.length || 0 },
+          { key: 'instituciones', label: 'Instituciones', count: data.instituciones?.length || 0 },
+        ].filter(t => t.count > 0);
+      },
       error: () => { this.detalleLoading = false; }
     });
   }
@@ -420,6 +546,74 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   cerrarDetalle(): void {
     this.showDetalle = false;
     this.detalleCandidato = null;
+  }
+
+  verMesasCerradas(): void {
+    if (!this.selectedEleccionId) return;
+    this.showMesasCerradas = true;
+    this.mesasCerradasLoading = true;
+    this.api.getMesasCerradas(this.selectedEleccionId).subscribe({
+      next: (data) => { this.mesasCerradasList = data; this.mesasCerradasLoading = false; },
+      error: () => { this.mesasCerradasLoading = false; }
+    });
+  }
+
+  cerrarMesasCerradas(): void {
+    this.showMesasCerradas = false;
+    this.mesasCerradasList = [];
+  }
+
+  descargarActa(mesaId: number): void {
+    this.api.descargarActaMesa(mesaId);
+  }
+
+  confirmarReabrirMesa(m: MesaCerradaResponse): void {
+    this.reabrirMesaSeleccionada = m;
+    this.reabrirPassword = '';
+    this.reabrirError = '';
+    this.reabrirCargando = false;
+    this.showReabrirConfirm = true;
+  }
+
+  cancelarReabrir(): void {
+    this.showReabrirConfirm = false;
+    this.reabrirMesaSeleccionada = null;
+    this.reabrirPassword = '';
+    this.reabrirError = '';
+  }
+
+  ejecutarReabrir(): void {
+    if (!this.reabrirMesaSeleccionada || !this.reabrirPassword) {
+      this.reabrirError = 'Ingrese su contraseña';
+      return;
+    }
+    this.reabrirCargando = true;
+    this.reabrirError = '';
+    this.api.verifyPassword(this.reabrirPassword).subscribe({
+      next: (res) => {
+        if (!res.valid) {
+          this.reabrirError = 'Contraseña incorrecta';
+          this.reabrirCargando = false;
+          return;
+        }
+        this.api.reabrirMesa(this.reabrirMesaSeleccionada!.id).subscribe({
+          next: () => {
+            this.mesasCerradasList = this.mesasCerradasList.filter(
+              m => m.id !== this.reabrirMesaSeleccionada!.id
+            );
+            this.cancelarReabrir();
+          },
+          error: () => {
+            this.reabrirError = 'Error al reabrir la mesa';
+            this.reabrirCargando = false;
+          }
+        });
+      },
+      error: () => {
+        this.reabrirError = 'Error al verificar la contraseña';
+        this.reabrirCargando = false;
+      }
+    });
   }
 
   logout(): void {

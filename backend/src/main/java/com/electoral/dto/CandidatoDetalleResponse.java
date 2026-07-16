@@ -17,6 +17,11 @@ public class CandidatoDetalleResponse {
     private String cargoNombre;
     private Long totalVotos;
     private List<VotoPorMesa> votosPorMesa;
+    private List<GeoGroup> zonas;
+    private List<GeoGroup> provincias;
+    private List<GeoGroup> cantones;
+    private List<GeoGroup> parroquias;
+    private List<GeoGroup> instituciones;
 
     @Data
     @Builder
@@ -28,5 +33,16 @@ public class CandidatoDetalleResponse {
         private String institucion;
         private String parroquia;
         private Long votos;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class GeoGroup {
+        private Long id;
+        private String nombre;
+        private Long votos;
+        private Double porcentaje;
     }
 }

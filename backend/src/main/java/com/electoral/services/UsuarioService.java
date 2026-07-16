@@ -130,6 +130,12 @@ public class UsuarioService {
         usuarioRepository.deleteById(id);
     }
 
+    public boolean verifyPassword(Long userId, String rawPassword) {
+        Usuario usuario = usuarioRepository.findById(userId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con ID: " + userId));
+        return passwordEncoder.matches(rawPassword, usuario.getPassword());
+    }
+
     @Transactional
     public void resetPassword(Long id, String nuevaPassword) {
         Usuario usuario = usuarioRepository.findById(id)

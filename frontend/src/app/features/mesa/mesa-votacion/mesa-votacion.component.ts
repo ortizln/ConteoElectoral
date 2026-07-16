@@ -1,9 +1,11 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { WebSocketService } from '../../../core/services/websocket.service';
 import { Eleccion, Candidato, Mesa, Voto, Partido, Cargo } from '../../../core/models';
 
 interface VotoConIndice extends Voto {
@@ -17,7 +19,7 @@ interface VotoConIndice extends Voto {
   templateUrl: './mesa-votacion.component.html',
   styleUrl: './mesa-votacion.component.css'
 })
-export class MesaVotacionComponent implements OnInit {
+export class MesaVotacionComponent implements OnInit, OnDestroy {
   @ViewChild('cantidadInput') cantidadInput!: ElementRef<HTMLInputElement>;
 
   elecciones: Eleccion[] = [];
@@ -30,6 +32,8 @@ export class MesaVotacionComponent implements OnInit {
   candidatoSeleccionado: Candidato | null = null;
   cantidadVotos = 1;
   totalVotos = 0;
+  votosNulos = 0;
+  private nulosTimeout: any = null;
 
   filtroTexto = '';
   filtroPartidoId: number | null = null;
@@ -43,13 +47,23 @@ export class MesaVotacionComponent implements OnInit {
   sortDirectionVotos: 'asc' | 'desc' = 'desc';
 
   animando = false;
+  private wsSubscription: Subscription | null = null;
+  private eleccionId: number | null = null;
+
+  // Delete vote confirmation
+  showDeleteConfirm = false;
+  deleteVotoId: number | null = null;
+  deletePassword = '';
+  deleteError = '';
+  deleteCargando = false;
 
   private colors: string[] = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#e11d48'];
 
   constructor(
     private api: ApiService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private wsService: WebSocketService
   ) {}
 
   ngOnInit(): void {
@@ -57,9 +71,32 @@ export class MesaVotacionComponent implements OnInit {
       this.elecciones = elecciones;
       if (elecciones.length > 0) {
         const eleccion = elecciones[0];
+        this.eleccionId = eleccion.id;
         this.loadData(eleccion.id);
+        this.subscribeToMesaEstado(eleccion.id);
       }
     });
+  }
+
+  private subscribeToMesaEstado(eleccionId: number): void {
+    this.wsSubscription = this.wsService.subscribeToMesaEstado(eleccionId).subscribe({
+      next: (msg: any) => {
+        if (msg.tipo === 'mesa-estado') {
+          if (this.mesaActual && this.mesaActual.id === msg.mesaId) {
+            this.mesaActual.cerrada = msg.cerrada;
+          }
+          const idx = this.mesasDisponibles.findIndex(m => m.id === msg.mesaId);
+          if (idx >= 0) {
+            this.mesasDisponibles[idx] = { ...this.mesasDisponibles[idx], cerrada: msg.cerrada };
+          }
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.wsSubscription?.unsubscribe();
   }
 
   loadData(eleccionId: number): void {
@@ -86,6 +123,7 @@ export class MesaVotacionComponent implements OnInit {
     this.mesaActual = mesa;
     this.candidatoSeleccionado = null;
     this.cantidadVotos = 1;
+    this.votosNulos = mesa.votosNulos ?? 0;
     this.loadVotos();
   }
 
@@ -194,6 +232,34 @@ export class MesaVotacionComponent implements OnInit {
     setTimeout(() => this.cantidadInput?.nativeElement?.focus(), 100);
   }
 
+  cancelarSeleccion(): void {
+    this.candidatoSeleccionado = null;
+    this.cantidadVotos = 1;
+  }
+
+  incrementarNulos(): void {
+    this.votosNulos = (this.votosNulos || 0) + 1;
+    this.guardarVotosNulos();
+  }
+
+  decrementarNulos(): void {
+    if ((this.votosNulos || 0) > 0) {
+      this.votosNulos = this.votosNulos - 1;
+      this.guardarVotosNulos();
+    }
+  }
+
+  guardarVotosNulos(): void {
+    if (!this.mesaActual) return;
+    if (this.nulosTimeout) clearTimeout(this.nulosTimeout);
+    this.nulosTimeout = setTimeout(() => {
+      this.api.actualizarVotosNulos(this.mesaActual!.id, this.votosNulos || 0).subscribe({
+        next: (m) => { this.mesaActual!.votosNulos = m.votosNulos; },
+        error: () => {}
+      });
+    }, 400);
+  }
+
   registrarVoto(): void {
     if (!this.mesaActual || !this.candidatoSeleccionado || this.mesaActual.cerrada) return;
 
@@ -227,8 +293,44 @@ export class MesaVotacionComponent implements OnInit {
   }
 
   eliminarVoto(id: number): void {
-    if (!confirm('¿Está seguro de eliminar este registro?')) return;
-    this.api.deleteVoto(id).subscribe(() => this.loadVotos());
+    this.deleteVotoId = id;
+    this.deletePassword = '';
+    this.deleteError = '';
+    this.deleteCargando = false;
+    this.showDeleteConfirm = true;
+  }
+
+  cancelarDeleteVoto(): void {
+    this.showDeleteConfirm = false;
+    this.deleteVotoId = null;
+    this.deletePassword = '';
+    this.deleteError = '';
+  }
+
+  ejecutarDeleteVoto(): void {
+    if (!this.deleteVotoId || !this.deletePassword) {
+      this.deleteError = 'Ingrese su contraseña';
+      return;
+    }
+    this.deleteCargando = true;
+    this.deleteError = '';
+    this.api.verifyPassword(this.deletePassword).subscribe({
+      next: (res) => {
+        if (!res.valid) {
+          this.deleteError = 'Contraseña incorrecta';
+          this.deleteCargando = false;
+          return;
+        }
+        this.api.deleteVoto(this.deleteVotoId!).subscribe(() => {
+          this.cancelarDeleteVoto();
+          this.loadVotos();
+        });
+      },
+      error: () => {
+        this.deleteError = 'Error al verificar la contraseña';
+        this.deleteCargando = false;
+      }
+    });
   }
 
   imprimirActa(): void {

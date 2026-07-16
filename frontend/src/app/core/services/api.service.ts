@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Eleccion, Partido, Cargo, Candidato, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso } from '../models';
+import { Eleccion, Partido, Cargo, Candidato, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -196,6 +196,14 @@ export class ApiService {
     return this.http.get<Mesa[]>(`${this.API_URL}/mesas/usuario/actual/eleccion/${eleccionId}`);
   }
 
+  getMesasCerradas(eleccionId: number): Observable<MesaCerradaResponse[]> {
+    return this.http.get<MesaCerradaResponse[]>(`${this.API_URL}/mesas/cerradas?eleccionId=${eleccionId}`);
+  }
+
+  descargarActaMesa(mesaId: number): void {
+    window.open(`${this.API_URL}/mesas/${mesaId}/exportar-acta`, '_blank');
+  }
+
   getMesasByUsuario(usuarioId: number, eleccionId: number): Observable<Mesa[]> {
     return this.http.get<Mesa[]>(`${this.API_URL}/mesas/usuario/${usuarioId}/eleccion/${eleccionId}`);
   }
@@ -222,6 +230,18 @@ export class ApiService {
 
   cerrarMesa(id: number): Observable<void> {
     return this.http.post<void>(`${this.API_URL}/mesas/${id}/cerrar`, {});
+  }
+
+  reabrirMesa(id: number): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/mesas/${id}/reabrir`, {});
+  }
+
+  actualizarVotosNulos(mesaId: number, votosNulos: number): Observable<Mesa> {
+    return this.http.put<Mesa>(`${this.API_URL}/mesas/${mesaId}/votos-nulos`, { votosNulos });
+  }
+
+  verifyPassword(password: string): Observable<{ valid: boolean }> {
+    return this.http.post<{ valid: boolean }>(`${this.API_URL}/auth/verify-password`, { password });
   }
 
   deleteMesa(id: number): Observable<void> {
@@ -262,8 +282,8 @@ export class ApiService {
     return this.http.get<Voto[]>(`${this.API_URL}/votos/eleccion/${eleccionId}`);
   }
 
-  getDetalleCandidato(candidatoId: number, eleccionId: number): Observable<any> {
-    return this.http.get<any>(`${this.API_URL}/votos/candidato/${candidatoId}/detalle?eleccionId=${eleccionId}`);
+  getDetalleCandidato(candidatoId: number, eleccionId: number): Observable<CandidatoDetalleResponse> {
+    return this.http.get<CandidatoDetalleResponse>(`${this.API_URL}/votos/candidato/${candidatoId}/detalle?eleccionId=${eleccionId}`);
   }
 
   registrarVoto(data: { candidatoId: number; mesaId: number; cantidadVotos: number; eleccionesId: number }): Observable<Voto> {

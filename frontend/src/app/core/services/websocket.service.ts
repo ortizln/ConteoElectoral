@@ -33,8 +33,8 @@ export class WebSocketService implements OnDestroy {
     this.client.activate();
   }
 
-  subscribeToResultados(eleccionId: number): Observable<DashboardData> {
-    return new Observable<DashboardData>(observer => {
+  private subscribeToTopic<T>(topic: string): Observable<T> {
+    return new Observable<T>(observer => {
       let retryCount = 0;
       const maxRetries = 10;
 
@@ -56,7 +56,7 @@ export class WebSocketService implements OnDestroy {
 
         try {
           const subscription = this.client.subscribe(
-            `/topic/resultados/${eleccionId}`,
+            topic,
             (message: any) => {
               try {
                 const data = JSON.parse(message.body);
@@ -75,6 +75,14 @@ export class WebSocketService implements OnDestroy {
 
       trySubscribe();
     });
+  }
+
+  subscribeToResultados(eleccionId: number): Observable<DashboardData> {
+    return this.subscribeToTopic<DashboardData>(`/topic/resultados/${eleccionId}`);
+  }
+
+  subscribeToMesaEstado(eleccionId: number): Observable<any> {
+    return this.subscribeToTopic<any>(`/topic/mesa-estado/${eleccionId}`);
   }
 
   sendMessage(destination: string, payload: any): void {

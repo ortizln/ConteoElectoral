@@ -98,7 +98,9 @@ C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\ele
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\services\AuditoriaService.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\controllers\ProvinciaController.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\util\SecurityUtil.java
+C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\ResultadoGeo.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\entities\Candidato.java
+C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\MesaCerradaResponse.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\services\ProvinciaService.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\CandidatoRequest.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\exception\GlobalExceptionHandler.java
