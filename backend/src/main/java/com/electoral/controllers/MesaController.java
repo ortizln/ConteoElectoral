@@ -185,7 +185,7 @@ public class MesaController {
     @GetMapping("/{id}/exportar-acta")
     @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<byte[]> exportarActa(@PathVariable Long id) {
-        Mesa mesa = mesaService.getMesaEntityById(id);
+        Mesa mesa = mesaService.getMesaWithAll(id);
         List<VotoResponse> votos = votoService.getVotosByMesa(id);
         Long totalVotos = votos.stream().mapToLong(VotoResponse::getCantidadVotos).sum();
 

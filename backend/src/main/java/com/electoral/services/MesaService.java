@@ -66,6 +66,12 @@ public class MesaService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
     }
 
+    @Transactional(readOnly = true)
+    public Mesa getMesaWithAll(Long id) {
+        return mesaRepository.findByIdWithAll(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
+    }
+
     @Transactional
     public MesaResponse createMesa(MesaRequest request) {
         Mesa.SexoMesa sexo = Mesa.SexoMesa.valueOf(request.getSexo());
