@@ -3,6 +3,7 @@ package com.electoral.controllers;
 import com.electoral.dto.ConfiguracionRequest;
 import com.electoral.dto.ConfiguracionResponse;
 import com.electoral.services.ConfiguracionSistemaService;
+import com.electoral.services.ManualService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +20,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class ConfiguracionController {
     private final ConfiguracionSistemaService configuracionService;
+    private final ManualService manualService;
 
     @GetMapping
     public ResponseEntity<ConfiguracionResponse> getConfiguracion() {
@@ -85,5 +87,14 @@ public class ConfiguracionController {
     public ResponseEntity<Void> deleteApk() {
         configuracionService.deleteApk();
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/manual")
+    public ResponseEntity<byte[]> descargarManual() {
+        byte[] pdf = manualService.generatePdf();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "manual-usuario.pdf");
+        return ResponseEntity.ok().headers(headers).body(pdf);
     }
 }

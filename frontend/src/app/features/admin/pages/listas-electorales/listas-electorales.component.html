@@ -1,0 +1,130 @@
+<div class="container-fluid mt-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Listas Electorales</h4>
+    <button class="btn btn-primary" *ngIf="selectedEleccion" (click)="openForm()">
+      <i class="bi bi-plus-lg"></i> Nueva Lista
+    </button>
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-header"><strong>Elecciones</strong></div>
+        <div class="list-group list-group-flush">
+          <button *ngFor="let e of elecciones"
+            class="list-group-item list-group-item-action"
+            [class.active]="selectedEleccion?.id === e.id"
+            (click)="selectEleccion(e)">{{ e.nombre }}</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header"><strong>Listas</strong></div>
+        <div class="list-group list-group-flush">
+          <button *ngFor="let l of listas"
+            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+            [class.active]="listaDetalle?.id === l.id"
+            (click)="verDetalle(l.id)">
+            <div>
+              <strong>Lista {{ l.numeroLista }}</strong>
+              <small class="d-block text-muted">{{ l.nombre }}</small>
+            </div>
+            <span class="badge bg-secondary">{{ getPartidoSigla(l.partidoId) || 'IND' }}</span>
+          </button>
+          <div class="list-group-item text-muted text-center" *ngIf="listas.length === 0">
+            Sin listas registradas
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-5" *ngIf="listaDetalle">
+      <div class="card">
+        <div class="card-header">
+          <strong>Lista {{ listaDetalle.numeroLista }}</strong> — {{ listaDetalle.nombre }}
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <small class="text-muted">Cargo:</small>
+            <div><strong>{{ listaDetalle.cargoNombre }}</strong></div>
+          </div>
+          <div class="mb-3">
+            <small class="text-muted">Partido:</small>
+            <div><strong>{{ listaDetalle.partidoNombre || 'Independiente' }}</strong>
+              <span class="badge bg-secondary ms-2">{{ listaDetalle.partidoSigla }}</span></div>
+          </div>
+          <div class="mb-3">
+            <small class="text-muted">Estado:</small>
+            <span class="badge bg-success ms-1">{{ listaDetalle.estado }}</span>
+          </div>
+          <h6 class="mt-3">Candidatos</h6>
+          <table class="table table-sm">
+            <thead><tr><th>#</th><th>Nombre</th><th>Tipo</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let c of listaDetalle.candidatos">
+                <td>{{ c.ordenEnLista }}</td>
+                <td>{{ c.nombreCompleto }}</td>
+                <td><span class="badge" [class.bg-primary]="c.tipo === 'PRINCIPAL'" [class.bg-secondary]="c.tipo !== 'PRINCIPAL'">{{ c.tipo }}</span></td>
+              </tr>
+              <tr *ngIf="(!listaDetalle.candidatos || listaDetalle.candidatos.length === 0)">
+                <td colspan="3" class="text-muted text-center">Sin candidatos</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" [class.show]="showForm" [style.display]="showForm ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Nueva Lista Electoral</h5>
+        <button class="btn-close" (click)="showForm = false"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Cargo</label>
+          <select class="form-select" [(ngModel)]="formData.cargoId">
+            <option value="">Seleccione...</option>
+            <option *ngFor="let c of cargos" [value]="c.id">{{ c.nombre }}</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Partido</label>
+          <select class="form-select" [(ngModel)]="formData.partidoId">
+            <option value="">Independiente</option>
+            <option *ngFor="let p of partidos" [value]="p.id">{{ p.nombre }} ({{ p.sigla }})</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Número de Lista</label>
+          <input type="number" class="form-control" [(ngModel)]="formData.numeroLista">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Nombre</label>
+          <input class="form-control" [(ngModel)]="formData.nombre" placeholder="Ej: Revolución Ciudadana">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Circunscripción</label>
+          <select class="form-select" [(ngModel)]="formData.circunscripcionTipo">
+            <option value="NACIONAL">Nacional</option>
+            <option value="PROVINCIAL">Provincial</option>
+            <option value="CANTONAL">Cantonal</option>
+            <option value="URBANA">Urbana</option>
+            <option value="RURAL">Rural</option>
+            <option value="PARROQUIAL">Parroquial</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="showForm = false">Cancelar</button>
+        <button class="btn btn-primary" (click)="crearLista()">Crear Lista</button>
+      </div>
+    </div>
+  </div>
+</div>

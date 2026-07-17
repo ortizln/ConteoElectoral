@@ -19,6 +19,23 @@ public class CandidatoResponse {
     private String partidoSigla;
     private Long cargoId;
     private String cargoNombre;
+    private Long listaId;
+    private String listaNombre;
+    private Integer numeroLista;
     private String fotoUrl;
     private Long eleccionesId;
+    private Long provinciaId;
+    private String provinciaNombre;
+    private Long cantonId;
+    private String cantonNombre;
+    private Long parroquiaId;
+    private String parroquiaNombre;
+    private Long tipoCircunscripcionId;
+    private String tipoCircunscripcionCodigo;
+    private Integer posicionLista;
+    private Integer ordenAparicion;
+    private Integer ordenEnLista;
+    private String tipo;
+    private Boolean principal;
+    private Boolean activo;
 }

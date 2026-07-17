@@ -53,6 +53,18 @@ export const ADMIN_ROUTES: Routes = [
       { 
         path: 'configuracion', 
         loadComponent: () => import('./pages/configuracion/configuracion.component').then(m => m.ConfiguracionComponent) 
+      },
+      { 
+        path: 'tipos-eleccion', 
+        loadComponent: () => import('./pages/tipos-eleccion/tipos-eleccion.component').then(m => m.TiposEleccionComponent) 
+      },
+      { 
+        path: 'listas-electorales', 
+        loadComponent: () => import('./pages/listas-electorales/listas-electorales.component').then(m => m.ListasElectoralesComponent) 
+      },
+      { 
+        path: 'papeletas', 
+        loadComponent: () => import('./pages/papeletas/papeletas.component').then(m => m.PapeletasComponent) 
       }
     ]
   }

@@ -20,4 +20,6 @@ public class EleccionResponse {
     private Long totalVotos;
     private Long totalMesas;
     private Long mesasCerradas;
+    private Long tipoEleccionId;
+    private String tipoEleccionNombre;
 }

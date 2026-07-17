@@ -15,6 +15,7 @@ public class DashboardResponse {
     private String eleccionNombre;
     private Long totalVotos;
     private Long totalVotosNulos;
+    private Long totalVotosBlanco;
     private Long totalMesas;
     private Long mesasCerradas;
     private Long mesasAbiertas;

@@ -7,6 +7,8 @@ class Mesa {
   final int eleccionesId;
   final bool cerrada;
   final int? usuarioId;
+  final int? votosNulos;
+  final int? votosBlanco;
 
   Mesa({
     required this.id,
@@ -17,6 +19,8 @@ class Mesa {
     required this.eleccionesId,
     required this.cerrada,
     this.usuarioId,
+    this.votosNulos,
+    this.votosBlanco,
   });
 
   factory Mesa.fromJson(Map<String, dynamic> json) {
@@ -29,6 +33,8 @@ class Mesa {
       eleccionesId: json['eleccionesId'],
       cerrada: json['cerrada'] ?? false,
       usuarioId: json['usuarioId'],
+      votosNulos: json['votosNulos'] ?? 0,
+      votosBlanco: json['votosBlanco'] ?? 0,
     );
   }
 
@@ -42,6 +48,8 @@ class Mesa {
       'eleccionesId': eleccionesId,
       'cerrada': cerrada,
       'usuarioId': usuarioId,
+      'votosNulos': votosNulos,
+      'votosBlanco': votosBlanco,
     };
   }
 }

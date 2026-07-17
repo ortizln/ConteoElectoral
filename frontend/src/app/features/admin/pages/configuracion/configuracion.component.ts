@@ -152,6 +152,10 @@ export class ConfiguracionComponent implements OnInit {
     return `${this.API_URL}/configuracion/apk?t=${new Date().getTime()}`;
   }
 
+  getManualUrl(): string {
+    return `${this.API_URL}/configuracion/manual?t=${new Date().getTime()}`;
+  }
+
   onApkSelected(event: any): void {
     this.selectedApk = event.target.files?.[0] || null;
   }

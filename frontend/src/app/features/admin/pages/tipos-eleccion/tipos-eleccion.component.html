@@ -1,0 +1,177 @@
+<div class="container-fluid mt-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Tipos de Elección</h4>
+    <button class="btn btn-primary" (click)="showNuevoTipo = !showNuevoTipo">
+      <i class="bi bi-plus-lg"></i> Nuevo Tipo
+    </button>
+  </div>
+
+  <div class="card" *ngIf="showNuevoTipo">
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <input class="form-control" placeholder="Nombre (ej: GENERALES)" [(ngModel)]="nuevoTipo.nombre">
+        </div>
+        <div class="col-md-6">
+          <input class="form-control" placeholder="Descripción" [(ngModel)]="nuevoTipo.descripcion">
+        </div>
+        <div class="col-md-2">
+          <button class="btn btn-success w-100" (click)="crearTipo()">Crear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-5">
+      <div class="card">
+        <div class="list-group list-group-flush">
+          <button *ngFor="let t of tipos"
+            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+            [class.active]="selectedTipo?.id === t.id"
+            (click)="selectTipo(t)">
+            {{ t.nombre }}
+            <span class="badge bg-secondary rounded-pill">{{ t.activo ? 'Activo' : 'Inactivo' }}</span>
+          </button>
+          <div class="list-group-item text-muted text-center" *ngIf="tipos.length === 0">
+            No hay tipos de elección registrados
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-7" *ngIf="selectedTipo">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><strong>{{ selectedTipo.nombre }}</strong> — Cargos asignados</span>
+          <div>
+            <button class="btn btn-sm btn-outline-secondary me-1" (click)="openEditarTipo()" title="Editar tipo">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-primary" (click)="openAsignarCargo()">
+              <i class="bi bi-plus-circle"></i> Asignar cargo
+            </button>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Cargo</th>
+                <th class="text-center">Info</th>
+                <th class="text-center">Orden</th>
+                <th class="text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let ca of cargosAsignados">
+                <td>{{ ca.cargoNombre }}</td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-outline-info"
+                    (click)="selectedCargoInfo = selectedCargoInfo === ca.cargoId ? null : ca.cargoId"
+                    title="Ver información del cargo">
+                    <i class="bi bi-info-circle"></i>
+                  </button>
+                </td>
+                <td class="text-center">
+                  <ng-container *ngIf="editandoOrdenId !== ca.id; else editandoOrden">
+                    {{ ca.orden }}
+                    <button class="btn btn-sm btn-outline-secondary ms-1" (click)="startEditarOrden(ca)" title="Editar orden">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                  </ng-container>
+                  <ng-template #editandoOrden>
+                    <div class="d-inline-flex align-items-center gap-1">
+                      <input type="number" class="form-control form-control-sm" style="width:70px" [(ngModel)]="nuevoOrden">
+                      <button class="btn btn-sm btn-success" (click)="guardarOrden(ca.id)"><i class="bi bi-check"></i></button>
+                      <button class="btn btn-sm btn-secondary" (click)="cancelarEditarOrden()"><i class="bi bi-x"></i></button>
+                    </div>
+                  </ng-template>
+                </td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-outline-danger" (click)="removerCargo(ca.id)">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="cargosAsignados.length === 0">
+                <td colspan="4" class="text-center text-muted">Sin cargos asignados</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div *ngIf="selectedCargoInfo" class="card-footer bg-light small">
+          <ng-container *ngIf="getCargoInfo(selectedCargoInfo) as info">
+            <strong>{{ info.nombre }}</strong><br>
+            <span *ngIf="info.descripcion">{{ info.descripcion }}<br></span>
+            Tipo votación: <span class="badge bg-info">{{ getTipoVotacionLabel(info.tipoVotacion) }}</span><br>
+            <span *ngIf="info.tipoCircunscripcionId">
+              Circunscripción ID: {{ info.tipoCircunscripcionId }}
+            </span>
+            <span *ngIf="info.cantidadDignidades">
+              | Dignidades: {{ info.cantidadDignidades }}
+            </span>
+            <span *ngIf="info.maxCandidatosLista">
+              | Máx lista: {{ info.maxCandidatosLista }}
+            </span>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" [class.show]="showEditarTipo" [style.display]="showEditarTipo ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Editar {{ editTipoForm.nombre }}</h5>
+        <button type="button" class="btn-close" (click)="showEditarTipo = false"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Nombre</label>
+          <input class="form-control" [(ngModel)]="editTipoForm.nombre">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Descripción</label>
+          <input class="form-control" [(ngModel)]="editTipoForm.descripcion">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="showEditarTipo = false">Cancelar</button>
+        <button class="btn btn-primary" (click)="guardarEditarTipo()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" [class.show]="showAsignarCargo" [style.display]="showAsignarCargo ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Asignar Cargo a {{ selectedTipo?.nombre }}</h5>
+        <button type="button" class="btn-close" (click)="showAsignarCargo = false"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Cargo</label>
+          <select class="form-select" [(ngModel)]="cargoToAdd.cargoId">
+            <option value="">Seleccione...</option>
+            <option *ngFor="let c of cargosDisponibles" [value]="c.id">
+              {{ c.nombre }}
+            </option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Orden</label>
+          <input type="number" class="form-control" [(ngModel)]="cargoToAdd.orden">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="showAsignarCargo = false">Cancelar</button>
+        <button class="btn btn-primary" (click)="asignarCargo()">Asignar</button>
+      </div>
+    </div>
+  </div>
+</div>

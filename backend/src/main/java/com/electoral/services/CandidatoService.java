@@ -14,6 +14,11 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
 import com.electoral.util.SecurityUtil;
+import com.electoral.repositories.TipoCircunscripcionRepository;
+import com.electoral.repositories.ProvinciaRepository;
+import com.electoral.repositories.CantonRepository;
+import com.electoral.repositories.ParroquiaRepository;
+import com.electoral.repositories.ListaElectoralRepository;
 
 @Slf4j
 @Service
@@ -24,6 +29,11 @@ public class CandidatoService {
     private final PartidoRepository partidoRepository;
     private final CargoRepository cargoRepository;
     private final EleccionService eleccionService;
+    private final TipoCircunscripcionRepository tipoCircunscripcionRepository;
+    private final ProvinciaRepository provinciaRepository;
+    private final CantonRepository cantonRepository;
+    private final ParroquiaRepository parroquiaRepository;
+    private final ListaElectoralRepository listaElectoralRepository;
     private final AuditoriaService auditoriaService;
     private final SecurityUtil securityUtil;
 
@@ -67,13 +77,30 @@ public class CandidatoService {
             }
         }
         
+        ListaElectoral lista = request.getListaId() != null
+                ? listaElectoralRepository.findById(request.getListaId()).orElse(null) : null;
+
         Candidato candidato = Candidato.builder()
                 .nombre(request.getNombre())
                 .apellido(request.getApellido())
                 .partido(partido)
                 .cargo(cargo)
+                .lista(lista)
                 .fotoUrl(request.getFotoUrl())
                 .elecciones(eleccion)
+                .provincia(request.getProvinciaId() != null
+                        ? provinciaRepository.findById(request.getProvinciaId()).orElse(null) : null)
+                .canton(request.getCantonId() != null
+                        ? cantonRepository.findById(request.getCantonId()).orElse(null) : null)
+                .parroquia(request.getParroquiaId() != null
+                        ? parroquiaRepository.findById(request.getParroquiaId()).orElse(null) : null)
+                .tipoCircunscripcion(request.getTipoCircunscripcionId() != null
+                        ? tipoCircunscripcionRepository.findById(request.getTipoCircunscripcionId()).orElse(null) : null)
+                .posicionLista(request.getPosicionLista())
+                .ordenAparicion(request.getOrdenAparicion())
+                .ordenEnLista(request.getOrdenEnLista())
+                .tipo(request.getTipo() != null ? request.getTipo() : "PRINCIPAL")
+                .principal(request.getPrincipal() != null ? request.getPrincipal() : true)
                 .build();
         
         log.info("Creando {}: {}", "Candidato", candidato.getNombre() + " " + candidato.getApellido());
@@ -108,6 +135,22 @@ public class CandidatoService {
         candidato.setNombre(request.getNombre());
         candidato.setApellido(request.getApellido());
         candidato.setFotoUrl(request.getFotoUrl());
+        candidato.setProvincia(request.getProvinciaId() != null
+                ? provinciaRepository.findById(request.getProvinciaId()).orElse(null) : null);
+        candidato.setCanton(request.getCantonId() != null
+                ? cantonRepository.findById(request.getCantonId()).orElse(null) : null);
+        candidato.setParroquia(request.getParroquiaId() != null
+                ? parroquiaRepository.findById(request.getParroquiaId()).orElse(null) : null);
+        candidato.setTipoCircunscripcion(request.getTipoCircunscripcionId() != null
+                ? tipoCircunscripcionRepository.findById(request.getTipoCircunscripcionId()).orElse(null) : null);
+        if (request.getListaId() != null) {
+            candidato.setLista(listaElectoralRepository.findById(request.getListaId()).orElse(null));
+        }
+        if (request.getPosicionLista() != null) candidato.setPosicionLista(request.getPosicionLista());
+        if (request.getOrdenAparicion() != null) candidato.setOrdenAparicion(request.getOrdenAparicion());
+        if (request.getOrdenEnLista() != null) candidato.setOrdenEnLista(request.getOrdenEnLista());
+        if (request.getTipo() != null) candidato.setTipo(request.getTipo());
+        if (request.getPrincipal() != null) candidato.setPrincipal(request.getPrincipal());
         
         if (request.getCargoId() != null) {
             Cargo cargo = cargoRepository.findById(request.getCargoId())
@@ -159,10 +202,27 @@ public class CandidatoService {
                 .partidoId(candidato.getPartido() != null ? candidato.getPartido().getId() : null)
                 .partidoNombre(candidato.getPartido() != null ? candidato.getPartido().getNombre() : "Independiente")
                 .partidoSigla(candidato.getPartido() != null ? candidato.getPartido().getSigla() : null)
-                .cargoId(candidato.getCargo().getId())
-                .cargoNombre(candidato.getCargo().getNombre())
+                .cargoId(candidato.getCargo() != null ? candidato.getCargo().getId() : null)
+                .cargoNombre(candidato.getCargo() != null ? candidato.getCargo().getNombre() : null)
+                .listaId(candidato.getLista() != null ? candidato.getLista().getId() : null)
+                .listaNombre(candidato.getLista() != null ? candidato.getLista().getNombre() : null)
+                .numeroLista(candidato.getLista() != null ? candidato.getLista().getNumeroLista() : null)
                 .fotoUrl(candidato.getFotoUrl())
-                .eleccionesId(candidato.getElecciones().getId())
+                .eleccionesId(candidato.getElecciones() != null ? candidato.getElecciones().getId() : null)
+                .provinciaId(candidato.getProvincia() != null ? candidato.getProvincia().getId() : null)
+                .provinciaNombre(candidato.getProvincia() != null ? candidato.getProvincia().getNombre() : null)
+                .cantonId(candidato.getCanton() != null ? candidato.getCanton().getId() : null)
+                .cantonNombre(candidato.getCanton() != null ? candidato.getCanton().getNombre() : null)
+                .parroquiaId(candidato.getParroquia() != null ? candidato.getParroquia().getId() : null)
+                .parroquiaNombre(candidato.getParroquia() != null ? candidato.getParroquia().getNombre() : null)
+                .tipoCircunscripcionId(candidato.getTipoCircunscripcion() != null ? candidato.getTipoCircunscripcion().getId() : null)
+                .tipoCircunscripcionCodigo(candidato.getTipoCircunscripcion() != null ? candidato.getTipoCircunscripcion().getCodigo() : null)
+                .posicionLista(candidato.getPosicionLista())
+                .ordenAparicion(candidato.getOrdenAparicion())
+                .ordenEnLista(candidato.getOrdenEnLista())
+                .tipo(candidato.getTipo())
+                .principal(candidato.getPrincipal())
+                .activo(candidato.getActivo())
                 .build();
     }
 }

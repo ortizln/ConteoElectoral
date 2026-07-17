@@ -33,7 +33,9 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   cantidadVotos = 1;
   totalVotos = 0;
   votosNulos = 0;
+  votosBlanco = 0;
   private nulosTimeout: any = null;
+  private blancoTimeout: any = null;
 
   filtroTexto = '';
   filtroPartidoId: number | null = null;
@@ -124,6 +126,7 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     this.candidatoSeleccionado = null;
     this.cantidadVotos = 1;
     this.votosNulos = mesa.votosNulos ?? 0;
+    this.votosBlanco = mesa.votosBlanco ?? 0;
     this.loadVotos();
   }
 
@@ -247,6 +250,29 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
       this.votosNulos = this.votosNulos - 1;
       this.guardarVotosNulos();
     }
+  }
+
+  incrementarBlanco(): void {
+    this.votosBlanco = (this.votosBlanco || 0) + 1;
+    this.guardarVotosBlanco();
+  }
+
+  decrementarBlanco(): void {
+    if ((this.votosBlanco || 0) > 0) {
+      this.votosBlanco = this.votosBlanco - 1;
+      this.guardarVotosBlanco();
+    }
+  }
+
+  guardarVotosBlanco(): void {
+    if (!this.mesaActual) return;
+    if (this.blancoTimeout) clearTimeout(this.blancoTimeout);
+    this.blancoTimeout = setTimeout(() => {
+      this.api.actualizarVotosBlanco(this.mesaActual!.id, this.votosBlanco || 0).subscribe({
+        next: (m) => { this.mesaActual!.votosBlanco = m.votosBlanco; },
+        error: () => {}
+      });
+    }, 400);
   }
 
   guardarVotosNulos(): void {

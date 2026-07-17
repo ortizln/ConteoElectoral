@@ -26,4 +26,7 @@ public interface MesaRepository extends JpaRepository<Mesa, Long> {
 
     @Query("SELECT COALESCE(SUM(m.votosNulos), 0) FROM Mesa m WHERE m.id IN :mesaIds")
     Long sumVotosNulosByMesaIds(@Param("mesaIds") List<Long> mesaIds);
+
+    @Query("SELECT COALESCE(SUM(m.votosBlanco), 0) FROM Mesa m WHERE m.id IN :mesaIds")
+    Long sumVotosBlancoByMesaIds(@Param("mesaIds") List<Long> mesaIds);
 }

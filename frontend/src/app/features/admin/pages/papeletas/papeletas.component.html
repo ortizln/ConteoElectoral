@@ -1,0 +1,78 @@
+<div class="container-fluid mt-3">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Papeletas</h4>
+    <div *ngIf="selectedEleccion">
+      <button class="btn btn-success me-2" (click)="generar()" [disabled]="generando">
+        <i class="bi bi-plus-circle"></i> {{ generando ? 'Generando...' : 'Generar Papeletas' }}
+      </button>
+      <button class="btn btn-warning" (click)="regenerar()" [disabled]="generando">
+        <i class="bi bi-arrow-clockwise"></i> Regenerar
+      </button>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-header"><strong>Elecciones</strong></div>
+        <div class="list-group list-group-flush">
+          <button *ngFor="let e of elecciones"
+            class="list-group-item list-group-item-action"
+            [class.active]="selectedEleccion?.id === e.id"
+            (click)="selectEleccion(e)">
+            {{ e.nombre }}
+            <small class="d-block text-muted">{{ e.activa ? 'Activa' : 'Inactiva' }}</small>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-9">
+      <div *ngIf="loading" class="text-center py-4">
+        <div class="spinner-border" role="status"></div>
+      </div>
+
+      <div *ngIf="!selectedEleccion && !loading" class="card">
+        <div class="card-body text-center text-muted py-5">
+          Seleccione una elección para ver sus papeletas
+        </div>
+      </div>
+
+      <div *ngFor="let p of papeletas" class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><strong>{{ p.titulo }}</strong></span>
+          <span class="badge bg-info">{{ p.tipoVotacion }}</span>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Opción</th>
+                <th>Tipo</th>
+                <th>Partido</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let op of p.opciones">
+                <td>{{ op.orden }}</td>
+                <td>
+                  <i class="bi {{ getOptionIcon(op.tipoOpcion) }} me-2"></i>
+                  {{ op.etiqueta }}
+                </td>
+                <td><span class="badge bg-secondary">{{ op.tipoOpcion }}</span></td>
+                <td>{{ op.partidoSigla || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div *ngIf="selectedEleccion && papeletas.length === 0 && !loading" class="card">
+        <div class="card-body text-center text-muted py-5">
+          No hay papeletas generadas para esta elección. Presione "Generar Papeletas".
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

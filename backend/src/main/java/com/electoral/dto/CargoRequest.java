@@ -19,4 +19,9 @@ public class CargoRequest {
     
     @NotNull(message = "La elección es requerida")
     private Long eleccionesId;
+
+    private String tipoVotacion;
+    private Long tipoCircunscripcionId;
+    private Integer cantidadDignidades;
+    private Integer maxCandidatosLista;
 }

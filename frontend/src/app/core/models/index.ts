@@ -48,6 +48,13 @@ export interface Cargo {
   nombre: string;
   descripcion: string;
   eleccionesId: number;
+  tipoVotacion?: string;
+  tipoCircunscripcionId?: number;
+  tipoCircunscripcionCodigo?: string;
+  tipoCircunscripcionNombre?: string;
+  cantidadDignidades?: number;
+  maxCandidatosLista?: number;
+  activo?: boolean;
 }
 
 export interface Candidato {
@@ -58,10 +65,17 @@ export interface Candidato {
   partidoId: number | null;
   partidoNombre: string;
   partidoSigla: string | null;
-  cargoId: number;
-  cargoNombre: string;
+  cargoId?: number;
+  cargoNombre?: string;
+  listaId?: number;
+  listaNombre?: string;
+  numeroLista?: number;
   fotoUrl: string | null;
-  eleccionesId: number;
+  eleccionesId?: number;
+  ordenEnLista?: number;
+  tipo?: string;
+  principal?: boolean;
+  activo?: boolean;
 }
 
 export interface Zona {
@@ -113,6 +127,7 @@ export interface Mesa {
   eleccionesId: number;
   cerrada: boolean;
   votosNulos: number;
+  votosBlanco: number;
   usuarioId: number | null;
   usuarioNombre: string | null;
 }

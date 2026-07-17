@@ -20,6 +20,24 @@ class _VotacionScreenState extends State<VotacionScreen> {
   String _busqueda = '';
   String _ordenPor = 'cargo';
 
+  String? _circunscripcionParaCandidato(Candidato c, AppProvider provider) {
+    if (c.cargoId == null) return null;
+    final cargo = provider.cargos.cast<Cargo?>().firstWhere(
+      (cg) => cg?.id == c.cargoId,
+      orElse: () => null,
+    );
+    return cargo?.tipoCircunscripcionCodigo;
+  }
+
+  String? _tipoVotacionParaCandidato(Candidato c, AppProvider provider) {
+    if (c.cargoId == null) return null;
+    final cargo = provider.cargos.cast<Cargo?>().firstWhere(
+      (cg) => cg?.id == c.cargoId,
+      orElse: () => null,
+    );
+    return cargo?.tipoVotacion;
+  }
+
   @override
   void dispose() {
     _cantidadCtrl.dispose();
@@ -41,6 +59,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
       list = list.where((c) => c.cargoNombre == _filtroCargo).toList();
     }
 
+    list = list.where((c) => c.activo != false).toList();
+
     switch (_ordenPor) {
       case 'partido':
         list.sort((a, b) => a.partidoNombre.compareTo(b.partidoNombre));
@@ -49,7 +69,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
         list.sort((a, b) => a.nombreCompleto.compareTo(b.nombreCompleto));
         break;
       default:
-        list.sort((a, b) => a.cargoNombre.compareTo(b.cargoNombre));
+        list.sort((a, b) => (a.cargoNombre ?? '').compareTo(b.cargoNombre ?? ''));
     }
     return list;
   }
@@ -251,7 +271,11 @@ class _VotacionScreenState extends State<VotacionScreen> {
                                           children: [
                                             Text(c.nombreCompleto, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                                             const SizedBox(height: 2),
-                                            Text('${c.partidoNombre} · ${c.cargoNombre}', style: AppTextStyles.bodySmall),
+                                            Text('${c.partidoNombre} · ${c.cargoNombre ?? ''}', style: AppTextStyles.bodySmall),
+                                            if (_circunscripcionParaCandidato(c, provider) != null || _tipoVotacionParaCandidato(c, provider) != null) ...[
+                                              const SizedBox(height: 4),
+                                              _badgesRow(c, provider),
+                                            ],
                                           ],
                                         ),
                                       ),
@@ -377,6 +401,35 @@ class _VotacionScreenState extends State<VotacionScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _badgesRow(Candidato c, AppProvider provider) {
+    final circ = _circunscripcionParaCandidato(c, provider);
+    final tipoVot = _tipoVotacionParaCandidato(c, provider);
+    return Row(
+      children: [
+        if (tipoVot != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(tipoVot, style: const TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.w600)),
+          ),
+        if (circ != null) ...[
+          const SizedBox(width: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: AppColors.gray.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(circ, style: const TextStyle(fontSize: 10, color: AppColors.gray, fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ],
     );
   }
 

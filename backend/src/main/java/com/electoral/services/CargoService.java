@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
 import com.electoral.util.SecurityUtil;
+import com.electoral.repositories.TipoCircunscripcionRepository;
 
 @Slf4j
 @Service
@@ -22,8 +23,13 @@ import com.electoral.util.SecurityUtil;
 public class CargoService {
     private final CargoRepository cargoRepository;
     private final EleccionService eleccionService;
+    private final TipoCircunscripcionRepository tipoCircunscripcionRepository;
     private final AuditoriaService auditoriaService;
     private final SecurityUtil securityUtil;
+
+    public List<CargoResponse> getAll() {
+        return cargoRepository.findAll().stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
 
     public List<CargoResponse> getCargosByEleccion(Long eleccionesId) {
         return cargoRepository.findByEleccionesId(eleccionesId).stream()
@@ -43,10 +49,19 @@ public class CargoService {
             throw new DuplicateEntityException("Ya existe un cargo con el nombre '" + request.getNombre() + "' en esta elección");
         }
         Eleccion eleccion = eleccionService.getEleccionEntityById(request.getEleccionesId());
+        TipoCircunscripcion tc = null;
+        if (request.getTipoCircunscripcionId() != null) {
+            tc = tipoCircunscripcionRepository.findById(request.getTipoCircunscripcionId())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Tipo de circunscripción no encontrado"));
+        }
         Cargo cargo = Cargo.builder()
                 .nombre(request.getNombre())
                 .descripcion(request.getDescripcion())
                 .elecciones(eleccion)
+                .tipoVotacion(request.getTipoVotacion() != null ? TipoVotacion.valueOf(request.getTipoVotacion()) : null)
+                .tipoCircunscripcion(tc)
+                .cantidadDignidades(request.getCantidadDignidades() != null ? request.getCantidadDignidades() : 1)
+                .maxCandidatosLista(request.getMaxCandidatosLista())
                 .build();
         log.info("Creando {}: {}", "Cargo", cargo.getNombre());
         Cargo saved = cargoRepository.save(cargo);
@@ -73,6 +88,18 @@ public class CargoService {
         Map<String, Object> datosAnteriores = Map.of("nombre", cargo.getNombre(), "descripcion", cargo.getDescripcion());
         cargo.setNombre(request.getNombre());
         cargo.setDescripcion(request.getDescripcion());
+        if (request.getTipoVotacion() != null) {
+            cargo.setTipoVotacion(TipoVotacion.valueOf(request.getTipoVotacion()));
+        }
+        if (request.getTipoCircunscripcionId() != null) {
+            TipoCircunscripcion tc = tipoCircunscripcionRepository.findById(request.getTipoCircunscripcionId())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Tipo de circunscripción no encontrado"));
+            cargo.setTipoCircunscripcion(tc);
+        }
+        if (request.getCantidadDignidades() != null) {
+            cargo.setCantidadDignidades(request.getCantidadDignidades());
+        }
+        cargo.setMaxCandidatosLista(request.getMaxCandidatosLista());
         Cargo saved = cargoRepository.save(cargo);
         auditoriaService.registrarAccion(
             securityUtil.getCurrentUserId(),
@@ -108,6 +135,13 @@ public class CargoService {
                 .nombre(cargo.getNombre())
                 .descripcion(cargo.getDescripcion())
                 .eleccionesId(cargo.getElecciones().getId())
+                .tipoVotacion(cargo.getTipoVotacion() != null ? cargo.getTipoVotacion().name() : null)
+                .tipoCircunscripcionId(cargo.getTipoCircunscripcion() != null ? cargo.getTipoCircunscripcion().getId() : null)
+                .tipoCircunscripcionCodigo(cargo.getTipoCircunscripcion() != null ? cargo.getTipoCircunscripcion().getCodigo() : null)
+                .tipoCircunscripcionNombre(cargo.getTipoCircunscripcion() != null ? cargo.getTipoCircunscripcion().getNombre() : null)
+                .cantidadDignidades(cargo.getCantidadDignidades())
+                .maxCandidatosLista(cargo.getMaxCandidatosLista())
+                .activo(cargo.getActivo())
                 .build();
     }
 }

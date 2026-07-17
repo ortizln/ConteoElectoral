@@ -20,7 +20,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -38,7 +38,6 @@ class DatabaseHelper {
       )
     ''');
 
-
     await db.execute('''
       CREATE TABLE partidos (
         id INTEGER PRIMARY KEY,
@@ -54,7 +53,14 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY,
         nombre TEXT NOT NULL,
         descripcion TEXT,
-        eleccionesId INTEGER NOT NULL
+        eleccionesId INTEGER NOT NULL,
+        tipoVotacion TEXT,
+        tipoCircunscripcionId INTEGER,
+        tipoCircunscripcionCodigo TEXT,
+        tipoCircunscripcionNombre TEXT,
+        cantidadDignidades INTEGER DEFAULT 1,
+        maxCandidatosLista INTEGER,
+        activo INTEGER DEFAULT 1
       )
     ''');
 
@@ -65,10 +71,18 @@ class DatabaseHelper {
         apellido TEXT NOT NULL,
         partidoId INTEGER,
         partidoNombre TEXT,
-        cargoId INTEGER NOT NULL,
-        cargoNombre TEXT NOT NULL,
+        partidoSigla TEXT,
+        cargoId INTEGER,
+        cargoNombre TEXT,
+        listaId INTEGER,
+        listaNombre TEXT,
+        numeroLista INTEGER,
         fotoUrl TEXT,
-        eleccionesId INTEGER NOT NULL
+        eleccionesId INTEGER,
+        ordenEnLista INTEGER,
+        tipo TEXT,
+        principal INTEGER DEFAULT 1,
+        activo INTEGER DEFAULT 1
       )
     ''');
 
@@ -83,7 +97,6 @@ class DatabaseHelper {
       )
     ''');
 
-
     await db.execute('''
       CREATE TABLE mesas (
         id INTEGER PRIMARY KEY,
@@ -93,7 +106,9 @@ class DatabaseHelper {
         institucionNombre TEXT,
         eleccionesId INTEGER NOT NULL,
         cerrada INTEGER NOT NULL DEFAULT 0,
-        usuarioId INTEGER
+        usuarioId INTEGER,
+        votosNulos INTEGER DEFAULT 0,
+        votosBlanco INTEGER DEFAULT 0
       )
     ''');
 
@@ -104,6 +119,7 @@ class DatabaseHelper {
         mesaId INTEGER NOT NULL,
         cantidadVotos INTEGER NOT NULL,
         eleccionesId INTEGER NOT NULL,
+        opcionPapeletaId INTEGER,
         sincronizado INTEGER NOT NULL DEFAULT 0,
         fechaRegistro TEXT NOT NULL
       )
@@ -131,6 +147,29 @@ class DatabaseHelper {
       await db.execute('UPDATE elecciones SET fechaInicio = fecha_inicio');
       await db.execute('ALTER TABLE elecciones ADD COLUMN fechaFin TEXT');
       await db.execute('UPDATE elecciones SET fechaFin = fecha_fin');
+    }
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE cargos ADD COLUMN tipoVotacion TEXT');
+      await db.execute('ALTER TABLE cargos ADD COLUMN tipoCircunscripcionId INTEGER');
+      await db.execute('ALTER TABLE cargos ADD COLUMN tipoCircunscripcionCodigo TEXT');
+      await db.execute('ALTER TABLE cargos ADD COLUMN tipoCircunscripcionNombre TEXT');
+      await db.execute('ALTER TABLE cargos ADD COLUMN cantidadDignidades INTEGER DEFAULT 1');
+      await db.execute('ALTER TABLE cargos ADD COLUMN maxCandidatosLista INTEGER');
+      await db.execute('ALTER TABLE cargos ADD COLUMN activo INTEGER DEFAULT 1');
+
+      await db.execute('ALTER TABLE candidatos ADD COLUMN partidoSigla TEXT');
+      await db.execute('ALTER TABLE candidatos ADD COLUMN listaId INTEGER');
+      await db.execute('ALTER TABLE candidatos ADD COLUMN listaNombre TEXT');
+      await db.execute('ALTER TABLE candidatos ADD COLUMN numeroLista INTEGER');
+      await db.execute('ALTER TABLE candidatos ADD COLUMN ordenEnLista INTEGER');
+      await db.execute('ALTER TABLE candidatos ADD COLUMN tipo TEXT');
+      await db.execute('ALTER TABLE candidatos ADD COLUMN principal INTEGER DEFAULT 1');
+      await db.execute('ALTER TABLE candidatos ADD COLUMN activo INTEGER DEFAULT 1');
+
+      await db.execute('ALTER TABLE mesas ADD COLUMN votosNulos INTEGER DEFAULT 0');
+      await db.execute('ALTER TABLE mesas ADD COLUMN votosBlanco INTEGER DEFAULT 0');
+
+      await db.execute('ALTER TABLE votos ADD COLUMN opcionPapeletaId INTEGER');
     }
   }
 
@@ -213,6 +252,13 @@ class DatabaseHelper {
           'nombre': cargo.nombre,
           'descripcion': cargo.descripcion,
           'eleccionesId': cargo.eleccionesId,
+          'tipoVotacion': cargo.tipoVotacion,
+          'tipoCircunscripcionId': cargo.tipoCircunscripcionId,
+          'tipoCircunscripcionCodigo': cargo.tipoCircunscripcionCodigo,
+          'tipoCircunscripcionNombre': cargo.tipoCircunscripcionNombre,
+          'cantidadDignidades': cargo.cantidadDignidades,
+          'maxCandidatosLista': cargo.maxCandidatosLista,
+          'activo': cargo.activo == null ? null : (cargo.activo! ? 1 : 0),
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -232,6 +278,13 @@ class DatabaseHelper {
       nombre: m['nombre'] as String,
       descripcion: m['descripcion'] as String? ?? '',
       eleccionesId: m['eleccionesId'] as int,
+      tipoVotacion: m['tipoVotacion'] as String?,
+      tipoCircunscripcionId: m['tipoCircunscripcionId'] as int?,
+      tipoCircunscripcionCodigo: m['tipoCircunscripcionCodigo'] as String?,
+      tipoCircunscripcionNombre: m['tipoCircunscripcionNombre'] as String?,
+      cantidadDignidades: m['cantidadDignidades'] as int?,
+      maxCandidatosLista: m['maxCandidatosLista'] as int?,
+      activo: m['activo'] == null ? null : (m['activo'] as int) == 1,
     )).toList();
   }
 
@@ -247,10 +300,18 @@ class DatabaseHelper {
           'apellido': candidato.apellido,
           'partidoId': candidato.partidoId,
           'partidoNombre': candidato.partidoNombre,
+          'partidoSigla': candidato.partidoSigla,
           'cargoId': candidato.cargoId,
           'cargoNombre': candidato.cargoNombre,
+          'listaId': candidato.listaId,
+          'listaNombre': candidato.listaNombre,
+          'numeroLista': candidato.numeroLista,
           'fotoUrl': candidato.fotoUrl,
           'eleccionesId': candidato.eleccionesId,
+          'ordenEnLista': candidato.ordenEnLista,
+          'tipo': candidato.tipo,
+          'principal': candidato.principal == null ? null : (candidato.principal! ? 1 : 0),
+          'activo': candidato.activo == null ? null : (candidato.activo! ? 1 : 0),
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -272,10 +333,18 @@ class DatabaseHelper {
       apellido: m['apellido'] as String,
       partidoId: m['partidoId'] as int?,
       partidoNombre: m['partidoNombre'] as String? ?? 'Independiente',
-      cargoId: m['cargoId'] as int,
-      cargoNombre: m['cargoNombre'] as String,
+      partidoSigla: m['partidoSigla'] as String?,
+      cargoId: m['cargoId'] as int?,
+      cargoNombre: m['cargoNombre'] as String?,
+      listaId: m['listaId'] as int?,
+      listaNombre: m['listaNombre'] as String?,
+      numeroLista: m['numeroLista'] as int?,
       fotoUrl: m['fotoUrl'] as String?,
-      eleccionesId: m['eleccionesId'] as int,
+      eleccionesId: m['eleccionesId'] as int?,
+      ordenEnLista: m['ordenEnLista'] as int?,
+      tipo: m['tipo'] as String?,
+      principal: m['principal'] == null ? null : (m['principal'] as int) == 1,
+      activo: m['activo'] == null ? null : (m['activo'] as int) == 1,
     )).toList();
   }
 
@@ -345,6 +414,8 @@ class DatabaseHelper {
           'eleccionesId': mesa.eleccionesId,
           'cerrada': mesa.cerrada ? 1 : 0,
           'usuarioId': mesa.usuarioId,
+          'votosNulos': mesa.votosNulos ?? 0,
+          'votosBlanco': mesa.votosBlanco ?? 0,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -368,6 +439,8 @@ class DatabaseHelper {
       eleccionesId: m['eleccionesId'] as int,
       cerrada: (m['cerrada'] as int) == 1,
       usuarioId: m['usuarioId'] as int?,
+      votosNulos: m['votosNulos'] as int? ?? 0,
+      votosBlanco: m['votosBlanco'] as int? ?? 0,
     )).toList();
   }
 
@@ -385,6 +458,8 @@ class DatabaseHelper {
       eleccionesId: m['eleccionesId'] as int,
       cerrada: (m['cerrada'] as int) == 1,
       usuarioId: m['usuarioId'] as int?,
+      votosNulos: m['votosNulos'] as int? ?? 0,
+      votosBlanco: m['votosBlanco'] as int? ?? 0,
     );
   }
 
@@ -395,6 +470,7 @@ class DatabaseHelper {
       'mesaId': voto.mesaId,
       'cantidadVotos': voto.cantidadVotos,
       'eleccionesId': voto.eleccionesId,
+      'opcionPapeletaId': voto.opcionPapeletaId,
       'sincronizado': voto.sincronizado ? 1 : 0,
       'fechaRegistro': voto.fechaRegistro.toIso8601String(),
     });
@@ -406,6 +482,7 @@ class DatabaseHelper {
       'votos',
       {
         'cantidadVotos': voto.cantidadVotos,
+        'opcionPapeletaId': voto.opcionPapeletaId,
         'sincronizado': 0,
         'fechaRegistro': DateTime.now().toIso8601String(),
       },
@@ -427,6 +504,7 @@ class DatabaseHelper {
       mesaId: m['mesaId'] as int,
       cantidadVotos: m['cantidadVotos'] as int,
       eleccionesId: m['eleccionesId'] as int,
+      opcionPapeletaId: m['opcionPapeletaId'] as int?,
       sincronizado: (m['sincronizado'] as int) == 1,
       fechaRegistro: DateTime.parse(m['fechaRegistro'] as String),
     )).toList();
@@ -448,6 +526,7 @@ class DatabaseHelper {
       mesaId: m['mesaId'] as int,
       cantidadVotos: m['cantidadVotos'] as int,
       eleccionesId: m['eleccionesId'] as int,
+      opcionPapeletaId: m['opcionPapeletaId'] as int?,
       sincronizado: (m['sincronizado'] as int) == 1,
       fechaRegistro: DateTime.parse(m['fechaRegistro'] as String),
     );
@@ -466,6 +545,7 @@ class DatabaseHelper {
       mesaId: m['mesaId'] as int,
       cantidadVotos: m['cantidadVotos'] as int,
       eleccionesId: m['eleccionesId'] as int,
+      opcionPapeletaId: m['opcionPapeletaId'] as int?,
       sincronizado: (m['sincronizado'] as int) == 1,
       fechaRegistro: DateTime.parse(m['fechaRegistro'] as String),
     )).toList();
@@ -493,6 +573,7 @@ class DatabaseHelper {
           'mesaId': voto.mesaId,
           'cantidadVotos': voto.cantidadVotos,
           'eleccionesId': voto.eleccionesId,
+          'opcionPapeletaId': voto.opcionPapeletaId,
           'sincronizado': 1,
           'fechaRegistro': voto.fechaRegistro.toIso8601String(),
         },

@@ -30,6 +30,9 @@ export class AdminLayoutComponent {
     { path: 'candidatos', icon: '👤', label: 'Candidatos', roles: ['ADMIN', 'SUPERVISOR'] },
     { path: 'mesas', icon: '🗳️', label: 'Mesas', roles: ['ADMIN', 'SUPERVISOR'] },
     { path: 'asignar-mesas', icon: '📝', label: 'Asignar Mesas', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: 'listas-electorales', icon: '📋', label: 'Listas Electorales', roles: ['ADMIN'] },
+    { path: 'tipos-eleccion', icon: '⚙️', label: 'Config. Electoral', roles: ['ADMIN'] },
+    { path: 'papeletas', icon: '📄', label: 'Papeletas', roles: ['ADMIN', 'SUPERVISOR'] },
     { path: 'configuracion', icon: '⚙️', label: 'Configuración', roles: ['ADMIN'] }
   ];
 

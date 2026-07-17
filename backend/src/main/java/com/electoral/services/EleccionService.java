@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
 import com.electoral.util.SecurityUtil;
+import com.electoral.repositories.TipoEleccionRepository;
 
 @Slf4j
 @Service
@@ -24,6 +25,7 @@ public class EleccionService {
     private final EleccionRepository eleccionRepository;
     private final MesaRepository mesaRepository;
     private final VotoRepository votoRepository;
+    private final TipoEleccionRepository tipoEleccionRepository;
     private final AuditoriaService auditoriaService;
     private final SecurityUtil securityUtil;
 
@@ -58,12 +60,18 @@ public class EleccionService {
         if (eleccionRepository.existsByNombre(request.getNombre())) {
             throw new DuplicateEntityException("Ya existe una elección con el nombre '" + request.getNombre() + "'");
         }
+        TipoEleccion tipoEleccion = null;
+        if (request.getTipoEleccionId() != null) {
+            tipoEleccion = tipoEleccionRepository.findById(request.getTipoEleccionId())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Tipo de elección no encontrado"));
+        }
         Eleccion eleccion = Eleccion.builder()
                 .nombre(request.getNombre())
                 .descripcion(request.getDescripcion())
                 .fechaInicio(request.getFechaInicio())
                 .fechaFin(request.getFechaFin())
                 .activa(request.getActiva())
+                .tipoEleccion(tipoEleccion)
                 .build();
         
         log.info("Creando {}: {}", "Eleccion", eleccion.getNombre());
@@ -94,6 +102,11 @@ public class EleccionService {
         eleccion.setFechaInicio(request.getFechaInicio());
         eleccion.setFechaFin(request.getFechaFin());
         eleccion.setActiva(request.getActiva());
+        if (request.getTipoEleccionId() != null) {
+            TipoEleccion tipoEleccion = tipoEleccionRepository.findById(request.getTipoEleccionId())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Tipo de elección no encontrado"));
+            eleccion.setTipoEleccion(tipoEleccion);
+        }
 
         Eleccion saved = eleccionRepository.save(eleccion);
         auditoriaService.registrarAccion(
@@ -139,6 +152,8 @@ public class EleccionService {
                 .totalVotos(totalVotos)
                 .totalMesas(totalMesas)
                 .mesasCerradas(mesasCerradas)
+                .tipoEleccionId(eleccion.getTipoEleccion() != null ? eleccion.getTipoEleccion().getId() : null)
+                .tipoEleccionNombre(eleccion.getTipoEleccion() != null ? eleccion.getTipoEleccion().getNombre() : null)
                 .build();
     }
 }

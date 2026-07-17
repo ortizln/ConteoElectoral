@@ -26,4 +26,6 @@ public class EleccionRequest {
     
     @Builder.Default
     private Boolean activa = true;
+
+    private Long tipoEleccionId;
 }

@@ -613,7 +613,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> testConnection() async {
     try {
-      final response = await http.post(
+      await http.post(
         Uri.parse('$baseUrl/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': 'test', 'password': 'test'}),

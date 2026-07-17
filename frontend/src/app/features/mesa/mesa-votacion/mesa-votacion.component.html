@@ -193,6 +193,22 @@
               </td>
               <td *ngIf="!mesaActual?.cerrada"></td>
             </tr>
+            <tr class="blanco-row">
+              <td></td>
+              <td colspan="2">
+                <span class="blanco-label">⬜ Votos en Blanco</span>
+              </td>
+              <td class="text-right">
+                <span *ngIf="!mesaActual?.cerrada" class="nulos-input-group">
+                  <button class="btn-nulos-minus" (click)="decrementarBlanco()">−</button>
+                  <input type="number" class="nulos-input" [(ngModel)]="votosBlanco" min="0"
+                         (change)="guardarVotosBlanco()">
+                  <button class="btn-nulos-plus" (click)="incrementarBlanco()">+</button>
+                </span>
+                <strong *ngIf="mesaActual?.cerrada" class="voto-count-blanco">{{ votosBlanco }}</strong>
+              </td>
+              <td *ngIf="!mesaActual?.cerrada"></td>
+            </tr>
           </tfoot>
         </table>
       </div>

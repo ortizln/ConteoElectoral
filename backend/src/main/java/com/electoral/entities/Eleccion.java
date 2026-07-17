@@ -27,6 +27,10 @@ public class Eleccion {
     @Column(name = "fecha_fin", nullable = false)
     private LocalDateTime fechaFin;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tipo_eleccion_id")
+    private TipoEleccion tipoEleccion;
+
     @Builder.Default
     @Column(nullable = false)
     private Boolean activa = true;

@@ -20,11 +20,22 @@ public class CandidatoRequest {
     
     private Long partidoId;
     
-    @NotNull(message = "El cargo es requerido")
     private Long cargoId;
+
+    private Long listaId;
     
     private String fotoUrl;
     
     @NotNull(message = "La elección es requerida")
     private Long eleccionesId;
+
+    private Long provinciaId;
+    private Long cantonId;
+    private Long parroquiaId;
+    private Long tipoCircunscripcionId;
+    private Integer posicionLista;
+    private Integer ordenAparicion;
+    private Integer ordenEnLista;
+    private String tipo;
+    private Boolean principal;
 }

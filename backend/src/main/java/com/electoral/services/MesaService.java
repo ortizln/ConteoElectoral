@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,8 @@ public class MesaService {
     private final AuditoriaService auditoriaService;
     private final SecurityUtil securityUtil;
     private final SimpMessagingTemplate messagingTemplate;
+    private final PdfExportService pdfExportService;
+    private final VotoRepository votoRepository;
 
     @Transactional(readOnly = true)
     public List<MesaResponse> getMesasByEleccion(Long eleccionesId) {
@@ -70,6 +73,55 @@ public class MesaService {
     public Mesa getMesaWithAll(Long id) {
         return mesaRepository.findByIdWithAll(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] exportarActaMesa(Long mesaId) {
+        Mesa mesa = mesaRepository.findByIdWithAll(mesaId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + mesaId));
+
+        List<com.electoral.dto.VotoResponse> votos = votoRepository.findByMesaId(mesaId).stream()
+                .map(v -> com.electoral.dto.VotoResponse.builder()
+                        .id(v.getId())
+                        .candidatoId(v.getCandidato().getId())
+                        .candidatoNombre(v.getCandidato().getNombre())
+                        .candidatoApellido(v.getCandidato().getApellido())
+                        .partidoNombre(v.getCandidato().getPartido() != null
+                                ? v.getCandidato().getPartido().getNombre() : "Independiente")
+                        .mesaId(v.getMesa().getId())
+                        .mesaNumero(v.getMesa().getNumero())
+                        .cantidadVotos(v.getCantidadVotos())
+                        .eleccionesId(v.getElecciones().getId())
+                        .build())
+                .collect(Collectors.toList());
+
+        Long totalVotos = votos.stream().mapToLong(com.electoral.dto.VotoResponse::getCantidadVotos).sum();
+
+        List<String[]> resultados = votos.stream()
+                .map(v -> new String[]{v.getCandidatoNombre() + " " + v.getCandidatoApellido(),
+                        v.getPartidoNombre(), " ", String.valueOf(v.getCantidadVotos())})
+                .collect(Collectors.toList());
+
+        String institucionNombre = mesa.getInstitucion() != null ? mesa.getInstitucion().getNombre() : "";
+        String parroquiaNombre = mesa.getInstitucion() != null && mesa.getInstitucion().getParroquia() != null
+                ? mesa.getInstitucion().getParroquia().getNombre() : "";
+        String cantonNombre = mesa.getInstitucion() != null && mesa.getInstitucion().getParroquia() != null
+                && mesa.getInstitucion().getParroquia().getCanton() != null
+                ? mesa.getInstitucion().getParroquia().getCanton().getNombre() : "";
+        String provinciaNombre = mesa.getInstitucion() != null && mesa.getInstitucion().getParroquia() != null
+                && mesa.getInstitucion().getParroquia().getCanton() != null
+                && mesa.getInstitucion().getParroquia().getCanton().getProvincia() != null
+                ? mesa.getInstitucion().getParroquia().getCanton().getProvincia().getNombre() : "";
+        String zonaNombre = mesa.getInstitucion() != null && mesa.getInstitucion().getParroquia() != null
+                && mesa.getInstitucion().getParroquia().getCanton() != null
+                && mesa.getInstitucion().getParroquia().getCanton().getProvincia() != null
+                && mesa.getInstitucion().getParroquia().getCanton().getProvincia().getZona() != null
+                ? mesa.getInstitucion().getParroquia().getCanton().getProvincia().getZona().getNombre() : "";
+        String eleccionNombre = mesa.getElecciones() != null ? mesa.getElecciones().getNombre() : "";
+
+        return pdfExportService.exportActaMesa(mesa, institucionNombre, parroquiaNombre,
+                cantonNombre, provinciaNombre, zonaNombre, eleccionNombre,
+                resultados, totalVotos, LocalDateTime.now());
     }
 
     @Transactional
@@ -157,6 +209,14 @@ public class MesaService {
         Mesa mesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
         mesa.setVotosNulos(votosNulos != null ? votosNulos : 0);
+        return mapToResponse(mesaRepository.save(mesa));
+    }
+
+    @Transactional
+    public MesaResponse actualizarVotosBlanco(Long id, Integer votosBlanco) {
+        Mesa mesa = mesaRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
+        mesa.setVotosBlanco(votosBlanco != null ? votosBlanco : 0);
         return mapToResponse(mesaRepository.save(mesa));
     }
 
@@ -252,6 +312,7 @@ public class MesaService {
                 .eleccionesId(mesa.getElecciones().getId())
                 .cerrada(mesa.getCerrada())
                 .votosNulos(mesa.getVotosNulos())
+                .votosBlanco(mesa.getVotosBlanco())
                 .usuarioId(usuarioId)
                 .usuarioNombre(usuarioNombre)
                 .build();

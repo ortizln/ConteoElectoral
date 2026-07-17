@@ -1,0 +1,136 @@
+<div class="container-fluid p-3" *ngIf="mesaActual">
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <div>
+      <h4 class="mb-0"><i class="bi bi-vote"></i> Votación por Papeletas</h4>
+      <small class="text-muted">
+        Mesa {{ mesaActual.numeroMesa }} - {{ mesaActual.institucionNombre || mesaActual.institucion }}
+        <span class="badge ms-2" [class.bg-success]="!cerrada" [class.bg-danger]="cerrada">
+          {{ cerrada ? 'Cerrada' : 'Abierta' }}
+        </span>
+      </small>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-secondary" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i> Salir
+      </button>
+    </div>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="cerrada">
+    <i class="bi bi-lock-fill"></i> Mesa cerrada — solo lectura
+  </div>
+
+  <div class="mb-3" *ngIf="mesasDisponibles.length > 1">
+    <div class="btn-group flex-wrap">
+      <button *ngFor="let m of mesasDisponibles"
+        class="btn btn-sm" [class.btn-primary]="m.id === mesaActual.id" [class.btn-outline-secondary]="m.id !== mesaActual.id"
+        (click)="seleccionarMesa(m)">Mesa {{ m.numeroMesa }}</button>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    <div class="col-md-8">
+      <div class="card mb-3" *ngIf="papeletas.length > 0">
+        <div class="card-header p-0">
+          <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item" *ngFor="let p of papeletas">
+              <button class="nav-link" [class.active]="papeletaActual?.id === p.id"
+                (click)="seleccionarPapeleta(p)">{{ p.titulo }}</button>
+            </li>
+          </ul>
+        </div>
+        <div class="card-body" *ngIf="papeletaActual"
+          [style.border-top]="papeletaActual.colorHex ? '4px solid ' + papeletaActual.colorHex : ''">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="mb-0">{{ papeletaActual.titulo }}</h6>
+            <div>
+              <span class="badge bg-info me-1">{{ papeletaActual.tipoVotacion }}</span>
+              <span class="badge bg-secondary">{{ papeletaActual.tipoCircunscripcion }}</span>
+            </div>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-6 col-md-4 col-lg-3" *ngFor="let op of papeletaActual.opciones">
+              <div class="card h-100 border cursor-pointer text-center p-2"
+                [class.border-primary]="opcionSeleccionada?.id === op.id"
+                [class.bg-light]="op.tipoOpcion === 'NULO' || op.tipoOpcion === 'BLANCO'"
+                (click)="seleccionarOpcion(op)">
+                <div class="fw-bold fs-4" *ngIf="op.tipoOpcion === 'LISTA' && op.numeroLista"
+                  [style.color]="papeletaActual.colorHex || '#0d6efd'">{{ op.numeroLista }}</div>
+                <div class="mb-1" *ngIf="op.tipoOpcion === 'CANDIDATO'">
+                  <i class="bi bi-person-badge fs-2 text-primary"></i>
+                </div>
+                <div class="mb-1" *ngIf="op.tipoOpcion === 'LISTA' && !op.numeroLista">
+                  <i class="bi bi-list-ul fs-2 text-success"></i>
+                </div>
+                <div class="mb-1" *ngIf="op.tipoOpcion === 'NULO'">
+                  <i class="bi bi-x-circle fs-2 text-danger"></i>
+                </div>
+                <div class="mb-1" *ngIf="op.tipoOpcion === 'BLANCO'">
+                  <i class="bi bi-square fs-2 text-warning"></i>
+                </div>
+                <div class="small fw-bold text-truncate">{{ op.etiqueta }}</div>
+                <div class="small text-muted" *ngIf="op.partidoSigla">Lista {{ op.partidoSigla }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" *ngIf="opcionSeleccionada && !cerrada">
+        <div class="card-body d-flex align-items-center gap-3 flex-wrap">
+          <span class="fw-bold">Votos para: {{ opcionSeleccionada.etiqueta }}</span>
+          <input type="number" class="form-control w-auto" min="0" [(ngModel)]="cantidadInput" style="max-width: 100px;">
+          <button class="btn btn-primary" (click)="registrarVoto()" [disabled]="cantidadInput <= 0">
+            <i class="bi bi-check-circle"></i> Registrar
+          </button>
+          <button class="btn btn-outline-secondary" (click)="opcionSeleccionada = null; cantidadInput = 0">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><strong>Votos Registrados</strong></span>
+          <span class="badge bg-primary rounded-pill">{{ totalVotos }} total</span>
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-sm mb-0">
+            <thead><tr><th>Opción</th><th>Votos</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let v of votosRegistrados">
+                <td>
+                  <div class="small fw-bold">{{ v.opcionEtiqueta }}</div>
+                  <small class="text-muted">{{ v.papeletaTitulo }}</small>
+                </td>
+                <td class="text-center fw-bold">{{ v.cantidadVotos }}</td>
+              </tr>
+              <tr *ngIf="votosRegistrados.length === 0">
+                <td colspan="2" class="text-center text-muted">Sin votos registrados</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer" *ngIf="!cerrada">
+          <button class="btn btn-danger w-100" (click)="cerrarMesa()">
+            <i class="bi bi-lock"></i> Cerrar Mesa
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid p-3" *ngIf="!mesaActual && mesasDisponibles.length > 0">
+  <h4><i class="bi bi-vote"></i> Votación por Papeletas</h4>
+  <div class="row g-2 mt-2">
+    <div class="col-auto" *ngFor="let m of mesasDisponibles">
+      <button class="btn btn-outline-primary btn-lg" (click)="seleccionarMesa(m)">Mesa {{ m.numeroMesa }}</button>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid p-3" *ngIf="mesasDisponibles.length === 0">
+  <div class="alert alert-info">No tiene mesas asignadas para votación por papeletas.</div>
+</div>

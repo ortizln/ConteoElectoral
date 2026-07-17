@@ -85,6 +85,12 @@ public class MesaController {
         return ResponseEntity.ok(mesaService.actualizarVotosNulos(id, body.get("votosNulos")));
     }
 
+    @PutMapping("/{id}/votos-blanco")
+    @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<MesaResponse> actualizarVotosBlanco(@PathVariable Long id, @RequestBody Map<String, Integer> body) {
+        return ResponseEntity.ok(mesaService.actualizarVotosBlanco(id, body.get("votosBlanco")));
+    }
+
     @PostMapping("/{id}/cerrar")
     @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<MesaResponse> cerrarMesa(@PathVariable Long id) {
@@ -185,29 +191,12 @@ public class MesaController {
     @GetMapping("/{id}/exportar-acta")
     @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<byte[]> exportarActa(@PathVariable Long id) {
-        Mesa mesa = mesaService.getMesaWithAll(id);
-        List<VotoResponse> votos = votoService.getVotosByMesa(id);
-        Long totalVotos = votos.stream().mapToLong(VotoResponse::getCantidadVotos).sum();
-
-        List<String[]> resultados = votos.stream()
-                .map(v -> new String[]{v.getCandidatoNombre() + " " + v.getCandidatoApellido(),
-                        v.getPartidoNombre(), " ", String.valueOf(v.getCantidadVotos())})
-                .collect(Collectors.toList());
-
-        String institucionNombre = mesa.getInstitucion().getNombre();
-        String parroquiaNombre = mesa.getInstitucion().getParroquia().getNombre();
-        String cantonNombre = mesa.getInstitucion().getParroquia().getCanton().getNombre();
-        String provinciaNombre = mesa.getInstitucion().getParroquia().getCanton().getProvincia().getNombre();
-        String zonaNombre = mesa.getInstitucion().getParroquia().getCanton().getProvincia().getZona().getNombre();
-        String eleccionNombre = mesa.getElecciones().getNombre();
-
-        byte[] pdf = pdfExportService.exportActaMesa(mesa, institucionNombre, parroquiaNombre,
-                cantonNombre, provinciaNombre, zonaNombre, eleccionNombre,
-                resultados, totalVotos, LocalDateTime.now());
+        byte[] pdf = mesaService.exportarActaMesa(id);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_PDF);
-        httpHeaders.setContentDispositionFormData("attachment", "acta_mesa_" + mesa.getNumero() + ".pdf");
+        Mesa m = mesaRepository.findById(id).orElseThrow(() -> new RuntimeException("Mesa no encontrada: " + id));
+        httpHeaders.setContentDispositionFormData("attachment", "acta_mesa_" + m.getNumero() + ".pdf");
         return ResponseEntity.ok().headers(httpHeaders).body(pdf);
     }
 }

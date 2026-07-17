@@ -18,7 +18,8 @@ export class CargosComponent implements OnInit {
   showModal = false;
   editMode = false;
   selectedId: number | null = null;
-  form: any = { nombre: '', descripcion: '', eleccionesId: null };
+  tiposCircunscripcion: any[] = [];
+  form: any = { nombre: '', descripcion: '', eleccionesId: null, tipoVotacion: 'LISTA', tipoCircunscripcionId: null, cantidadDignidades: 1, maxCandidatosLista: null };
   sortColumn: string = '';
   sortDirection: string = 'asc';
   searchText: string = '';
@@ -48,6 +49,7 @@ export class CargosComponent implements OnInit {
       this.elecciones = e;
       if (e.length > 0) this.load(e[0].id);
     });
+    this.api.getTiposCircunscripcion().subscribe(tc => this.tiposCircunscripcion = tc);
   }
 
   load(eleccionId: number): void {
@@ -116,7 +118,7 @@ export class CargosComponent implements OnInit {
 
   openModal(): void {
     this.editMode = false;
-    this.form = { nombre: '', descripcion: '', eleccionesId: this.elecciones[0]?.id };
+    this.form = { nombre: '', descripcion: '', eleccionesId: this.elecciones[0]?.id, tipoVotacion: 'LISTA', tipoCircunscripcionId: null, cantidadDignidades: 1, maxCandidatosLista: null };
     this.errorMessage = '';
     this.showModal = true;
   }
@@ -124,7 +126,7 @@ export class CargosComponent implements OnInit {
   edit(cargo: Cargo): void {
     this.editMode = true;
     this.selectedId = cargo.id;
-    this.form = { nombre: cargo.nombre, descripcion: cargo.descripcion, eleccionesId: cargo.eleccionesId || this.form.eleccionesId };
+    this.form = { nombre: cargo.nombre, descripcion: cargo.descripcion, eleccionesId: cargo.eleccionesId || this.form.eleccionesId, tipoVotacion: cargo.tipoVotacion || 'LISTA', tipoCircunscripcionId: cargo.tipoCircunscripcionId, cantidadDignidades: cargo.cantidadDignidades || 1, maxCandidatosLista: cargo.maxCandidatosLista };
     this.errorMessage = '';
     this.showModal = true;
   }

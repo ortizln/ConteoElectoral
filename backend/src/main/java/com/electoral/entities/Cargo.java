@@ -25,6 +25,25 @@ public class Cargo {
     @JoinColumn(name = "elecciones_id", nullable = false)
     private Eleccion elecciones;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_votacion", length = 20)
+    private TipoVotacion tipoVotacion;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tipo_circunscripcion_id")
+    private TipoCircunscripcion tipoCircunscripcion;
+
+    @Column(name = "cantidad_dignidades")
+    @Builder.Default
+    private Integer cantidadDignidades = 1;
+
+    @Column(name = "max_candidatos_lista")
+    private Integer maxCandidatosLista;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean activo = true;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

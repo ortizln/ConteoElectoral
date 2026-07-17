@@ -35,8 +35,10 @@
     <thead>
       <tr>
         <th>#</th>
-        <th class="sortable" (click)="sort('nombre')">Nombre {{ sortColumn === 'nombre' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
-        <th class="sortable" (click)="sort('descripcion')">Descripción {{ sortColumn === 'descripcion' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
+        <th class="sortable" (click)="sort('nombre')">Nombre</th>
+        <th>Votación</th>
+        <th>Circunscripción</th>
+        <th>Dignidades</th>
         <th></th>
       </tr>
     </thead>
@@ -44,7 +46,9 @@
       <tr *ngFor="let c of cargosPaginados; index as i">
         <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
         <td>{{ c.nombre }}</td>
-        <td>{{ c.descripcion || 'N/A' }}</td>
+        <td><span class="badge" [class.bg-info]="c.tipoVotacion === 'LISTA'" [class.bg-primary]="c.tipoVotacion === 'INDIVIDUAL'">{{ c.tipoVotacion || '—' }}</span></td>
+        <td><small>{{ c.tipoCircunscripcionCodigo || '—' }}</small></td>
+        <td class="text-center">{{ c.cantidadDignidades || 1 }}</td>
         <td>
           <div class="dropdown">
             <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
@@ -59,7 +63,7 @@
         </td>
       </tr>
       <tr *ngIf="cargosFiltrados.length === 0">
-        <td colspan="4" class="text-center py-3">No se encontraron registros</td>
+        <td colspan="6" class="text-center py-3">No se encontraron registros</td>
       </tr>
     </tbody>
   </table>
@@ -149,6 +153,33 @@
           <div class="mb-3">
             <label>Descripción:</label>
             <textarea class="form-control" autocomplete="off" [(ngModel)]="form.descripcion" (input)="toUpper(form, 'descripcion')"></textarea>
+          </div>
+          <div class="mb-3">
+            <label>Tipo de Votación:</label>
+            <select class="form-select" [(ngModel)]="form.tipoVotacion">
+              <option value="INDIVIDUAL">Individual (un candidato)</option>
+              <option value="LISTA">Lista (voto por partido)</option>
+              <option value="PLURINOMINAL">Plurinominal</option>
+              <option value="PREFERENCIAL">Preferencial</option>
+              <option value="MIXTO">Mixto</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label>Circunscripción:</label>
+            <select class="form-select" [(ngModel)]="form.tipoCircunscripcionId">
+              <option [ngValue]="null">Seleccione...</option>
+              <option *ngFor="let tc of tiposCircunscripcion" [value]="tc.id">{{ tc.codigo }} — {{ tc.nombre }}</option>
+            </select>
+          </div>
+          <div class="row g-2">
+            <div class="col-6 mb-3">
+              <label>Cant. Dignidades:</label>
+              <input type="number" class="form-control" [(ngModel)]="form.cantidadDignidades" min="1">
+            </div>
+            <div class="col-6 mb-3">
+              <label>Max Candidatos/Lista:</label>
+              <input type="number" class="form-control" [(ngModel)]="form.maxCandidatosLista" min="0">
+            </div>
           </div>
         </div>
         <div class="modal-footer">

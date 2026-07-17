@@ -255,6 +255,7 @@ public class VotoService {
 
         Long totalVotos = votoRepository.sumVotosByEleccionAndMesaIds(eleccionId, mesaIds);
         Long totalVotosNulos = mesaIds.isEmpty() ? 0L : mesaRepository.sumVotosNulosByMesaIds(mesaIds);
+        Long totalVotosBlanco = mesaIds.isEmpty() ? 0L : mesaRepository.sumVotosBlancoByMesaIds(mesaIds);
         Long mesasCerradas = mesas.stream().filter(Mesa::getCerrada).count();
 
         List<Object[]> votosPorCandidato = votoRepository.sumVotosGroupByCandidatoAndMesaIds(eleccionId, mesaIds);
@@ -316,6 +317,7 @@ public class VotoService {
                 .eleccionNombre(eleccion.getNombre())
                 .totalVotos(totalVotos)
                 .totalVotosNulos(totalVotosNulos)
+                .totalVotosBlanco(totalVotosBlanco)
                 .totalMesas((long) mesas.size())
                 .mesasCerradas(mesasCerradas)
                 .mesasAbiertas((long) mesas.size() - mesasCerradas)

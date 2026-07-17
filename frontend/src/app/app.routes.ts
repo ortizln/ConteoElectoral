@@ -34,6 +34,10 @@ export const routes: Routes = [
       { 
         path: '', 
         loadComponent: () => import('./features/mesa/mesa-votacion/mesa-votacion.component').then(m => m.MesaVotacionComponent) 
+      },
+      {
+        path: 'papeletas',
+        loadComponent: () => import('./features/mesa/mesa-votacion-papeleta/mesa-votacion-papeleta.component').then(m => m.MesaVotacionPapeletaComponent)
       }
     ]
   },

@@ -20,6 +20,11 @@ public class CargoController {
     private final ExcelExportService excelExportService;
     private final PdfExportService pdfExportService;
 
+    @GetMapping
+    public ResponseEntity<List<CargoResponse>> getAllCargos() {
+        return ResponseEntity.ok(cargoService.getAll());
+    }
+
     @GetMapping("/eleccion/{eleccionesId}")
     public ResponseEntity<List<CargoResponse>> getCargosByEleccion(@PathVariable Long eleccionesId) {
         return ResponseEntity.ok(cargoService.getCargosByEleccion(eleccionesId));

@@ -18,6 +18,7 @@ public class MesaResponse {
     private Long eleccionesId;
     private Boolean cerrada;
     private Integer votosNulos;
+    private Integer votosBlanco;
     private Long usuarioId;
     private String usuarioNombre;
 }

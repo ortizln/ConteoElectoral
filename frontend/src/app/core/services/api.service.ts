@@ -154,6 +154,10 @@ export class ApiService {
   }
 
   // Cargos
+  getCargos(): Observable<Cargo[]> {
+    return this.http.get<Cargo[]>(`${this.API_URL}/cargos`);
+  }
+
   getCargosByEleccion(eleccionId: number): Observable<Cargo[]> {
     return this.http.get<Cargo[]>(`${this.API_URL}/cargos/eleccion/${eleccionId}`);
   }
@@ -238,6 +242,10 @@ export class ApiService {
 
   actualizarVotosNulos(mesaId: number, votosNulos: number): Observable<Mesa> {
     return this.http.put<Mesa>(`${this.API_URL}/mesas/${mesaId}/votos-nulos`, { votosNulos });
+  }
+
+  actualizarVotosBlanco(mesaId: number, votosBlanco: number): Observable<Mesa> {
+    return this.http.put<Mesa>(`${this.API_URL}/mesas/${mesaId}/votos-blanco`, { votosBlanco });
   }
 
   verifyPassword(password: string): Observable<{ valid: boolean }> {
@@ -484,6 +492,97 @@ export class ApiService {
 
   updatePermiso(id: number, data: Partial<RolPermiso>): Observable<RolPermiso> {
     return this.http.put<RolPermiso>(`${this.API_URL}/permisos/${id}`, data);
+  }
+
+  // Papeletas
+  getPapeletasByEleccion(eleccionId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/papeletas/eleccion/${eleccionId}`);
+  }
+
+  getPapeletaById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.API_URL}/papeletas/${id}`);
+  }
+
+  generarPapeletas(eleccionId: number): Observable<any[]> {
+    return this.http.post<any[]>(`${this.API_URL}/papeletas/generar/${eleccionId}`, {});
+  }
+
+  regenerarPapeletas(eleccionId: number): Observable<any[]> {
+    return this.http.post<any[]>(`${this.API_URL}/papeletas/regenerar/${eleccionId}`, {});
+  }
+
+  // Tipos de Elección
+  getTiposEleccion(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/tipos-eleccion`);
+  }
+
+  getTipoEleccionById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.API_URL}/tipos-eleccion/${id}`);
+  }
+
+  createTipoEleccion(data: any): Observable<any> {
+    return this.http.post<any>(`${this.API_URL}/tipos-eleccion`, data);
+  }
+
+  updateTipoEleccion(id: number, data: any): Observable<any> {
+    return this.http.put<any>(`${this.API_URL}/tipos-eleccion/${id}`, data);
+  }
+
+  // Tipos de Circunscripción
+  getTiposCircunscripcion(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/tipos-circunscripcion`);
+  }
+
+  // Tipo Elección Cargo
+  getCargosByTipoEleccion(tipoEleccionId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/tipo-eleccion-cargo/${tipoEleccionId}`);
+  }
+
+  addCargoToTipoEleccion(tipoEleccionId: number, data: any): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/tipo-eleccion-cargo/${tipoEleccionId}`, data);
+  }
+
+  updateCargoOrdenInTipoEleccion(id: number, data: any): Observable<void> {
+    return this.http.put<void>(`${this.API_URL}/tipo-eleccion-cargo/${id}`, data);
+  }
+
+  removeCargoFromTipoEleccion(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/tipo-eleccion-cargo/${id}`);
+  }
+
+  // Voto Papeleta
+  registrarVotoPapeleta(data: any): Observable<any> {
+    return this.http.post<any>(`${this.API_URL}/voto-papeleta`, data);
+  }
+
+  getVotosPapeletaByMesa(mesaId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/voto-papeleta/mesa/${mesaId}`);
+  }
+
+  getVotosPapeletaByEleccion(eleccionId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/voto-papeleta/eleccion/${eleccionId}`);
+  }
+
+  deleteVotoPapeleta(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/voto-papeleta/${id}`);
+  }
+
+  // Listas Electorales
+  getListasByEleccion(eleccionId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/listas-electorales/eleccion/${eleccionId}`);
+  }
+
+  getListaDetalle(id: number): Observable<any> {
+    return this.http.get<any>(`${this.API_URL}/listas-electorales/${id}`);
+  }
+
+  crearListaElectoral(data: any): Observable<any> {
+    return this.http.post<any>(`${this.API_URL}/listas-electorales`, data);
+  }
+
+  // Plantillas Papeleta
+  getPlantillasPapeleta(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.API_URL}/plantillas-papeleta`);
   }
 
   // Dashboard
