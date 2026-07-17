@@ -1,7 +1,6 @@
 package com.electoral.controllers;
 
 import com.electoral.dto.*;
-import com.electoral.entities.Eleccion;
 import com.electoral.services.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +31,7 @@ public class EleccionController {
     }
 
     @GetMapping("/activas")
-    public ResponseEntity<List<Eleccion>> getEleccionesActivas() {
+    public ResponseEntity<List<EleccionResponse>> getEleccionesActivas() {
         return ResponseEntity.ok(eleccionService.getEleccionesActivas());
     }
 

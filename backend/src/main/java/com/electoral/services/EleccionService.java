@@ -46,8 +46,8 @@ public class EleccionService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Elección no encontrada con ID: " + id));
     }
 
-    public List<Eleccion> getEleccionesActivas() {
-        return eleccionRepository.findByActivaTrue();
+    public List<EleccionResponse> getEleccionesActivas() {
+        return eleccionRepository.findByActivaTrue().stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
     public Eleccion getEleccionActiva() {
