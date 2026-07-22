@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 interface NavItem {
   path: string;
@@ -33,6 +34,13 @@ export class AdminLayoutComponent {
     { path: 'listas-electorales', icon: '📋', label: 'Listas Electorales', roles: ['ADMIN'] },
     { path: 'tipos-eleccion', icon: '⚙️', label: 'Config. Electoral', roles: ['ADMIN'] },
     { path: 'papeletas', icon: '📄', label: 'Papeletas', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: 'circunscripciones', icon: '🗺️', label: 'Circunscripciones', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: 'escrutinio', icon: '🔍', label: 'Escrutinio', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: 'dashboard-geografico', icon: '🗺️', label: 'Dashboard Geográfico', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: 'reportes', icon: '📊', label: 'Reportes', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: 'usuarios', icon: '👥', label: 'Usuarios', roles: ['ADMIN'] },
+    { path: 'roles', icon: '🔐', label: 'Roles y Permisos', roles: ['ADMIN'] },
+    { path: 'reglas-negocio', icon: '⚖️', label: 'Reglas de Negocio', roles: ['ADMIN'] },
     { path: 'configuracion', icon: '⚙️', label: 'Configuración', roles: ['ADMIN'] }
   ];
 
@@ -50,10 +58,19 @@ export class AdminLayoutComponent {
     return this.navItems.filter(item => item.roles.includes(this.userRole));
   }
 
+  get isDark(): boolean {
+    return this.themeService.isDarkMode();
+  }
+
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private themeService: ThemeService
   ) {}
+
+  toggleTheme(): void {
+    this.themeService.toggleDarkMode();
+  }
 
   logout(): void {
     this.authService.logout();

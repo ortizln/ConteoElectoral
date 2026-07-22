@@ -19,4 +19,6 @@ public interface CandidatoRepository extends JpaRepository<Candidato, Long> {
     boolean existsByEleccionesIdAndPartidoIdAndCargoId(Long eleccionesId, Long partidoId, Long cargoId);
     boolean existsByNombreAndApellidoAndEleccionesId(String nombre, String apellido, Long eleccionesId);
     boolean existsByNombreAndApellidoAndEleccionesIdAndIdNot(String nombre, String apellido, Long eleccionesId, Long id);
+    long countByEleccionesId(Long eleccionesId);
+    long countByPartidoId(Long partidoId);
 }

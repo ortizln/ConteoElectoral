@@ -1,0 +1,128 @@
+<div class="reportes-container">
+  <div class="page-header">
+    <h1>Reportes</h1>
+    <div class="header-controls">
+      <select [(ngModel)]="selectedEleccionId" (change)="cargarReportes()" class="form-select">
+        <option *ngFor="let e of elecciones" [value]="e.id">{{ e.nombre }}</option>
+      </select>
+      <button (click)="exportarCsv()" class="btn btn-success" [disabled]="!selectedEleccionId">
+        Exportar CSV
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">Cargando reportes...</div>
+  <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+
+  <div *ngIf="resumen" class="resumen-grid">
+    <div class="resumen-card">
+      <div class="card-icon votos">🗳️</div>
+      <div class="card-body">
+        <span class="card-value">{{ resumen.totalVotos | number }}</span>
+        <span class="card-label">Total Votos</span>
+      </div>
+    </div>
+    <div class="resumen-card">
+      <div class="card-icon cerradas">✅</div>
+      <div class="card-body">
+        <span class="card-value">{{ resumen.mesasCerradas }} / {{ resumen.totalMesas }}</span>
+        <span class="card-label">Mesas Cerradas</span>
+      </div>
+    </div>
+    <div class="resumen-card">
+      <div class="card-icon participacion">📊</div>
+      <div class="card-body">
+        <span class="card-value">{{ resumen.participacion }}%</span>
+        <span class="card-label">Participación</span>
+      </div>
+    </div>
+    <div class="resumen-card">
+      <div class="card-icon candidatos">👤</div>
+      <div class="card-body">
+        <span class="card-value">{{ resumen.totalCandidatos }}</span>
+        <span class="card-label">Candidatos</span>
+      </div>
+    </div>
+    <div class="resumen-card">
+      <div class="card-icon partidos">🎯</div>
+      <div class="card-body">
+        <span class="card-value">{{ resumen.totalPartidos }}</span>
+        <span class="card-label">Partidos</span>
+      </div>
+    </div>
+    <div class="resumen-card">
+      <div class="card-icon nulos">⚠️</div>
+      <div class="card-body">
+        <span class="card-value">{{ resumen.votosNulos + resumen.votosBlanco | number }}</span>
+        <span class="card-label">Nulos + Blanco</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-row">
+    <div class="chart-card">
+      <canvas #barChart></canvas>
+    </div>
+    <div class="chart-card">
+      <canvas #pieChart></canvas>
+    </div>
+  </div>
+
+  <div class="table-card" *ngIf="candidatos.length > 0">
+    <h3>Resultados por Candidato</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Candidato</th>
+          <th>Partido</th>
+          <th>Cargo</th>
+          <th>Votos</th>
+          <th>%</th>
+          <th>Barra</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of candidatos; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ c.nombreCompleto }}</td>
+          <td>{{ c.partidoSigla ? c.partidoSigla : c.partido }}</td>
+          <td>{{ c.cargo }}</td>
+          <td class="text-right">{{ c.totalVotos | number }}</td>
+          <td class="text-right">{{ c.porcentaje }}%</td>
+          <td>
+            <div class="bar-container">
+              <div class="bar-fill" [style.width.%]="getMaxVotos() > 0 ? (c.totalVotos / getMaxVotos() * 100) : 0"></div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="table-card" *ngIf="partidos.length > 0">
+    <h3>Resultados por Partido</h3>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Partido</th>
+          <th>Sigla</th>
+          <th>Candidatos</th>
+          <th>Votos</th>
+          <th>%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of partidos; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ p.nombre }}</td>
+          <td>{{ p.sigla }}</td>
+          <td>{{ p.totalCandidatos }}</td>
+          <td class="text-right">{{ p.totalVotos | number }}</td>
+          <td class="text-right">{{ p.porcentaje }}%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

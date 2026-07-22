@@ -65,6 +65,34 @@ export const ADMIN_ROUTES: Routes = [
       { 
         path: 'papeletas', 
         loadComponent: () => import('./pages/papeletas/papeletas.component').then(m => m.PapeletasComponent) 
+      },
+      { 
+        path: 'reglas-negocio', 
+        loadComponent: () => import('./pages/reglas-negocio/reglas-negocio.component').then(m => m.ReglasNegocioComponent) 
+      },
+      { 
+        path: 'circunscripciones', 
+        loadComponent: () => import('./pages/circunscripciones/circunscripciones.component').then(m => m.CircunscripcionesComponent) 
+      },
+      { 
+        path: 'escrutinio', 
+        loadComponent: () => import('./pages/escrutinio/escrutinio.component').then(m => m.EscrutinioComponent) 
+      },
+      { 
+        path: 'dashboard-geografico', 
+        loadComponent: () => import('./pages/dashboard-geografico/dashboard-geografico.component').then(m => m.DashboardGeograficoComponent) 
+      },
+      { 
+        path: 'reportes', 
+        loadComponent: () => import('./pages/reportes/reportes.component').then(m => m.ReportesComponent) 
+      },
+      { 
+        path: 'usuarios', 
+        loadComponent: () => import('./pages/usuarios/usuarios.component').then(m => m.UsuariosComponent) 
+      },
+      { 
+        path: 'roles', 
+        loadComponent: () => import('./pages/roles/roles.component').then(m => m.RolesComponent) 
       }
     ]
   }

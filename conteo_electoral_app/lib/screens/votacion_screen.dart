@@ -18,23 +18,23 @@ class _VotacionScreenState extends State<VotacionScreen> {
   String _filtroPartido = '';
   String _filtroCargo = '';
   String _busqueda = '';
-  String _ordenPor = 'cargo';
+  final String _ordenPor = 'cargo';
 
   String? _circunscripcionParaCandidato(Candidato c, AppProvider provider) {
     if (c.cargoId == null) return null;
     final cargo = provider.cargos.cast<Cargo?>().firstWhere(
-      (cg) => cg?.id == c.cargoId,
-      orElse: () => null,
-    );
+          (cg) => cg?.id == c.cargoId,
+          orElse: () => null,
+        );
     return cargo?.tipoCircunscripcionCodigo;
   }
 
   String? _tipoVotacionParaCandidato(Candidato c, AppProvider provider) {
     if (c.cargoId == null) return null;
     final cargo = provider.cargos.cast<Cargo?>().firstWhere(
-      (cg) => cg?.id == c.cargoId,
-      orElse: () => null,
-    );
+          (cg) => cg?.id == c.cargoId,
+          orElse: () => null,
+        );
     return cargo?.tipoVotacion;
   }
 
@@ -50,7 +50,9 @@ class _VotacionScreenState extends State<VotacionScreen> {
 
     if (_busqueda.isNotEmpty) {
       final q = _busqueda.toLowerCase();
-      list = list.where((c) => c.nombreCompleto.toLowerCase().contains(q)).toList();
+      list = list
+          .where((c) => c.nombreCompleto.toLowerCase().contains(q))
+          .toList();
     }
     if (_filtroPartido.isNotEmpty) {
       list = list.where((c) => c.partidoNombre == _filtroPartido).toList();
@@ -69,7 +71,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
         list.sort((a, b) => a.nombreCompleto.compareTo(b.nombreCompleto));
         break;
       default:
-        list.sort((a, b) => (a.cargoNombre ?? '').compareTo(b.cargoNombre ?? ''));
+        list.sort(
+            (a, b) => (a.cargoNombre ?? '').compareTo(b.cargoNombre ?? ''));
     }
     return list;
   }
@@ -111,7 +114,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
     if (confirm && mounted) {
       await context.read<AppProvider>().cerrarActa();
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Acta cerrada')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Acta cerrada')));
       }
     }
   }
@@ -119,7 +123,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
   Future<void> _sincronizar() async {
     await context.read<AppProvider>().sincronizarVotos();
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sincronizado')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Sincronizado')));
     }
   }
 
@@ -127,6 +132,29 @@ class _VotacionScreenState extends State<VotacionScreen> {
   Widget build(BuildContext context) {
     return Consumer<AppProvider>(
       builder: (context, provider, _) {
+        if (provider.mesaActual == null) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Votación')),
+            body: const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.info_outline, size: 64, color: AppColors.gray),
+                  SizedBox(height: 16),
+                  Text('Sin mesa seleccionada',
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.gray)),
+                  SizedBox(height: 8),
+                  Text('Seleccione una mesa desde la pantalla principal',
+                      style: TextStyle(color: AppColors.gray)),
+                ],
+              ),
+            ),
+          );
+        }
+
         if (provider.mesaActual?.cerrada == true) {
           return Scaffold(
             appBar: AppBar(title: const Text('Mesa Cerrada')),
@@ -136,9 +164,14 @@ class _VotacionScreenState extends State<VotacionScreen> {
                 children: [
                   Icon(Icons.lock_outline, size: 64, color: AppColors.error),
                   SizedBox(height: 16),
-                  Text('Acta cerrada', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.error)),
+                  Text('Acta cerrada',
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.error)),
                   SizedBox(height: 8),
-                  Text('No se pueden modificar los votos', style: TextStyle(color: AppColors.gray)),
+                  Text('No se pueden modificar los votos',
+                      style: TextStyle(color: AppColors.gray)),
                 ],
               ),
             ),
@@ -150,19 +183,27 @@ class _VotacionScreenState extends State<VotacionScreen> {
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Mesa ${provider.mesaActual?.numero ?? ''}', style: const TextStyle(fontSize: 16)),
+                Text('Mesa ${provider.mesaActual?.numero ?? ''}',
+                    style: const TextStyle(fontSize: 16)),
                 if (provider.mesaActual?.institucionNombre != null)
-                  Text(provider.mesaActual!.institucionNombre!, style: const TextStyle(fontSize: 11, color: AppColors.gray)),
+                  Text(provider.mesaActual!.institucionNombre!,
+                      style:
+                          const TextStyle(fontSize: 11, color: AppColors.gray)),
               ],
             ),
             actions: [
               if (provider.totalVotos > 0)
                 TextButton.icon(
                   onPressed: _cerrar,
-                  icon: const Icon(Icons.lock_outline, size: 18, color: AppColors.error),
-                  label: const Text('Cerrar', style: TextStyle(color: AppColors.error, fontSize: 13)),
+                  icon: const Icon(Icons.lock_outline,
+                      size: 18, color: AppColors.error),
+                  label: const Text('Cerrar',
+                      style: TextStyle(color: AppColors.error, fontSize: 13)),
                 ),
-              IconButton(icon: const Icon(Icons.sync), tooltip: 'Sincronizar', onPressed: _sincronizar),
+              IconButton(
+                  icon: const Icon(Icons.sync),
+                  tooltip: 'Sincronizar',
+                  onPressed: _sincronizar),
             ],
           ),
           body: Column(
@@ -177,7 +218,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
                       decoration: const InputDecoration(
                         hintText: 'Buscar candidato...',
                         prefixIcon: Icon(Icons.search, size: 20),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                         isDense: true,
                       ),
                       onChanged: (v) => setState(() => _busqueda = v),
@@ -187,16 +229,26 @@ class _VotacionScreenState extends State<VotacionScreen> {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          _filterChip('Todos', '', _filtroPartido.isEmpty && _filtroCargo.isEmpty, () {
-                            setState(() { _filtroPartido = ''; _filtroCargo = ''; });
+                          _filterChip('Todos', '',
+                              _filtroPartido.isEmpty && _filtroCargo.isEmpty,
+                              () {
+                            setState(() {
+                              _filtroPartido = '';
+                              _filtroCargo = '';
+                            });
                           }),
                           const SizedBox(width: 6),
                           ..._partidosUnicos.take(5).map((p) => Padding(
-                            padding: const EdgeInsets.only(right: 6),
-                            child: _filterChip(p, p, _filtroPartido == p, () => setState(() {
-                              _filtroPartido = _filtroPartido == p ? '' : p;
-                            })),
-                          )),
+                                padding: const EdgeInsets.only(right: 6),
+                                child: _filterChip(
+                                    p,
+                                    p,
+                                    _filtroPartido == p,
+                                    () => setState(() {
+                                          _filtroPartido =
+                                              _filtroPartido == p ? '' : p;
+                                        })),
+                              )),
                         ],
                       ),
                     ),
@@ -207,11 +259,16 @@ class _VotacionScreenState extends State<VotacionScreen> {
                         child: Row(
                           children: [
                             ..._partidosUnicos.skip(5).map((p) => Padding(
-                              padding: const EdgeInsets.only(right: 6),
-                              child: _filterChip(p, p, _filtroPartido == p, () => setState(() {
-                                _filtroPartido = _filtroPartido == p ? '' : p;
-                              })),
-                            )),
+                                  padding: const EdgeInsets.only(right: 6),
+                                  child: _filterChip(
+                                      p,
+                                      p,
+                                      _filtroPartido == p,
+                                      () => setState(() {
+                                            _filtroPartido =
+                                                _filtroPartido == p ? '' : p;
+                                          })),
+                                )),
                           ],
                         ),
                       ),
@@ -225,7 +282,10 @@ class _VotacionScreenState extends State<VotacionScreen> {
                 child: RefreshIndicator(
                   onRefresh: () async => _sincronizar(),
                   child: _candidatosFiltrados.isEmpty
-                      ? const EmptyState(icon: Icons.person_search_outlined, title: 'Sin candidatos', subtitle: 'No se encontraron candidatos')
+                      ? const EmptyState(
+                          icon: Icons.person_search_outlined,
+                          title: 'Sin candidatos',
+                          subtitle: 'No se encontraron candidatos')
                       : ListView.builder(
                           padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
                           itemCount: _candidatosFiltrados.length,
@@ -233,46 +293,71 @@ class _VotacionScreenState extends State<VotacionScreen> {
                             final c = _candidatosFiltrados[index];
                             final votos = provider.getVotosCandidato(c);
                             final isSelected = _selected?.id == c.id;
-                            final partyColor = AppColors.chartColors[index % AppColors.chartColors.length];
+                            final partyColor = AppColors.chartColors[
+                                index % AppColors.chartColors.length];
 
                             return Card(
                               margin: const EdgeInsets.only(bottom: 8),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 side: BorderSide(
-                                  color: isSelected ? AppColors.primary : AppColors.border,
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.border,
                                   width: isSelected ? 2 : 1,
                                 ),
                               ),
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(12),
-                                onTap: () => setState(() => _selected = isSelected ? null : c),
+                                onTap: () => setState(
+                                    () => _selected = isSelected ? null : c),
                                 child: Padding(
                                   padding: const EdgeInsets.all(12),
                                   child: Row(
                                     children: [
                                       Container(
-                                        width: 44, height: 44,
+                                        width: 44,
+                                        height: 44,
                                         decoration: BoxDecoration(
-                                          color: isSelected ? AppColors.primary : partyColor.withValues(alpha: 0.1),
-                                          borderRadius: BorderRadius.circular(12),
+                                          color: isSelected
+                                              ? AppColors.primary
+                                              : partyColor.withValues(
+                                                  alpha: 0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                         ),
                                         child: Center(
                                           child: isSelected
-                                              ? const Icon(Icons.check, color: Colors.white, size: 22)
-                                              : Text(c.nombreCompleto[0], style: TextStyle(
-                                                  fontWeight: FontWeight.bold, color: partyColor, fontSize: 18)),
+                                              ? const Icon(Icons.check,
+                                                  color: Colors.white, size: 22)
+                                              : Text(c.nombreCompleto[0],
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: partyColor,
+                                                      fontSize: 18)),
                                         ),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            Text(c.nombreCompleto, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                                            Text(c.nombreCompleto,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 14)),
                                             const SizedBox(height: 2),
-                                            Text('${c.partidoNombre} · ${c.cargoNombre ?? ''}', style: AppTextStyles.bodySmall),
-                                            if (_circunscripcionParaCandidato(c, provider) != null || _tipoVotacionParaCandidato(c, provider) != null) ...[
+                                            Text(
+                                                '${c.partidoNombre} · ${c.cargoNombre ?? ''}',
+                                                style: AppTextStyles.bodySmall),
+                                            if (_circunscripcionParaCandidato(
+                                                        c, provider) !=
+                                                    null ||
+                                                _tipoVotacionParaCandidato(
+                                                        c, provider) !=
+                                                    null) ...[
                                               const SizedBox(height: 4),
                                               _badgesRow(c, provider),
                                             ],
@@ -280,17 +365,24 @@ class _VotacionScreenState extends State<VotacionScreen> {
                                         ),
                                       ),
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 14, vertical: 6),
                                         decoration: BoxDecoration(
-                                          color: votos > 0 ? AppColors.success.withValues(alpha: 0.1) : AppColors.muted,
-                                          borderRadius: BorderRadius.circular(16),
+                                          color: votos > 0
+                                              ? AppColors.success
+                                                  .withValues(alpha: 0.1)
+                                              : AppColors.muted,
+                                          borderRadius:
+                                              BorderRadius.circular(16),
                                         ),
                                         child: Text(
                                           '$votos',
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
-                                            color: votos > 0 ? AppColors.success : AppColors.lightGray,
+                                            color: votos > 0
+                                                ? AppColors.success
+                                                : AppColors.lightGray,
                                           ),
                                         ),
                                       ),
@@ -312,7 +404,12 @@ class _VotacionScreenState extends State<VotacionScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
                   decoration: BoxDecoration(
                     color: AppColors.surface,
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, -4))],
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 12,
+                          offset: const Offset(0, -4))
+                    ],
                   ),
                   child: SafeArea(
                     top: false,
@@ -322,7 +419,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
                         Row(
                           children: [
                             Expanded(
-                              child: Text(_selected!.nombreCompleto, style: AppTextStyles.h3),
+                              child: Text(_selected!.nombreCompleto,
+                                  style: AppTextStyles.h3),
                             ),
                             IconButton(
                               icon: const Icon(Icons.close),
@@ -337,7 +435,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
                             Row(
                               children: [
                                 _quantityBtn(Icons.remove, () {
-                                  final v = int.tryParse(_cantidadCtrl.text) ?? 1;
+                                  final v =
+                                      int.tryParse(_cantidadCtrl.text) ?? 1;
                                   if (v > 1) _cantidadCtrl.text = '${v - 1}';
                                 }),
                                 const SizedBox(width: 8),
@@ -347,16 +446,23 @@ class _VotacionScreenState extends State<VotacionScreen> {
                                     controller: _cantidadCtrl,
                                     textAlign: TextAlign.center,
                                     keyboardType: TextInputType.number,
-                                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold),
                                     decoration: InputDecoration(
-                                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
-                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                              vertical: 8),
+                                      border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10)),
                                     ),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 _quantityBtn(Icons.add, () {
-                                  final v = int.tryParse(_cantidadCtrl.text) ?? 1;
+                                  final v =
+                                      int.tryParse(_cantidadCtrl.text) ?? 1;
                                   _cantidadCtrl.text = '${v + 1}';
                                 }),
                               ],
@@ -367,7 +473,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
                               icon: const Icon(Icons.how_to_vote, size: 20),
                               label: const Text('Registrar'),
                               style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 28, vertical: 14),
                               ),
                             ),
                           ],
@@ -382,15 +489,20 @@ class _VotacionScreenState extends State<VotacionScreen> {
     );
   }
 
-  Widget _filterChip(String label, String value, bool selected, VoidCallback onTap) {
+  Widget _filterChip(
+      String label, String value, bool selected, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary.withValues(alpha: 0.15) : AppColors.muted,
+          color: selected
+              ? AppColors.primary.withValues(alpha: 0.15)
+              : AppColors.muted,
           borderRadius: BorderRadius.circular(20),
-          border: selected ? Border.all(color: AppColors.primary.withValues(alpha: 0.3)) : null,
+          border: selected
+              ? Border.all(color: AppColors.primary.withValues(alpha: 0.3))
+              : null,
         ),
         child: Text(
           label,
@@ -416,7 +528,11 @@ class _VotacionScreenState extends State<VotacionScreen> {
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: Text(tipoVot, style: const TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.w600)),
+            child: Text(tipoVot,
+                style: const TextStyle(
+                    fontSize: 10,
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600)),
           ),
         if (circ != null) ...[
           const SizedBox(width: 4),
@@ -426,7 +542,11 @@ class _VotacionScreenState extends State<VotacionScreen> {
               color: AppColors.gray.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(4),
             ),
-            child: Text(circ, style: const TextStyle(fontSize: 10, color: AppColors.gray, fontWeight: FontWeight.w600)),
+            child: Text(circ,
+                style: const TextStyle(
+                    fontSize: 10,
+                    color: AppColors.gray,
+                    fontWeight: FontWeight.w600)),
           ),
         ],
       ],

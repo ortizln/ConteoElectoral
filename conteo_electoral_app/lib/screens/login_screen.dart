@@ -11,7 +11,8 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -43,7 +44,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
     final provider = context.read<AppProvider>();
-    final success = await provider.login(_usernameController.text, _passwordController.text);
+    final success = await provider.login(
+        _usernameController.text, _passwordController.text);
     if (success && mounted) {
       Navigator.pushReplacement(
         context,
@@ -53,7 +55,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   void _showServerConfig() {
-    _serverController.text = context.read<AppProvider>().serverUrl.replaceAll('/api', '');
+    _serverController.text =
+        context.read<AppProvider>().serverUrl.replaceAll('/api', '');
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -72,7 +75,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             const SizedBox(height: 12),
             Consumer<AppProvider>(
               builder: (context, provider, _) => provider.isLoading
-                  ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2))
                   : SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
@@ -82,7 +88,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           if (!context.mounted) return;
                           messenger.showSnackBar(SnackBar(
                             content: Text(result['message']?.toString() ?? ''),
-                            backgroundColor: result['success'] == true ? AppColors.success : AppColors.error,
+                            backgroundColor: result['success'] == true
+                                ? AppColors.success
+                                : AppColors.error,
                           ));
                         },
                         icon: const Icon(Icons.wifi_tethering, size: 18),
@@ -93,7 +101,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () async {
               final url = _serverController.text.trim();
@@ -139,18 +149,24 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(24),
                       ),
-                      child: const Icon(Icons.how_to_vote, size: 48, color: Colors.white),
+                      child: const Icon(Icons.how_to_vote,
+                          size: 48, color: Colors.white),
                     ),
                     const SizedBox(height: 20),
                     const Text(
                       'Conteo Electoral',
-                      style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white),
                     ),
                     const SizedBox(height: 4),
                     Consumer<AppProvider>(
                       builder: (context, provider, _) => Text(
                         provider.serverUrl.replaceAll('/api', ''),
-                        style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.7)),
+                        style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.7)),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -175,7 +191,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Text('Iniciar Sesión', style: AppTextStyles.h3, textAlign: TextAlign.center),
+                            const Text('Iniciar Sesión',
+                                style: AppTextStyles.h3,
+                                textAlign: TextAlign.center),
                             const SizedBox(height: 24),
                             TextFormField(
                               controller: _usernameController,
@@ -184,7 +202,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 prefixIcon: Icon(Icons.person_outline),
                               ),
                               textInputAction: TextInputAction.next,
-                              validator: (v) => (v == null || v.isEmpty) ? 'Ingrese su usuario' : null,
+                              validator: (v) => (v == null || v.isEmpty)
+                                  ? 'Ingrese su usuario'
+                                  : null,
                             ),
                             const SizedBox(height: 16),
                             TextFormField(
@@ -193,14 +213,19 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 labelText: 'Contraseña',
                                 prefixIcon: const Icon(Icons.lock_outline),
                                 suffixIcon: IconButton(
-                                  icon: Icon(_obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
-                                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                  icon: Icon(_obscurePassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined),
+                                  onPressed: () => setState(() =>
+                                      _obscurePassword = !_obscurePassword),
                                 ),
                               ),
                               obscureText: _obscurePassword,
                               textInputAction: TextInputAction.done,
                               onFieldSubmitted: (_) => _login(),
-                              validator: (v) => (v == null || v.isEmpty) ? 'Ingrese su contraseña' : null,
+                              validator: (v) => (v == null || v.isEmpty)
+                                  ? 'Ingrese su contraseña'
+                                  : null,
                             ),
                             const SizedBox(height: 8),
                             Consumer<AppProvider>(
@@ -208,7 +233,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 if (provider.error != null) {
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 8),
-                                    child: Text(provider.error!, style: const TextStyle(color: AppColors.error, fontSize: 13), textAlign: TextAlign.center),
+                                    child: Text(provider.error!,
+                                        style: const TextStyle(
+                                            color: AppColors.error,
+                                            fontSize: 13),
+                                        textAlign: TextAlign.center),
                                   );
                                 }
                                 return const SizedBox.shrink();
@@ -221,12 +250,22 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primary,
                                   foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12)),
                                 ),
                                 child: provider.isLoading
-                                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                    : const Text('Ingresar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white))
+                                    : const Text('Ingresar',
+                                        style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600)),
                               ),
                             ),
                           ],
@@ -240,7 +279,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       onPressed: _showServerConfig,
                       icon: const Icon(Icons.settings_outlined, size: 18),
                       label: const Text('Configurar servidor'),
-                      style: TextButton.styleFrom(foregroundColor: Colors.white70),
+                      style:
+                          TextButton.styleFrom(foregroundColor: Colors.white70),
                     ),
                   ],
                 ),

@@ -11,3 +11,6 @@ export 'provincia.dart';
 export 'canton.dart';
 export 'parroquia.dart';
 export 'institucion_educativa.dart';
+export 'regla_negocio.dart';
+export 'circunscripcion.dart';
+export 'escrutinio.dart';

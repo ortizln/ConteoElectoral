@@ -33,11 +33,11 @@ public class Auditoria {
     private Long entidadId;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "datos_anteriores", columnDefinition = "jsonb")
+    @Column(name = "datos_anteriores")
     private Map<String, Object> datosAnteriores;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "datos_nuevos", columnDefinition = "jsonb")
+    @Column(name = "datos_nuevos")
     private Map<String, Object> datosNuevos;
 
     @Column(name = "ip_address", length = 45)

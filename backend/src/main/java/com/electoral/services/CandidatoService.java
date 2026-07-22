@@ -1,9 +1,11 @@
 package com.electoral.services;
 
+import com.electoral.annotation.Auditable;
 import com.electoral.dto.*;
 import com.electoral.entities.*;
 import com.electoral.exception.DuplicateEntityException;
 import com.electoral.exception.RecursoNoEncontradoException;
+import com.electoral.exception.ValidacionException;
 import com.electoral.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,12 +15,6 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
-import com.electoral.util.SecurityUtil;
-import com.electoral.repositories.TipoCircunscripcionRepository;
-import com.electoral.repositories.ProvinciaRepository;
-import com.electoral.repositories.CantonRepository;
-import com.electoral.repositories.ParroquiaRepository;
-import com.electoral.repositories.ListaElectoralRepository;
 
 @Slf4j
 @Service
@@ -34,8 +30,8 @@ public class CandidatoService {
     private final CantonRepository cantonRepository;
     private final ParroquiaRepository parroquiaRepository;
     private final ListaElectoralRepository listaElectoralRepository;
-    private final AuditoriaService auditoriaService;
-    private final SecurityUtil securityUtil;
+    private final RuleEngine ruleEngine;
+    private final ReglaNegocioService reglaNegocioService;
 
     @Transactional(readOnly = true)
     public List<CandidatoResponse> getCandidatosByEleccion(Long eleccionesId) {
@@ -59,6 +55,7 @@ public class CandidatoService {
     }
 
     @Transactional
+    @Auditable(entidad = "Candidato")
     public CandidatoResponse createCandidato(CandidatoRequest request) {
         Eleccion eleccion = eleccionService.getEleccionEntityById(request.getEleccionesId());
         Cargo cargo = cargoRepository.findById(request.getCargoId())
@@ -77,6 +74,25 @@ public class CandidatoService {
             }
         }
         
+        Map<String, Object> datosValidacion = new HashMap<>();
+        datosValidacion.put("nombre", request.getNombre());
+        datosValidacion.put("apellido", request.getApellido());
+        datosValidacion.put("partidoId", request.getPartidoId());
+        datosValidacion.put("cargoId", request.getCargoId());
+        datosValidacion.put("eleccionesId", request.getEleccionesId());
+        datosValidacion.put("tipo", request.getTipo());
+        datosValidacion.put("principal", request.getPrincipal());
+        datosValidacion.put("edad", 25);
+
+        List<ReglaNegocio> reglasValidacion = reglaNegocioService.obtenerReglasActivas("CANDIDATOS", "VALIDACION");
+        List<EvaluacionReglaResponse.ErrorRegla> errores = ruleEngine.evaluarReglas(reglasValidacion, datosValidacion);
+        if (!errores.isEmpty()) {
+            String mensaje = errores.stream()
+                    .map(EvaluacionReglaResponse.ErrorRegla::getMensaje)
+                    .collect(Collectors.joining("; "));
+            throw new ValidacionException(mensaje);
+        }
+
         ListaElectoral lista = request.getListaId() != null
                 ? listaElectoralRepository.findById(request.getListaId()).orElse(null) : null;
 
@@ -105,18 +121,11 @@ public class CandidatoService {
         
         log.info("Creando {}: {}", "Candidato", candidato.getNombre() + " " + candidato.getApellido());
         Candidato saved = candidatoRepository.save(candidato);
-        auditoriaService.registrarAccion(
-            securityUtil.getCurrentUserId(),
-            Auditoria.TipoAccion.CREATE,
-            "Candidato",
-            saved.getId(),
-            null,
-            Map.of("nombre", saved.getNombre(), "apellido", saved.getApellido())
-        );
         return mapToResponse(saved);
     }
 
     @Transactional
+    @Auditable(entidad = "Candidato")
     public CandidatoResponse updateCandidato(Long id, CandidatoRequest request) {
         Candidato candidato = candidatoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Candidato no encontrado con ID: " + id));
@@ -131,7 +140,6 @@ public class CandidatoService {
             throw new DuplicateEntityException("Ya existe un candidato para este partido y cargo en esta elección");
         }
         log.info("Actualizando {} con ID: {}", "Candidato", id);
-        Map<String, Object> datosAnteriores = Map.of("nombre", candidato.getNombre(), "apellido", candidato.getApellido());
         candidato.setNombre(request.getNombre());
         candidato.setApellido(request.getApellido());
         candidato.setFotoUrl(request.getFotoUrl());
@@ -165,31 +173,16 @@ public class CandidatoService {
         }
         
         Candidato saved = candidatoRepository.save(candidato);
-        auditoriaService.registrarAccion(
-            securityUtil.getCurrentUserId(),
-            Auditoria.TipoAccion.UPDATE,
-            "Candidato",
-            id,
-            datosAnteriores,
-            Map.of("nombre", saved.getNombre(), "apellido", saved.getApellido())
-        );
         return mapToResponse(saved);
     }
 
     @Transactional
+    @Auditable(entidad = "Candidato")
     public void deleteCandidato(Long id) {
         if (!candidatoRepository.existsById(id)) {
             throw new RecursoNoEncontradoException("Candidato no encontrado con ID: " + id);
         }
         log.warn("Eliminando {} con ID: {}", "Candidato", id);
-        auditoriaService.registrarAccion(
-            securityUtil.getCurrentUserId(),
-            Auditoria.TipoAccion.DELETE,
-            "Candidato",
-            id,
-            null,
-            null
-        );
         candidatoRepository.deleteById(id);
     }
 

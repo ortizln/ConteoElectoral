@@ -48,10 +48,9 @@ export class AsignarMesasComponent implements OnInit {
     if (this.usuarioId && this.eleccionId) {
       this.api.getMesasByEleccion(this.eleccionId).subscribe((mesas: any[]) => {
         this.todasMesas = mesas;
+        this.mesasDisponibles = mesas.filter((m: any) => m.usuarioId == null && !m.cerrada);
         this.api.getMesasByUsuario(this.usuarioId!, this.eleccionId!).subscribe((asignadas: any[]) => {
-          const idsAsignadas = asignadas.map((m: any) => m.id);
           this.mesasAsignadas = asignadas;
-          this.mesasDisponibles = mesas.filter((m: any) => !idsAsignadas.includes(m.id) && !m.cerrada);
         });
       });
     } else {

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
@@ -137,6 +138,19 @@ public class GlobalExceptionHandler {
         ErrorResponse error = ErrorResponse.builder()
                 .status(HttpStatus.FORBIDDEN.value())
                 .message(ex.getMessage())
+                .path(request.getDescription(false).replace("uri=", ""))
+                .timestamp(LocalDateTime.now())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+            AccessDeniedException ex, WebRequest request) {
+        logger.error("Acceso denegado: {}", ex.getMessage());
+        ErrorResponse error = ErrorResponse.builder()
+                .status(HttpStatus.FORBIDDEN.value())
+                .message("Acceso denegado")
                 .path(request.getDescription(false).replace("uri=", ""))
                 .timestamp(LocalDateTime.now())
                 .build();

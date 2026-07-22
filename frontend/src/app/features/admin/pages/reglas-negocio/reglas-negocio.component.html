@@ -1,0 +1,141 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Reglas de Negocio</h2>
+    <button class="btn btn-primary" (click)="openCreate()">
+      <span>+</span> Nueva Regla
+    </button>
+  </div>
+
+  <div class="filters-bar">
+    <select class="form-select" [(ngModel)]="filtroModulo" (change)="applyFilters()">
+      <option value="">Todos los módulos</option>
+      <option *ngFor="let m of modulos" [value]="m.codigo">{{ m.nombre }}</option>
+    </select>
+    <select class="form-select" [(ngModel)]="filtroTipo" (change)="applyFilters()">
+      <option value="">Todos los tipos</option>
+      <option *ngFor="let t of tipos" [value]="t.codigo">{{ t.nombre }}</option>
+    </select>
+    <select class="form-select" [(ngModel)]="filtroActiva" (change)="applyFilters()">
+      <option value="">Todas</option>
+      <option value="true">Activas</option>
+      <option value="false">Inactivas</option>
+    </select>
+  </div>
+
+  <div class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Módulo</th>
+          <th>Tipo</th>
+          <th>Condición</th>
+          <th>Prioridad</th>
+          <th>Activa</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let regla of filteredReglas">
+          <td><strong>{{ regla.nombre }}</strong><br><small class="text-muted">{{ regla.descripcion }}</small></td>
+          <td><span class="badge bg-info">{{ getModuloNombre(regla.modulo) }}</span></td>
+          <td><span class="badge bg-secondary">{{ getTipoNombre(regla.tipo) }}</span></td>
+          <td><small class="text-muted">{{ getCondicionResumen(regla.condicion) }}</small></td>
+          <td>{{ regla.prioridad }}</td>
+          <td>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" [checked]="regla.activa" (change)="toggleActiva(regla)">
+            </div>
+          </td>
+          <td>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">Acciones</button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" (click)="$event.preventDefault(); openEdit(regla)">Editar</a></li>
+                <li><a class="dropdown-item text-danger" href="#" (click)="$event.preventDefault(); delete(regla.id)">Eliminar</a></li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="filteredReglas.length === 0">
+          <td colspan="7" class="text-center text-muted">No hay reglas de negocio registradas</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ editing ? 'Editar' : 'Nueva' }} Regla de Negocio</h5>
+        <button type="button" class="btn-close" (click)="showModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Nombre *</label>
+            <input class="form-control" [(ngModel)]="selectedRegla.nombre" placeholder="Nombre de la regla">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Módulo *</label>
+            <select class="form-select" [(ngModel)]="selectedRegla.modulo">
+              <option *ngFor="let m of modulos" [value]="m.codigo">{{ m.nombre }}</option>
+            </select>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Tipo *</label>
+            <select class="form-select" [(ngModel)]="selectedRegla.tipo">
+              <option *ngFor="let t of tipos" [value]="t.codigo">{{ t.nombre }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-control" [(ngModel)]="selectedRegla.descripcion" rows="2" placeholder="Descripción de la regla"></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Condición (JSON) *</label>
+          <textarea class="form-control" [(ngModel)]="selectedRegla.condicion" rows="4" (input)="updateCondicionPreview()" placeholder='{"condition":"AND","rules":[{"field":"edad","operator":"GREATER_THAN_OR_EQUAL","value":18}]}'></textarea>
+          <small class="text-muted">Formato: condition (AND/OR), rules con field, operator, value</small>
+        </div>
+        <div class="mb-3" *ngIf="condicionPreview">
+          <label class="form-label">Vista previa</label>
+          <pre class="bg-light p-2 rounded"><code>{{ condicionPreview }}</code></pre>
+        </div>
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Mensaje de Error</label>
+            <input class="form-control" [(ngModel)]="selectedRegla.mensajeError" placeholder="Ej: El valor no es válido">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Acción</label>
+            <select class="form-select" [(ngModel)]="selectedRegla.accion">
+              <option value="">Seleccionar...</option>
+              <option value="RECHAZAR">Rechazar</option>
+              <option value="ADVERTIR">Advertir</option>
+              <option value="PERMITIR">Permitir</option>
+            </select>
+          </div>
+          <div class="col-md-2 mb-3">
+            <label class="form-label">Prioridad</label>
+            <input class="form-control" type="number" [(ngModel)]="selectedRegla.prioridad">
+          </div>
+          <div class="col-md-2 mb-3">
+            <label class="form-label">Activa</label>
+            <div class="form-check form-switch mt-2">
+              <input class="form-check-input" type="checkbox" [(ngModel)]="selectedRegla.activa">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="showModal = false">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!selectedRegla.nombre || !validateCondicion()">
+          {{ editing ? 'Actualizar' : 'Crear' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

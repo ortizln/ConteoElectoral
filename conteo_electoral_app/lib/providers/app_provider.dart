@@ -1,13 +1,17 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
+import '../services/sync_service.dart';
+import '../services/stomp_service.dart';
 import '../database/database_helper.dart';
 
 class AppProvider extends ChangeNotifier {
   final DatabaseHelper _db = DatabaseHelper.instance;
   final ApiService _api = ApiService();
+  late final SyncService _sync;
 
   ApiService get api => _api;
 
@@ -19,6 +23,12 @@ class AppProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   String _serverUrl = 'http://10.0.2.2:8081/api';
+  int _pendingSyncCount = 0;
+  int _failedSyncCount = 0;
+  bool _isSyncing = false;
+  final StompService _stomp = StompService();
+  StreamSubscription? _connectivitySub;
+  StreamSubscription? _stompSyncSub;
 
   List<Candidato> _candidatos = [];
   List<Partido> _partidos = [];
@@ -34,6 +44,9 @@ class AppProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   String get serverUrl => _serverUrl;
+  int get pendingSyncCount => _pendingSyncCount;
+  int get failedSyncCount => _failedSyncCount;
+  bool get isSyncing => _isSyncing;
 
   List<Candidato> get candidatos => _candidatos;
   List<Partido> get partidos => _partidos;
@@ -43,11 +56,23 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> init() async {
     await _loadServerUrl();
+    _sync = SyncService(_api.baseUrl);
+    await _sync.init();
     _usuario = await _db.getUsuarioSession();
     if (_usuario != null) {
       await _cargarEleccionActual();
     }
+    await _refreshSyncCounts();
     _checkConnectivity();
+    _initStomp();
+  }
+
+  void _initStomp() {
+    final wsBaseUrl = _serverUrl.replaceAll('/api', '');
+    _stomp.connect(wsBaseUrl);
+    _stompSyncSub = _stomp.onSyncEvent.listen((_) {
+      sincronizarVotos();
+    });
   }
 
   Future<void> _loadServerUrl() async {
@@ -72,15 +97,22 @@ class AppProvider extends ChangeNotifier {
     final result = await Connectivity().checkConnectivity();
     _isOnline = result != ConnectivityResult.none;
     notifyListeners();
-    
-    Connectivity().onConnectivityChanged.listen((result) {
+
+    _connectivitySub = Connectivity().onConnectivityChanged.listen((result) {
       _isOnline = result != ConnectivityResult.none;
       notifyListeners();
-      
       if (_isOnline) {
         sincronizarVotos();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _connectivitySub?.cancel();
+    _stompSyncSub?.cancel();
+    _stomp.dispose();
+    super.dispose();
   }
 
   Future<bool> login(String username, String password) async {
@@ -191,29 +223,33 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> registrarVoto(Candidato candidato, int cantidad) async {
     if (_mesaActual == null) return;
-    
+
     final existente = _votosMesa.cast<Voto?>().firstWhere(
       (v) => v?.candidatoId == candidato.id,
       orElse: () => null,
     );
 
+    Voto voto;
     if (existente != null) {
-      final nuevoVoto = existente.copyWith(
+      voto = existente.copyWith(
         cantidadVotos: existente.cantidadVotos + cantidad,
       );
-      await _db.actualizarVoto(existente.id!, nuevoVoto);
+      await _db.actualizarVoto(existente.id!, voto);
     } else {
-      final nuevoVoto = Voto(
+      voto = Voto(
         candidatoId: candidato.id,
         mesaId: _mesaActual!.id,
         cantidadVotos: cantidad,
         eleccionesId: _mesaActual!.eleccionesId,
       );
-      await _db.guardarVoto(nuevoVoto);
+      final newId = await _db.guardarVoto(voto);
+      voto = voto.copyWith(id: newId);
     }
 
+    await _sync.enqueueVoto(voto);
     await _recargarVotos();
-    
+    await _refreshSyncCounts();
+
     if (_isOnline) {
       await sincronizarVotos();
     }
@@ -225,45 +261,55 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> sincronizarVotos() async {
-    if (_mesaActual == null || !_isOnline) return;
-    
-    final pendientes = await _db.getVotosPendientes();
-    if (pendientes.isEmpty) return;
+  Future<int> retryFailedSync() async {
+    final count = await _sync.retryFailedOps();
+    if (count > 0 && _isOnline) await sincronizarVotos();
+    await _refreshSyncCounts();
+    return count;
+  }
 
-    _isLoading = true;
+  Future<void> sincronizarVotos() async {
+    if (!_isOnline || _isSyncing) return;
+
+    _isSyncing = true;
     notifyListeners();
 
-    final token = await _db.getToken();
-    for (var voto in pendientes) {
-      final success = await _api.sincronizarVoto(voto, token: token);
-      if (success && voto.id != null) {
-        await _db.marcarVotoSincronizado(voto.id!);
+    try {
+      await _sync.processPush();
+      if (_eleccionActual != null) {
+        await _sync.pullChanges(_eleccionActual!.id);
       }
-    }
+      await _recargarVotos();
+    } catch (_) {}
 
-    _isLoading = false;
+    await _refreshSyncCounts();
+    _isSyncing = false;
     notifyListeners();
   }
 
   Future<void> cerrarActa() async {
     if (_mesaActual == null) return;
-    
+
     _isLoading = true;
     notifyListeners();
 
-    if (_isOnline) {
-      final token = await _db.getToken();
-      await _api.cerrarMesa(_mesaActual!.id, token: token);
-    }
-    
+    await _sync.enqueueCerrarMesa(_mesaActual!.id, _mesaActual!.eleccionesId);
     await _db.cerrarMesaLocal(_mesaActual!.id);
-    await sincronizarVotos();
-    
+
+    if (_isOnline) {
+      await sincronizarVotos();
+    }
+
     _mesaActual = await _db.getMesa(_mesaActual!.id);
-    
+    await _refreshSyncCounts();
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<void> _refreshSyncCounts() async {
+    final status = await _sync.getSyncStatus();
+    _pendingSyncCount = status['pending'] ?? 0;
+    _failedSyncCount = status['failed'] ?? 0;
   }
 
   int getVotosCandidato(Candidato candidato) {
@@ -273,6 +319,4 @@ class AppProvider extends ChangeNotifier {
     );
     return voto?.cantidadVotos ?? 0;
   }
-
-  Future<int> get votosPendientes => _db.getCountVotosPendientes();
 }

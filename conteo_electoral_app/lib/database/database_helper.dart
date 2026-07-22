@@ -20,7 +20,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -134,8 +134,35 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE sync_queue (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        entity_type TEXT NOT NULL,
+        entity_id INTEGER NOT NULL,
+        operation TEXT NOT NULL,
+        payload TEXT NOT NULL,
+        eleccion_id INTEGER,
+        status TEXT NOT NULL DEFAULT 'PENDING',
+        created_at TEXT NOT NULL,
+        retry_count INTEGER DEFAULT 0,
+        last_error TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE sync_meta (
+        id INTEGER PRIMARY KEY,
+        last_sync_at TEXT,
+        last_pull_at TEXT
+      )
+    ''');
+
+    await db.execute('INSERT OR IGNORE INTO sync_meta (id, last_sync_at, last_pull_at) VALUES (1, NULL, NULL)');
+
     await db.execute('CREATE INDEX idx_votos_mesa ON votos(mesaId)');
     await db.execute('CREATE INDEX idx_votos_sinc ON votos(sincronizado)');
+    await db.execute('CREATE INDEX idx_sync_queue_status ON sync_queue(status)');
+    await db.execute('CREATE INDEX idx_sync_queue_entity ON sync_queue(entity_type, entity_id)');
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -170,6 +197,32 @@ class DatabaseHelper {
       await db.execute('ALTER TABLE mesas ADD COLUMN votosBlanco INTEGER DEFAULT 0');
 
       await db.execute('ALTER TABLE votos ADD COLUMN opcionPapeletaId INTEGER');
+    }
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE sync_queue (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          entity_type TEXT NOT NULL,
+          entity_id INTEGER NOT NULL,
+          operation TEXT NOT NULL,
+          payload TEXT NOT NULL,
+          eleccion_id INTEGER,
+          status TEXT NOT NULL DEFAULT 'PENDING',
+          created_at TEXT NOT NULL,
+          retry_count INTEGER DEFAULT 0,
+          last_error TEXT
+        )
+      ''');
+      await db.execute('''
+        CREATE TABLE sync_meta (
+          id INTEGER PRIMARY KEY,
+          last_sync_at TEXT,
+          last_pull_at TEXT
+        )
+      ''');
+      await db.execute('INSERT OR IGNORE INTO sync_meta (id, last_sync_at, last_pull_at) VALUES (1, NULL, NULL)');
+      await db.execute('CREATE INDEX idx_sync_queue_status ON sync_queue(status)');
+      await db.execute('CREATE INDEX idx_sync_queue_entity ON sync_queue(entity_type, entity_id)');
     }
   }
 
@@ -649,5 +702,103 @@ class DatabaseHelper {
       [mesaId],
     );
     return (result.first['total'] as int?) ?? 0;
+  }
+
+  Future<int> enqueueSync(String entityType, int entityId, String operation, Map<String, dynamic> payload, {int? eleccionId}) async {
+    final db = await database;
+    return await db.insert('sync_queue', {
+      'entity_type': entityType,
+      'entity_id': entityId,
+      'operation': operation,
+      'payload': jsonEncode(payload),
+      'eleccion_id': eleccionId,
+      'status': 'PENDING',
+      'created_at': DateTime.now().toIso8601String(),
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getPendingSyncOps({int limit = 50}) async {
+    final db = await database;
+    return await db.query(
+      'sync_queue',
+      where: 'status = ?',
+      whereArgs: ['PENDING'],
+      orderBy: 'created_at ASC',
+      limit: limit,
+    );
+  }
+
+  Future<void> markSyncDone(int id) async {
+    final db = await database;
+    await db.delete('sync_queue', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> markSyncFailed(int id, String error) async {
+    final db = await database;
+    await db.update(
+      'sync_queue',
+      {'status': 'FAILED', 'last_error': error, 'retry_count': 0},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> incrementRetry(int id) async {
+    final db = await database;
+    await db.rawUpdate(
+      'UPDATE sync_queue SET retry_count = retry_count + 1 WHERE id = ?',
+      [id],
+    );
+  }
+
+  Future<int> getPendingSyncCount() async {
+    final db = await database;
+    final result = await db.rawQuery(
+      "SELECT COUNT(*) as count FROM sync_queue WHERE status = 'PENDING'",
+    );
+    return (result.first['count'] as int?) ?? 0;
+  }
+
+  Future<int> getFailedSyncCount() async {
+    final db = await database;
+    final result = await db.rawQuery(
+      "SELECT COUNT(*) as count FROM sync_queue WHERE status = 'FAILED'",
+    );
+    return (result.first['count'] as int?) ?? 0;
+  }
+
+  Future<DateTime?> getLastPullTimestamp() async {
+    final db = await database;
+    final maps = await db.query('sync_meta', limit: 1);
+    if (maps.isEmpty) return null;
+    final ts = maps.first['last_pull_at'] as String?;
+    return ts != null ? DateTime.parse(ts) : null;
+  }
+
+  Future<void> setLastPullTimestamp(DateTime dt) async {
+    final db = await database;
+    await db.update('sync_meta', {'last_pull_at': dt.toIso8601String()}, where: 'id = 1');
+  }
+
+  Future<DateTime?> getLastSyncTimestamp() async {
+    final db = await database;
+    final maps = await db.query('sync_meta', limit: 1);
+    if (maps.isEmpty) return null;
+    final ts = maps.first['last_sync_at'] as String?;
+    return ts != null ? DateTime.parse(ts) : null;
+  }
+
+  Future<void> setLastSyncTimestamp(DateTime dt) async {
+    final db = await database;
+    await db.update('sync_meta', {'last_sync_at': dt.toIso8601String()}, where: 'id = 1');
+  }
+
+  Future<void> cleanFailedSyncOps({Duration olderThan = const Duration(hours: 24)}) async {
+    final db = await database;
+    final cutoff = DateTime.now().subtract(olderThan).toIso8601String();
+    await db.delete('sync_queue',
+      where: "status = 'FAILED' AND created_at < ?",
+      whereArgs: [cutoff],
+    );
   }
 }

@@ -28,6 +28,8 @@ export class ConfiguracionComponent implements OnInit {
 
   // APK
   apkNombre: string | null = null;
+  manualUrl = `${this.API_URL}/configuracion/manual?t=${new Date().getTime()}`;
+  apkDownloadUrl = '';
   tieneApk = false;
   selectedApk: File | null = null;
   uploadingApk = false;
@@ -82,6 +84,7 @@ export class ConfiguracionComponent implements OnInit {
         this.logoUrl = res.tieneLogo ? `${this.API_URL}/configuracion/logo?t=${new Date().getTime()}` : null;
         this.tieneApk = res.tieneApk;
         this.apkNombre = res.apkNombre || null;
+        this.apkDownloadUrl = `${this.API_URL}/configuracion/apk?t=${new Date().getTime()}`;
         this.loading = false;
       },
       error: () => {

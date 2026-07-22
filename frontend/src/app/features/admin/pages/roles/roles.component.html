@@ -1,0 +1,63 @@
+<div class="roles-container">
+  <div class="page-header">
+    <h1>Roles y Permisos</h1>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">{{ error }}</div>
+  <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+
+  <div class="roles-tabs">
+    <button *ngFor="let r of roles"
+      class="tab-btn"
+      [class.active]="selectedRolId === r.id"
+      (click)="selectRol(r.id)">
+      {{ r.nombre }}
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Cargando permisos...</div>
+
+  <div *ngIf="!loading && permisos.length > 0" class="permisos-table-card">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Módulo</th>
+          <th class="text-center">Ver</th>
+          <th class="text-center">Crear</th>
+          <th class="text-center">Editar</th>
+          <th class="text-center">Eliminar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of permisos">
+          <td>{{ p.modulo }}</td>
+          <td class="text-center">
+            <button class="toggle-btn" [class.active]="p.puedeVer" (click)="togglePermiso(p, 'puedeVer')" [disabled]="saving">
+              {{ p.puedeVer ? '✓' : '✗' }}
+            </button>
+          </td>
+          <td class="text-center">
+            <button class="toggle-btn" [class.active]="p.puedeCrear" (click)="togglePermiso(p, 'puedeCrear')" [disabled]="saving">
+              {{ p.puedeCrear ? '✓' : '✗' }}
+            </button>
+          </td>
+          <td class="text-center">
+            <button class="toggle-btn" [class.active]="p.puedeEditar" (click)="togglePermiso(p, 'puedeEditar')" [disabled]="saving">
+              {{ p.puedeEditar ? '✓' : '✗' }}
+            </button>
+          </td>
+          <td class="text-center">
+            <button class="toggle-btn" [class.active]="p.puedeEliminar" (click)="togglePermiso(p, 'puedeEliminar')" [disabled]="saving">
+              {{ p.puedeEliminar ? '✓' : '✗' }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="saving" class="saving-text">Guardando...</p>
+  </div>
+
+  <div *ngIf="!loading && permisos.length === 0" class="empty-state">
+    No hay permisos configurados para este rol.
+  </div>
+</div>

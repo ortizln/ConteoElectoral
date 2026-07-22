@@ -1,0 +1,9 @@
+com\electoral\controllers\CandidatoControllerTest$TestSecurityConfig.class
+com\electoral\services\CandidatoServiceTest.class
+com\electoral\services\ReportesServiceIntegrationTest$TestSecurityConfig.class
+com\electoral\services\SyncServiceIntegrationTest.class
+com\electoral\services\RuleEngineTest.class
+com\electoral\services\ReportesServiceIntegrationTest.class
+com\electoral\services\SyncServiceIntegrationTest$TestSecurityConfig.class
+com\electoral\services\DHondtServiceTest.class
+com\electoral\controllers\CandidatoControllerTest.class

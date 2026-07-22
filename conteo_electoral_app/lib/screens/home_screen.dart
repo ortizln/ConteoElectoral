@@ -33,7 +33,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final provider = context.read<AppProvider>();
     await provider.descargarDatos();
     if (provider.error != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(provider.error!)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(provider.error!)));
     }
   }
 
@@ -96,8 +97,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
-                            colors: [AppColors.gradientStart, AppColors.gradientEnd],
-                            begin: Alignment.topLeft, end: Alignment.bottomRight,
+                            colors: [
+                              AppColors.gradientStart,
+                              AppColors.gradientEnd
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -105,10 +110,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             CircleAvatar(
                               radius: 24,
-                              backgroundColor: Colors.white.withValues(alpha: 0.2),
+                              backgroundColor:
+                                  Colors.white.withValues(alpha: 0.2),
                               child: Text(
                                 (provider.usuario?.nombreCompleto ?? 'U')[0],
-                                style: const TextStyle(fontSize: 22, color: Colors.white, fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                    fontSize: 22,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
                               ),
                             ),
                             const SizedBox(width: 16),
@@ -116,16 +125,25 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(provider.usuario?.nombreCompleto ?? 'Usuario',
-                                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                                  Text(
+                                      provider.usuario?.nombreCompleto ??
+                                          'Usuario',
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600)),
                                   const SizedBox(height: 2),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.2),
+                                      color:
+                                          Colors.white.withValues(alpha: 0.2),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: Text(provider.usuario?.rol ?? '', style: const TextStyle(color: Colors.white, fontSize: 11)),
+                                    child: Text(provider.usuario?.rol ?? '',
+                                        style: const TextStyle(
+                                            color: Colors.white, fontSize: 11)),
                                   ),
                                 ],
                               ),
@@ -141,7 +159,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           Expanded(
                             child: StatCard(
                               label: 'Elección',
-                              value: provider.eleccionActual?.nombre ?? 'Sin datos',
+                              value: provider.eleccionActual?.nombre ??
+                                  'Sin datos',
                               icon: Icons.how_to_vote_outlined,
                               color: AppColors.primary,
                             ),
@@ -153,14 +172,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       // Votar section
                       if (provider.eleccionActual != null)
                         FutureBuilder<List>(
-                          future: DatabaseHelper.instance.getMesasByUsuario(provider.usuario!.id),
+                          future: DatabaseHelper.instance
+                              .getMesasByUsuario(provider.usuario!.id),
                           builder: (context, snapshot) {
                             final mesas = snapshot.data ?? [];
                             if (mesas.isEmpty) {
                               return const Card(
                                 child: Padding(
                                   padding: EdgeInsets.all(20),
-                                  child: Center(child: Text('Sin mesas asignadas')),
+                                  child: Center(
+                                      child: Text('Sin mesas asignadas')),
                                 ),
                               );
                             }
@@ -169,32 +190,57 @@ class _HomeScreenState extends State<HomeScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.only(left: 4, bottom: 8),
-                                  child: Text('Mesas Asignadas (${mesas.length})', style: AppTextStyles.h3),
+                                  padding:
+                                      const EdgeInsets.only(left: 4, bottom: 8),
+                                  child: Text(
+                                      'Mesas Asignadas (${mesas.length})',
+                                      style: AppTextStyles.h3),
                                 ),
                                 ...mesas.map((m) => Card(
-                                  child: ListTile(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                    leading: Container(
-                                      width: 44, height: 44,
-                                      decoration: BoxDecoration(
-                                        color: m.cerrada ? AppColors.error.withValues(alpha: 0.1) : AppColors.success.withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(12),
+                                      child: ListTile(
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                                horizontal: 16, vertical: 4),
+                                        leading: Container(
+                                          width: 44,
+                                          height: 44,
+                                          decoration: BoxDecoration(
+                                            color: m.cerrada
+                                                ? AppColors.error
+                                                    .withValues(alpha: 0.1)
+                                                : AppColors.success
+                                                    .withValues(alpha: 0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                          ),
+                                          child: Center(
+                                            child: Text(m.numero,
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: m.cerrada
+                                                      ? AppColors.error
+                                                      : AppColors.success,
+                                                  fontSize: 16,
+                                                )),
+                                          ),
+                                        ),
+                                        title: Text('Mesa ${m.numero}',
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.w600)),
+                                        subtitle: Text(
+                                            m.cerrada ? 'Cerrada' : 'Abierta',
+                                            style: TextStyle(
+                                                color: m.cerrada
+                                                    ? AppColors.error
+                                                    : AppColors.success)),
+                                        trailing: const Icon(
+                                            Icons.chevron_right,
+                                            color: AppColors.lightGray),
+                                        onTap: m.cerrada
+                                            ? null
+                                            : () => _openVotacion(m),
                                       ),
-                                      child: Center(
-                                        child: Text(m.numero, style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: m.cerrada ? AppColors.error : AppColors.success,
-                                          fontSize: 16,
-                                        )),
-                                      ),
-                                    ),
-                                    title: Text('Mesa ${m.numero}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                                    subtitle: Text(m.cerrada ? 'Cerrada' : 'Abierta', style: TextStyle(color: m.cerrada ? AppColors.error : AppColors.success)),
-                                    trailing: const Icon(Icons.chevron_right, color: AppColors.lightGray),
-                                    onTap: m.cerrada ? null : () => _openVotacion(m),
-                                  ),
-                                )),
+                                    )),
                               ],
                             );
                           },
@@ -204,19 +250,41 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       // Admin sections
                       if (provider.usuario?.rol == 'ADMIN') ...[
-                        Padding(
-                          padding: const EdgeInsets.only(left: 4, bottom: 8),
-                          child: Text('Administración', style: AppTextStyles.h3),
+                        const Padding(
+                          padding: EdgeInsets.only(left: 4, bottom: 8),
+                          child:
+                              Text('Administración', style: AppTextStyles.h3),
                         ),
-                        _adminTile(Icons.map_outlined, 'Zonas', AppColors.primary, () => Navigator.pushNamed(context, '/zonas')),
-                        _adminTile(Icons.location_city_outlined, 'Provincias', AppColors.secondary, () => Navigator.pushNamed(context, '/provincias')),
-                        _adminTile(Icons.location_on_outlined, 'Cantones', AppColors.warning, () => Navigator.pushNamed(context, '/cantones')),
-                        _adminTile(Icons.terrain_outlined, 'Parroquias', AppColors.info, () => Navigator.pushNamed(context, '/parroquias')),
-                        _adminTile(Icons.school_outlined, 'Instituciones', AppColors.accent, () => Navigator.pushNamed(context, '/instituciones')),
+                        _adminTile(
+                            Icons.map_outlined,
+                            'Zonas',
+                            AppColors.primary,
+                            () => Navigator.pushNamed(context, '/zonas')),
+                        _adminTile(
+                            Icons.location_city_outlined,
+                            'Provincias',
+                            AppColors.secondary,
+                            () => Navigator.pushNamed(context, '/provincias')),
+                        _adminTile(
+                            Icons.location_on_outlined,
+                            'Cantones',
+                            AppColors.warning,
+                            () => Navigator.pushNamed(context, '/cantones')),
+                        _adminTile(
+                            Icons.terrain_outlined,
+                            'Parroquias',
+                            AppColors.info,
+                            () => Navigator.pushNamed(context, '/parroquias')),
+                        _adminTile(
+                            Icons.school_outlined,
+                            'Instituciones',
+                            AppColors.accent,
+                            () =>
+                                Navigator.pushNamed(context, '/instituciones')),
                       ],
 
                       const SizedBox(height: 16),
-                      SyncIndicator(isOnline: provider.isOnline, pendientes: 0),
+                      SyncIndicator(isOnline: provider.isOnline, pendientes: provider.pendingSyncCount),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -226,16 +294,20 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _adminTile(IconData icon, String label, Color color, VoidCallback onTap) {
+  Widget _adminTile(
+      IconData icon, String label, Color color, VoidCallback onTap) {
     return Card(
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         leading: Container(
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10)),
           child: Icon(icon, color: color, size: 22),
         ),
-        title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+        title: Text(label,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
         trailing: const Icon(Icons.chevron_right, color: AppColors.lightGray),
         onTap: onTap,
       ),
@@ -250,7 +322,8 @@ class _HomeScreenState extends State<HomeScreen> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [AppColors.gradientStart, AppColors.gradientEnd],
-                begin: Alignment.topLeft, end: Alignment.bottomRight,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
             ),
             accountName: Text(provider.usuario?.nombreCompleto ?? ''),
@@ -259,7 +332,10 @@ class _HomeScreenState extends State<HomeScreen> {
               backgroundColor: Colors.white.withValues(alpha: 0.2),
               child: Text(
                 (provider.usuario?.nombreCompleto ?? 'U')[0],
-                style: const TextStyle(fontSize: 28, color: Colors.white, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    fontSize: 28,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -272,40 +348,67 @@ class _HomeScreenState extends State<HomeScreen> {
             const Divider(),
             const Padding(
               padding: EdgeInsets.only(left: 16, top: 8, bottom: 4),
-              child: Text('ADMINISTRACIÓN', style: TextStyle(fontSize: 11, color: AppColors.gray, fontWeight: FontWeight.w600)),
+              child: Text('ADMINISTRACIÓN',
+                  style: TextStyle(
+                      fontSize: 11,
+                      color: AppColors.gray,
+                      fontWeight: FontWeight.w600)),
             ),
             ListTile(
               leading: const Icon(Icons.map_outlined, color: AppColors.primary),
               title: const Text('Zonas'),
-              onTap: () { Navigator.pop(context); Navigator.pushNamed(context, '/zonas'); },
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/zonas');
+              },
             ),
             ListTile(
-              leading: const Icon(Icons.location_city_outlined, color: AppColors.secondary),
+              leading: const Icon(Icons.location_city_outlined,
+                  color: AppColors.secondary),
               title: const Text('Provincias'),
-              onTap: () { Navigator.pop(context); Navigator.pushNamed(context, '/provincias'); },
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/provincias');
+              },
             ),
             ListTile(
-              leading: const Icon(Icons.location_on_outlined, color: AppColors.warning),
+              leading: const Icon(Icons.location_on_outlined,
+                  color: AppColors.warning),
               title: const Text('Cantones'),
-              onTap: () { Navigator.pop(context); Navigator.pushNamed(context, '/cantones'); },
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/cantones');
+              },
             ),
             ListTile(
-              leading: const Icon(Icons.terrain_outlined, color: AppColors.info),
+              leading:
+                  const Icon(Icons.terrain_outlined, color: AppColors.info),
               title: const Text('Parroquias'),
-              onTap: () { Navigator.pop(context); Navigator.pushNamed(context, '/parroquias'); },
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/parroquias');
+              },
             ),
             ListTile(
-              leading: const Icon(Icons.school_outlined, color: AppColors.accent),
+              leading:
+                  const Icon(Icons.school_outlined, color: AppColors.accent),
               title: const Text('Instituciones'),
-              onTap: () { Navigator.pop(context); Navigator.pushNamed(context, '/instituciones'); },
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/instituciones');
+              },
             ),
           ],
           const Spacer(),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout, color: AppColors.error),
-            title: const Text('Cerrar Sesión', style: TextStyle(color: AppColors.error)),
-            onTap: () { Navigator.pop(context); _logout(); },
+            title: const Text('Cerrar Sesión',
+                style: TextStyle(color: AppColors.error)),
+            onTap: () {
+              Navigator.pop(context);
+              _logout();
+            },
           ),
           const SizedBox(height: 16),
         ],

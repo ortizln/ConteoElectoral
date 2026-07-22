@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Eleccion, Partido, Cargo, Candidato, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse } from '../models';
+import { Eleccion, Partido, Cargo, Candidato, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse, ReglaNegocio, Circunscripcion, ResultadoDHondt, Reconteo, Impugnacion, Observacion, Resolucion, EscrutinioResumen, GeoResumen, DatoGeografico, ReporteResumen, ReporteCandidato, ReportePartido } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -567,6 +567,145 @@ export class ApiService {
     return this.http.delete<void>(`${this.API_URL}/voto-papeleta/${id}`);
   }
 
+  // Escrutinio Avanzado
+  getEscrutinioResumen(): Observable<EscrutinioResumen> {
+    return this.http.get<EscrutinioResumen>(`${this.API_URL}/escrutinio/resumen`);
+  }
+
+  getReconteos(eleccionId?: number, mesaId?: number): Observable<Reconteo[]> {
+    let params = new URLSearchParams();
+    if (eleccionId) params.set('eleccionId', String(eleccionId));
+    if (mesaId) params.set('mesaId', String(mesaId));
+    const qs = params.toString();
+    return this.http.get<Reconteo[]>(`${this.API_URL}/escrutinio/reconteos${qs ? '?'+qs : ''}`);
+  }
+
+  getReconteoById(id: number): Observable<Reconteo> {
+    return this.http.get<Reconteo>(`${this.API_URL}/escrutinio/reconteos/${id}`);
+  }
+
+  createReconteo(data: Partial<Reconteo>): Observable<Reconteo> {
+    return this.http.post<Reconteo>(`${this.API_URL}/escrutinio/reconteos`, data);
+  }
+
+  updateReconteoEstado(id: number, estado: string, resultado?: string, realizadoPor?: string): Observable<Reconteo> {
+    let params = new URLSearchParams({ estado });
+    if (resultado) params.set('resultado', resultado);
+    if (realizadoPor) params.set('realizadoPor', realizadoPor);
+    return this.http.patch<Reconteo>(`${this.API_URL}/escrutinio/reconteos/${id}/estado?${params.toString()}`, {});
+  }
+
+  getImpugnaciones(eleccionId?: number): Observable<Impugnacion[]> {
+    let params = new URLSearchParams();
+    if (eleccionId) params.set('eleccionId', String(eleccionId));
+    const qs = params.toString();
+    return this.http.get<Impugnacion[]>(`${this.API_URL}/escrutinio/impugnaciones${qs ? '?'+qs : ''}`);
+  }
+
+  getImpugnacionById(id: number): Observable<Impugnacion> {
+    return this.http.get<Impugnacion>(`${this.API_URL}/escrutinio/impugnaciones/${id}`);
+  }
+
+  createImpugnacion(data: Partial<Impugnacion>): Observable<Impugnacion> {
+    return this.http.post<Impugnacion>(`${this.API_URL}/escrutinio/impugnaciones`, data);
+  }
+
+  updateImpugnacionEstado(id: number, estado: string): Observable<Impugnacion> {
+    return this.http.patch<Impugnacion>(`${this.API_URL}/escrutinio/impugnaciones/${id}/estado?estado=${estado}`, {});
+  }
+
+  getObservaciones(eleccionId?: number, mesaId?: number): Observable<Observacion[]> {
+    let params = new URLSearchParams();
+    if (eleccionId) params.set('eleccionId', String(eleccionId));
+    if (mesaId) params.set('mesaId', String(mesaId));
+    const qs = params.toString();
+    return this.http.get<Observacion[]>(`${this.API_URL}/escrutinio/observaciones${qs ? '?'+qs : ''}`);
+  }
+
+  createObservacion(data: Partial<Observacion>): Observable<Observacion> {
+    return this.http.post<Observacion>(`${this.API_URL}/escrutinio/observaciones`, data);
+  }
+
+  getResoluciones(): Observable<Resolucion[]> {
+    return this.http.get<Resolucion[]>(`${this.API_URL}/escrutinio/resoluciones`);
+  }
+
+  getResolucionById(id: number): Observable<Resolucion> {
+    return this.http.get<Resolucion>(`${this.API_URL}/escrutinio/resoluciones/${id}`);
+  }
+
+  createResolucion(data: Partial<Resolucion>): Observable<Resolucion> {
+    return this.http.post<Resolucion>(`${this.API_URL}/escrutinio/resoluciones`, data);
+  }
+
+  // Circunscripciones
+  getCircunscripcionesByEleccion(eleccionId: number): Observable<Circunscripcion[]> {
+    return this.http.get<Circunscripcion[]>(`${this.API_URL}/circunscripciones/eleccion/${eleccionId}`);
+  }
+
+  getCircunscripcionById(id: number): Observable<Circunscripcion> {
+    return this.http.get<Circunscripcion>(`${this.API_URL}/circunscripciones/${id}`);
+  }
+
+  createCircunscripcion(data: Partial<Circunscripcion>): Observable<Circunscripcion> {
+    return this.http.post<Circunscripcion>(`${this.API_URL}/circunscripciones`, data);
+  }
+
+  updateCircunscripcion(id: number, data: Partial<Circunscripcion>): Observable<Circunscripcion> {
+    return this.http.put<Circunscripcion>(`${this.API_URL}/circunscripciones/${id}`, data);
+  }
+
+  deleteCircunscripcion(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/circunscripciones/${id}`);
+  }
+
+  calcularDHondt(id: number): Observable<ResultadoDHondt> {
+    return this.http.post<ResultadoDHondt>(`${this.API_URL}/circunscripciones/${id}/calcular-dhondt`, {});
+  }
+
+  consultarResultadosDHondt(id: number): Observable<ResultadoDHondt> {
+    return this.http.get<ResultadoDHondt>(`${this.API_URL}/circunscripciones/${id}/resultados-dhondt`);
+  }
+
+  // Reglas de Negocio
+  getReglasNegocio(modulo?: string, tipo?: string, activa?: boolean): Observable<ReglaNegocio[]> {
+    let params = new URLSearchParams();
+    if (modulo) params.set('modulo', modulo);
+    if (tipo) params.set('tipo', tipo);
+    if (activa !== undefined) params.set('activa', String(activa));
+    const qs = params.toString();
+    const url = `${this.API_URL}/reglas-negocio${qs ? '?' + qs : ''}`;
+    return this.http.get<ReglaNegocio[]>(url);
+  }
+
+  getReglaNegocioById(id: number): Observable<ReglaNegocio> {
+    return this.http.get<ReglaNegocio>(`${this.API_URL}/reglas-negocio/${id}`);
+  }
+
+  createReglaNegocio(data: Partial<ReglaNegocio>): Observable<ReglaNegocio> {
+    return this.http.post<ReglaNegocio>(`${this.API_URL}/reglas-negocio`, data);
+  }
+
+  updateReglaNegocio(id: number, data: Partial<ReglaNegocio>): Observable<ReglaNegocio> {
+    return this.http.put<ReglaNegocio>(`${this.API_URL}/reglas-negocio/${id}`, data);
+  }
+
+  deleteReglaNegocio(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/reglas-negocio/${id}`);
+  }
+
+  toggleReglaNegocio(id: number): Observable<ReglaNegocio> {
+    return this.http.patch<ReglaNegocio>(`${this.API_URL}/reglas-negocio/${id}/toggle`, {});
+  }
+
+  getModulosReglas(): Observable<{codigo: string; nombre: string}[]> {
+    return this.http.get<{codigo: string; nombre: string}[]>(`${this.API_URL}/reglas-negocio/modulos`);
+  }
+
+  getTiposReglas(): Observable<{codigo: string; nombre: string}[]> {
+    return this.http.get<{codigo: string; nombre: string}[]>(`${this.API_URL}/reglas-negocio/tipos`);
+  }
+
   // Listas Electorales
   getListasByEleccion(eleccionId: number): Observable<any[]> {
     return this.http.get<any[]>(`${this.API_URL}/listas-electorales/eleccion/${eleccionId}`);
@@ -588,6 +727,25 @@ export class ApiService {
   // Dashboard
   getDashboard(eleccionId: number): Observable<any> {
     return this.http.get<any>(`${this.API_URL}/dashboard/eleccion/${eleccionId}`);
+  }
+
+  // Dashboard Geográfico
+  getGeoProvincias(eleccionId: number, candidatoId?: number): Observable<GeoResumen> {
+    let url = `${this.API_URL}/dashboard/geografico/${eleccionId}/provincias`;
+    if (candidatoId) url += `?candidatoId=${candidatoId}`;
+    return this.http.get<GeoResumen>(url);
+  }
+
+  getGeoCantonesByProvincia(eleccionId: number, provinciaId: number, candidatoId?: number): Observable<DatoGeografico[]> {
+    let url = `${this.API_URL}/dashboard/geografico/${eleccionId}/provincias/${provinciaId}/cantones`;
+    if (candidatoId) url += `?candidatoId=${candidatoId}`;
+    return this.http.get<DatoGeografico[]>(url);
+  }
+
+  getGeoParroquiasByCanton(eleccionId: number, cantonId: number, candidatoId?: number): Observable<DatoGeografico[]> {
+    let url = `${this.API_URL}/dashboard/geografico/${eleccionId}/cantones/${cantonId}/parroquias`;
+    if (candidatoId) url += `?candidatoId=${candidatoId}`;
+    return this.http.get<DatoGeografico[]>(url);
   }
 
   getDashboardConFiltros(
@@ -614,5 +772,21 @@ export class ApiService {
     const queryString = params.toString();
     if (queryString) url += '?' + queryString;
     return this.http.get<any>(url);
+  }
+
+  getReporteResumen(eleccionId: number): Observable<ReporteResumen> {
+    return this.http.get<ReporteResumen>(`${this.API_URL}/reportes/${eleccionId}/resumen`);
+  }
+
+  getReporteCandidatos(eleccionId: number): Observable<ReporteCandidato[]> {
+    return this.http.get<ReporteCandidato[]>(`${this.API_URL}/reportes/${eleccionId}/candidatos`);
+  }
+
+  getReportePartidos(eleccionId: number): Observable<ReportePartido[]> {
+    return this.http.get<ReportePartido[]>(`${this.API_URL}/reportes/${eleccionId}/partidos`);
+  }
+
+  exportarReporteCsv(eleccionId: number): Observable<Blob> {
+    return this.http.get(`${this.API_URL}/reportes/${eleccionId}/exportar/csv`, { responseType: 'blob' });
   }
 }

@@ -33,7 +33,11 @@ class _ZonasScreenState extends State<ZonasScreen> {
   List<Zona> get _filtered {
     if (_search.isEmpty) return _items;
     final q = _search.toLowerCase();
-    return _items.where((z) => z.nombre.toLowerCase().contains(q) || (z.descripcion ?? '').toLowerCase().contains(q)).toList();
+    return _items
+        .where((z) =>
+            z.nombre.toLowerCase().contains(q) ||
+            (z.descripcion ?? '').toLowerCase().contains(q))
+        .toList();
   }
 
   Future<void> _showForm({Zona? item}) async {
@@ -44,10 +48,13 @@ class _ZonasScreenState extends State<ZonasScreen> {
     final saved = await showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) => Padding(
         padding: EdgeInsets.only(
-          left: 24, right: 24, top: 24,
+          left: 24,
+          right: 24,
+          top: 24,
           bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
         ),
         child: Form(
@@ -56,31 +63,48 @@ class _ZonasScreenState extends State<ZonasScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(item == null ? 'Nueva Zona' : 'Editar Zona', style: AppTextStyles.h3),
+              Text(item == null ? 'Nueva Zona' : 'Editar Zona',
+                  style: AppTextStyles.h3),
               const SizedBox(height: 20),
               TextFormField(
                 controller: nombreCtrl,
-                decoration: const InputDecoration(labelText: 'Nombre', prefixIcon: Icon(Icons.label_outline)),
+                decoration: const InputDecoration(
+                    labelText: 'Nombre', prefixIcon: Icon(Icons.label_outline)),
                 validator: (v) => (v == null || v.isEmpty) ? 'Requerido' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: descCtrl,
-                decoration: const InputDecoration(labelText: 'Descripción', prefixIcon: Icon(Icons.description_outlined)),
+                decoration: const InputDecoration(
+                    labelText: 'Descripción',
+                    prefixIcon: Icon(Icons.description_outlined)),
                 maxLines: 3,
               ),
               const SizedBox(height: 24),
               Row(
                 children: [
-                  Expanded(child: OutlinedButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar'))),
+                  Expanded(
+                      child: OutlinedButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: const Text('Cancelar'))),
                   const SizedBox(width: 12),
-                  Expanded(child: ElevatedButton(onPressed: () async {
-                    if (!formKey.currentState!.validate()) return;
-                    final api = context.read<AppProvider>().api;
-                    final z = Zona(id: item?.id ?? 0, nombre: nombreCtrl.text, descripcion: descCtrl.text);
-                    if (item == null) await api.createZona(z); else await api.updateZona(z.id, z);
-                    if (ctx.mounted) Navigator.pop(ctx, true);
-                  }, child: const Text('Guardar'))),
+                  Expanded(
+                      child: ElevatedButton(
+                          onPressed: () async {
+                            if (!formKey.currentState!.validate()) return;
+                            final api = context.read<AppProvider>().api;
+                            final z = Zona(
+                                id: item?.id ?? 0,
+                                nombre: nombreCtrl.text,
+                                descripcion: descCtrl.text);
+                            if (item == null) {
+                              await api.createZona(z);
+                            } else {
+                              await api.updateZona(z.id, z);
+                            }
+                            if (ctx.mounted) Navigator.pop(ctx, true);
+                          },
+                          child: const Text('Guardar'))),
                 ],
               ),
             ],
@@ -92,7 +116,11 @@ class _ZonasScreenState extends State<ZonasScreen> {
   }
 
   Future<void> _delete(Zona item) async {
-    final confirm = await showConfirmDialog(context, title: 'Eliminar', message: '¿Eliminar "${item.nombre}"?', confirmText: 'Eliminar', confirmColor: AppColors.error);
+    final confirm = await showConfirmDialog(context,
+        title: 'Eliminar',
+        message: '¿Eliminar "${item.nombre}"?',
+        confirmText: 'Eliminar',
+        confirmColor: AppColors.error);
     if (confirm) {
       await context.read<AppProvider>().api.deleteZona(item.id);
       _load();
@@ -120,7 +148,12 @@ class _ZonasScreenState extends State<ZonasScreen> {
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
                 : _filtered.isEmpty
-                    ? EmptyState(icon: Icons.map_outlined, title: 'Sin zonas', subtitle: 'Agregue la primera zona', actionLabel: 'Agregar', onAction: () => _showForm())
+                    ? EmptyState(
+                        icon: Icons.map_outlined,
+                        title: 'Sin zonas',
+                        subtitle: 'Agregue la primera zona',
+                        actionLabel: 'Agregar',
+                        onAction: () => _showForm())
                     : RefreshIndicator(
                         onRefresh: _load,
                         child: ListView.builder(
@@ -139,7 +172,8 @@ class _ZonasScreenState extends State<ZonasScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(onPressed: () => _showForm(), child: const Icon(Icons.add)),
+      floatingActionButton: FloatingActionButton(
+          onPressed: () => _showForm(), child: const Icon(Icons.add)),
     );
   }
 }

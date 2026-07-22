@@ -74,7 +74,7 @@
         <div *ngIf="tieneApk" class="apk-info">
           <span class="apk-file-name">📦 {{ apkNombre }}</span>
           <div class="apk-actions">
-            <a [href]="getApkDownloadUrl()" class="btn btn-sm btn-success" download>Descargar APK</a>
+            <a [href]="apkDownloadUrl" class="btn btn-sm btn-success" download>Descargar APK</a>
             <button class="btn btn-sm btn-outline-danger" (click)="deleteApk()" [disabled]="uploadingApk">Eliminar</button>
           </div>
         </div>
@@ -93,7 +93,7 @@
     <div class="card">
       <h5><span>📖</span> Manual de Usuario</h5>
       <p class="text-muted">Descarga el manual completo del sistema en formato PDF.</p>
-      <a [href]="getManualUrl()" class="btn btn-primary" download>
+      <a [href]="manualUrl" class="btn btn-primary" download>
         <i class="bi bi-file-pdf"></i> Descargar Manual PDF
       </a>
     </div>

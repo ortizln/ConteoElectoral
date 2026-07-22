@@ -1,0 +1,43 @@
+<div class="geo-container">
+  <div class="geo-header">
+    <h1>🗺️ Dashboard Geográfico</h1>
+    <div class="geo-controls">
+      <select class="form-select" (change)="onEleccionChange()" [(ngModel)]="selectedEleccionId">
+        <option *ngFor="let e of elecciones" [ngValue]="e.id">{{ e.nombre }}</option>
+      </select>
+      <select class="form-select" (change)="onCandidatoChange()" [(ngModel)]="selectedCandidatoId">
+        <option [ngValue]="null">Todos los candidatos</option>
+        <option *ngFor="let c of candidatos" [ngValue]="c.id">{{ c.nombre }} {{ c.apellido }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="geo-body">
+    <div class="geo-map-wrapper">
+      <div id="geoMap" class="geo-map"></div>
+    </div>
+    <div class="geo-sidebar">
+      <div class="sidebar-header">
+        <h3>{{ tituloNivel }}</h3>
+        <span class="total-badge">Total: {{ totalVotos | number }} votos</span>
+      </div>
+      <div *ngIf="nivel !== 'provincia'" class="back-link" (click)="volver()">← Volver</div>
+      <div class="sidebar-list" *ngIf="!loading; else loadingTpl">
+        <div class="geo-item" *ngFor="let item of items" (click)="onSidebarClick(item)">
+          <div class="item-info">
+            <span class="item-name">{{ item.nombre }}</span>
+            <span class="item-votos">{{ item.totalVotos | number }} votos</span>
+          </div>
+          <div class="item-bar">
+            <div class="item-bar-fill" [style.width.%]="(item.totalVotos / (totalVotos || 1)) * 100"></div>
+          </div>
+          <span class="item-pct" *ngIf="item.porcentaje != null">{{ item.porcentaje }}%</span>
+        </div>
+        <div class="empty-msg" *ngIf="items.length === 0">Sin datos para esta selección</div>
+      </div>
+      <ng-template #loadingTpl>
+        <div class="loading-msg">Cargando...</div>
+      </ng-template>
+    </div>
+  </div>
+</div>

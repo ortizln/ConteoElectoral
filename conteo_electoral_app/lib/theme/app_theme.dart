@@ -41,7 +41,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      colorScheme: ColorScheme.light(
+      colorScheme: const ColorScheme.light(
         primary: AppColors.primary,
         secondary: AppColors.secondary,
         surface: AppColors.surface,
@@ -117,7 +117,8 @@ class AppTheme {
           borderRadius: BorderRadius.circular(10),
           borderSide: const BorderSide(color: AppColors.error),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         prefixIconColor: AppColors.gray,
         labelStyle: const TextStyle(color: AppColors.gray),
       ),
@@ -166,12 +167,17 @@ class AppTheme {
 }
 
 class AppTextStyles {
-  static const h1 = TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.dark);
-  static const h2 = TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.dark);
-  static const h3 = TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.dark);
+  static const h1 = TextStyle(
+      fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.dark);
+  static const h2 = TextStyle(
+      fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.dark);
+  static const h3 = TextStyle(
+      fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.dark);
   static const body = TextStyle(fontSize: 15, color: AppColors.dark);
   static const bodySmall = TextStyle(fontSize: 13, color: AppColors.gray);
   static const caption = TextStyle(fontSize: 12, color: AppColors.lightGray);
-  static const statValue = TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.dark);
-  static const statLabel = TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.gray);
+  static const statValue = TextStyle(
+      fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.dark);
+  static const statLabel = TextStyle(
+      fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.gray);
 }

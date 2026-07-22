@@ -230,6 +230,117 @@ export interface MesaCerradaResponse {
   totalVotos: number;
 }
 
+export interface Circunscripcion {
+  id: number;
+  eleccionId: number;
+  eleccionNombre?: string;
+  tipoCircunscripcionId?: number;
+  tipoCircunscripcionCodigo?: string;
+  tipoCircunscripcionNombre?: string;
+  nombre: string;
+  codigo?: string;
+  escanos: number;
+  umbralElectoral?: number;
+  metodoAsignacion: string;
+  activa: boolean;
+  createdAt?: string;
+}
+
+export interface AsignacionDHondt {
+  partidoId: number;
+  partidoNombre: string;
+  partidoSigla?: string;
+  listaId?: number;
+  listaNombre?: string;
+  votosValidos: number;
+  porcentajeVotos: number;
+  escanosAsignados: number;
+  cocientes: number[];
+}
+
+export interface ResultadoDHondt {
+  circunscripcionId: number;
+  circunscripcionNombre: string;
+  totalEscanos: number;
+  totalVotosValidos: number;
+  umbralElectoral: number;
+  asignaciones: AsignacionDHondt[];
+}
+
+export interface Reconteo {
+  id: number;
+  mesaId: number;
+  mesaNumero?: string;
+  institucionNombre?: string;
+  motivo: string;
+  solicitadoPor: string;
+  fechaSolicitud?: string;
+  estado: string;
+  resultado?: string;
+  realizadoPor?: string;
+  fechaRealizacion?: string;
+  createdAt?: string;
+}
+
+export interface Impugnacion {
+  id: number;
+  mesaId?: number;
+  mesaNumero?: string;
+  tipo: string;
+  descripcion: string;
+  solicitante: string;
+  fechaImpugnacion?: string;
+  estado: string;
+  createdAt?: string;
+}
+
+export interface Observacion {
+  id: number;
+  mesaId?: number;
+  mesaNumero?: string;
+  usuarioId?: number;
+  usuarioNombre?: string;
+  tipo: string;
+  descripcion: string;
+  fecha?: string;
+  createdAt?: string;
+}
+
+export interface Resolucion {
+  id: number;
+  codigo: string;
+  titulo: string;
+  descripcion?: string;
+  impugnacionId?: number;
+  impugnacionDescripcion?: string;
+  resueltoPor: string;
+  fechaResolucion?: string;
+  detalle?: string;
+  createdAt?: string;
+}
+
+export interface EscrutinioResumen {
+  reconteosPendientes: number;
+  impugnacionesPendientes: number;
+  totalObservaciones: number;
+  totalResoluciones: number;
+}
+
+export interface ReglaNegocio {
+  id: number;
+  tipo: string;
+  modulo: string;
+  nombre: string;
+  descripcion?: string;
+  condicion: string;
+  mensajeError?: string;
+  accion?: string;
+  activa: boolean;
+  prioridad: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface ResultadoCandidato {
   candidatoId: number;
   nombreCompleto: string;
@@ -237,4 +348,49 @@ export interface ResultadoCandidato {
   cargoNombre: string;
   totalVotos: number;
   porcentaje: number;
+}
+
+export interface DatoGeografico {
+  id: number;
+  nombre: string;
+  totalVotos: number;
+  porcentaje?: number;
+}
+
+export interface GeoResumen {
+  totalVotos: number;
+  items: DatoGeografico[];
+}
+
+export interface ReporteResumen {
+  totalVotos: number;
+  totalMesas: number;
+  mesasCerradas: number;
+  mesasPendientes: number;
+  totalCandidatos: number;
+  totalPartidos: number;
+  votosNulos: number;
+  votosBlanco: number;
+  participacion: number;
+}
+
+export interface ReporteCandidato {
+  id: number;
+  nombre: string;
+  apellido: string;
+  nombreCompleto: string;
+  partido: string;
+  partidoSigla: string;
+  cargo: string;
+  totalVotos: number;
+  porcentaje: number;
+}
+
+export interface ReportePartido {
+  id: number;
+  nombre: string;
+  sigla: string;
+  totalVotos: number;
+  porcentaje: number;
+  totalCandidatos: number;
 }

@@ -42,6 +42,9 @@
             {{ userRole === 'ADMIN' ? 'Administrador' : 'Supervisor' }}
           </span>
         </div>
+        <button (click)="toggleTheme()" class="theme-toggle" [title]="isDark ? 'Modo claro' : 'Modo oscuro'">
+          {{ isDark ? '☀️' : '🌙' }}
+        </button>
         <button (click)="logout()" class="btn btn-outline-light btn-sm header-logout">
           <span>🚪</span> Salir
         </button>

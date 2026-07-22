@@ -48,7 +48,15 @@
     </div>
   </div>
 
-  <div class="content-grid">
+  <div class="alert alert-info" *ngIf="mesasDisponibles.length === 0">
+    <span class="alert-icon">ℹ️</span>
+    <div class="alert-content">
+      <strong>Sin mesas asignadas</strong>
+      <p>No tiene mesas asignadas para esta elección. Contacte al administrador si considera que esto es un error.</p>
+    </div>
+  </div>
+
+  <div class="content-grid" *ngIf="mesaActual">
     <div class="card candidatos-card">
       <div class="card-header">
         <h3>👤 Candidatos</h3>

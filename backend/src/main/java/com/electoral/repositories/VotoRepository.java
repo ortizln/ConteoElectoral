@@ -69,4 +69,31 @@ public interface VotoRepository extends JpaRepository<Voto, Long> {
 
     @Query("SELECT COALESCE(SUM(v.cantidadVotos), 0) FROM Voto v WHERE v.mesa.id = :mesaId AND v.elecciones.id = :eleccionId")
     Long sumVotosByMesaAndEleccion(@Param("mesaId") Long mesaId, @Param("eleccionId") Long eleccionId);
+
+    @Query("SELECT c.partido.id, SUM(v.cantidadVotos) FROM Voto v JOIN v.candidato c WHERE v.elecciones.id = :eleccionId AND c.partido IS NOT NULL GROUP BY c.partido.id ORDER BY SUM(v.cantidadVotos) DESC")
+    List<Object[]> sumVotosByPartido(@Param("eleccionId") Long eleccionId);
+
+    @Query("SELECT c.partido.id, SUM(v.cantidadVotos) FROM Voto v JOIN v.candidato c WHERE v.elecciones.id = :eleccionId AND c.partido IS NOT NULL AND c.cargo.tipoCircunscripcion.id = :tipoCircunscripcionId GROUP BY c.partido.id ORDER BY SUM(v.cantidadVotos) DESC")
+    List<Object[]> sumVotosByPartidoYTipoCircunscripcion(@Param("eleccionId") Long eleccionId, @Param("tipoCircunscripcionId") Long tipoCircunscripcionId);
+
+    @Query("SELECT pr.id, pr.nombre, SUM(v.cantidadVotos) FROM Voto v JOIN v.mesa m JOIN m.institucion i JOIN i.parroquia p JOIN p.canton c JOIN c.provincia pr WHERE v.elecciones.id = :eleccionId GROUP BY pr.id, pr.nombre ORDER BY SUM(v.cantidadVotos) DESC")
+    List<Object[]> sumVotosByProvinciaAll(@Param("eleccionId") Long eleccionId);
+
+    @Query("SELECT c.id, c.nombre, SUM(v.cantidadVotos) FROM Voto v JOIN v.mesa m JOIN m.institucion i JOIN i.parroquia p JOIN p.canton c WHERE v.elecciones.id = :eleccionId GROUP BY c.id, c.nombre ORDER BY SUM(v.cantidadVotos) DESC")
+    List<Object[]> sumVotosByCantonAll(@Param("eleccionId") Long eleccionId);
+
+    @Query("SELECT p.id, p.nombre, SUM(v.cantidadVotos) FROM Voto v JOIN v.mesa m JOIN m.institucion i JOIN i.parroquia p WHERE v.elecciones.id = :eleccionId GROUP BY p.id, p.nombre ORDER BY SUM(v.cantidadVotos) DESC")
+    List<Object[]> sumVotosByParroquiaAll(@Param("eleccionId") Long eleccionId);
+
+    @Query("SELECT c.id, c.nombre, SUM(v.cantidadVotos) FROM Voto v JOIN v.mesa m JOIN m.institucion i JOIN i.parroquia p JOIN p.canton c WHERE v.elecciones.id = :eleccionId AND c.provincia.id = :provinciaId GROUP BY c.id, c.nombre ORDER BY SUM(v.cantidadVotos) DESC")
+    List<Object[]> sumVotosByCantonInProvincia(@Param("eleccionId") Long eleccionId, @Param("provinciaId") Long provinciaId);
+
+    @Query("SELECT par.id, par.nombre, SUM(v.cantidadVotos) FROM Voto v JOIN v.mesa m JOIN m.institucion i JOIN i.parroquia par WHERE v.elecciones.id = :eleccionId AND par.canton.id = :cantonId GROUP BY par.id, par.nombre ORDER BY SUM(v.cantidadVotos) DESC")
+    List<Object[]> sumVotosByParroquiaInCanton(@Param("eleccionId") Long eleccionId, @Param("cantonId") Long cantonId);
+
+    @Query("SELECT c.id, c.nombre, SUM(v.cantidadVotos) FROM Voto v JOIN v.mesa m JOIN m.institucion i JOIN i.parroquia p JOIN p.canton c WHERE v.candidato.id = :candidatoId AND v.elecciones.id = :eleccionId AND c.provincia.id = :provinciaId GROUP BY c.id, c.nombre ORDER BY SUM(v.cantidadVotos) DESC")
+    List<Object[]> sumVotosByCantonPorCandidatoYProvincia(@Param("candidatoId") Long candidatoId, @Param("eleccionId") Long eleccionId, @Param("provinciaId") Long provinciaId);
+
+    @Query("SELECT par.id, par.nombre, SUM(v.cantidadVotos) FROM Voto v JOIN v.mesa m JOIN m.institucion i JOIN i.parroquia par WHERE v.candidato.id = :candidatoId AND v.elecciones.id = :eleccionId AND par.canton.id = :cantonId GROUP BY par.id, par.nombre ORDER BY SUM(v.cantidadVotos) DESC")
+    List<Object[]> sumVotosByParroquiaPorCandidatoYCanton(@Param("candidatoId") Long candidatoId, @Param("eleccionId") Long eleccionId, @Param("cantonId") Long cantonId);
 }

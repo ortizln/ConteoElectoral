@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
+import 'dart:convert';
 import '../models/models.dart';
 
 class ApiService {
@@ -361,7 +362,8 @@ class ApiService {
     }
   }
 
-  Future<List<InstitucionEducativa>> getInstitucionesByParroquia(int parroquiaId) async {
+  Future<List<InstitucionEducativa>> getInstitucionesByParroquia(
+      int parroquiaId) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/instituciones/parroquia/$parroquiaId'),
@@ -377,7 +379,8 @@ class ApiService {
     }
   }
 
-  Future<InstitucionEducativa?> createInstitucion(InstitucionEducativa institucion) async {
+  Future<InstitucionEducativa?> createInstitucion(
+      InstitucionEducativa institucion) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/instituciones'),
@@ -393,7 +396,8 @@ class ApiService {
     }
   }
 
-  Future<InstitucionEducativa?> updateInstitucion(int id, InstitucionEducativa institucion) async {
+  Future<InstitucionEducativa?> updateInstitucion(
+      int id, InstitucionEducativa institucion) async {
     try {
       final response = await http.put(
         Uri.parse('$baseUrl/instituciones/$id'),
@@ -438,7 +442,8 @@ class ApiService {
     }
   }
 
-  Future<List<Partido>> getPartidosByEleccion(int eleccionesId, {String? token}) async {
+  Future<List<Partido>> getPartidosByEleccion(int eleccionesId,
+      {String? token}) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/partidos/eleccion/$eleccionesId'),
@@ -455,7 +460,8 @@ class ApiService {
     }
   }
 
-  Future<List<Cargo>> getCargosByEleccion(int eleccionesId, {String? token}) async {
+  Future<List<Cargo>> getCargosByEleccion(int eleccionesId,
+      {String? token}) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/cargos/eleccion/$eleccionesId'),
@@ -472,7 +478,8 @@ class ApiService {
     }
   }
 
-  Future<List<Candidato>> getCandidatosByEleccion(int eleccionesId, {String? token}) async {
+  Future<List<Candidato>> getCandidatosByEleccion(int eleccionesId,
+      {String? token}) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/candidatos/eleccion/$eleccionesId'),
@@ -489,7 +496,8 @@ class ApiService {
     }
   }
 
-  Future<List<Recinto>> getRecintosByEleccion(int eleccionesId, {String? token}) async {
+  Future<List<Recinto>> getRecintosByEleccion(int eleccionesId,
+      {String? token}) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/recintos/eleccion/$eleccionesId'),
@@ -506,7 +514,8 @@ class ApiService {
     }
   }
 
-  Future<List<Mesa>> getMesasByEleccion(int eleccionesId, {String? token}) async {
+  Future<List<Mesa>> getMesasByEleccion(int eleccionesId,
+      {String? token}) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/mesas/eleccion/$eleccionesId'),
@@ -523,7 +532,8 @@ class ApiService {
     }
   }
 
-  Future<List<Mesa>> getMesasByCurrentUser(int eleccionesId, {String? token}) async {
+  Future<List<Mesa>> getMesasByCurrentUser(int eleccionesId,
+      {String? token}) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/mesas/usuario/actual/eleccion/$eleccionesId'),
@@ -557,6 +567,115 @@ class ApiService {
     }
   }
 
+  // Circunscripciones
+  Future<List<Circunscripcion>> getCircunscripcionesByEleccion(
+      int eleccionId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/circunscripciones/eleccion/$eleccionId'),
+        headers: _headers(),
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((j) => Circunscripcion.fromJson(j)).toList();
+      }
+    } catch (e) {
+      print('Error getCircunscripciones: $e');
+    }
+    return [];
+  }
+
+  Future<Circunscripcion?> getCircunscripcionById(int id) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/circunscripciones/$id'),
+        headers: _headers(),
+      );
+      if (response.statusCode == 200) {
+        return Circunscripcion.fromJson(jsonDecode(response.body));
+      }
+    } catch (e) {
+      print('Error getCircunscripcionById: $e');
+    }
+    return null;
+  }
+
+  Future<Circunscripcion?> createCircunscripcion(Circunscripcion item) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/circunscripciones'),
+        headers: _headers(),
+        body: jsonEncode(item.toJson()),
+      );
+      if (response.statusCode == 200) {
+        return Circunscripcion.fromJson(jsonDecode(response.body));
+      }
+    } catch (e) {
+      print('Error createCircunscripcion: $e');
+    }
+    return null;
+  }
+
+  Future<Circunscripcion?> updateCircunscripcion(
+      int id, Circunscripcion item) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/circunscripciones/$id'),
+        headers: _headers(),
+        body: jsonEncode(item.toJson()),
+      );
+      if (response.statusCode == 200) {
+        return Circunscripcion.fromJson(jsonDecode(response.body));
+      }
+    } catch (e) {
+      print('Error updateCircunscripcion: $e');
+    }
+    return null;
+  }
+
+  Future<bool> deleteCircunscripcion(int id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/circunscripciones/$id'),
+        headers: _headers(),
+      );
+      return response.statusCode == 204;
+    } catch (e) {
+      print('Error deleteCircunscripcion: $e');
+    }
+    return false;
+  }
+
+  Future<ResultadoDHondt?> calcularDHondt(int id) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/circunscripciones/$id/calcular-dhondt'),
+        headers: _headers(),
+      );
+      if (response.statusCode == 200) {
+        return ResultadoDHondt.fromJson(jsonDecode(response.body));
+      }
+    } catch (e) {
+      print('Error calcularDHondt: $e');
+    }
+    return null;
+  }
+
+  Future<ResultadoDHondt?> consultarResultadosDHondt(int id) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/circunscripciones/$id/resultados-dhondt'),
+        headers: _headers(),
+      );
+      if (response.statusCode == 200) {
+        return ResultadoDHondt.fromJson(jsonDecode(response.body));
+      }
+    } catch (e) {
+      print('Error consultarResultadosDHondt: $e');
+    }
+    return null;
+  }
+
   Future<bool> registrarVoto(Voto voto, {String? token}) async {
     try {
       final response = await http.post(
@@ -569,6 +688,165 @@ class ApiService {
     } catch (e) {
       return false;
     }
+  }
+
+  // Escrutinio Avanzado
+  Future<Map<String, dynamic>> getEscrutinioResumen() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/escrutinio/resumen'),
+        headers: _headers(),
+      );
+      if (response.statusCode == 200) return jsonDecode(response.body);
+    } catch (e) {
+      print('Error getEscrutinioResumen: $e');
+    }
+    return {
+      'reconteosPendientes': 0,
+      'impugnacionesPendientes': 0,
+      'totalObservaciones': 0,
+      'totalResoluciones': 0
+    };
+  }
+
+  Future<List<Reconteo>> getReconteos({int? eleccionId, int? mesaId}) async {
+    try {
+      final params = <String, String>{};
+      if (eleccionId != null) params['eleccionId'] = eleccionId.toString();
+      if (mesaId != null) params['mesaId'] = mesaId.toString();
+      final qs =
+          params.isNotEmpty ? '?${Uri(queryParameters: params).query}' : '';
+      final response = await http.get(
+        Uri.parse('$baseUrl/escrutinio/reconteos$qs'),
+        headers: _headers(),
+      );
+      if (response.statusCode == 200) {
+        return (jsonDecode(response.body) as List)
+            .map((j) => Reconteo.fromJson(j))
+            .toList();
+      }
+    } catch (e) {
+      print('Error getReconteos: $e');
+    }
+    return [];
+  }
+
+  Future<Reconteo?> createReconteo(Map<String, dynamic> data) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/escrutinio/reconteos'),
+        headers: _headers(),
+        body: jsonEncode(data),
+      );
+      if (response.statusCode == 200)
+        return Reconteo.fromJson(jsonDecode(response.body));
+    } catch (e) {
+      print('Error createReconteo: $e');
+    }
+    return null;
+  }
+
+  Future<List<Impugnacion>> getImpugnaciones({int? eleccionId}) async {
+    try {
+      final qs = eleccionId != null ? '?eleccionId=$eleccionId' : '';
+      final response = await http.get(
+        Uri.parse('$baseUrl/escrutinio/impugnaciones$qs'),
+        headers: _headers(),
+      );
+      if (response.statusCode == 200) {
+        return (jsonDecode(response.body) as List)
+            .map((j) => Impugnacion.fromJson(j))
+            .toList();
+      }
+    } catch (e) {
+      print('Error getImpugnaciones: $e');
+    }
+    return [];
+  }
+
+  Future<Impugnacion?> createImpugnacion(Map<String, dynamic> data) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/escrutinio/impugnaciones'),
+        headers: _headers(),
+        body: jsonEncode(data),
+      );
+      if (response.statusCode == 200)
+        return Impugnacion.fromJson(jsonDecode(response.body));
+    } catch (e) {
+      print('Error createImpugnacion: $e');
+    }
+    return null;
+  }
+
+  Future<List<Observacion>> getObservaciones(
+      {int? eleccionId, int? mesaId}) async {
+    try {
+      final params = <String, String>{};
+      if (eleccionId != null) params['eleccionId'] = eleccionId.toString();
+      if (mesaId != null) params['mesaId'] = mesaId.toString();
+      final qs =
+          params.isNotEmpty ? '?${Uri(queryParameters: params).query}' : '';
+      final response = await http.get(
+        Uri.parse('$baseUrl/escrutinio/observaciones$qs'),
+        headers: _headers(),
+      );
+      if (response.statusCode == 200) {
+        return (jsonDecode(response.body) as List)
+            .map((j) => Observacion.fromJson(j))
+            .toList();
+      }
+    } catch (e) {
+      print('Error getObservaciones: $e');
+    }
+    return [];
+  }
+
+  Future<Observacion?> createObservacion(Map<String, dynamic> data) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/escrutinio/observaciones'),
+        headers: _headers(),
+        body: jsonEncode(data),
+      );
+      if (response.statusCode == 200)
+        return Observacion.fromJson(jsonDecode(response.body));
+    } catch (e) {
+      print('Error createObservacion: $e');
+    }
+    return null;
+  }
+
+  Future<List<Resolucion>> getResoluciones() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/escrutinio/resoluciones'),
+        headers: _headers(),
+      );
+      if (response.statusCode == 200) {
+        return (jsonDecode(response.body) as List)
+            .map((j) => Resolucion.fromJson(j))
+            .toList();
+      }
+    } catch (e) {
+      print('Error getResoluciones: $e');
+    }
+    return [];
+  }
+
+  Future<Resolucion?> createResolucion(Map<String, dynamic> data) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/escrutinio/resoluciones'),
+        headers: _headers(),
+        body: jsonEncode(data),
+      );
+      if (response.statusCode == 200)
+        return Resolucion.fromJson(jsonDecode(response.body));
+    } catch (e) {
+      print('Error createResolucion: $e');
+    }
+    return null;
   }
 
   Future<bool> actualizarVoto(int id, Voto voto, {String? token}) async {
@@ -598,6 +876,105 @@ class ApiService {
     }
   }
 
+  // Reglas de Negocio
+  Future<List<ReglaNegocio>> getReglasNegocio(
+      {String? modulo, String? tipo, bool? activa}) async {
+    try {
+      final params = <String, String>{};
+      if (modulo != null) params['modulo'] = modulo;
+      if (tipo != null) params['tipo'] = tipo;
+      if (activa != null) params['activa'] = activa.toString();
+      final qs =
+          params.isNotEmpty ? '?${Uri(queryParameters: params).query}' : '';
+      final response = await http.get(
+        Uri.parse('$baseUrl/reglas-negocio$qs'),
+        headers: _headers(),
+      );
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((j) => ReglaNegocio.fromJson(j)).toList();
+      }
+    } catch (e) {
+      print('Error getReglasNegocio: $e');
+    }
+    return [];
+  }
+
+  Future<ReglaNegocio?> getReglaNegocioById(int id) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/reglas-negocio/$id'),
+        headers: _headers(),
+      );
+      if (response.statusCode == 200) {
+        return ReglaNegocio.fromJson(jsonDecode(response.body));
+      }
+    } catch (e) {
+      print('Error getReglaNegocioById: $e');
+    }
+    return null;
+  }
+
+  Future<ReglaNegocio?> createReglaNegocio(ReglaNegocio regla) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/reglas-negocio'),
+        headers: _headers(),
+        body: jsonEncode(regla.toJson()),
+      );
+      if (response.statusCode == 200) {
+        return ReglaNegocio.fromJson(jsonDecode(response.body));
+      }
+    } catch (e) {
+      print('Error createReglaNegocio: $e');
+    }
+    return null;
+  }
+
+  Future<ReglaNegocio?> updateReglaNegocio(int id, ReglaNegocio regla) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/reglas-negocio/$id'),
+        headers: _headers(),
+        body: jsonEncode(regla.toJson()),
+      );
+      if (response.statusCode == 200) {
+        return ReglaNegocio.fromJson(jsonDecode(response.body));
+      }
+    } catch (e) {
+      print('Error updateReglaNegocio: $e');
+    }
+    return null;
+  }
+
+  Future<bool> deleteReglaNegocio(int id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/reglas-negocio/$id'),
+        headers: _headers(),
+      );
+      return response.statusCode == 204;
+    } catch (e) {
+      print('Error deleteReglaNegocio: $e');
+    }
+    return false;
+  }
+
+  Future<ReglaNegocio?> toggleReglaNegocio(int id) async {
+    try {
+      final response = await http.patch(
+        Uri.parse('$baseUrl/reglas-negocio/$id/toggle'),
+        headers: _headers(),
+      );
+      if (response.statusCode == 200) {
+        return ReglaNegocio.fromJson(jsonDecode(response.body));
+      }
+    } catch (e) {
+      print('Error toggleReglaNegocio: $e');
+    }
+    return null;
+  }
+
   Future<bool> sincronizarVoto(Voto voto, {String? token}) async {
     try {
       final response = await http.post(
@@ -613,11 +990,13 @@ class ApiService {
 
   Future<Map<String, dynamic>> testConnection() async {
     try {
-      await http.post(
-        Uri.parse('$baseUrl/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'username': 'test', 'password': 'test'}),
-      ).timeout(const Duration(seconds: 5));
+      await http
+          .post(
+            Uri.parse('$baseUrl/auth/login'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'username': 'test', 'password': 'test'}),
+          )
+          .timeout(const Duration(seconds: 5));
 
       return {'success': true, 'message': 'Conexión exitosa al servidor'};
     } catch (e) {

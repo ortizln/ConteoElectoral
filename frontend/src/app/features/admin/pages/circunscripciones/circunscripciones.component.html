@@ -1,0 +1,168 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Circunscripciones</h2>
+    <button class="btn btn-primary" (click)="openCreate()" *ngIf="selectedEleccionId">
+      <span>+</span> Nueva Circunscripción
+    </button>
+  </div>
+
+  <div class="filters-bar">
+    <select class="form-select" [(ngModel)]="selectedEleccionId" (change)="loadCircunscripciones()">
+      <option *ngFor="let e of elecciones" [value]="e.id">{{ e.nombre }}</option>
+    </select>
+  </div>
+
+  <div class="table-container">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Código</th>
+          <th>Tipo</th>
+          <th>Escaños</th>
+          <th>Umbral %</th>
+          <th>Método</th>
+          <th>Activa</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of circunscripciones">
+          <td><strong>{{ c.nombre }}</strong></td>
+          <td>{{ c.codigo || '-' }}</td>
+          <td><span class="badge bg-info">{{ c.tipoCircunscripcionNombre || c.tipoCircunscripcionCodigo || '-' }}</span></td>
+          <td><span class="badge bg-primary">{{ c.escanos }}</span></td>
+          <td>{{ c.umbralElectoral != null ? c.umbralElectoral + '%' : '0%' }}</td>
+          <td><span class="badge bg-secondary">{{ c.metodoAsignacion }}</span></td>
+          <td>
+            <span class="badge" [class.bg-success]="c.activa" [class.bg-danger]="!c.activa">
+              {{ c.activa ? 'Sí' : 'No' }}
+            </span>
+          </td>
+          <td>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">Acciones</button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#" (click)="$event.preventDefault(); openEdit(c)">Editar</a></li>
+                <li><a class="dropdown-item" href="#" (click)="$event.preventDefault(); calcular(c.id)">Calcular D'Hondt</a></li>
+                <li><a class="dropdown-item" href="#" (click)="$event.preventDefault(); verResultados(c.id)">Ver Resultados</a></li>
+                <li><a class="dropdown-item text-danger" href="#" (click)="$event.preventDefault(); delete(c.id)">Eliminar</a></li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="circunscripciones.length === 0">
+          <td colspan="8" class="text-center text-muted">No hay circunscripciones para esta elección</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ editing ? 'Editar' : 'Nueva' }} Circunscripción</h5>
+        <button type="button" class="btn-close" (click)="showModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Nombre *</label>
+            <input class="form-control" [(ngModel)]="selected.nombre" placeholder="Ej: Circunscripción 1">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Código</label>
+            <input class="form-control" [(ngModel)]="selected.codigo" placeholder="Ej: CIR-1">
+          </div>
+          <div class="col-md-3 mb-3">
+            <label class="form-label">Tipo</label>
+            <select class="form-select" [(ngModel)]="selected.tipoCircunscripcionId">
+              <option [value]="null">Sin tipo</option>
+              <option *ngFor="let t of tiposCircunscripcion" [value]="t.id">{{ t.nombre }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Escaños</label>
+            <input class="form-control" type="number" min="1" [(ngModel)]="selected.escanos">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Umbral Electoral (%)</label>
+            <input class="form-control" type="number" step="0.01" min="0" max="100" [(ngModel)]="selected.umbralElectoral">
+          </div>
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Método de Asignación</label>
+            <select class="form-select" [(ngModel)]="selected.metodoAsignacion">
+              <option value="D_HONDT">D'Hondt</option>
+              <option value="HARE">Hare</option>
+              <option value="SAINTE_LAGUE">Sainte-Laguë</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="showModal = false">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="save()" [disabled]="!selected.nombre">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" [class.show]="resultado != null || loading" [style.display]="(resultado != null || loading) ? 'block' : 'none'">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Resultados D'Hondt</h5>
+        <button type="button" class="btn-close" (click)="cerrarResultados()"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="loading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status"></div>
+          <p class="mt-2">Calculando distribución D'Hondt...</p>
+        </div>
+        <div *ngIf="resultado">
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <div class="card text-center p-2"><strong>{{ resultado.circunscripcionNombre }}</strong></div>
+            </div>
+            <div class="col-md-4">
+              <div class="card text-center p-2">Escaños: <strong>{{ resultado.totalEscanos }}</strong></div>
+            </div>
+            <div class="col-md-4">
+              <div class="card text-center p-2">Votos Válidos: <strong>{{ resultado.totalVotosValidos }}</strong></div>
+            </div>
+          </div>
+          <table class="table" *ngIf="resultado.asignaciones.length > 0">
+            <thead>
+              <tr>
+                <th>Partido</th>
+                <th>Votos</th>
+                <th>%</th>
+                <th>Escaños</th>
+                <th>Cocientes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let a of resultado.asignaciones">
+                <td><strong>{{ a.partidoNombre }}</strong> <small class="text-muted">{{ a.partidoSigla }}</small></td>
+                <td>{{ a.votosValidos | number }}</td>
+                <td>{{ a.porcentajeVotos }}%</td>
+                <td><span class="badge bg-success fs-6">{{ a.escanosAsignados }}</span></td>
+                <td><small class="text-muted">{{ a.cocientes.join(', ') }}</small></td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="resultado.asignaciones.length === 0" class="alert alert-warning">
+            Ningún partido superó el umbral del {{ resultado.umbralElectoral }}%.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cerrarResultados()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>

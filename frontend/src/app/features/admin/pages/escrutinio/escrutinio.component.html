@@ -1,0 +1,177 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>Escrutinio Avanzado</h2>
+    <div class="d-flex gap-2">
+      <select class="form-select w-auto" [(ngModel)]="activeTab">
+        <option value="reconteos">Reconteos ({{ resumen.reconteosPendientes }})</option>
+        <option value="impugnaciones">Impugnaciones ({{ resumen.impugnacionesPendientes }})</option>
+        <option value="observaciones">Observaciones ({{ resumen.totalObservaciones }})</option>
+        <option value="resoluciones">Resoluciones ({{ resumen.totalResoluciones }})</option>
+      </select>
+      <select class="form-select w-auto" [(ngModel)]="selectedEleccionId" (change)="loadData()">
+        <option *ngFor="let e of elecciones" [value]="e.id">{{ e.nombre }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- RECONTEO -->
+  <div *ngIf="activeTab === 'reconteos'">
+    <div class="mb-2">
+      <button class="btn btn-primary btn-sm" (click)="openReconteo()">+ Solicitar Reconteo</button>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Mesa</th><th>Motivo</th><th>Solicitante</th><th>Estado</th><th>Resultado</th><th>Acciones</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let r of reconteos">
+            <td>{{ r.mesaNumero }}<br><small class="text-muted">{{ r.institucionNombre }}</small></td>
+            <td>{{ r.motivo }}</td>
+            <td>{{ r.solicitadoPor }}</td>
+            <td><span class="badge" [class]="getBadgeClass(r.estado)">{{ r.estado }}</span></td>
+            <td>{{ r.resultado || '-' }}</td>
+            <td>
+              <select class="form-select form-select-sm" (change)="updateReconteoEstado(r.id, $any($event.target).value)" *ngIf="r.estado === 'PENDIENTE' || r.estado === 'EN_PROCESO'">
+                <option value="">Cambiar estado</option>
+                <option value="EN_PROCESO">Iniciar</option>
+                <option value="COMPLETADO">Completar</option>
+                <option value="RECHAZADO">Rechazar</option>
+              </select>
+            </td>
+          </tr>
+          <tr *ngIf="reconteos.length === 0"><td colspan="6" class="text-center text-muted">Sin reconteos</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- IMPUGNACIONES -->
+  <div *ngIf="activeTab === 'impugnaciones'">
+    <div class="mb-2">
+      <button class="btn btn-primary btn-sm" (click)="openImpugnacion()">+ Nueva Impugnación</button>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Mesa</th><th>Tipo</th><th>Descripción</th><th>Solicitante</th><th>Estado</th><th>Acciones</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let i of impugnaciones">
+            <td>{{ i.mesaNumero || '-' }}</td>
+            <td><span class="badge bg-secondary">{{ i.tipo }}</span></td>
+            <td>{{ i.descripcion }}</td>
+            <td>{{ i.solicitante }}</td>
+            <td><span class="badge" [class]="getBadgeClass(i.estado)">{{ i.estado }}</span></td>
+            <td>
+              <select class="form-select form-select-sm" (change)="updateImpugnacionEstado(i.id, $any($event.target).value)" *ngIf="i.estado === 'PENDIENTE' || i.estado === 'EN_REVISION'">
+                <option value="">Cambiar estado</option>
+                <option value="EN_REVISION">En revisión</option>
+                <option value="APROBADA">Aprobar</option>
+                <option value="RECHAZADA">Rechazar</option>
+              </select>
+            </td>
+          </tr>
+          <tr *ngIf="impugnaciones.length === 0"><td colspan="6" class="text-center text-muted">Sin impugnaciones</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- OBSERVACIONES -->
+  <div *ngIf="activeTab === 'observaciones'">
+    <div class="mb-2">
+      <button class="btn btn-primary btn-sm" (click)="openObservacion()">+ Nueva Observación</button>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Mesa</th><th>Tipo</th><th>Descripción</th><th>Usuario</th><th>Fecha</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let o of observaciones">
+            <td>{{ o.mesaNumero || '-' }}</td>
+            <td><span class="badge" [class.bg-warning]="o.tipo === 'INCIDENCIA'" [class.bg-info]="o.tipo === 'OBSERVACION'" [class.bg-success]="o.tipo === 'SUGERENCIA'">{{ o.tipo }}</span></td>
+            <td>{{ o.descripcion }}</td>
+            <td>{{ o.usuarioNombre || '-' }}</td>
+            <td>{{ o.fecha | date:'short' }}</td>
+          </tr>
+          <tr *ngIf="observaciones.length === 0"><td colspan="5" class="text-center text-muted">Sin observaciones</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RESOLUCIONES -->
+  <div *ngIf="activeTab === 'resoluciones'">
+    <div class="mb-2">
+      <button class="btn btn-primary btn-sm" (click)="openResolucion()">+ Nueva Resolución</button>
+    </div>
+    <div class="table-container">
+      <table class="table">
+        <thead><tr><th>Código</th><th>Título</th><th>Resuelto por</th><th>Impugnación</th><th>Fecha</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let r of resoluciones">
+            <td><strong>{{ r.codigo }}</strong></td>
+            <td>{{ r.titulo }}</td>
+            <td>{{ r.resueltoPor }}</td>
+            <td>{{ r.impugnacionDescripcion || '-' }}</td>
+            <td>{{ r.fechaResolucion | date:'short' }}</td>
+          </tr>
+          <tr *ngIf="resoluciones.length === 0"><td colspan="5" class="text-center text-muted">Sin resoluciones</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="modal" [class.show]="showModal" [style.display]="showModal ? 'block' : 'none'">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{ modalType === 'reconteo' ? 'Solicitar Reconteo' : '' }}
+          {{ modalType === 'impugnacion' ? 'Nueva Impugnación' : '' }}
+          {{ modalType === 'observacion' ? 'Nueva Observación' : '' }}
+          {{ modalType === 'resolucion' ? 'Nueva Resolución' : '' }}
+        </h5>
+        <button type="button" class="btn-close" (click)="showModal = false"></button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="modalType === 'reconteo'">
+          <div class="mb-3"><label class="form-label">Mesa ID</label><input class="form-control" type="number" [(ngModel)]="reconteoForm.mesaId"></div>
+          <div class="mb-3"><label class="form-label">Motivo *</label><textarea class="form-control" [(ngModel)]="reconteoForm.motivo" rows="3"></textarea></div>
+          <div class="mb-3"><label class="form-label">Solicitante *</label><input class="form-control" [(ngModel)]="reconteoForm.solicitadoPor"></div>
+        </div>
+        <div *ngIf="modalType === 'impugnacion'">
+          <div class="mb-3"><label class="form-label">Mesa ID</label><input class="form-control" type="number" [(ngModel)]="impugnacionForm.mesaId"></div>
+          <div class="mb-3"><label class="form-label">Tipo *</label>
+            <select class="form-select" [(ngModel)]="impugnacionForm.tipo">
+              <option value="VOTO">Voto</option><option value="ACTA">Acta</option><option value="MESA">Mesa</option><option value="RESULTADO">Resultado</option><option value="CANDIDATO">Candidato</option>
+            </select>
+          </div>
+          <div class="mb-3"><label class="form-label">Descripción *</label><textarea class="form-control" [(ngModel)]="impugnacionForm.descripcion" rows="3"></textarea></div>
+          <div class="mb-3"><label class="form-label">Solicitante *</label><input class="form-control" [(ngModel)]="impugnacionForm.solicitante"></div>
+        </div>
+        <div *ngIf="modalType === 'observacion'">
+          <div class="mb-3"><label class="form-label">Mesa ID</label><input class="form-control" type="number" [(ngModel)]="observacionForm.mesaId"></div>
+          <div class="mb-3"><label class="form-label">Tipo *</label>
+            <select class="form-select" [(ngModel)]="observacionForm.tipo">
+              <option value="OBSERVACION">Observación</option><option value="INCIDENCIA">Incidencia</option><option value="SUGERENCIA">Sugerencia</option>
+            </select>
+          </div>
+          <div class="mb-3"><label class="form-label">Descripción *</label><textarea class="form-control" [(ngModel)]="observacionForm.descripcion" rows="3"></textarea></div>
+        </div>
+        <div *ngIf="modalType === 'resolucion'">
+          <div class="mb-3"><label class="form-label">Código *</label><input class="form-control" [(ngModel)]="resolucionForm.codigo" placeholder="Ej: RES-001"></div>
+          <div class="mb-3"><label class="form-label">Título *</label><input class="form-control" [(ngModel)]="resolucionForm.titulo"></div>
+          <div class="mb-3"><label class="form-label">Descripción</label><textarea class="form-control" [(ngModel)]="resolucionForm.descripcion" rows="2"></textarea></div>
+          <div class="mb-3"><label class="form-label">Impugnación ID</label><input class="form-control" type="number" [(ngModel)]="resolucionForm.impugnacionId"></div>
+          <div class="mb-3"><label class="form-label">Resuelto por *</label><input class="form-control" [(ngModel)]="resolucionForm.resueltoPor"></div>
+          <div class="mb-3"><label class="form-label">Detalle</label><textarea class="form-control" [(ngModel)]="resolucionForm.detalle" rows="3"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="showModal = false">Cancelar</button>
+        <button class="btn btn-primary" (click)="saveReconteo()" *ngIf="modalType === 'reconteo'" [disabled]="!reconteoForm.motivo || !reconteoForm.solicitadoPor">Guardar</button>
+        <button class="btn btn-primary" (click)="saveImpugnacion()" *ngIf="modalType === 'impugnacion'" [disabled]="!impugnacionForm.descripcion || !impugnacionForm.solicitante">Guardar</button>
+        <button class="btn btn-primary" (click)="saveObservacion()" *ngIf="modalType === 'observacion'" [disabled]="!observacionForm.descripcion">Guardar</button>
+        <button class="btn btn-primary" (click)="saveResolucion()" *ngIf="modalType === 'resolucion'" [disabled]="!resolucionForm.codigo || !resolucionForm.titulo || !resolucionForm.resueltoPor">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
