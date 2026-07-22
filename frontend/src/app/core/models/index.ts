@@ -394,3 +394,10 @@ export interface ReportePartido {
   porcentaje: number;
   totalCandidatos: number;
 }
+
+export interface ApkVersionItem {
+  id: number;
+  version: string;
+  nombreArchivo: string;
+  fechaSubida: string;
+}

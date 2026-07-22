@@ -21,6 +21,7 @@ C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\ele
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\security\JwtAuthenticationFilter.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\exception\MesaCerradaException.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\CargoRequest.java
+C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\entities\ApkVersion.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\entities\Reconteo.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\entities\Rol.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\repositories\ListaElectoralRepository.java
@@ -44,6 +45,7 @@ C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\ele
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\UsuarioUpdateRequest.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\repositories\EleccionRepository.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\DataInitializer.java
+C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\services\ApkVersionService.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\MesaRequest.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\services\EleccionService.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\config\WebSocketConfig.java
@@ -58,6 +60,7 @@ C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\ele
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\entities\Resolucion.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\controllers\EleccionController.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\services\ReglaNegocioService.java
+C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\ApkVersionResponse.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\VotoPapeletaResponse.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\LoginRequest.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\ObservacionResponse.java
@@ -78,6 +81,7 @@ C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\ele
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\services\RuleEngine.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\exception\GlobalExceptionHandler.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\services\VotoPapeletaService.java
+C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\controllers\ApkVersionController.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\PlantillaPapeletaResponse.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\TipoCircunscripcionResponse.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\InstitucionEducativaResponse.java
@@ -97,6 +101,7 @@ C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\ele
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\entities\ListaElectoral.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\controllers\CargoController.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\exception\RecursoNoEncontradoException.java
+C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\repositories\ApkVersionRepository.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\ZonaResponse.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\ReporteCandidatoDTO.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\security\CustomUserDetailsService.java

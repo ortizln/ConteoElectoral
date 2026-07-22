@@ -51,6 +51,13 @@ public class ConfiguracionSistemaService {
                 .orElse(null);
     }
 
+    @Transactional(readOnly = true)
+    public String getApkVersion() {
+        return repository.findById(1L)
+                .map(ConfiguracionSistema::getApkVersion)
+                .orElse(null);
+    }
+
     @Transactional
     public ConfiguracionResponse updateConfiguracion(ConfiguracionRequest request) {
         ConfiguracionSistema config = repository.findById(1L)
@@ -82,12 +89,13 @@ public class ConfiguracionSistemaService {
     }
 
     @Transactional
-    public ConfiguracionResponse uploadApk(MultipartFile file) throws IOException {
+    public ConfiguracionResponse uploadApk(MultipartFile file, String version) throws IOException {
         ConfiguracionSistema config = repository.findById(1L)
                 .orElseGet(() -> ConfiguracionSistema.builder().id(1L).build());
 
         config.setApkData(file.getBytes());
         config.setApkNombre(file.getOriginalFilename());
+        config.setApkVersion(version);
         repository.save(config);
         return mapToResponse(config);
     }
@@ -99,6 +107,7 @@ public class ConfiguracionSistemaService {
 
         config.setApkData(null);
         config.setApkNombre(null);
+        config.setApkVersion(null);
         repository.save(config);
     }
 
@@ -110,6 +119,7 @@ public class ConfiguracionSistemaService {
                 .tieneLogo(config.getLogo() != null && config.getLogo().length > 0)
                 .tieneApk(config.getApkData() != null && config.getApkData().length > 0)
                 .apkNombre(config.getApkNombre())
+                .apkVersion(config.getApkVersion())
                 .updatedAt(config.getUpdatedAt())
                 .build();
     }

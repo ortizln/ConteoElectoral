@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
 import { environment } from '../../../../../environments/environment';
-import { CarouselImage, Rol, RolPermiso } from '../../../../core/models';
+import { ApkVersionItem, CarouselImage, Rol, RolPermiso } from '../../../../core/models';
 import { UsuariosComponent } from '../usuarios/usuarios.component';
 import { ImportarComponent } from '../importar/importar.component';
 
@@ -15,7 +15,7 @@ import { ImportarComponent } from '../importar/importar.component';
   styleUrl: './configuracion.component.css'
 })
 export class ConfiguracionComponent implements OnInit {
-  activeTab: 'config' | 'carousel' | 'usuarios' | 'importar' | 'permisos' = 'config';
+  activeTab: 'config' | 'carousel' | 'apk' | 'usuarios' | 'importar' | 'permisos' = 'config';
   config: any = { nombrePartido: '', descripcion: '' };
   logoUrl: string | null = null;
   selectedLogo: File | null = null;
@@ -28,11 +28,18 @@ export class ConfiguracionComponent implements OnInit {
 
   // APK
   apkNombre: string | null = null;
+  apkVersion: string | null = null;
+  apkVersionInput: string = '';
   manualUrl = `${this.API_URL}/configuracion/manual?t=${new Date().getTime()}`;
   apkDownloadUrl = '';
   tieneApk = false;
   selectedApk: File | null = null;
   uploadingApk = false;
+  apkVersions: ApkVersionItem[] = [];
+  apkVersionsLoading = false;
+  apkVersionUploadVersion = '';
+  apkVersionFile: File | null = null;
+  apkVersionUploading = false;
 
   // Carousel
   carouselImages: CarouselImage[] = [];
@@ -72,6 +79,7 @@ export class ConfiguracionComponent implements OnInit {
   ngOnInit(): void {
     this.loadConfig();
     this.loadCarousel();
+    this.loadApkVersions();
     this.loadRoles();
     this.loadPermisos();
   }
@@ -84,6 +92,8 @@ export class ConfiguracionComponent implements OnInit {
         this.logoUrl = res.tieneLogo ? `${this.API_URL}/configuracion/logo?t=${new Date().getTime()}` : null;
         this.tieneApk = res.tieneApk;
         this.apkNombre = res.apkNombre || null;
+        this.apkVersion = res.apkVersion || null;
+        this.apkVersionInput = res.apkVersion || '';
         this.apkDownloadUrl = `${this.API_URL}/configuracion/apk?t=${new Date().getTime()}`;
         this.loading = false;
       },
@@ -168,12 +178,15 @@ export class ConfiguracionComponent implements OnInit {
     this.uploadingApk = true;
     this.errorMsg = '';
     this.successMsg = '';
-    this.api.uploadApk(this.selectedApk).subscribe({
+    const version = this.apkVersionInput.trim() || '1.0.0';
+    this.api.uploadApk(this.selectedApk, version).subscribe({
       next: (res) => {
         this.uploadingApk = false;
         this.selectedApk = null;
         this.tieneApk = true;
         this.apkNombre = res.apkNombre || 'app.apk';
+        this.apkVersion = res.apkVersion || version;
+        this.apkVersionInput = this.apkVersion || '';
         this.successMsg = 'APK subido correctamente';
       },
       error: (err) => {
@@ -193,6 +206,8 @@ export class ConfiguracionComponent implements OnInit {
         this.uploadingApk = false;
         this.tieneApk = false;
         this.apkNombre = null;
+        this.apkVersion = null;
+        this.apkVersionInput = '';
         this.successMsg = 'APK eliminado correctamente';
       },
       error: (err) => {
@@ -200,6 +215,54 @@ export class ConfiguracionComponent implements OnInit {
         this.errorMsg = err.error?.message || 'Error al eliminar el APK';
       }
     });
+  }
+
+  // APK version list methods
+  loadApkVersions(): void {
+    this.apkVersionsLoading = true;
+    this.api.getApkVersions().subscribe({
+      next: (res) => { this.apkVersions = res; this.apkVersionsLoading = false; },
+      error: () => { this.apkVersionsLoading = false; }
+    });
+  }
+
+  onApkVersionFileSelected(event: any): void {
+    this.apkVersionFile = event.target.files?.[0] || null;
+  }
+
+  uploadNewApkVersion(): void {
+    if (!this.apkVersionFile || !this.apkVersionUploadVersion.trim()) return;
+    this.apkVersionUploading = true;
+    this.errorMsg = '';
+    this.successMsg = '';
+    this.api.uploadApkVersion(this.apkVersionFile, this.apkVersionUploadVersion.trim()).subscribe({
+      next: () => {
+        this.apkVersionUploading = false;
+        this.apkVersionFile = null;
+        this.apkVersionUploadVersion = '';
+        this.successMsg = 'Versión APK subida correctamente';
+        this.loadApkVersions();
+      },
+      error: (err) => {
+        this.apkVersionUploading = false;
+        this.errorMsg = err.error?.message || 'Error al subir versión APK';
+      }
+    });
+  }
+
+  deleteApkVersionItem(id: number): void {
+    if (!confirm('¿Eliminar esta versión APK?')) return;
+    this.api.deleteApkVersion(id).subscribe({
+      next: () => {
+        this.successMsg = 'Versión APK eliminada correctamente';
+        this.loadApkVersions();
+      },
+      error: (err) => { this.errorMsg = err.error?.message || 'Error al eliminar'; }
+    });
+  }
+
+  getApkVersionDownloadUrl(id: number): string {
+    return this.api.getApkVersionDownloadUrl(id);
   }
 
   // Carousel methods

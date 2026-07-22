@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Eleccion, Partido, Cargo, Candidato, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse, ReglaNegocio, Circunscripcion, ResultadoDHondt, Reconteo, Impugnacion, Observacion, Resolucion, EscrutinioResumen, GeoResumen, DatoGeografico, ReporteResumen, ReporteCandidato, ReportePartido } from '../models';
+import { ApkVersionItem, Eleccion, Partido, Cargo, Candidato, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse, ReglaNegocio, Circunscripcion, ResultadoDHondt, Reconteo, Impugnacion, Observacion, Resolucion, EscrutinioResumen, GeoResumen, DatoGeografico, ReporteResumen, ReporteCandidato, ReportePartido } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -467,14 +467,39 @@ export class ApiService {
     return this.http.delete<void>(`${this.API_URL}/configuracion/logo`);
   }
 
-  uploadApk(file: File): Observable<any> {
+  uploadApk(file: File, version: string = '1.0.0'): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('version', version);
     return this.http.post<any>(`${this.API_URL}/configuracion/apk`, formData);
   }
 
   deleteApk(): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/configuracion/apk`);
+  }
+
+  getApkVersion(): Observable<{ version: string; apkNombre: string }> {
+    return this.http.get<{ version: string; apkNombre: string }>(`${this.API_URL}/configuracion/apk/version`);
+  }
+
+  // ApkVersion (nuevo sistema de versiones)
+  getApkVersions(): Observable<ApkVersionItem[]> {
+    return this.http.get<ApkVersionItem[]>(`${this.API_URL}/apk-versions`);
+  }
+
+  uploadApkVersion(file: File, version: string): Observable<ApkVersionItem> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('version', version);
+    return this.http.post<ApkVersionItem>(`${this.API_URL}/apk-versions`, formData);
+  }
+
+  deleteApkVersion(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/apk-versions/${id}`);
+  }
+
+  getApkVersionDownloadUrl(id: number): string {
+    return `${this.API_URL}/apk-versions/${id}/download`;
   }
 
   // Roles y Permisos

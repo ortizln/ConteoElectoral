@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../services/sync_service.dart';
@@ -26,6 +27,11 @@ class AppProvider extends ChangeNotifier {
   int _pendingSyncCount = 0;
   int _failedSyncCount = 0;
   bool _isSyncing = false;
+
+  String _currentVersion = '';
+  String? _latestVersion;
+  bool _updateAvailable = false;
+  bool _checkingUpdate = false;
   final StompService _stomp = StompService();
   StreamSubscription? _connectivitySub;
   StreamSubscription? _stompSyncSub;
@@ -48,6 +54,11 @@ class AppProvider extends ChangeNotifier {
   int get failedSyncCount => _failedSyncCount;
   bool get isSyncing => _isSyncing;
 
+  String get currentVersion => _currentVersion;
+  String? get latestVersion => _latestVersion;
+  bool get updateAvailable => _updateAvailable;
+  bool get checkingUpdate => _checkingUpdate;
+
   List<Candidato> get candidatos => _candidatos;
   List<Partido> get partidos => _partidos;
   List<Cargo> get cargos => _cargos;
@@ -65,6 +76,8 @@ class AppProvider extends ChangeNotifier {
     await _refreshSyncCounts();
     _checkConnectivity();
     _initStomp();
+    _loadCurrentVersion();
+    _checkForUpdate();
   }
 
   void _initStomp() {
@@ -91,6 +104,57 @@ class AppProvider extends ChangeNotifier {
 
   Future<Map<String, dynamic>> testServerConnection() async {
     return await _api.testConnection();
+  }
+
+  Future<void> _loadCurrentVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      _currentVersion = info.version;
+    } catch (_) {}
+  }
+
+  Future<void> _checkForUpdate() async {
+    if (_currentVersion.isEmpty) return;
+    _checkingUpdate = true;
+    notifyListeners();
+    final result = await _api.getApkVersion();
+    final serverVersion = result['version'];
+    if (serverVersion != null && serverVersion.isNotEmpty) {
+      final serverParts = serverVersion.split('.').map(int.tryParse).toList();
+      final currentParts =
+          _currentVersion.split('.').map(int.tryParse).toList();
+      if (serverParts.length == currentParts.length) {
+        bool newer = false;
+        for (int i = 0; i < serverParts.length; i++) {
+          final sp = serverParts[i] ?? 0;
+          final cp = currentParts[i] ?? 0;
+          if (sp > cp) {
+            newer = true;
+            break;
+          } else if (sp < cp) {
+            break;
+          }
+        }
+        if (newer) {
+          _latestVersion = serverVersion;
+          _updateAvailable = true;
+        }
+      }
+    }
+    _checkingUpdate = false;
+    notifyListeners();
+  }
+
+  Future<bool> isVersionSkipped(String version) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('skipped_version') == version;
+  }
+
+  Future<void> skipVersion(String version) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('skipped_version', version);
+    _updateAvailable = false;
+    notifyListeners();
   }
 
   Future<void> _checkConnectivity() async {

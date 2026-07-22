@@ -27,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (provider.eleccionActual == null) {
       await provider.descargarDatos();
     }
+    if (mounted) _checkUpdateDialog();
   }
 
   Future<void> _descargarDatos() async {
@@ -55,6 +56,38 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }
     }
+  }
+
+  void _checkUpdateDialog() {
+    final provider = context.read<AppProvider>();
+    if (!provider.updateAvailable) return;
+    provider.isVersionSkipped(provider.latestVersion!).then((skipped) {
+      if (!mounted || skipped) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Actualización disponible'),
+          content: Text(
+              'Nueva versión ${provider.latestVersion} disponible.\n'
+              'Tu versión actual: v${provider.currentVersion}\n\n'
+              'Contacta al administrador para obtener la nueva APK.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                provider.skipVersion(provider.latestVersion!);
+                Navigator.pop(ctx);
+              },
+              child: const Text('Saltar esta versión'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   void _openVotacion(mesa) {
@@ -400,6 +433,13 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
           const Spacer(),
+          if (provider.currentVersion.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Text('v${provider.currentVersion}',
+                  style: const TextStyle(
+                      fontSize: 12, color: AppColors.gray)),
+            ),
           const Divider(),
           ListTile(
             leading: const Icon(Icons.logout, color: AppColors.error),

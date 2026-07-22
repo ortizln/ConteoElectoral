@@ -20,6 +20,9 @@
     <button class="tab" [class.active]="activeTab === 'carousel'" (click)="activeTab = 'carousel'">
       <span>📷</span> Carrusel
     </button>
+    <button class="tab" [class.active]="activeTab === 'apk'" (click)="loadApkVersions(); activeTab = 'apk'">
+      <span>📱</span> Versiones APK
+    </button>
     <button class="tab" [class.active]="activeTab === 'usuarios'" (click)="activeTab = 'usuarios'">
       <span>👥</span> Usuarios
     </button>
@@ -65,28 +68,6 @@
         <label for="logoInput" class="file-label">{{ selectedLogo ? selectedLogo.name : 'Seleccionar imagen...' }}</label>
         <button class="btn btn-primary" (click)="uploadLogo()" [disabled]="!selectedLogo || uploading">
           {{ uploading ? 'Subiendo...' : 'Subir Logo' }}
-        </button>
-      </div>
-    </div>
-    <div class="card card-apk">
-      <h5><span>📱</span> App Móvil (APK)</h5>
-      <div class="apk-status">
-        <div *ngIf="tieneApk" class="apk-info">
-          <span class="apk-file-name">📦 {{ apkNombre }}</span>
-          <div class="apk-actions">
-            <a [href]="apkDownloadUrl" class="btn btn-sm btn-success" download>Descargar APK</a>
-            <button class="btn btn-sm btn-outline-danger" (click)="deleteApk()" [disabled]="uploadingApk">Eliminar</button>
-          </div>
-        </div>
-        <div *ngIf="!tieneApk" class="apk-empty">
-          <span>No hay APK cargado</span>
-        </div>
-      </div>
-      <div class="upload-section">
-        <input type="file" autocomplete="off" (change)="onApkSelected($event)" accept=".apk" id="apkInput" />
-        <label for="apkInput" class="file-label">{{ selectedApk ? selectedApk.name : 'Seleccionar archivo APK...' }}</label>
-        <button class="btn btn-primary" (click)="uploadApk()" [disabled]="!selectedApk || uploadingApk">
-          {{ uploadingApk ? 'Subiendo...' : 'Subir APK' }}
         </button>
       </div>
     </div>
@@ -164,6 +145,57 @@
             <div *ngIf="editingCarouselId === img.id" class="btn-group">
               <button class="btn btn-sm btn-primary" (click)="saveCarouselEdit(img.id)">Guardar</button>
               <button class="btn btn-sm btn-outline-secondary" (click)="cancelEditCarousel()">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Versiones APK -->
+  <div *ngIf="!loading && activeTab === 'apk'" class="tab-content">
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title mb-3">📱 Subir Nueva Versión APK</h5>
+        <div class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label">Versión</label>
+            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="apkVersionUploadVersion" placeholder="Ej: 1.0.0" />
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">Archivo APK</label>
+            <div class="input-group">
+              <input type="file" autocomplete="off" (change)="onApkVersionFileSelected($event)" accept=".apk" id="apkVersionInput" class="d-none" />
+              <label for="apkVersionInput" class="form-control cursor-pointer" style="cursor:pointer;background:#f8fafc;">{{ apkVersionFile ? apkVersionFile.name : 'Seleccionar APK...' }}</label>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <button class="btn btn-primary w-100" (click)="uploadNewApkVersion()" [disabled]="!apkVersionFile || !apkVersionUploadVersion.trim() || apkVersionUploading">
+              {{ apkVersionUploading ? 'Subiendo...' : 'Subir Versión' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="apkVersionsLoading" class="text-center py-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div></div>
+
+    <div *ngIf="!apkVersionsLoading && apkVersions.length === 0" class="text-center py-5 text-muted">
+      <p class="mb-0">No hay versiones APK subidas. Agrega una usando el formulario de arriba.</p>
+    </div>
+
+    <div *ngIf="!apkVersionsLoading && apkVersions.length > 0" class="row g-3">
+      <div *ngFor="let v of apkVersions" class="col-md-4 col-lg-3">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h6 class="card-title mb-0">📱 v{{ v.version }}</h6>
+              <span class="badge bg-light text-muted small">{{ v.fechaSubida | date:'short' }}</span>
+            </div>
+            <p class="card-text small text-muted mb-3 flex-grow-1">{{ v.nombreArchivo }}</p>
+            <div class="d-flex gap-2">
+              <a [href]="getApkVersionDownloadUrl(v.id)" class="btn btn-sm btn-success" download>Descargar</a>
+              <button class="btn btn-sm btn-outline-danger" (click)="deleteApkVersionItem(v.id)">Eliminar</button>
             </div>
           </div>
         </div>

@@ -54,7 +54,6 @@ com\electoral\entities\Usuario$UsuarioBuilder.class
 com\electoral\entities\RolPermiso.class
 com\electoral\exception\MesaCerradaException.class
 com\electoral\entities\Partido.class
-com\electoral\controllers\ConfiguracionController.class
 com\electoral\controllers\CandidatoController.class
 com\electoral\repositories\AsignacionEscanoRepository.class
 com\electoral\dto\InstitucionEducativaResponse$InstitucionEducativaResponseBuilder.class

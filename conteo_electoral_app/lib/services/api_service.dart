@@ -988,6 +988,22 @@ class ApiService {
     }
   }
 
+  Future<Map<String, String?>> getApkVersion() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/configuracion/apk/version'),
+      ).timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'version': data['version'] as String?,
+          'apkNombre': data['apkNombre'] as String?,
+        };
+      }
+    } catch (_) {}
+    return {'version': null, 'apkNombre': null};
+  }
+
   Future<Map<String, dynamic>> testConnection() async {
     try {
       await http

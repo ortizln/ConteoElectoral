@@ -17,5 +17,6 @@ public class ConfiguracionResponse {
     private boolean tieneLogo;
     private boolean tieneApk;
     private String apkNombre;
+    private String apkVersion;
     private LocalDateTime updatedAt;
 }

@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/carousel/**").permitAll()
+                    .requestMatchers("/api/apk-versions/**").permitAll()
                     .requestMatchers("/api/configuracion/logo").permitAll()
                     .requestMatchers("/api/configuracion/apk").permitAll()
                     .requestMatchers("/api/configuracion/manual").permitAll()
