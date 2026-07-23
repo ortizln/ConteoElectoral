@@ -349,6 +349,30 @@ td .dropdown {
 .mb-4 { margin-bottom: 1.5rem; }
 .mb-3 { margin-bottom: 1rem; }
 
+/* Responsive table wrapper */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Responsive filters */
+@media (max-width: 768px) {
+  .filters-bar { flex-direction: column; align-items: stretch; }
+  .filter-item { min-width: 0; width: 100%; }
+  .filter-item .form-control,
+  .filter-item .form-select { min-width: 0; width: 100%; }
+  .pagination-bar { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+  .pagination-controls { justify-content: center; }
+  .pagination-info { text-align: center; }
+  .export-buttons { flex-wrap: wrap; }
+  .stat-value { font-size: 1.5rem; }
+}
+@media (max-width: 480px) {
+  .page-header { margin-bottom: 1rem; padding-bottom: 0.75rem; }
+  .stat-card { padding: 1rem; }
+}
+
 /* Dark mode */
 [data-theme="dark"] {
   --primary-color: #60a5fa;

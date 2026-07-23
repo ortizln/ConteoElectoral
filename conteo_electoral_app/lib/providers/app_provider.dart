@@ -285,7 +285,7 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> registrarVoto(Candidato candidato, int cantidad) async {
+  Future<void> registrarVoto(Candidato candidato, int cantidad, {int? listaId}) async {
     if (_mesaActual == null) return;
 
     final existente = _votosMesa.cast<Voto?>().firstWhere(
@@ -297,6 +297,7 @@ class AppProvider extends ChangeNotifier {
     if (existente != null) {
       voto = existente.copyWith(
         cantidadVotos: existente.cantidadVotos + cantidad,
+        listaId: listaId,
       );
       await _db.actualizarVoto(existente.id!, voto);
     } else {
@@ -305,6 +306,7 @@ class AppProvider extends ChangeNotifier {
         mesaId: _mesaActual!.id,
         cantidadVotos: cantidad,
         eleccionesId: _mesaActual!.eleccionesId,
+        listaId: listaId,
       );
       final newId = await _db.guardarVoto(voto);
       voto = voto.copyWith(id: newId);
@@ -316,6 +318,12 @@ class AppProvider extends ChangeNotifier {
 
     if (_isOnline) {
       await sincronizarVotos();
+    }
+  }
+
+  Future<void> registrarVotosLista(int listaId, List<Candidato> candidatos, int cantidad) async {
+    for (final candidato in candidatos) {
+      await registrarVoto(candidato, cantidad, listaId: listaId);
     }
   }
 

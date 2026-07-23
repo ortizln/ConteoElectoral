@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -19,6 +19,7 @@ interface NavItem {
   styleUrl: './admin-layout.component.css'
 })
 export class AdminLayoutComponent {
+  sidebarOpen = false;
   navItems: NavItem[] = [
     { path: 'elecciones', icon: '🏛️', label: 'Elecciones', roles: ['ADMIN', 'SUPERVISOR'] },
     { path: 'zonas', icon: '🌍', label: 'Zonas', roles: ['ADMIN'] },
@@ -62,18 +63,25 @@ export class AdminLayoutComponent {
     return this.themeService.isDarkMode();
   }
 
+  get isMobile(): boolean { return window.innerWidth <= 991; }
+
   constructor(
     private authService: AuthService,
     private router: Router,
     private themeService: ThemeService
   ) {}
 
-  toggleTheme(): void {
-    this.themeService.toggleDarkMode();
+  toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
+
+  closeSidebar(): void {
+    if (this.isMobile) this.sidebarOpen = false;
   }
 
-  logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+  @HostListener('window:resize')
+  onResize(): void {
+    if (!this.isMobile) this.sidebarOpen = false;
   }
+
+  toggleTheme(): void { this.themeService.toggleDarkMode(); }
+  logout(): void { this.authService.logout(); this.router.navigate(['/login']); }
 }

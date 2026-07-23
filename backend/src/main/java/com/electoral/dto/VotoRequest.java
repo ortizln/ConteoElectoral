@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VotoRequest {
-    @NotNull(message = "El candidato es requerido")
     private Long candidatoId;
     
     @NotNull(message = "La mesa es requerida")
@@ -22,4 +21,6 @@ public class VotoRequest {
     
     @NotNull(message = "La elección es requerida")
     private Long eleccionesId;
+
+    private Long listaId;
 }

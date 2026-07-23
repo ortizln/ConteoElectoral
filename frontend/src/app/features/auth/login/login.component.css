@@ -133,7 +133,22 @@
   14% { transform: translate(-300px, 260px) rotate(-40deg); opacity: 0; }
   100% { transform: translate(-300px, 260px) rotate(-40deg); opacity: 0; }
 }
-@media (max-width: 768px) { .split-layout { flex-direction: column; } .left-panel, .right-panel { flex: none; height: 50vh; } }
+@media (max-width: 768px) {
+  .split-layout { flex-direction: column; }
+  .left-panel { flex: none; min-height: 100vh; padding: 16px; }
+  .right-panel { display: none; }
+  .login-card { max-width: 100%; padding: 28px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); margin: auto; }
+  .login-header h2 { font-size: 22px; }
+  .form-control { padding: 10px 12px; font-size: 13px; }
+  .btn-login { padding: 11px 20px; font-size: 14px; }
+  .download-apk { margin-top: 20px; padding-top: 16px; }
+}
+@media (max-width: 480px) {
+  .left-panel { align-items: flex-start; padding: 24px 12px; }
+  .login-card { padding: 24px 16px; border-radius: 12px; }
+  .login-header { margin-bottom: 24px; }
+  .form-group { margin-bottom: 16px; }
+}
 .login-card { background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); padding: 40px; max-width: 380px; width: 100%; position: relative; z-index: 1; }
 .login-header { text-align: center; margin-bottom: 30px; }
 .login-header h2 { color: #1e293b; margin: 0 0 8px; font-size: 24px; font-weight: 700; }

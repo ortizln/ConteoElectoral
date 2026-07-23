@@ -5,6 +5,7 @@ class Voto {
   final int cantidadVotos;
   final int eleccionesId;
   final int? opcionPapeletaId;
+  final int? listaId;
   final bool sincronizado;
   final DateTime fechaRegistro;
 
@@ -15,6 +16,7 @@ class Voto {
     required this.cantidadVotos,
     required this.eleccionesId,
     this.opcionPapeletaId,
+    this.listaId,
     this.sincronizado = false,
     DateTime? fechaRegistro,
   }) : fechaRegistro = fechaRegistro ?? DateTime.now();
@@ -27,6 +29,7 @@ class Voto {
       cantidadVotos: json['cantidadVotos'],
       eleccionesId: json['eleccionesId'],
       opcionPapeletaId: json['opcionPapeletaId'],
+      listaId: json['listaId'],
       sincronizado: json['sincronizado'] ?? false,
       fechaRegistro: json['fechaRegistro'] != null
           ? DateTime.parse(json['fechaRegistro'])
@@ -41,6 +44,7 @@ class Voto {
       'cantidadVotos': cantidadVotos,
       'eleccionesId': eleccionesId,
       if (opcionPapeletaId != null) 'opcionPapeletaId': opcionPapeletaId,
+      if (listaId != null) 'listaId': listaId,
     };
   }
 
@@ -51,6 +55,7 @@ class Voto {
     int? cantidadVotos,
     int? eleccionesId,
     int? opcionPapeletaId,
+    int? listaId,
     bool? sincronizado,
     DateTime? fechaRegistro,
   }) {
@@ -61,6 +66,7 @@ class Voto {
       cantidadVotos: cantidadVotos ?? this.cantidadVotos,
       eleccionesId: eleccionesId ?? this.eleccionesId,
       opcionPapeletaId: opcionPapeletaId ?? this.opcionPapeletaId,
+      listaId: listaId ?? this.listaId,
       sincronizado: sincronizado ?? this.sincronizado,
       fechaRegistro: fechaRegistro ?? this.fechaRegistro,
     );

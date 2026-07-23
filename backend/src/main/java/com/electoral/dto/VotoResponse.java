@@ -19,4 +19,5 @@ public class VotoResponse {
     private String mesaNumero;
     private Integer cantidadVotos;
     private Long eleccionesId;
+    private Long listaId;
 }

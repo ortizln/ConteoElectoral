@@ -20,7 +20,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -223,6 +223,9 @@ class DatabaseHelper {
       await db.execute('INSERT OR IGNORE INTO sync_meta (id, last_sync_at, last_pull_at) VALUES (1, NULL, NULL)');
       await db.execute('CREATE INDEX idx_sync_queue_status ON sync_queue(status)');
       await db.execute('CREATE INDEX idx_sync_queue_entity ON sync_queue(entity_type, entity_id)');
+    }
+    if (oldVersion < 5) {
+      await db.execute('ALTER TABLE votos ADD COLUMN listaId INTEGER');
     }
   }
 
@@ -524,6 +527,7 @@ class DatabaseHelper {
       'cantidadVotos': voto.cantidadVotos,
       'eleccionesId': voto.eleccionesId,
       'opcionPapeletaId': voto.opcionPapeletaId,
+      'listaId': voto.listaId,
       'sincronizado': voto.sincronizado ? 1 : 0,
       'fechaRegistro': voto.fechaRegistro.toIso8601String(),
     });
@@ -536,6 +540,7 @@ class DatabaseHelper {
       {
         'cantidadVotos': voto.cantidadVotos,
         'opcionPapeletaId': voto.opcionPapeletaId,
+        'listaId': voto.listaId,
         'sincronizado': 0,
         'fechaRegistro': DateTime.now().toIso8601String(),
       },
@@ -558,6 +563,7 @@ class DatabaseHelper {
       cantidadVotos: m['cantidadVotos'] as int,
       eleccionesId: m['eleccionesId'] as int,
       opcionPapeletaId: m['opcionPapeletaId'] as int?,
+      listaId: m['listaId'] as int?,
       sincronizado: (m['sincronizado'] as int) == 1,
       fechaRegistro: DateTime.parse(m['fechaRegistro'] as String),
     )).toList();
@@ -580,6 +586,7 @@ class DatabaseHelper {
       cantidadVotos: m['cantidadVotos'] as int,
       eleccionesId: m['eleccionesId'] as int,
       opcionPapeletaId: m['opcionPapeletaId'] as int?,
+      listaId: m['listaId'] as int?,
       sincronizado: (m['sincronizado'] as int) == 1,
       fechaRegistro: DateTime.parse(m['fechaRegistro'] as String),
     );
@@ -599,6 +606,7 @@ class DatabaseHelper {
       cantidadVotos: m['cantidadVotos'] as int,
       eleccionesId: m['eleccionesId'] as int,
       opcionPapeletaId: m['opcionPapeletaId'] as int?,
+      listaId: m['listaId'] as int?,
       sincronizado: (m['sincronizado'] as int) == 1,
       fechaRegistro: DateTime.parse(m['fechaRegistro'] as String),
     )).toList();
@@ -627,6 +635,7 @@ class DatabaseHelper {
           'cantidadVotos': voto.cantidadVotos,
           'eleccionesId': voto.eleccionesId,
           'opcionPapeletaId': voto.opcionPapeletaId,
+          'listaId': voto.listaId,
           'sincronizado': 1,
           'fechaRegistro': voto.fechaRegistro.toIso8601String(),
         },

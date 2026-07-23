@@ -14,6 +14,8 @@ class VotacionScreen extends StatefulWidget {
 
 class _VotacionScreenState extends State<VotacionScreen> {
   Candidato? _selected;
+  int? _selectedListaId;
+  List<Candidato> _selectedListaCandidates = [];
   final _cantidadCtrl = TextEditingController(text: '1');
   String _filtroPartido = '';
   String _filtroCargo = '';
@@ -82,16 +84,63 @@ class _VotacionScreenState extends State<VotacionScreen> {
     return p.candidatos.map((c) => c.partidoNombre).toSet().toList()..sort();
   }
 
+  bool get _isListaCargo {
+    if (_filtroCargo.isEmpty) return false;
+    final provider = context.read<AppProvider>();
+    return provider.cargos.any(
+      (c) => c.nombre == _filtroCargo && c.tipoVotacion == 'LISTA',
+    );
+  }
+
+  Map<int, List<Candidato>> get _agrupadosPorLista {
+    final provider = context.read<AppProvider>();
+    var filtered = provider.candidatos.where((c) => c.activo != false);
+    if (_filtroCargo.isNotEmpty) {
+      filtered = filtered.where((c) => c.cargoNombre == _filtroCargo);
+    }
+    if (_busqueda.isNotEmpty) {
+      final q = _busqueda.toLowerCase();
+      filtered = filtered.where((c) => c.nombreCompleto.toLowerCase().contains(q));
+    }
+    final grouped = <int, List<Candidato>>{};
+    for (final c in filtered) {
+      if (c.listaId != null) {
+        grouped.putIfAbsent(c.listaId!, () => []);
+        grouped[c.listaId!]!.add(c);
+      }
+    }
+    for (final key in grouped.keys) {
+      grouped[key]!.sort((a, b) => (a.ordenEnLista ?? 0).compareTo(b.ordenEnLista ?? 0));
+    }
+    return grouped;
+  }
+
+  int _getVotosLista(int listaId) {
+    final provider = context.read<AppProvider>();
+    final candidatos = _agrupadosPorLista[listaId] ?? [];
+    return candidatos.fold(0, (sum, c) => sum + provider.getVotosCandidato(c));
+  }
+
+
+
   Future<void> _registrar() async {
-    if (_selected == null) return;
     final cantidad = int.tryParse(_cantidadCtrl.text) ?? 1;
     if (cantidad <= 0) return;
 
     final provider = context.read<AppProvider>();
-    await provider.registrarVoto(_selected!, cantidad);
+
+    if (_selectedListaId != null) {
+      await provider.registrarVotosLista(_selectedListaId!, _selectedListaCandidates, cantidad);
+    } else if (_selected != null) {
+      await provider.registrarVoto(_selected!, cantidad);
+    } else {
+      return;
+    }
 
     setState(() {
       _selected = null;
+      _selectedListaId = null;
+      _selectedListaCandidates = [];
       _cantidadCtrl.text = '1';
     });
 
@@ -281,125 +330,318 @@ class _VotacionScreenState extends State<VotacionScreen> {
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () async => _sincronizar(),
-                  child: _candidatosFiltrados.isEmpty
-                      ? const EmptyState(
-                          icon: Icons.person_search_outlined,
-                          title: 'Sin candidatos',
-                          subtitle: 'No se encontraron candidatos')
-                      : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                          itemCount: _candidatosFiltrados.length,
-                          itemBuilder: (context, index) {
-                            final c = _candidatosFiltrados[index];
-                            final votos = provider.getVotosCandidato(c);
-                            final isSelected = _selected?.id == c.id;
-                            final partyColor = AppColors.chartColors[
-                                index % AppColors.chartColors.length];
+                  child: _isListaCargo
+                      ? (_agrupadosPorLista.isEmpty
+                          ? const EmptyState(
+                              icon: Icons.person_search_outlined,
+                              title: 'Sin listas',
+                              subtitle: 'No se encontraron listas')
+                          : ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                              itemCount: _agrupadosPorLista.length,
+                              itemBuilder: (context, index) {
+                                final listaId =
+                                    _agrupadosPorLista.keys.elementAt(index);
+                                final candidatosLista =
+                                    _agrupadosPorLista[listaId]!;
+                                final isSelected =
+                                    _selectedListaId == listaId;
+                                final partidoNombre =
+                                    candidatosLista.first.partidoNombre;
 
-                            return Card(
-                              margin: const EdgeInsets.only(bottom: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: BorderSide(
-                                  color: isSelected
-                                      ? AppColors.primary
-                                      : AppColors.border,
-                                  width: isSelected ? 2 : 1,
-                                ),
-                              ),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(12),
-                                onTap: () => setState(
-                                    () => _selected = isSelected ? null : c),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 44,
-                                        height: 44,
-                                        decoration: BoxDecoration(
-                                          color: isSelected
-                                              ? AppColors.primary
-                                              : partyColor.withValues(
-                                                  alpha: 0.1),
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                        ),
-                                        child: Center(
-                                          child: isSelected
-                                              ? const Icon(Icons.check,
-                                                  color: Colors.white, size: 22)
-                                              : Text(c.nombreCompleto[0],
-                                                  style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: partyColor,
-                                                      fontSize: 18)),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(c.nombreCompleto,
-                                                style: const TextStyle(
-                                                    fontWeight: FontWeight.w600,
-                                                    fontSize: 14)),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                                '${c.partidoNombre} · ${c.cargoNombre ?? ''}',
-                                                style: AppTextStyles.bodySmall),
-                                            if (_circunscripcionParaCandidato(
-                                                        c, provider) !=
-                                                    null ||
-                                                _tipoVotacionParaCandidato(
-                                                        c, provider) !=
-                                                    null) ...[
-                                              const SizedBox(height: 4),
-                                              _badgesRow(c, provider),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 14, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: votos > 0
-                                              ? AppColors.success
-                                                  .withValues(alpha: 0.1)
-                                              : AppColors.muted,
-                                          borderRadius:
-                                              BorderRadius.circular(16),
-                                        ),
-                                        child: Text(
-                                          '$votos',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                            color: votos > 0
-                                                ? AppColors.success
-                                                : AppColors.lightGray,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                final numeroLista =
+                                    candidatosLista.first.numeroLista;
+                                final listaNombre =
+                                    candidatosLista.first.listaNombre;
+                                final votosLista = _getVotosLista(listaId);
+
+                                return Card(
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    side: BorderSide(
+                                      color: isSelected
+                                          ? AppColors.primary
+                                          : AppColors.border,
+                                      width: isSelected ? 2 : 1,
+                                    ),
                                   ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(12),
+                                    onTap: () => setState(() {
+                                      if (isSelected) {
+                                        _selectedListaId = null;
+                                        _selectedListaCandidates = [];
+                                      } else {
+                                        _selectedListaId = listaId;
+                                        _selectedListaCandidates =
+                                            candidatosLista;
+                                        _selected = null;
+                                      }
+                                    }),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Container(
+                                                width: 44,
+                                                height: 44,
+                                                decoration: BoxDecoration(
+                                                  color: isSelected
+                                                      ? AppColors.primary
+                                                      : AppColors.primary
+                                                          .withValues(
+                                                              alpha: 0.1),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                ),
+                                                child: Center(
+                                                  child: isSelected
+                                                      ? const Icon(Icons.check,
+                                                          color: Colors.white,
+                                                          size: 22)
+                                                      : Text(
+                                                          '${numeroLista ?? ''}',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  AppColors
+                                                                      .primary,
+                                                              fontSize: 18)),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 12),
+                                              Expanded(
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      listaNombre ??
+                                                          partidoNombre,
+                                                      style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontSize: 14)),
+                                                    const SizedBox(height: 2),
+                                                    Text(
+                                                      partidoNombre,
+                                                      style: AppTextStyles
+                                                          .bodySmall),
+                                                  ],
+                                                ),
+                                              ),
+                                              Container(
+                                                padding: const EdgeInsets
+                                                    .symmetric(
+                                                    horizontal: 14,
+                                                    vertical: 6),
+                                                decoration: BoxDecoration(
+                                                  color: votosLista > 0
+                                                      ? AppColors.success
+                                                          .withValues(alpha: 0.1)
+                                                      : AppColors.muted,
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                ),
+                                                child: Text(
+                                                  '$votosLista',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                    color: votosLista > 0
+                                                        ? AppColors.success
+                                                        : AppColors.lightGray,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            '${candidatosLista.length} candidatos',
+                                            style: AppTextStyles.bodySmall,
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Wrap(
+                                            spacing: 4,
+                                            runSpacing: 2,
+                                            children: candidatosLista
+                                                .take(5)
+                                                .map((c) => Container(
+                                                      padding:
+                                                          const EdgeInsets
+                                                              .symmetric(
+                                                              horizontal: 6,
+                                                              vertical: 2),
+                                                      decoration: BoxDecoration(
+                                                        color: AppColors.muted,
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(4),
+                                                      ),
+                                                      child: Text(
+                                                        c.nombreCompleto,
+                                                        style:
+                                                            const TextStyle(
+                                                                fontSize: 10),
+                                                      ),
+                                                    ))
+                                                .toList(),
+                                          ),
+                                          if (candidatosLista.length > 5)
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 2),
+                                              child: Text(
+                                                '+${candidatosLista.length - 5} más',
+                                                style: const TextStyle(
+                                                    fontSize: 10,
+                                                    color: AppColors.gray),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ))
+                      : _candidatosFiltrados.isEmpty
+                          ? const EmptyState(
+                              icon: Icons.person_search_outlined,
+                              title: 'Sin candidatos',
+                              subtitle: 'No se encontraron candidatos')
+                          : ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                              itemCount: _candidatosFiltrados.length,
+                              itemBuilder: (context, index) {
+                                final c = _candidatosFiltrados[index];
+                                final votos = provider.getVotosCandidato(c);
+                                final isSelected = _selected?.id == c.id;
+                                final partyColor = AppColors.chartColors[
+                                    index % AppColors.chartColors.length];
+
+                                return Card(
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    side: BorderSide(
+                                      color: isSelected
+                                          ? AppColors.primary
+                                          : AppColors.border,
+                                      width: isSelected ? 2 : 1,
+                                    ),
+                                  ),
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(12),
+                                    onTap: () => setState(() {
+                                      if (isSelected) {
+                                        _selected = null;
+                                      } else {
+                                        _selected = c;
+                                        _selectedListaId = null;
+                                        _selectedListaCandidates = [];
+                                      }
+                                    }),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 44,
+                                            height: 44,
+                                            decoration: BoxDecoration(
+                                              color: isSelected
+                                                  ? AppColors.primary
+                                                  : partyColor.withValues(
+                                                      alpha: 0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Center(
+                                              child: isSelected
+                                                  ? const Icon(Icons.check,
+                                                      color: Colors.white,
+                                                      size: 22)
+                                                  : Text(c.nombreCompleto[0],
+                                                      style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: partyColor,
+                                                          fontSize: 18)),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(c.nombreCompleto,
+                                                    style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        fontSize: 14)),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                    '${c.partidoNombre} · ${c.cargoNombre ?? ''}',
+                                                    style: AppTextStyles
+                                                        .bodySmall),
+                                                if (_circunscripcionParaCandidato(
+                                                            c, provider) !=
+                                                        null ||
+                                                    _tipoVotacionParaCandidato(
+                                                            c, provider) !=
+                                                        null) ...[
+                                                  const SizedBox(height: 4),
+                                                  _badgesRow(c, provider),
+                                                ],
+                                              ],
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 14, vertical: 6),
+                                            decoration: BoxDecoration(
+                                              color: votos > 0
+                                                  ? AppColors.success
+                                                      .withValues(alpha: 0.1)
+                                                  : AppColors.muted,
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                            ),
+                                            child: Text(
+                                              '$votos',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                                color: votos > 0
+                                                    ? AppColors.success
+                                                    : AppColors.lightGray,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                 ),
               ),
             ],
           ),
 
           // Bottom vote panel
-          bottomSheet: _selected != null
+          bottomSheet: _selected != null || _selectedListaId != null
               ? Container(
                   padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
                   decoration: BoxDecoration(
@@ -419,15 +661,30 @@ class _VotacionScreenState extends State<VotacionScreen> {
                         Row(
                           children: [
                             Expanded(
-                              child: Text(_selected!.nombreCompleto,
-                                  style: AppTextStyles.h3),
+                              child: Text(
+                                _selectedListaId != null
+                                    ? (_selectedListaCandidates.first.listaNombre ??
+                                        _selectedListaCandidates.first.partidoNombre)
+                                    : _selected!.nombreCompleto,
+                                style: AppTextStyles.h3),
                             ),
                             IconButton(
                               icon: const Icon(Icons.close),
-                              onPressed: () => setState(() => _selected = null),
+                              onPressed: () => setState(() {
+                                _selected = null;
+                                _selectedListaId = null;
+                                _selectedListaCandidates = [];
+                              }),
                             ),
                           ],
                         ),
+                        if (_selectedListaId != null)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              '${_selectedListaCandidates.length} candidatos en la lista',
+                              style: AppTextStyles.bodySmall),
+                          ),
                         const SizedBox(height: 12),
                         Row(
                           children: [
@@ -471,7 +728,10 @@ class _VotacionScreenState extends State<VotacionScreen> {
                             ElevatedButton.icon(
                               onPressed: _registrar,
                               icon: const Icon(Icons.how_to_vote, size: 20),
-                              label: const Text('Registrar'),
+                              label: Text(
+                                _selectedListaId != null
+                                    ? 'Votar Lista'
+                                    : 'Registrar'),
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 28, vertical: 14),

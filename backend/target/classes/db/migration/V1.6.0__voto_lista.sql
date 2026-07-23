@@ -1,0 +1,1 @@
+ALTER TABLE votos ADD COLUMN lista_id BIGINT;

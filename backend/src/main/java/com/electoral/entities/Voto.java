@@ -33,6 +33,9 @@ public class Voto {
     @JoinColumn(name = "elecciones_id", nullable = false)
     private Eleccion elecciones;
 
+    @Column(name = "lista_id")
+    private Long listaId;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

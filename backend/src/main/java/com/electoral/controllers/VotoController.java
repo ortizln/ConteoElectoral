@@ -43,7 +43,7 @@ public class VotoController {
 
     @PostMapping
     @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN')")
-    public ResponseEntity<VotoResponse> registrarVoto(@Valid @RequestBody VotoRequest request) {
+    public ResponseEntity<List<VotoResponse>> registrarVoto(@Valid @RequestBody VotoRequest request) {
         Long usuarioId = getCurrentUserId();
         return ResponseEntity.ok(votoService.registrarVoto(request, usuarioId));
     }

@@ -119,6 +119,18 @@ import { AuthService } from '../../../core/services/auth.service';
       justify-content: center;
       flex-shrink: 0;
     }
+
+    @media (max-width: 768px) {
+      .top-header { padding: 0 1rem; }
+      .header-user-name { display: none; }
+      .header-role-badge { font-size: 9px; padding: 1px 6px; }
+      .app-footer { padding: 0.5rem 1rem; font-size: 0.7rem; flex-wrap: wrap; gap: 0.5rem; }
+    }
+    @media (max-width: 480px) {
+      .header-right { gap: 0.4rem; }
+      .header-brand { font-size: 0.95rem; }
+      .header-logout { font-size: 0.7rem; padding: 0.25rem 0.5rem; }
+    }
   `]
 })
 export class ContentLayoutComponent {

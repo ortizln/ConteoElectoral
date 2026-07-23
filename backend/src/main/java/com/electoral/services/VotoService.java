@@ -9,6 +9,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ public class VotoService {
     private final MesaService mesaService;
     private final AuditoriaService auditoriaService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final ListaElectoralRepository listaElectoralRepository;
 
     @Transactional(readOnly = true)
     public List<VotoResponse> getVotosByMesa(Long mesaId) {
@@ -48,7 +50,7 @@ public class VotoService {
     }
 
     @Transactional
-    public VotoResponse registrarVoto(VotoRequest request, Long usuarioId) {
+    public List<VotoResponse> registrarVoto(VotoRequest request, Long usuarioId) {
         Mesa mesa = mesaService.getMesaEntityById(request.getMesaId());
 
         if (mesa.getCerrada()) {
@@ -59,40 +61,58 @@ public class VotoService {
             throw new AccesoDenegadoException("No tiene permisos para registrar votos en esta mesa");
         }
 
-        Candidato candidato = candidatoRepository.findById(request.getCandidatoId())
-                .orElseThrow(() -> new RecursoNoEncontradoException(
-                        "Candidato no encontrado con ID: " + request.getCandidatoId()));
-
         Eleccion eleccion = eleccionService.getEleccionEntityById(request.getEleccionesId());
+        List<Voto> savedVotos = new ArrayList<>();
 
-        Usuario usuario = Usuario.builder().id(usuarioId).build();
+        if (request.getListaId() != null) {
+            List<Candidato> candidatosLista = candidatoRepository.findByListaIdOrderByOrdenEnLista(request.getListaId());
+            if (candidatosLista.isEmpty()) {
+                throw new RecursoNoEncontradoException(
+                        "No hay candidatos en la lista ID: " + request.getListaId());
+            }
+            for (Candidato candidato : candidatosLista) {
+                Voto voto = upsertVoto(candidato, mesa, eleccion, request.getCantidadVotos(), usuarioId, request.getListaId());
+                savedVotos.add(voto);
+            }
+        } else if (request.getCandidatoId() != null) {
+            Candidato candidato = candidatoRepository.findById(request.getCandidatoId())
+                    .orElseThrow(() -> new RecursoNoEncontradoException(
+                            "Candidato no encontrado con ID: " + request.getCandidatoId()));
+            Voto voto = upsertVoto(candidato, mesa, eleccion, request.getCantidadVotos(), usuarioId, null);
+            savedVotos.add(voto);
+        } else {
+            throw new IllegalArgumentException("Debe proporcionar candidatoId o listaId");
+        }
 
+        auditoriaService.registrarAccion(
+                usuarioId,
+                Auditoria.TipoAccion.CREATE,
+                "votos",
+                null,
+                null,
+                mapToJsonList(savedVotos));
+
+        notifyDashboardUpdate(eleccion.getId());
+
+        return savedVotos.stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
+    private Voto upsertVoto(Candidato candidato, Mesa mesa, Eleccion eleccion, Integer cantidad, Long usuarioId, Long listaId) {
         Voto voto = votoRepository.findByMesaIdAndCandidatoId(mesa.getId(), candidato.getId())
                 .map(existingVoto -> {
-                    existingVoto.setCantidadVotos(existingVoto.getCantidadVotos() + request.getCantidadVotos());
+                    existingVoto.setCantidadVotos(existingVoto.getCantidadVotos() + cantidad);
+                    existingVoto.setListaId(listaId);
                     return existingVoto;
                 })
                 .orElseGet(() -> Voto.builder()
                         .candidato(candidato)
                         .mesa(mesa)
                         .elecciones(eleccion)
-                        .cantidadVotos(request.getCantidadVotos())
-                        .createdBy(usuario)
+                        .cantidadVotos(cantidad)
+                        .createdBy(Usuario.builder().id(usuarioId).build())
+                        .listaId(listaId)
                         .build());
-
-        Voto savedVoto = votoRepository.save(voto);
-
-        auditoriaService.registrarAccion(
-                usuarioId,
-                Auditoria.TipoAccion.CREATE,
-                "votos",
-                savedVoto.getId(),
-                null,
-                mapToJson(savedVoto));
-
-        notifyDashboardUpdate(eleccion.getId());
-
-        return mapToResponse(savedVoto);
+        return votoRepository.save(voto);
     }
 
     @Transactional
@@ -109,6 +129,9 @@ public class VotoService {
         }
 
         voto.setCantidadVotos(request.getCantidadVotos());
+        if (request.getListaId() != null) {
+            voto.setListaId(request.getListaId());
+        }
         Voto updatedVoto = votoRepository.save(voto);
 
         auditoriaService.registrarAccion(
@@ -341,6 +364,7 @@ public class VotoService {
                 .mesaNumero(voto.getMesa().getNumero())
                 .cantidadVotos(voto.getCantidadVotos())
                 .eleccionesId(voto.getElecciones().getId())
+                .listaId(voto.getListaId())
                 .build();
     }
 
@@ -350,6 +374,16 @@ public class VotoService {
         map.put("candidatoId", voto.getCandidato().getId());
         map.put("mesaId", voto.getMesa().getId());
         map.put("cantidadVotos", voto.getCantidadVotos());
+        map.put("listaId", voto.getListaId());
+        return map;
+    }
+
+    private Map<String, Object> mapToJsonList(List<Voto> votos) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("tipo", "votos");
+        map.put("total", votos.size());
+        map.put("cantidadTotal", votos.stream().mapToInt(Voto::getCantidadVotos).sum());
+        map.put("listaId", votos.get(0).getListaId());
         return map;
     }
 }
