@@ -1,10 +1,13 @@
 package com.electoral.services;
 
 import com.electoral.dto.ReporteCandidatoDTO;
+import com.electoral.dto.ReporteListaDTO;
 import com.electoral.dto.ReportePartidoDTO;
 import com.electoral.dto.ReporteResumenDTO;
 import com.electoral.entities.Candidato;
+import com.electoral.entities.ListaElectoral;
 import com.electoral.repositories.CandidatoRepository;
+import com.electoral.repositories.ListaElectoralRepository;
 import com.electoral.repositories.MesaRepository;
 import com.electoral.repositories.PartidoRepository;
 import com.electoral.repositories.VotoRepository;
@@ -13,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,6 +30,7 @@ public class ReportesService {
     private final MesaRepository mesaRepository;
     private final CandidatoRepository candidatoRepository;
     private final PartidoRepository partidoRepository;
+    private final ListaElectoralRepository listaElectoralRepository;
 
     public ReporteResumenDTO getResumen(Long eleccionId) {
         long totalVotos = votoRepository.sumVotosByEleccion(eleccionId) != null
@@ -67,37 +72,30 @@ public class ReportesService {
     public List<ReporteCandidatoDTO> getResultadosCandidatos(Long eleccionId) {
         List<ReporteCandidatoDTO> resultados = new ArrayList<>();
         List<Object[]> raw = votoRepository.sumVotosGroupByCandidato(eleccionId);
-        if (raw == null) return resultados;
 
-        long totalGeneral = raw.stream()
+        long totalGeneral = raw != null ? raw.stream()
                 .mapToLong(r -> ((Number) r[1]).longValue())
-                .sum();
+                .sum() : 0;
 
-        Map<Long, String[]> candidatos = candidatoRepository.findByEleccionesId(eleccionId)
-                .stream().collect(Collectors.toMap(
-                        Candidato::getId,
-                        c -> new String[]{
-                                c.getNombre(), c.getApellido(),
-                                c.getPartido() != null ? c.getPartido().getNombre() : "Independiente",
-                                c.getPartido() != null && c.getPartido().getSigla() != null ? c.getPartido().getSigla() : "",
-                                c.getCargo() != null ? c.getCargo().getNombre() : ""
-                        }
-                ));
+        Map<Long, Long> votosMap = raw != null ? raw.stream()
+                .collect(Collectors.toMap(
+                        r -> ((Number) r[0]).longValue(),
+                        r -> ((Number) r[1]).longValue()
+                )) : new HashMap<>();
 
-        for (Object[] row : raw) {
-            Long candId = ((Number) row[0]).longValue();
-            long votos = ((Number) row[1]).longValue();
-            String[] info = candidatos.getOrDefault(candId, new String[]{"", "", "", "", ""});
+        List<Candidato> todos = candidatoRepository.findByEleccionesId(eleccionId);
+        for (Candidato c : todos) {
+            long votos = votosMap.getOrDefault(c.getId(), 0L);
             double pct = totalGeneral > 0 ? (double) votos / totalGeneral * 100.0 : 0.0;
 
             resultados.add(ReporteCandidatoDTO.builder()
-                    .id(candId)
-                    .nombre(info[0])
-                    .apellido(info[1])
-                    .nombreCompleto(info[0] + " " + info[1])
-                    .partido(info[2])
-                    .partidoSigla(info[3])
-                    .cargo(info[4])
+                    .id(c.getId())
+                    .nombre(c.getNombre())
+                    .apellido(c.getApellido())
+                    .nombreCompleto(c.getNombre() + " " + c.getApellido())
+                    .partido(c.getPartido() != null ? c.getPartido().getNombre() : "Independiente")
+                    .partidoSigla(c.getPartido() != null && c.getPartido().getSigla() != null ? c.getPartido().getSigla() : "")
+                    .cargo(c.getCargo() != null ? c.getCargo().getNombre() : "")
                     .totalVotos(votos)
                     .porcentaje(Math.round(pct * 100.0) / 100.0)
                     .build());
@@ -132,6 +130,44 @@ public class ReportesService {
                     .totalVotos(votos)
                     .porcentaje(Math.round(pct * 100.0) / 100.0)
                     .totalCandidatos(totalCand)
+                    .build());
+        }
+
+        resultados.sort((a, b) -> Long.compare(b.getTotalVotos(), a.getTotalVotos()));
+        return resultados;
+    }
+
+    public List<ReporteListaDTO> getResultadosListas(Long eleccionId) {
+        List<ReporteListaDTO> resultados = new ArrayList<>();
+        List<Object[]> raw = votoRepository.sumVotosGroupByLista(eleccionId);
+        if (raw == null || raw.isEmpty()) return resultados;
+
+        long totalGeneral = raw.stream()
+                .mapToLong(r -> ((Number) r[1]).longValue())
+                .sum();
+
+        Map<Long, Long> votosMap = raw.stream()
+                .collect(Collectors.toMap(
+                        r -> ((Number) r[0]).longValue(),
+                        r -> ((Number) r[1]).longValue()
+                ));
+
+        List<ListaElectoral> listas = listaElectoralRepository.findByEleccionId(eleccionId);
+        for (ListaElectoral l : listas) {
+            Long votos = votosMap.get(l.getId());
+            if (votos == null) continue;
+            double pct = totalGeneral > 0 ? (double) votos / totalGeneral * 100.0 : 0.0;
+            resultados.add(ReporteListaDTO.builder()
+                    .listaId(l.getId())
+                    .listaNombre(l.getNombre())
+                    .numeroLista(l.getNumeroLista())
+                    .partidoId(l.getPartido() != null ? l.getPartido().getId() : null)
+                    .partidoNombre(l.getPartido() != null ? l.getPartido().getNombre() : "Independiente")
+                    .partidoSigla(l.getPartido() != null ? l.getPartido().getSigla() : "")
+                    .cargoId(l.getCargo() != null ? l.getCargo().getId() : null)
+                    .cargoNombre(l.getCargo() != null ? l.getCargo().getNombre() : "")
+                    .totalVotos(votos)
+                    .porcentaje(Math.round(pct * 100.0) / 100.0)
                     .build());
         }
 

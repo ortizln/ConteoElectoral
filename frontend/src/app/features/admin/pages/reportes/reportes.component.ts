@@ -1,9 +1,11 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart, registerables } from 'chart.js';
 import { ApiService } from '../../../../core/services/api.service';
-import { ReporteResumen, ReporteCandidato, ReportePartido, Eleccion } from '../../../../core/models';
+import { WebSocketService } from '../../../../core/services/websocket.service';
+import { ReporteResumen, ReporteCandidato, ReportePartido, ReporteLista, Eleccion, Mesa } from '../../../../core/models';
+import { Subscription } from 'rxjs';
 
 Chart.register(...registerables);
 
@@ -14,7 +16,7 @@ Chart.register(...registerables);
   templateUrl: './reportes.component.html',
   styleUrl: './reportes.component.css'
 })
-export class ReportesComponent implements OnInit, AfterViewInit {
+export class ReportesComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('barChart') barChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('pieChart') pieChartRef!: ElementRef<HTMLCanvasElement>;
 
@@ -23,13 +25,70 @@ export class ReportesComponent implements OnInit, AfterViewInit {
   resumen: ReporteResumen | null = null;
   candidatos: ReporteCandidato[] = [];
   partidos: ReportePartido[] = [];
+  listas: ReporteLista[] = [];
   loading = false;
   error = '';
 
+  // Modal state
+  modalTitle = '';
+  modalVisible = false;
+  modalMesas: Mesa[] = [];
+  modalCandidatos: ReporteCandidato[] = [];
+  modalPartidos: ReportePartido[] = [];
+  modalListas: ReporteLista[] = [];
+  modalType: '' | 'mesas' | 'candidatos' | 'partidos' | 'nulos' | 'listas' = '';
+
+  private wsSubscription?: Subscription;
   private barChart?: Chart;
   private pieChart?: Chart;
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private wsService: WebSocketService) {}
+
+  openMesasModal(): void {
+    this.modalType = 'mesas';
+    this.modalTitle = 'Mesas Cerradas';
+    this.modalMesas = [];
+    this.modalVisible = true;
+    this.api.getMesasByEleccion(this.selectedEleccionId!).subscribe({
+      next: (res) => this.modalMesas = res.filter(m => m.cerrada)
+    });
+  }
+
+  openCandidatosModal(): void {
+    this.modalType = 'candidatos';
+    this.modalTitle = 'Candidatos';
+    this.modalCandidatos = [...this.candidatos];
+    this.modalVisible = true;
+  }
+
+  openPartidosModal(): void {
+    this.modalType = 'partidos';
+    this.modalTitle = 'Partidos';
+    this.modalPartidos = [...this.partidos];
+    this.modalVisible = true;
+  }
+
+  openListasModal(): void {
+    this.modalType = 'listas';
+    this.modalTitle = 'Resultados por Lista';
+    this.modalListas = [...this.listas];
+    this.modalVisible = true;
+  }
+
+  openNulosModal(): void {
+    this.modalType = 'nulos';
+    this.modalTitle = 'Votos Nulos y Blancos por Mesa';
+    this.modalMesas = [];
+    this.modalVisible = true;
+    this.api.getMesasByEleccion(this.selectedEleccionId!).subscribe({
+      next: (res) => this.modalMesas = res.filter(m => m.votosNulos > 0 || m.votosBlanco > 0)
+    });
+  }
+
+  closeModal(): void {
+    this.modalVisible = false;
+    this.modalType = '';
+  }
 
   ngOnInit(): void {
     this.cargarElecciones();
@@ -56,6 +115,7 @@ export class ReportesComponent implements OnInit, AfterViewInit {
     if (!this.selectedEleccionId) return;
     this.loading = true;
     this.error = '';
+    this.subscribeToUpdates();
 
     this.api.getReporteResumen(this.selectedEleccionId).subscribe({
       next: (r) => this.resumen = r,
@@ -73,8 +133,40 @@ export class ReportesComponent implements OnInit, AfterViewInit {
     this.api.getReportePartidos(this.selectedEleccionId).subscribe({
       next: (r) => this.partidos = r,
       error: () => {},
+    });
+
+    this.api.getReporteListas(this.selectedEleccionId).subscribe({
+      next: (r) => this.listas = r,
+      error: () => {},
       complete: () => this.loading = false
     });
+  }
+
+  private subscribeToUpdates(): void {
+    this.wsSubscription?.unsubscribe();
+    if (!this.selectedEleccionId) return;
+    this.wsSubscription = this.wsService.subscribeToResultados(this.selectedEleccionId)
+      .subscribe(() => {
+        this.api.getReporteResumen(this.selectedEleccionId!).subscribe({
+          next: (r) => this.resumen = r
+        });
+        this.api.getReporteCandidatos(this.selectedEleccionId!).subscribe({
+          next: (r) => {
+            this.candidatos = r;
+            this.updateCharts();
+          }
+        });
+        this.api.getReportePartidos(this.selectedEleccionId!).subscribe({
+          next: (r) => this.partidos = r
+        });
+        this.api.getReporteListas(this.selectedEleccionId!).subscribe({
+          next: (r) => this.listas = r
+        });
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.wsSubscription?.unsubscribe();
   }
 
   exportarCsv(): void {
@@ -147,5 +239,17 @@ export class ReportesComponent implements OnInit, AfterViewInit {
   getMaxVotos(): number {
     if (this.candidatos.length === 0) return 0;
     return Math.max(...this.candidatos.map(c => c.totalVotos));
+  }
+
+  totalNulos(): number {
+    return this.modalMesas.reduce((s, m) => s + m.votosNulos, 0);
+  }
+
+  totalBlanco(): number {
+    return this.modalMesas.reduce((s, m) => s + m.votosBlanco, 0);
+  }
+
+  totalNulosBlanco(): number {
+    return this.modalMesas.reduce((s, m) => s + m.votosNulos + m.votosBlanco, 0);
   }
 }

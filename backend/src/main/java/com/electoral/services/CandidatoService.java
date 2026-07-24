@@ -66,11 +66,13 @@ public class CandidatoService {
             partido = partidoRepository.findById(request.getPartidoId())
                     .orElseThrow(() -> new RecursoNoEncontradoException("Partido no encontrado con ID: " + request.getPartidoId()));
             
-            boolean existeCandidato = candidatoRepository.existsByEleccionesIdAndPartidoIdAndCargoId(
-                request.getEleccionesId(), request.getPartidoId(), request.getCargoId());
-            if (existeCandidato) {
-                throw new DuplicateEntityException("Ya existe un candidato del partido '" + partido.getNombre() + 
-                    "' para el cargo de '" + cargo.getNombre() + "' en esta elección");
+            if (!"LISTA".equals(cargo.getTipoVotacion().name())) {
+                boolean existeCandidato = candidatoRepository.existsByEleccionesIdAndPartidoIdAndCargoId(
+                    request.getEleccionesId(), request.getPartidoId(), request.getCargoId());
+                if (existeCandidato) {
+                    throw new DuplicateEntityException("Ya existe un candidato del partido '" + partido.getNombre() + 
+                        "' para el cargo de '" + cargo.getNombre() + "' en esta elección");
+                }
             }
         }
         
@@ -130,13 +132,18 @@ public class CandidatoService {
         Candidato candidato = candidatoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Candidato no encontrado con ID: " + id));
 
+        Cargo cargoActual = candidato.getCargo();
+        Long cargoIdNuevo = request.getCargoId() != null ? request.getCargoId() : cargoActual.getId();
+        Cargo cargoFinal = cargoRepository.findById(cargoIdNuevo)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Cargo no encontrado con ID: " + cargoIdNuevo));
+
         Long partidoId = request.getPartidoId() != null ? request.getPartidoId() :
                 (candidato.getPartido() != null ? candidato.getPartido().getId() : null);
-        if (partidoId != null && request.getCargoId() != null &&
+        if (partidoId != null && !"LISTA".equals(cargoFinal.getTipoVotacion().name()) &&
                 (!partidoId.equals(candidato.getPartido() != null ? candidato.getPartido().getId() : null) ||
-                 !request.getCargoId().equals(candidato.getCargo().getId())) &&
+                 !cargoIdNuevo.equals(cargoActual.getId())) &&
                 candidatoRepository.existsByEleccionesIdAndPartidoIdAndCargoId(
-                    candidato.getElecciones().getId(), partidoId, request.getCargoId())) {
+                    candidato.getElecciones().getId(), partidoId, cargoIdNuevo)) {
             throw new DuplicateEntityException("Ya existe un candidato para este partido y cargo en esta elección");
         }
         log.info("Actualizando {} con ID: {}", "Candidato", id);

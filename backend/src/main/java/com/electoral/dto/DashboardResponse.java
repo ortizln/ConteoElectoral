@@ -24,4 +24,5 @@ public class DashboardResponse {
     private List<ResultadoRecinto> resultadosRecinto;
     private List<ResultadoGeo> resultadosProvincia;
     private List<ResultadoGeo> resultadosParroquia;
+    private List<ResultadoLista> resultadosListas;
 }

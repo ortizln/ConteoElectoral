@@ -1,6 +1,7 @@
 package com.electoral.controllers;
 
 import com.electoral.dto.ReporteCandidatoDTO;
+import com.electoral.dto.ReporteListaDTO;
 import com.electoral.dto.ReportePartidoDTO;
 import com.electoral.dto.ReporteResumenDTO;
 import com.electoral.services.ReportesService;
@@ -32,6 +33,11 @@ public class ReportesController {
     @GetMapping("/{eleccionId}/partidos")
     public ResponseEntity<List<ReportePartidoDTO>> partidos(@PathVariable Long eleccionId) {
         return ResponseEntity.ok(reportesService.getResultadosPartidos(eleccionId));
+    }
+
+    @GetMapping("/{eleccionId}/listas")
+    public ResponseEntity<List<ReporteListaDTO>> listas(@PathVariable Long eleccionId) {
+        return ResponseEntity.ok(reportesService.getResultadosListas(eleccionId));
     }
 
     @GetMapping("/{eleccionId}/exportar/csv")

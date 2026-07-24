@@ -1,14 +1,18 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'stomp_service.dart';
 import '../database/database_helper.dart';
 import '../models/models.dart';
 
 class SyncService {
   final DatabaseHelper _db = DatabaseHelper.instance;
   final String _baseUrl;
+  StompService? _stomp;
   static const int maxRetries = 5;
 
   SyncService(this._baseUrl);
+
+  void setStomp(StompService stomp) { _stomp = stomp; }
 
   Future<String?> _getToken() async => await _db.getToken();
 
@@ -49,6 +53,48 @@ class SyncService {
 
   Future<void> enqueueCerrarMesa(int mesaId, int eleccionId) async {
     await _db.enqueueSync('MESA', mesaId, 'CLOSE', {'id': mesaId, 'cerrada': true}, eleccionId: eleccionId);
+  }
+
+  Future<void> enqueueNulos(int mesaId, int eleccionId, int votosNulos) async {
+    final existingId = await _findPendingEntity('MESA', mesaId, 'NULOS');
+    if (existingId != null) {
+      final db = await _db.database;
+      await db.update(
+        'sync_queue',
+        {'payload': jsonEncode({'votosNulos': votosNulos}), 'created_at': DateTime.now().toIso8601String(), 'retry_count': 0},
+        where: 'id = ?',
+        whereArgs: [existingId],
+      );
+    } else {
+      await _db.enqueueSync('MESA', mesaId, 'NULOS', {'votosNulos': votosNulos}, eleccionId: eleccionId);
+    }
+  }
+
+  Future<void> enqueueBlanco(int mesaId, int eleccionId, int votosBlanco) async {
+    final existingId = await _findPendingEntity('MESA', mesaId, 'BLANCO');
+    if (existingId != null) {
+      final db = await _db.database;
+      await db.update(
+        'sync_queue',
+        {'payload': jsonEncode({'votosBlanco': votosBlanco}), 'created_at': DateTime.now().toIso8601String(), 'retry_count': 0},
+        where: 'id = ?',
+        whereArgs: [existingId],
+      );
+    } else {
+      await _db.enqueueSync('MESA', mesaId, 'BLANCO', {'votosBlanco': votosBlanco}, eleccionId: eleccionId);
+    }
+  }
+
+  Future<int?> _findPendingEntity(String entityType, int entityId, String operation) async {
+    final db = await _db.database;
+    final maps = await db.query(
+      'sync_queue',
+      columns: ['id'],
+      where: "entity_type = ? AND entity_id = ? AND operation = ? AND status = 'PENDING'",
+      whereArgs: [entityType, entityId, operation],
+      limit: 1,
+    );
+    return maps.isNotEmpty ? maps.first['id'] as int? : null;
   }
 
   Future<int?> _findPending(String entityType, int entityId) async {
@@ -104,6 +150,22 @@ class SyncService {
     Map<String, dynamic> payload,
     String? token,
   ) async {
+    final stomp = _stomp;
+    if (stomp != null && stomp.isConnected) {
+      try {
+        stomp.send('/app/sync/push', {
+          'operations': [
+            {
+              'entity': entityType,
+              'entityId': entityId,
+              'action': operation,
+              'data': payload,
+            }
+          ],
+        });
+        return true;
+      } catch (_) {}
+    }
     final uri = Uri.parse('$_baseUrl/sync/push');
     final response = await http.post(
       uri,
@@ -111,10 +173,10 @@ class SyncService {
       body: jsonEncode({
         'operations': [
           {
-            'entityType': entityType,
+            'entity': entityType,
             'entityId': entityId,
-            'operation': operation,
-            'payload': payload,
+            'action': operation,
+            'data': payload,
           }
         ],
       }),
@@ -133,14 +195,14 @@ class SyncService {
     if (response.statusCode != 200) return 0;
 
     final data = jsonDecode(response.body) as Map<String, dynamic>;
-    final cambios = data['cambios'] as List<dynamic>? ?? [];
+    final cambios = data['operations'] as List<dynamic>? ?? data['cambios'] as List<dynamic>? ?? [];
     if (cambios.isEmpty) return 0;
 
     int applied = 0;
     for (final c in cambios) {
-      final ct = c['entityType'] as String?;
-      final op = c['operation'] as String?;
-      final p = c['payload'] as Map<String, dynamic>?;
+      final ct = (c['entity'] ?? c['entityType']) as String?;
+      final op = (c['action'] ?? c['operation']) as String?;
+      final p = (c['data'] ?? c['payload']) as Map<String, dynamic>?;
       if (ct == null || op == null || p == null) continue;
 
       try {
@@ -165,8 +227,16 @@ class SyncService {
       }
     } else if (entityType == 'MESA') {
       final mesaId = payload['id'] as int?;
-      if (mesaId != null && operation == 'CLOSE') {
+      if (mesaId == null) return;
+      if (operation == 'CLOSE') {
         await _db.cerrarMesaLocal(mesaId);
+      } else if (operation == 'MESA_DATA') {
+        await _db.actualizarNulosBlanco(mesaId,
+          votosNulos: payload['votosNulos'] as int? ?? 0,
+          votosBlanco: payload['votosBlanco'] as int? ?? 0,
+        );
+        final cerrada = payload['cerrada'] as bool? ?? false;
+        if (cerrada) await _db.cerrarMesaLocal(mesaId);
       }
     }
   }

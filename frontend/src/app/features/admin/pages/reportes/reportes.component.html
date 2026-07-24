@@ -22,7 +22,7 @@
         <span class="card-label">Total Votos</span>
       </div>
     </div>
-    <div class="resumen-card">
+    <div class="resumen-card clickable" (click)="openMesasModal()">
       <div class="card-icon cerradas">✅</div>
       <div class="card-body">
         <span class="card-value">{{ resumen.mesasCerradas }} / {{ resumen.totalMesas }}</span>
@@ -36,25 +36,25 @@
         <span class="card-label">Participación</span>
       </div>
     </div>
-    <div class="resumen-card">
+    <div class="resumen-card clickable" (click)="openCandidatosModal()">
       <div class="card-icon candidatos">👤</div>
       <div class="card-body">
         <span class="card-value">{{ resumen.totalCandidatos }}</span>
         <span class="card-label">Candidatos</span>
       </div>
     </div>
-    <div class="resumen-card">
+    <div class="resumen-card clickable" (click)="openPartidosModal()">
       <div class="card-icon partidos">🎯</div>
       <div class="card-body">
         <span class="card-value">{{ resumen.totalPartidos }}</span>
         <span class="card-label">Partidos</span>
       </div>
     </div>
-    <div class="resumen-card">
+    <div class="resumen-card clickable" (click)="openNulosModal()">
       <div class="card-icon nulos">⚠️</div>
       <div class="card-body">
-        <span class="card-value">{{ resumen.votosNulos + resumen.votosBlanco | number }}</span>
-        <span class="card-label">Nulos + Blanco</span>
+        <span class="card-value">{{ resumen.votosNulos }} / {{ resumen.votosBlanco }}</span>
+        <span class="card-label">Nulos / Blanco</span>
       </div>
     </div>
   </div>
@@ -124,5 +124,187 @@
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <div class="table-card" *ngIf="listas.length > 0">
+    <h3>Resultados por Lista</h3>
+    <button class="btn btn-outline float-right" (click)="openListasModal()">Ver detalle</button>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Lista</th>
+          <th>N°</th>
+          <th>Partido</th>
+          <th>Votos</th>
+          <th>%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let l of listas; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>{{ l.listaNombre }}</td>
+          <td>{{ l.numeroLista }}</td>
+          <td>{{ l.partidoSigla || l.partidoNombre }}</td>
+          <td class="text-right">{{ l.totalVotos | number }}</td>
+          <td class="text-right">{{ l.porcentaje }}%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" *ngIf="modalVisible" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ modalTitle }}</h3>
+      <button class="modal-close" (click)="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Mesas Cerradas / Nulos -->
+      <div *ngIf="modalType === 'mesas'">
+        <table class="table" *ngIf="modalMesas.length > 0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Mesa</th>
+              <th>Institución</th>
+              <th>Sexo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of modalMesas; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ m.numero }}</td>
+              <td>{{ m.institucionNombre }}</td>
+              <td>{{ m.sexo }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="modalMesas.length === 0" class="empty-msg">No hay mesas cerradas</div>
+      </div>
+
+      <!-- Nulos + Blanco -->
+      <div *ngIf="modalType === 'nulos'">
+        <table class="table" *ngIf="modalMesas.length > 0">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Mesa</th>
+              <th>Institución</th>
+              <th>Nulos</th>
+              <th>Blanco</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of modalMesas; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ m.numero }}</td>
+              <td>{{ m.institucionNombre }}</td>
+              <td class="text-right">{{ m.votosNulos }}</td>
+              <td class="text-right">{{ m.votosBlanco }}</td>
+              <td class="text-right">{{ m.votosNulos + m.votosBlanco }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" class="text-right"><strong>Total</strong></td>
+              <td class="text-right"><strong>{{ totalNulos() }}</strong></td>
+              <td class="text-right"><strong>{{ totalBlanco() }}</strong></td>
+              <td class="text-right"><strong>{{ totalNulosBlanco() }}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+        <div *ngIf="modalMesas.length === 0" class="empty-msg">No hay mesas con votos nulos o blancos</div>
+      </div>
+
+      <!-- Candidatos -->
+      <div *ngIf="modalType === 'candidatos'">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Candidato</th>
+                <th>Partido</th>
+                <th>Cargo</th>
+                <th>Votos</th>
+                <th>%</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of modalCandidatos; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ c.nombreCompleto }}</td>
+                <td>{{ c.partidoSigla || c.partido }}</td>
+                <td>{{ c.cargo }}</td>
+                <td class="text-right">{{ c.totalVotos }}</td>
+                <td class="text-right">{{ c.porcentaje }}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Partidos -->
+      <div *ngIf="modalType === 'partidos'">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Partido</th>
+                <th>Sigla</th>
+                <th>Candidatos</th>
+                <th>Votos</th>
+                <th>%</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of modalPartidos; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ p.nombre }}</td>
+                <td>{{ p.sigla }}</td>
+                <td>{{ p.totalCandidatos }}</td>
+                <td class="text-right">{{ p.totalVotos }}</td>
+                <td class="text-right">{{ p.porcentaje }}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Listas -->
+      <div *ngIf="modalType === 'listas'">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Lista</th>
+                <th>N°</th>
+                <th>Partido</th>
+                <th>Cargo</th>
+                <th>Votos</th>
+                <th>%</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let l of modalListas; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ l.listaNombre }}</td>
+                <td>{{ l.numeroLista }}</td>
+                <td>{{ l.partidoSigla || l.partidoNombre }}</td>
+                <td>{{ l.cargoNombre }}</td>
+                <td class="text-right">{{ l.totalVotos }}</td>
+                <td class="text-right">{{ l.porcentaje }}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

@@ -10,6 +10,7 @@ import 'screens/provincias_screen.dart';
 import 'screens/cantones_screen.dart';
 import 'screens/parroquias_screen.dart';
 import 'screens/instituciones_screen.dart';
+import 'screens/pendientes_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +40,7 @@ class ConteoElectoralApp extends StatelessWidget {
               '/cantones': (context) => const CantonesScreen(),
               '/parroquias': (context) => const ParroquiasScreen(),
               '/instituciones': (context) => const InstitucionesScreen(),
+              '/pendientes': (context) => const PendientesScreen(),
             },
           );
         },

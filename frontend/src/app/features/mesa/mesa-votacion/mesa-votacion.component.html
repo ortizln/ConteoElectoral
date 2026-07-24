@@ -81,8 +81,8 @@
           <thead>
             <tr>
               <th style="width: 40px">#</th>
-              <th class="sortable" (click)="setSortCandidatos('nombre')">
-                Candidato <span class="sort-icon">{{ getSortIconCandidatos('nombre') }}</span>
+              <th class="sortable" (click)="!mostrarListas && setSortCandidatos('nombre')">
+                {{ mostrarListas ? 'Lista' : 'Candidato' }} <span class="sort-icon">{{ getSortIconCandidatos('nombre') }}</span>
               </th>
               <th class="sortable" (click)="setSortCandidatos('partido')">
                 Partido <span class="sort-icon">{{ getSortIconCandidatos('partido') }}</span>
@@ -94,41 +94,71 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let c of candidatosFiltrados; let i = index"
-                [class.selected]="candidatoSeleccionado?.id === c.id"
-                [class.disabled]="mesaActual?.cerrada">
-              <td><span class="row-num">{{ i + 1 }}</span></td>
-              <td>
-                <div class="candidato-cell">
-                  <div class="candidato-avatar" [style.background]="c.colorPartido">
-                    {{ c.nombre[0] }}{{ c.apellido[0] }}
+            <!-- Listas rows -->
+            <ng-container *ngIf="mostrarListas">
+              <tr *ngFor="let l of listasFiltradas; let i = index" [class.disabled]="mesaActual?.cerrada">
+                <td><span class="row-num">{{ i + 1 }}</span></td>
+                <td>
+                  <div class="candidato-cell">
+                    <div class="candidato-avatar" [style.background]="l.colorPartido">
+                      {{ l.numeroLista || '?' }}
+                    </div>
+                    <div>
+                      <div class="candidato-nombre">{{ l.nombre }}</div>
+                      <div class="candidato-lista-detalle" *ngIf="l.numeroLista">Lista #{{ l.numeroLista }}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div class="candidato-nombre">{{ c.nombre }} {{ c.apellido }}</div>
-                  </div>
-                </div>
-              </td>
-              <td><span class="partido-tag" [style.background]="c.colorPartido + '20'" [style.color]="c.colorPartido">{{ c.partidoNombre }}</span></td>
-              <td class="cargo-cell">{{ c.cargoNombre }}</td>
-              <td class="text-right">
-                <div *ngIf="candidatoSeleccionado?.id === c.id && !mesaActual?.cerrada" class="voto-input-group">
-                  <input type="number" class="voto-input" #cantidadInput
-                         [(ngModel)]="cantidadVotos" min="1"
-                         (keyup.enter)="registrarVoto()">
-                  <button class="btn btn-registrar" (click)="registrarVoto()" [disabled]="animando">
-                    {{ animando ? '...' : 'Registrar' }}
+                </td>
+                <td><span class="partido-tag" [style.background]="(l.colorPartido || '#666') + '20'" [style.color]="l.colorPartido || '#666'">{{ l.partidoNombre || 'Independiente' }}</span></td>
+                <td class="cargo-cell">{{ l.cargoNombre || '—' }}</td>
+                <td class="text-right">
+                  <button *ngIf="!mesaActual?.cerrada" class="btn btn-seleccionar" (click)="abrirListaModal(l)">
+                    Ver
                   </button>
-                  <button class="btn btn-cancelar" (click)="cancelarSeleccion()">Cancelar</button>
-                </div>
-                <button *ngIf="candidatoSeleccionado?.id !== c.id && !mesaActual?.cerrada"
-                        class="btn btn-seleccionar" (click)="seleccionarCandidato(c)">
-                  Votar
-                </button>
-              </td>
-            </tr>
-            <tr *ngIf="candidatosFiltrados.length === 0">
-              <td colspan="5" class="empty-msg">No hay candidatos que coincidan</td>
-            </tr>
+                </td>
+              </tr>
+              <tr *ngIf="listasFiltradas.length === 0">
+                <td colspan="5" class="empty-msg">No hay listas que coincidan</td>
+              </tr>
+            </ng-container>
+            <!-- Candidatos rows -->
+            <ng-container *ngIf="!mostrarListas">
+              <tr *ngFor="let c of candidatosFiltrados; let i = index"
+                  [class.selected]="candidatoSeleccionado?.id === c.id"
+                  [class.disabled]="mesaActual?.cerrada">
+                <td><span class="row-num">{{ i + 1 }}</span></td>
+                <td>
+                  <div class="candidato-cell">
+                    <div class="candidato-avatar" [style.background]="c.colorPartido">
+                      {{ c.nombre[0] }}{{ c.apellido[0] }}
+                    </div>
+                    <div>
+                      <div class="candidato-nombre">{{ c.nombre }} {{ c.apellido }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="partido-tag" [style.background]="c.colorPartido + '20'" [style.color]="c.colorPartido">{{ c.partidoNombre }}</span></td>
+                <td class="cargo-cell">{{ c.cargoNombre }}</td>
+                <td class="text-right">
+                  <div *ngIf="candidatoSeleccionado?.id === c.id && !mesaActual?.cerrada" class="voto-input-group">
+                    <input type="number" class="voto-input" #cantidadInput
+                           [(ngModel)]="cantidadVotos" min="1"
+                           (keyup.enter)="registrarVoto()">
+                    <button class="btn btn-registrar" (click)="registrarVoto()" [disabled]="animando">
+                      {{ animando ? '...' : 'Registrar' }}
+                    </button>
+                    <button class="btn btn-cancelar" (click)="cancelarSeleccion()">Cancelar</button>
+                  </div>
+                  <button *ngIf="candidatoSeleccionado?.id !== c.id && !mesaActual?.cerrada"
+                          class="btn btn-seleccionar" (click)="seleccionarCandidato(c)">
+                    Votar
+                  </button>
+                </td>
+              </tr>
+              <tr *ngIf="candidatosFiltrados.length === 0">
+                <td colspan="5" class="empty-msg">No hay candidatos que coincidan</td>
+              </tr>
+            </ng-container>
           </tbody>
         </table>
       </div>
@@ -219,6 +249,54 @@
             </tr>
           </tfoot>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista Detail Modal -->
+  <div class="modal-backdrop show" *ngIf="showListaModal"></div>
+  <div class="modal show" *ngIf="showListaModal" style="display:block;">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5>📋 {{ listaLlamada?.nombre || 'Lista' }}</h5>
+          <button type="button" class="btn-close" (click)="cerrarListaModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="lista-info-bar" *ngIf="listaLlamada">
+            <span><strong>Partido:</strong> {{ listaLlamada.partidoNombre || 'Independiente' }}</span>
+            <span *ngIf="listaLlamada.numeroLista"><strong>N°:</strong> {{ listaLlamada.numeroLista }}</span>
+            <span><strong>Candidatos:</strong> {{ (listaLlamada.candidatos || []).length }}</span>
+          </div>
+          <table class="table-lista-candidatos" *ngIf="listaLlamada?.candidatos && listaLlamada!.candidatos!.length > 0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Candidato</th>
+                <th>Cargo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of listaLlamada!.candidatos; let i = index">
+                <td>{{ i + 1 }}</td>
+                <td>{{ c.nombre }} {{ c.apellido }}</td>
+                <td>{{ c.cargoNombre || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="!listaLlamada?.candidatos || listaLlamada!.candidatos!.length === 0" class="empty-msg">
+            Cargando candidatos...
+          </div>
+          <div class="voto-lista-section" *ngIf="!mesaActual?.cerrada">
+            <label>Cantidad de votos para toda la lista:</label>
+            <div class="voto-lista-controls">
+              <button class="btn-nulos-minus" (click)="decrementarCantidadLista()">−</button>
+              <input type="number" class="voto-input" [(ngModel)]="cantidadLista" min="1">
+              <button class="btn-nulos-plus" (click)="incrementarCantidadLista()">+</button>
+              <button class="btn btn-registrar" (click)="votarLista()">Votar Lista</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

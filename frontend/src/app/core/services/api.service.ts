@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApkVersionItem, Eleccion, Partido, Cargo, Candidato, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse, ReglaNegocio, Circunscripcion, ResultadoDHondt, Reconteo, Impugnacion, Observacion, Resolucion, EscrutinioResumen, GeoResumen, DatoGeografico, ReporteResumen, ReporteCandidato, ReportePartido } from '../models';
+import { ApkVersionItem, Eleccion, Partido, Cargo, Candidato, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse, ReglaNegocio, Circunscripcion, ResultadoDHondt, Reconteo, Impugnacion, Observacion, Resolucion, EscrutinioResumen, GeoResumen, DatoGeografico, ReporteResumen, ReporteCandidato, ReportePartido, ReporteLista } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -294,7 +294,7 @@ export class ApiService {
     return this.http.get<CandidatoDetalleResponse>(`${this.API_URL}/votos/candidato/${candidatoId}/detalle?eleccionId=${eleccionId}`);
   }
 
-  registrarVoto(data: { candidatoId: number; mesaId: number; cantidadVotos: number; eleccionesId: number }): Observable<Voto> {
+  registrarVoto(data: { candidatoId?: number; listaId?: number; mesaId: number; cantidadVotos: number; eleccionesId: number }): Observable<Voto> {
     return this.http.post<Voto>(`${this.API_URL}/votos`, data);
   }
 
@@ -809,6 +809,10 @@ export class ApiService {
 
   getReportePartidos(eleccionId: number): Observable<ReportePartido[]> {
     return this.http.get<ReportePartido[]>(`${this.API_URL}/reportes/${eleccionId}/partidos`);
+  }
+
+  getReporteListas(eleccionId: number): Observable<ReporteLista[]> {
+    return this.http.get<ReporteLista[]>(`${this.API_URL}/reportes/${eleccionId}/listas`);
   }
 
   exportarReporteCsv(eleccionId: number): Observable<Blob> {

@@ -209,7 +209,9 @@ public class MesaService {
         Mesa mesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
         mesa.setVotosNulos(votosNulos != null ? votosNulos : 0);
-        return mapToResponse(mesaRepository.save(mesa));
+        MesaResponse response = mapToResponse(mesaRepository.save(mesa));
+        notifyDataChanged(mesa.getElecciones().getId());
+        return response;
     }
 
     @Transactional
@@ -217,7 +219,9 @@ public class MesaService {
         Mesa mesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
         mesa.setVotosBlanco(votosBlanco != null ? votosBlanco : 0);
-        return mapToResponse(mesaRepository.save(mesa));
+        MesaResponse response = mapToResponse(mesaRepository.save(mesa));
+        notifyDataChanged(mesa.getElecciones().getId());
+        return response;
     }
 
     @Transactional
@@ -248,6 +252,16 @@ public class MesaService {
         MesaResponse response = mapToResponse(mesaRepository.save(mesa));
         notifyMesaEstado(mesa.getElecciones().getId(), id, false);
         return response;
+    }
+
+    private void notifyDataChanged(Long eleccionId) {
+        try {
+            Map<String, Object> msg = new HashMap<>();
+            msg.put("tipo", "data-changed");
+            messagingTemplate.convertAndSend("/topic/resultados/" + eleccionId, msg);
+        } catch (Exception e) {
+            log.warn("Error sending WS data changed notification: {}", e.getMessage());
+        }
     }
 
     private void notifyMesaEstado(Long eleccionId, Long mesaId, boolean cerrada) {

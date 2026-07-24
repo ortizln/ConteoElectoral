@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { WebSocketService } from '../../../core/services/websocket.service';
-import { Eleccion, Candidato, Mesa, Voto, Partido, Cargo } from '../../../core/models';
+import { Eleccion, Candidato, Mesa, Voto, Partido, Cargo, ListaElectoral } from '../../../core/models';
 
 interface VotoConIndice extends Voto {
   indice: number;
@@ -51,6 +51,15 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   animando = false;
   private wsSubscription: Subscription | null = null;
   private eleccionId: number | null = null;
+
+  // List voting
+  listas: ListaElectoral[] = [];
+  listasFiltradas: (ListaElectoral & { colorPartido?: string })[] = [];
+  showListaModal = false;
+  listaLlamada: ListaElectoral | null = null;
+  cantidadLista = 1;
+  cargosConLista: Cargo[] = [];
+  mostrarListas = false;
 
   // Delete vote confirmation
   showDeleteConfirm = false;
@@ -112,6 +121,10 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     });
     this.api.getCargosByEleccion(eleccionId).subscribe((data: Cargo[]) => {
       this.cargos = data;
+      this.cargosConLista = data.filter(c => c.tipoVotacion === 'LISTA');
+    });
+    this.api.getListasByEleccion(eleccionId).subscribe((data: ListaElectoral[]) => {
+      this.listas = data;
     });
     this.api.getMesasByCurrentUser(eleccionId).subscribe((mesas: Mesa[]) => {
       this.mesasDisponibles = mesas;
@@ -140,7 +153,32 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   }
 
   aplicarFiltro(): void {
+    const cargo = this.cargos.find(c => c.id === this.filtroCargoId);
+    this.mostrarListas = cargo?.tipoVotacion === 'LISTA';
+
+    if (this.mostrarListas) {
+      this.candidatoSeleccionado = null;
+      let filtradas = [...this.listas];
+      if (this.filtroPartidoId) {
+        filtradas = filtradas.filter(l => l.partidoId === this.filtroPartidoId);
+      }
+      if (this.filtroTexto) {
+        const texto = this.filtroTexto.toLowerCase();
+        filtradas = filtradas.filter(l =>
+          l.nombre.toLowerCase().includes(texto) ||
+          (l.partidoNombre && l.partidoNombre.toLowerCase().includes(texto))
+        );
+      }
+      this.listasFiltradas = filtradas.map(l => ({
+        ...l,
+        colorPartido: this.getColorPartido(l.partidoNombre || l.nombre)
+      }));
+      return;
+    }
+
     let filtrados = [...this.candidatosAux];
+    // Excluir candidatos que pertenecen a una lista (votan por lista, no individual)
+    filtrados = filtrados.filter(c => !c.listaId);
     if (this.filtroTexto) {
       const texto = this.filtroTexto.toLowerCase();
       filtrados = filtrados.filter(c =>
@@ -370,6 +408,47 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     if (!confirm('¿Está seguro de cerrar el acta? Una vez cerrada no podrá modificar los votos.')) return;
     this.api.cerrarMesa(this.mesaActual.id).subscribe(() => {
       this.mesaActual!.cerrada = true;
+    });
+  }
+
+  abrirListaModal(lista: ListaElectoral): void {
+    this.listaLlamada = lista;
+    this.cantidadLista = 1;
+    this.showListaModal = true;
+    if (!lista.candidatos || lista.candidatos.length === 0) {
+      this.api.getListaDetalle(lista.id).subscribe((detalle: any) => {
+        if (this.listaLlamada?.id === lista.id) {
+          this.listaLlamada = { ...lista, candidatos: detalle.candidatos || [] };
+        }
+      });
+    }
+  }
+
+  decrementarCantidadLista(): void {
+    if (this.cantidadLista > 1) this.cantidadLista--;
+  }
+
+  incrementarCantidadLista(): void {
+    this.cantidadLista++;
+  }
+
+  cerrarListaModal(): void {
+    this.showListaModal = false;
+    this.listaLlamada = null;
+    this.cantidadLista = 1;
+  }
+
+  votarLista(): void {
+    if (!this.mesaActual || !this.listaLlamada || this.mesaActual.cerrada) return;
+    const cant = this.cantidadLista || 1;
+    this.api.registrarVoto({
+      listaId: this.listaLlamada.id,
+      mesaId: this.mesaActual.id,
+      cantidadVotos: cant,
+      eleccionesId: this.mesaActual.eleccionesId
+    }).subscribe(() => {
+      this.cerrarListaModal();
+      this.loadVotos();
     });
   }
 

@@ -87,7 +87,6 @@ com\electoral\controllers\InstitucionEducativaController.class
 com\electoral\entities\Observacion$ObservacionBuilder.class
 com\electoral\entities\Resolucion$ResolucionBuilder.class
 com\electoral\entities\PlantillaPapeleta$PlantillaPapeletaBuilder.class
-com\electoral\controllers\WebSocketController.class
 com\electoral\entities\TipoCircunscripcion.class
 com\electoral\config\JwtService.class
 com\electoral\dto\ProvinciaResponse$ProvinciaResponseBuilder.class
@@ -271,7 +270,6 @@ com\electoral\dto\ConfiguracionRequest.class
 com\electoral\dto\ConfiguracionRequest$ConfiguracionRequestBuilder.class
 com\electoral\controllers\CargoController.class
 com\electoral\services\PartidoService.class
-com\electoral\controllers\DashboardController.class
 com\electoral\dto\ReconteoRequest$ReconteoRequestBuilder.class
 com\electoral\dto\ResultadoDHondtResponse$AsignacionDto$AsignacionDtoBuilder.class
 com\electoral\entities\VotoPapeleta.class

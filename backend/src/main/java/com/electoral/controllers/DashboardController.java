@@ -1,16 +1,21 @@
 package com.electoral.controllers;
 
 import com.electoral.dto.DashboardResponse;
+import com.electoral.dto.SyncPushRequest;
+import com.electoral.dto.SyncPushResponse;
 import com.electoral.dto.VotoResponse;
 import com.electoral.services.ExcelExportService;
 import com.electoral.services.PdfExportService;
+import com.electoral.services.SyncService;
 import com.electoral.services.VotoService;
+import com.electoral.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -99,10 +104,22 @@ public class DashboardController {
 @RequiredArgsConstructor
 class WebSocketController {
     private final VotoService votoService;
+    private final SyncService syncService;
+    private final SecurityUtil securityUtil;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/actualizar-resultados/{eleccionId}")
     @SendTo("/topic/resultados/{eleccionId}")
     public DashboardResponse actualizarResultados(@PathVariable Long eleccionId) {
         return votoService.getDashboardData(eleccionId);
+    }
+
+    @MessageMapping("/sync/push")
+    public void syncPush(SyncPushRequest request) {
+        Long usuarioId = securityUtil.getCurrentUserId();
+        SyncPushResponse response = syncService.processPush(request, usuarioId);
+        if (response.getResults() != null && !response.getResults().isEmpty()) {
+            messagingTemplate.convertAndSend("/topic/sync", response);
+        }
     }
 }

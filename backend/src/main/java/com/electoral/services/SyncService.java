@@ -124,12 +124,30 @@ public class SyncService {
 
     private SyncResultDTO processMesaOperation(SyncOperationDTO op, Long usuarioId) {
         Map<String, Object> data = op.getData();
+        Long mesaId = op.getEntityId();
+        Mesa mesa = mesaRepository.findById(mesaId)
+                .orElseThrow(() -> new IllegalArgumentException("Mesa not found: " + mesaId));
         switch (op.getAction()) {
             case "CERRAR": {
-                Long mesaId = op.getEntityId();
-                Mesa mesa = mesaRepository.findById(mesaId)
-                        .orElseThrow(() -> new IllegalArgumentException("Mesa not found: " + mesaId));
                 mesa.setCerrada(true);
+                mesaRepository.save(mesa);
+                return SyncResultDTO.builder()
+                        .operationId(op.getOperationId()).success(true)
+                        .serverId(mesaId).build();
+            }
+            case "NULOS": {
+                Integer votosNulos = data.containsKey("votosNulos")
+                        ? Integer.valueOf(data.get("votosNulos").toString()) : 0;
+                mesa.setVotosNulos(votosNulos);
+                mesaRepository.save(mesa);
+                return SyncResultDTO.builder()
+                        .operationId(op.getOperationId()).success(true)
+                        .serverId(mesaId).build();
+            }
+            case "BLANCO": {
+                Integer votosBlanco = data.containsKey("votosBlanco")
+                        ? Integer.valueOf(data.get("votosBlanco").toString()) : 0;
+                mesa.setVotosBlanco(votosBlanco);
                 mesaRepository.save(mesa);
                 return SyncResultDTO.builder()
                         .operationId(op.getOperationId()).success(true)
@@ -172,6 +190,23 @@ public class SyncService {
                         .timestamp(v.getCreatedAt().toString())
                         .build());
             }
+        }
+
+        List<Mesa> mesas = mesaRepository.findByEleccionesId(eleccionId);
+        for (Mesa m : mesas) {
+            Map<String, Object> data = new HashMap<>();
+            data.put("id", m.getId());
+            data.put("votosNulos", m.getVotosNulos());
+            data.put("votosBlanco", m.getVotosBlanco());
+            data.put("cerrada", m.getCerrada());
+            data.put("eleccionesId", m.getElecciones() != null ? m.getElecciones().getId() : null);
+
+            operations.add(SyncOperationDTO.builder()
+                    .operationId("mesa-" + m.getId())
+                    .entity("mesa").action("MESA_DATA")
+                    .entityId(m.getId()).data(data)
+                    .timestamp(LocalDateTime.now().toString())
+                    .build());
         }
 
         return SyncPullResponse.builder()

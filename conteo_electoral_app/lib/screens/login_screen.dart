@@ -47,10 +47,13 @@ class _LoginScreenState extends State<LoginScreen>
     final success = await provider.login(
         _usernameController.text, _passwordController.text);
     if (success && mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
+      await provider.descargarDatos();
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      }
     }
   }
 

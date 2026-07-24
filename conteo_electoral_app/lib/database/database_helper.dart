@@ -665,6 +665,16 @@ class DatabaseHelper {
     );
   }
 
+  Future<void> actualizarNulosBlanco(int mesaId, {required int votosNulos, required int votosBlanco}) async {
+    final db = await database;
+    await db.update(
+      'mesas',
+      {'votosNulos': votosNulos, 'votosBlanco': votosBlanco},
+      where: 'id = ?',
+      whereArgs: [mesaId],
+    );
+  }
+
   Future<void> guardarSession(Usuario usuario, String? token) async {
     final db = await database;
     await db.delete('session');
@@ -757,6 +767,16 @@ class DatabaseHelper {
     await db.rawUpdate(
       'UPDATE sync_queue SET retry_count = retry_count + 1 WHERE id = ?',
       [id],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getAllSyncOps({int limit = 100}) async {
+    final db = await database;
+    return await db.query(
+      'sync_queue',
+      where: "status IN ('PENDING', 'FAILED')",
+      orderBy: 'created_at DESC',
+      limit: limit,
     );
   }
 

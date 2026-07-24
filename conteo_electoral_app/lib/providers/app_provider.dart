@@ -35,12 +35,15 @@ class AppProvider extends ChangeNotifier {
   final StompService _stomp = StompService();
   StreamSubscription? _connectivitySub;
   StreamSubscription? _stompSyncSub;
+  StreamSubscription? _stompDataSub;
 
   List<Candidato> _candidatos = [];
   List<Partido> _partidos = [];
   List<Cargo> _cargos = [];
   List<Voto> _votosMesa = [];
   int _totalVotos = 0;
+  int _votosNulos = 0;
+  int _votosBlanco = 0;
 
   Usuario? get usuario => _usuario;
   Eleccion? get eleccionActual => _eleccionActual;
@@ -64,6 +67,8 @@ class AppProvider extends ChangeNotifier {
   List<Cargo> get cargos => _cargos;
   List<Voto> get votosMesa => _votosMesa;
   int get totalVotos => _totalVotos;
+  int get votosNulos => _votosNulos;
+  int get votosBlanco => _votosBlanco;
 
   Future<void> init() async {
     await _loadServerUrl();
@@ -82,8 +87,12 @@ class AppProvider extends ChangeNotifier {
 
   void _initStomp() {
     final wsBaseUrl = _serverUrl.replaceAll('/api', '');
-    _stomp.connect(wsBaseUrl);
+    _stomp.connect(wsBaseUrl, eleccionId: _eleccionActual?.id);
+    _sync.setStomp(_stomp);
     _stompSyncSub = _stomp.onSyncEvent.listen((_) {
+      sincronizarVotos();
+    });
+    _stompDataSub = _stomp.onDataChanged.listen((_) {
       sincronizarVotos();
     });
   }
@@ -175,6 +184,7 @@ class AppProvider extends ChangeNotifier {
   void dispose() {
     _connectivitySub?.cancel();
     _stompSyncSub?.cancel();
+    _stompDataSub?.cancel();
     _stomp.dispose();
     super.dispose();
   }
@@ -225,6 +235,7 @@ class AppProvider extends ChangeNotifier {
       if (elecciones.isNotEmpty) {
         await _db.guardarElecciones(elecciones);
         _eleccionActual = elecciones.first;
+        _stomp.connect(_serverUrl.replaceAll('/api', ''), eleccionId: _eleccionActual!.id);
         
         final partidos = await _api.getPartidosByEleccion(_eleccionActual!.id, token: token);
         await _db.guardarPartidos(partidos);
@@ -282,6 +293,8 @@ class AppProvider extends ChangeNotifier {
     _recintoActual = null;
     _votosMesa = await _db.getVotosByMesa(mesa.id);
     _totalVotos = _votosMesa.fold(0, (sum, v) => sum + v.cantidadVotos);
+    _votosNulos = mesa.votosNulos ?? 0;
+    _votosBlanco = mesa.votosBlanco ?? 0;
     notifyListeners();
   }
 
@@ -330,6 +343,11 @@ class AppProvider extends ChangeNotifier {
   Future<void> _recargarVotos() async {
     _votosMesa = await _db.getVotosByMesa(_mesaActual!.id);
     _totalVotos = _votosMesa.fold(0, (sum, v) => sum + v.cantidadVotos);
+    final mesa = await _db.getMesa(_mesaActual!.id);
+    if (mesa != null) {
+      _votosNulos = mesa.votosNulos ?? 0;
+      _votosBlanco = mesa.votosBlanco ?? 0;
+    }
     notifyListeners();
   }
 
@@ -359,6 +377,26 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> actualizarNulos(int valor) async {
+    if (_mesaActual == null) return;
+    _votosNulos = valor < 0 ? 0 : valor;
+    await _db.actualizarNulosBlanco(_mesaActual!.id, votosNulos: _votosNulos, votosBlanco: _votosBlanco);
+    await _sync.enqueueNulos(_mesaActual!.id, _mesaActual!.eleccionesId, _votosNulos);
+    await _refreshSyncCounts();
+    if (_isOnline) await sincronizarVotos();
+    notifyListeners();
+  }
+
+  Future<void> actualizarBlanco(int valor) async {
+    if (_mesaActual == null) return;
+    _votosBlanco = valor < 0 ? 0 : valor;
+    await _db.actualizarNulosBlanco(_mesaActual!.id, votosNulos: _votosNulos, votosBlanco: _votosBlanco);
+    await _sync.enqueueBlanco(_mesaActual!.id, _mesaActual!.eleccionesId, _votosBlanco);
+    await _refreshSyncCounts();
+    if (_isOnline) await sincronizarVotos();
+    notifyListeners();
+  }
+
   Future<void> cerrarActa() async {
     if (_mesaActual == null) return;
 
@@ -376,6 +414,32 @@ class AppProvider extends ChangeNotifier {
     await _refreshSyncCounts();
     _isLoading = false;
     notifyListeners();
+  }
+
+  Future<List<Map<String, dynamic>>> getSyncOps() async {
+    return await _db.getAllSyncOps();
+  }
+
+  Future<void> retryAllFailed() async {
+    await retryFailedSync();
+  }
+
+  Future<void> retrySingleOp(int id) async {
+    final db = await _db.database;
+    await db.update(
+      'sync_queue',
+      {'status': 'PENDING', 'last_error': null},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    await _refreshSyncCounts();
+    if (_isOnline) await sincronizarVotos();
+  }
+
+  Future<void> deleteSyncOp(int id) async {
+    final db = await _db.database;
+    await db.delete('sync_queue', where: 'id = ?', whereArgs: [id]);
+    await _refreshSyncCounts();
   }
 
   Future<void> _refreshSyncCounts() async {

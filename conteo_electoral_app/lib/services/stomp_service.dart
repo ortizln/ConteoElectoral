@@ -1,18 +1,23 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:stomp_dart_client/stomp.dart';
 import 'package:stomp_dart_client/stomp_config.dart';
 import 'package:stomp_dart_client/stomp_frame.dart';
 
 class StompService {
   StompClient? _client;
+  int? _eleccionId;
   final StreamController<bool> _connectionController = StreamController<bool>.broadcast();
   final StreamController<void> _syncEventController = StreamController<void>.broadcast();
+  final StreamController<void> _dataChangedController = StreamController<void>.broadcast();
 
   Stream<bool> get onConnectionChange => _connectionController.stream;
   Stream<void> get onSyncEvent => _syncEventController.stream;
+  Stream<void> get onDataChanged => _dataChangedController.stream;
   bool get isConnected => _client?.connected ?? false;
 
-  void connect(String wsBaseUrl) {
+  void connect(String wsBaseUrl, {int? eleccionId}) {
+    _eleccionId = eleccionId;
     disconnect();
     _client = StompClient(
       config: StompConfig(
@@ -42,6 +47,21 @@ class StompService {
         _syncEventController.add(null);
       },
     );
+    if (_eleccionId != null) {
+      _client?.subscribe(
+        destination: '/topic/resultados/$_eleccionId',
+        callback: (StompFrame frame) {
+          _dataChangedController.add(null);
+        },
+      );
+    }
+  }
+
+  void send(String destination, Map<String, dynamic> body) {
+    _client?.send(
+      destination: destination,
+      body: jsonEncode(body),
+    );
   }
 
   void disconnect() {
@@ -53,5 +73,6 @@ class StompService {
     disconnect();
     _connectionController.close();
     _syncEventController.close();
+    _dataChangedController.close();
   }
 }

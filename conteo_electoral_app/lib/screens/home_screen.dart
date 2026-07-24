@@ -104,13 +104,48 @@ class _HomeScreenState extends State<HomeScreen> {
         return Scaffold(
           drawer: _buildDrawer(provider),
           appBar: AppBar(
-            title: const Text('Conteo Electoral'),
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 10,
+                  height: 10,
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: BoxDecoration(
+                    color: provider.isOnline
+                        ? AppColors.success
+                        : AppColors.error,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: (provider.isOnline
+                                ? AppColors.success
+                                : AppColors.error)
+                            .withValues(alpha: 0.5),
+                        blurRadius: 4,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                ),
+                const Text('Conteo Electoral'),
+              ],
+            ),
             actions: [
               IconButton(
                 icon: const Icon(Icons.download_outlined),
                 tooltip: 'Descargar datos',
                 onPressed: _descargarDatos,
               ),
+              if (provider.failedSyncCount + provider.pendingSyncCount > 0)
+                IconButton(
+                  icon: const Icon(Icons.sync_problem,
+                      color: AppColors.warning),
+                  tooltip:
+                      '${provider.pendingSyncCount} pendientes, ${provider.failedSyncCount} fallidos',
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/pendientes'),
+                ),
               IconButton(
                 icon: const Icon(Icons.logout),
                 tooltip: 'Cerrar sesión',
@@ -376,6 +411,18 @@ class _HomeScreenState extends State<HomeScreen> {
             leading: const Icon(Icons.dashboard_outlined),
             title: const Text('Dashboard'),
             onTap: () => Navigator.pop(context),
+          ),
+          ListTile(
+            leading: const Icon(Icons.sync, color: AppColors.warning),
+            title: const Text('Sync Pendientes'),
+            subtitle: provider.pendingSyncCount + provider.failedSyncCount > 0
+                ? Text('${provider.pendingSyncCount} pend, ${provider.failedSyncCount} fallidos',
+                    style: const TextStyle(fontSize: 11, color: AppColors.gray))
+                : null,
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/pendientes');
+            },
           ),
           if (provider.usuario?.rol == 'ADMIN') ...[
             const Divider(),

@@ -335,6 +335,32 @@ public class VotoService {
                         .build())
                 .collect(Collectors.toList());
 
+        List<ResultadoLista> resultadosListas = new ArrayList<>();
+        if (!mesaIds.isEmpty()) {
+            List<Object[]> votosPorLista = votoRepository.sumVotosGroupByListaAndMesaIds(eleccionId, mesaIds);
+            if (votosPorLista != null && !votosPorLista.isEmpty()) {
+                Map<Long, Long> votosListaMap = votosPorLista.stream()
+                        .collect(Collectors.toMap(r -> ((Number) r[0]).longValue(), r -> ((Number) r[1]).longValue()));
+                List<ListaElectoral> listas = listaElectoralRepository.findByEleccionId(eleccionId);
+                for (ListaElectoral l : listas) {
+                    Long votos = votosListaMap.get(l.getId());
+                    if (votos == null) continue;
+                    double pct = totalVotos > 0 ? (double) votos / totalVotos * 100.0 : 0.0;
+                    resultadosListas.add(ResultadoLista.builder()
+                            .listaId(l.getId())
+                            .listaNombre(l.getNombre())
+                            .numeroLista(l.getNumeroLista())
+                            .partidoNombre(l.getPartido() != null ? l.getPartido().getNombre() : null)
+                            .partidoSigla(l.getPartido() != null ? l.getPartido().getSigla() : null)
+                            .cargoNombre(l.getCargo() != null ? l.getCargo().getNombre() : null)
+                            .totalVotos(votos)
+                            .porcentaje(Math.round(pct * 100.0) / 100.0)
+                            .build());
+                }
+                resultadosListas.sort((a, b) -> Long.compare(b.getTotalVotos(), a.getTotalVotos()));
+            }
+        }
+
         return DashboardResponse.builder()
                 .eleccionId(eleccion.getId())
                 .eleccionNombre(eleccion.getNombre())
@@ -349,6 +375,7 @@ public class VotoService {
                 .resultados(resultados)
                 .resultadosProvincia(resultadosProvincia)
                 .resultadosParroquia(resultadosParroquia)
+                .resultadosListas(resultadosListas)
                 .build();
     }
 

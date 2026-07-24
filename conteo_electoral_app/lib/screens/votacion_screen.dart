@@ -183,7 +183,21 @@ class _VotacionScreenState extends State<VotacionScreen> {
       builder: (context, provider, _) {
         if (provider.mesaActual == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Votación')),
+            appBar: AppBar(
+              leading: _statusDot(provider.isOnline),
+              title: const Text('Votación'),
+              actions: [
+                if (provider.failedSyncCount > 0)
+                  IconButton(
+                    icon: const Icon(Icons.sync_problem,
+                        color: AppColors.warning),
+                    tooltip:
+                        '${provider.failedSyncCount} sincronizaciones fallidas',
+                    onPressed: () =>
+                        Navigator.pushNamed(context, '/pendientes'),
+                  ),
+              ],
+            ),
             body: const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -206,7 +220,21 @@ class _VotacionScreenState extends State<VotacionScreen> {
 
         if (provider.mesaActual?.cerrada == true) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Mesa Cerrada')),
+            appBar: AppBar(
+              leading: _statusDot(provider.isOnline),
+              title: const Text('Mesa Cerrada'),
+              actions: [
+                if (provider.failedSyncCount > 0)
+                  IconButton(
+                    icon: const Icon(Icons.sync_problem,
+                        color: AppColors.warning),
+                    tooltip:
+                        '${provider.failedSyncCount} sincronizaciones fallidas',
+                    onPressed: () =>
+                        Navigator.pushNamed(context, '/pendientes'),
+                  ),
+              ],
+            ),
             body: const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -229,6 +257,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
 
         return Scaffold(
           appBar: AppBar(
+            leading: _statusDot(provider.isOnline),
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -248,6 +277,15 @@ class _VotacionScreenState extends State<VotacionScreen> {
                       size: 18, color: AppColors.error),
                   label: const Text('Cerrar',
                       style: TextStyle(color: AppColors.error, fontSize: 13)),
+                ),
+              if (provider.failedSyncCount > 0)
+                IconButton(
+                  icon: const Icon(Icons.sync_problem,
+                      color: AppColors.warning),
+                  tooltip:
+                      '${provider.failedSyncCount} sincronizaciones fallidas',
+                  onPressed: () =>
+                      Navigator.pushNamed(context, '/pendientes'),
                 ),
               IconButton(
                   icon: const Icon(Icons.sync),
@@ -326,6 +364,48 @@ class _VotacionScreenState extends State<VotacionScreen> {
                 ),
               ),
 
+              // Nulos y Blanco controls
+              if (provider.mesaActual?.cerrada == true)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  color: AppColors.surface,
+                  child: Row(
+                    children: [
+                      _nulosBlancoBadge('🗳️ Nulos', provider.votosNulos, AppColors.error),
+                      const SizedBox(width: 16),
+                      _nulosBlancoBadge('⬜ Blanco', provider.votosBlanco, AppColors.gray),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  color: AppColors.surface,
+                  child: Row(
+                    children: [
+                      // Nulos
+                      _nulosBlancoControl(
+                        label: 'Nulos',
+                        value: provider.votosNulos,
+                        icon: Icons.cancel_outlined,
+                        color: AppColors.error,
+                        onMinus: () => provider.actualizarNulos(provider.votosNulos - 1),
+                        onPlus: () => provider.actualizarNulos(provider.votosNulos + 1),
+                      ),
+                      const SizedBox(width: 16),
+                      // Blanco
+                      _nulosBlancoControl(
+                        label: 'Blanco',
+                        value: provider.votosBlanco,
+                        icon: Icons.check_circle_outline,
+                        color: AppColors.gray,
+                        onMinus: () => provider.actualizarBlanco(provider.votosBlanco - 1),
+                        onPlus: () => provider.actualizarBlanco(provider.votosBlanco + 1),
+                      ),
+                    ],
+                  ),
+                ),
+              const Divider(height: 1),
               // Candidate list
               Expanded(
                 child: RefreshIndicator(
@@ -823,6 +903,91 @@ class _VotacionScreenState extends State<VotacionScreen> {
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, size: 20, color: AppColors.dark),
+      ),
+    );
+  }
+
+  Widget _nulosBlancoBadge(String label, int value, Color color) {
+    return Row(
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text('$value', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: color)),
+        ),
+      ],
+    );
+  }
+
+  Widget _nulosBlancoControl({
+    required String label,
+    required int value,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onMinus,
+    required VoidCallback onPlus,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.border),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 18, color: color),
+            const SizedBox(width: 6),
+            Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+            const Spacer(),
+            GestureDetector(
+              onTap: onMinus,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(color: AppColors.muted, borderRadius: BorderRadius.circular(6)),
+                child: const Icon(Icons.remove, size: 16),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text('$value', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: onPlus,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(color: AppColors.muted, borderRadius: BorderRadius.circular(6)),
+                child: const Icon(Icons.add, size: 16),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _statusDot(bool isOnline) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 12),
+      child: Container(
+        width: 10,
+        height: 10,
+        decoration: BoxDecoration(
+          color: isOnline ? AppColors.success : AppColors.error,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: (isOnline ? AppColors.success : AppColors.error)
+                  .withValues(alpha: 0.5),
+              blurRadius: 4,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
       ),
     );
   }

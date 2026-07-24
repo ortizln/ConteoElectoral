@@ -144,6 +144,17 @@ export interface Voto {
   eleccionesId: number;
 }
 
+export interface ResultadoLista {
+  listaId: number;
+  listaNombre: string;
+  numeroLista: number;
+  partidoNombre: string;
+  partidoSigla: string;
+  cargoNombre: string;
+  totalVotos: number;
+  porcentaje: number;
+}
+
 export interface DashboardData {
   eleccionId: number;
   eleccionNombre: string;
@@ -156,6 +167,7 @@ export interface DashboardData {
   resultados: ResultadoCandidato[];
   resultadosProvincia?: ResultadoGeo[];
   resultadosParroquia?: ResultadoGeo[];
+  resultadosListas?: ResultadoLista[];
 }
 
 export interface CarouselImage {
@@ -393,6 +405,33 @@ export interface ReportePartido {
   totalVotos: number;
   porcentaje: number;
   totalCandidatos: number;
+}
+
+export interface ReporteLista {
+  listaId: number;
+  listaNombre: string;
+  numeroLista: number;
+  partidoId: number | null;
+  partidoNombre: string;
+  partidoSigla: string;
+  cargoId: number | null;
+  cargoNombre: string;
+  totalVotos: number;
+  porcentaje: number;
+}
+
+export interface ListaElectoral {
+  id: number;
+  nombre: string;
+  partidoId?: number;
+  partidoNombre?: string;
+  partidoSigla?: string;
+  cargoId?: number;
+  cargoNombre?: string;
+  numeroLista?: number;
+  circunscripcionId?: number;
+  activa?: boolean;
+  candidatos?: Candidato[];
 }
 
 export interface ApkVersionItem {
