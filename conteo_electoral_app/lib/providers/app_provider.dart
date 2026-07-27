@@ -304,6 +304,14 @@ class AppProvider extends ChangeNotifier {
   Future<void> registrarVoto(Candidato candidato, int cantidad, {int? listaId}) async {
     if (_mesaActual == null) return;
 
+    final isListaCargo = listaId != null || _isCargoLista(candidato.cargoId);
+    final targetListaId = listaId ?? candidato.listaId;
+
+    if (isListaCargo && targetListaId != null) {
+      await _registrarVotoLista(targetListaId, cantidad);
+      return;
+    }
+
     final existente = _votosMesa.cast<Voto?>().firstWhere(
       (v) => v?.candidatoId == candidato.id,
       orElse: () => null,
@@ -313,12 +321,42 @@ class AppProvider extends ChangeNotifier {
     if (existente != null) {
       voto = existente.copyWith(
         cantidadVotos: existente.cantidadVotos + cantidad,
-        listaId: listaId,
       );
       await _db.actualizarVoto(existente.id!, voto);
     } else {
       voto = Voto(
         candidatoId: candidato.id,
+        mesaId: _mesaActual!.id,
+        cantidadVotos: cantidad,
+        eleccionesId: _mesaActual!.eleccionesId,
+      );
+      final newId = await _db.guardarVoto(voto);
+      voto = voto.copyWith(id: newId);
+    }
+
+    await _sync.enqueueVoto(voto);
+    await _recargarVotos();
+    await _refreshSyncCounts();
+
+    if (_isOnline) {
+      await sincronizarVotos();
+    }
+  }
+
+  Future<void> _registrarVotoLista(int listaId, int cantidad) async {
+    final existente = _votosMesa.cast<Voto?>().firstWhere(
+      (v) => v?.listaId == listaId && v?.candidatoId == null,
+      orElse: () => null,
+    );
+
+    Voto voto;
+    if (existente != null) {
+      voto = existente.copyWith(
+        cantidadVotos: existente.cantidadVotos + cantidad,
+      );
+      await _db.actualizarVoto(existente.id!, voto);
+    } else {
+      voto = Voto(
         mesaId: _mesaActual!.id,
         cantidadVotos: cantidad,
         eleccionesId: _mesaActual!.eleccionesId,
@@ -337,10 +375,17 @@ class AppProvider extends ChangeNotifier {
     }
   }
 
+  bool _isCargoLista(int? cargoId) {
+    if (cargoId == null) return false;
+    final cargo = _cargos.cast<Cargo?>().firstWhere(
+      (c) => c?.id == cargoId,
+      orElse: () => null,
+    );
+    return cargo?.tipoVotacion == 'LISTA';
+  }
+
   Future<void> registrarVotosLista(int listaId, List<Candidato> candidatos, int cantidad) async {
-    for (final candidato in candidatos) {
-      await registrarVoto(candidato, cantidad, listaId: listaId);
-    }
+    await _registrarVotoLista(listaId, cantidad);
   }
 
   Future<void> _recargarVotos() async {

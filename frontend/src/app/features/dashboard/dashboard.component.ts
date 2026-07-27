@@ -6,7 +6,7 @@ import { Chart, registerables } from 'chart.js';
 import { ApiService } from '../../core/services/api.service';
 import { WebSocketService } from '../../core/services/websocket.service';
 import { AuthService } from '../../core/services/auth.service';
-import { DashboardData, Eleccion, Cargo, Partido, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, Mesa, ResultadoCandidato, CandidatoDetalleResponse, GeoGroup, MesaCerradaResponse } from '../../core/models';
+import { DashboardData, Eleccion, Cargo, Partido, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, Mesa, ResultadoCandidato, ResultadoLista, CandidatoDetalleResponse, GeoGroup, MesaCerradaResponse } from '../../core/models';
 import { GeoGroupTableComponent } from './geo-group-table.component';
 import { Subscription } from 'rxjs';
 import { catchError, of } from 'rxjs';
@@ -31,6 +31,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   resultados: ResultadoCandidato[] = [];
   resultadosOrdenados: ResultadoCandidato[] = [];
+  showListaResults = false;
+  resultadosListas: ResultadoLista[] = [];
 
   sortColumn: string = 'votos';
   sortDirection: 'asc' | 'desc' = 'desc';
@@ -158,7 +160,52 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  private isCargoLista(cargoId: number | null): boolean {
+    if (!cargoId) return false;
+    return this.cargos.some(c => c.id === cargoId && c.tipoVotacion === 'LISTA');
+  }
+
   private procesarResultados(data: DashboardData): void {
+    this.showListaResults = this.isCargoLista(this.filtroCargoId);
+
+    if (this.showListaResults && data.resultadosListas?.length) {
+      this.resultadosListas = data.resultadosListas;
+      const resultados: ResultadoCandidato[] = data.resultadosListas.map(r => ({
+        candidatoId: -(r.listaId),
+        nombreCompleto: r.listaNombre,
+        partidoNombre: r.partidoNombre || '—',
+        cargoNombre: r.cargoNombre || '—',
+        totalVotos: r.totalVotos,
+        porcentaje: r.porcentaje
+      }));
+      const totalVotosNulos = data.totalVotosNulos || 0;
+      const totalVotosBlanco = data.totalVotosBlanco || 0;
+      const totalGeneral = data.totalVotos + totalVotosNulos + totalVotosBlanco;
+      if (totalVotosNulos > 0) {
+        resultados.push({
+          candidatoId: 0,
+          nombreCompleto: 'Votos Nulos',
+          partidoNombre: '—',
+          cargoNombre: '—',
+          totalVotos: totalVotosNulos,
+          porcentaje: totalGeneral > 0 ? Math.round(totalVotosNulos * 10000 / totalGeneral) / 100 : 0
+        });
+      }
+      if (totalVotosBlanco > 0) {
+        resultados.push({
+          candidatoId: -1,
+          nombreCompleto: 'Votos en Blanco',
+          partidoNombre: '—',
+          cargoNombre: '—',
+          totalVotos: totalVotosBlanco,
+          porcentaje: totalGeneral > 0 ? Math.round(totalVotosBlanco * 10000 / totalGeneral) / 100 : 0
+        });
+      }
+      this.resultados = resultados;
+      return;
+    }
+
+    this.resultadosListas = [];
     const resultados = [...(data.resultados || [])];
     const totalVotosNulos = data.totalVotosNulos || 0;
     const totalVotosBlanco = data.totalVotosBlanco || 0;
@@ -422,7 +469,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   private computeTop3(): void {
     const grupos = new Map<string, any[]>();
     for (const r of this.resultadosOrdenados) {
-      if (r.candidatoId === 0) continue;
+      if (r.candidatoId === 0 || r.candidatoId === -1 || (r.candidatoId ?? 0) < -1) continue;
       const key = r.cargoNombre;
       if (!grupos.has(key)) grupos.set(key, []);
       grupos.get(key)!.push(r);

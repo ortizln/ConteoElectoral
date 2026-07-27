@@ -1,6 +1,6 @@
 class Voto {
   final int? id;
-  final int candidatoId;
+  final int? candidatoId;
   final int mesaId;
   final int cantidadVotos;
   final int eleccionesId;
@@ -11,7 +11,7 @@ class Voto {
 
   Voto({
     this.id,
-    required this.candidatoId,
+    this.candidatoId,
     required this.mesaId,
     required this.cantidadVotos,
     required this.eleccionesId,
@@ -39,7 +39,7 @@ class Voto {
 
   Map<String, dynamic> toJson() {
     return {
-      'candidatoId': candidatoId,
+      if (candidatoId != null) 'candidatoId': candidatoId,
       'mesaId': mesaId,
       'cantidadVotos': cantidadVotos,
       'eleccionesId': eleccionesId,

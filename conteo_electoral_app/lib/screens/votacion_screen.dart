@@ -124,7 +124,12 @@ class _VotacionScreenState extends State<VotacionScreen> {
   int _getVotosLista(int listaId) {
     final provider = context.read<AppProvider>();
     final candidatos = _agrupadosPorLista[listaId] ?? [];
-    return candidatos.fold(0, (sum, c) => sum + provider.getVotosCandidato(c));
+    final perCandidate = candidatos.fold(0, (sum, c) => sum + provider.getVotosCandidato(c));
+    final listVoto = provider.votosMesa.cast<Voto?>().firstWhere(
+      (v) => v?.listaId == listaId && v?.candidatoId == null,
+      orElse: () => null,
+    );
+    return perCandidate + (listVoto?.cantidadVotos ?? 0);
   }
 
   Future<void> _registrar() async {

@@ -20,7 +20,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 6,
+      version: 7,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -115,7 +115,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE votos (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        candidatoId INTEGER NOT NULL,
+        candidatoId INTEGER,
         mesaId INTEGER NOT NULL,
         cantidadVotos INTEGER NOT NULL,
         eleccionesId INTEGER NOT NULL,
@@ -234,6 +234,24 @@ class DatabaseHelper {
       if (!hasListaId) {
         await db.execute('ALTER TABLE votos ADD COLUMN listaId INTEGER');
       }
+    }
+    if (oldVersion < 7) {
+      await db.execute('''
+        CREATE TABLE votos_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          candidatoId INTEGER,
+          mesaId INTEGER NOT NULL,
+          cantidadVotos INTEGER NOT NULL,
+          eleccionesId INTEGER NOT NULL,
+          opcionPapeletaId INTEGER,
+          listaId INTEGER,
+          sincronizado INTEGER NOT NULL DEFAULT 0,
+          fechaRegistro TEXT NOT NULL
+        )
+      ''');
+      await db.execute('INSERT INTO votos_new SELECT * FROM votos');
+      await db.execute('DROP TABLE votos');
+      await db.execute('ALTER TABLE votos_new RENAME TO votos');
     }
   }
 
@@ -566,7 +584,7 @@ class DatabaseHelper {
     );
     return maps.map((m) => Voto(
       id: m['id'] as int?,
-      candidatoId: m['candidatoId'] as int,
+      candidatoId: m['candidatoId'] as int?,
       mesaId: m['mesaId'] as int,
       cantidadVotos: m['cantidadVotos'] as int,
       eleccionesId: m['eleccionesId'] as int,
@@ -589,7 +607,30 @@ class DatabaseHelper {
     final m = maps.first;
     return Voto(
       id: m['id'] as int?,
-      candidatoId: m['candidatoId'] as int,
+      candidatoId: m['candidatoId'] as int?,
+      mesaId: m['mesaId'] as int,
+      cantidadVotos: m['cantidadVotos'] as int,
+      eleccionesId: m['eleccionesId'] as int,
+      opcionPapeletaId: m['opcionPapeletaId'] as int?,
+      listaId: m['listaId'] as int?,
+      sincronizado: (m['sincronizado'] as int) == 1,
+      fechaRegistro: DateTime.parse(m['fechaRegistro'] as String),
+    );
+  }
+
+  Future<Voto?> getVotoByListaAndMesa(int listaId, int mesaId) async {
+    final db = await database;
+    final maps = await db.query(
+      'votos',
+      where: 'listaId = ? AND mesaId = ?',
+      whereArgs: [listaId, mesaId],
+      limit: 1,
+    );
+    if (maps.isEmpty) return null;
+    final m = maps.first;
+    return Voto(
+      id: m['id'] as int?,
+      candidatoId: m['candidatoId'] as int?,
       mesaId: m['mesaId'] as int,
       cantidadVotos: m['cantidadVotos'] as int,
       eleccionesId: m['eleccionesId'] as int,
@@ -609,7 +650,7 @@ class DatabaseHelper {
     );
     return maps.map((m) => Voto(
       id: m['id'] as int?,
-      candidatoId: m['candidatoId'] as int,
+      candidatoId: m['candidatoId'] as int?,
       mesaId: m['mesaId'] as int,
       cantidadVotos: m['cantidadVotos'] as int,
       eleccionesId: m['eleccionesId'] as int,

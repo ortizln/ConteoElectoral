@@ -12,18 +12,20 @@ import java.util.Optional;
 @SuppressWarnings("null")
 public interface VotoRepository extends JpaRepository<Voto, Long> {
     
-    @Query("SELECT v FROM Voto v JOIN FETCH v.candidato c LEFT JOIN FETCH c.partido LEFT JOIN FETCH v.mesa m LEFT JOIN FETCH v.elecciones e WHERE v.mesa.id = :mesaId")
+    @Query("SELECT v FROM Voto v LEFT JOIN FETCH v.candidato c LEFT JOIN FETCH c.partido LEFT JOIN FETCH v.mesa m LEFT JOIN FETCH v.elecciones e WHERE v.mesa.id = :mesaId")
     List<Voto> findByMesaId(@Param("mesaId") Long mesaId);
      
-    @Query("SELECT v FROM Voto v JOIN FETCH v.candidato c LEFT JOIN FETCH c.partido LEFT JOIN FETCH v.mesa m LEFT JOIN FETCH v.elecciones e WHERE v.elecciones.id = :eleccionesId")
+    @Query("SELECT v FROM Voto v LEFT JOIN FETCH v.candidato c LEFT JOIN FETCH c.partido LEFT JOIN FETCH v.mesa m LEFT JOIN FETCH v.elecciones e WHERE v.elecciones.id = :eleccionesId")
     List<Voto> findByEleccionesId(@Param("eleccionesId") Long eleccionesId);
      
-    @Query("SELECT v FROM Voto v JOIN FETCH v.candidato c LEFT JOIN FETCH c.partido LEFT JOIN FETCH v.mesa m LEFT JOIN FETCH v.elecciones e WHERE v.id = :id")
+    @Query("SELECT v FROM Voto v LEFT JOIN FETCH v.candidato c LEFT JOIN FETCH c.partido LEFT JOIN FETCH v.mesa m LEFT JOIN FETCH v.elecciones e WHERE v.id = :id")
     Optional<Voto> findById(@Param("id") Long id);
      
     List<Voto> findByCandidatoId(Long candidatoId);
      
     Optional<Voto> findByMesaIdAndCandidatoId(Long mesaId, Long candidatoId);
+
+    Optional<Voto> findByMesaIdAndListaId(Long mesaId, Long listaId);
      
     @Query("SELECT COALESCE(SUM(v.cantidadVotos), 0) FROM Voto v WHERE v.elecciones.id = :eleccionId")
     Long sumVotosByEleccion(Long eleccionId);

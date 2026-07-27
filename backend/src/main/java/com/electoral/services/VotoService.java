@@ -65,14 +65,22 @@ public class VotoService {
         List<Voto> savedVotos = new ArrayList<>();
 
         if (request.getListaId() != null) {
-            List<Candidato> candidatosLista = candidatoRepository.findByListaIdOrderByOrdenEnLista(request.getListaId());
-            if (candidatosLista.isEmpty()) {
-                throw new RecursoNoEncontradoException(
-                        "No hay candidatos en la lista ID: " + request.getListaId());
-            }
-            for (Candidato candidato : candidatosLista) {
-                Voto voto = upsertVoto(candidato, mesa, eleccion, request.getCantidadVotos(), usuarioId, request.getListaId());
+            ListaElectoral lista = listaElectoralRepository.findById(request.getListaId())
+                    .orElseThrow(() -> new RecursoNoEncontradoException(
+                            "Lista no encontrada con ID: " + request.getListaId()));
+            if (lista.getCargo() != null && lista.getCargo().getTipoVotacion() == TipoVotacion.LISTA) {
+                Voto voto = upsertVotoByLista(lista, mesa, eleccion, request.getCantidadVotos(), usuarioId);
                 savedVotos.add(voto);
+            } else {
+                List<Candidato> candidatosLista = candidatoRepository.findByListaIdOrderByOrdenEnLista(request.getListaId());
+                if (candidatosLista.isEmpty()) {
+                    throw new RecursoNoEncontradoException(
+                            "No hay candidatos en la lista ID: " + request.getListaId());
+                }
+                for (Candidato candidato : candidatosLista) {
+                    Voto voto = upsertVoto(candidato, mesa, eleccion, request.getCantidadVotos(), usuarioId, request.getListaId());
+                    savedVotos.add(voto);
+                }
             }
         } else if (request.getCandidatoId() != null) {
             Candidato candidato = candidatoRepository.findById(request.getCandidatoId())
@@ -111,6 +119,22 @@ public class VotoService {
                         .cantidadVotos(cantidad)
                         .createdBy(Usuario.builder().id(usuarioId).build())
                         .listaId(listaId)
+                        .build());
+        return votoRepository.save(voto);
+    }
+
+    private Voto upsertVotoByLista(ListaElectoral lista, Mesa mesa, Eleccion eleccion, Integer cantidad, Long usuarioId) {
+        Voto voto = votoRepository.findByMesaIdAndListaId(mesa.getId(), lista.getId())
+                .map(existingVoto -> {
+                    existingVoto.setCantidadVotos(existingVoto.getCantidadVotos() + cantidad);
+                    return existingVoto;
+                })
+                .orElseGet(() -> Voto.builder()
+                        .mesa(mesa)
+                        .elecciones(eleccion)
+                        .cantidadVotos(cantidad)
+                        .listaId(lista.getId())
+                        .createdBy(Usuario.builder().id(usuarioId).build())
                         .build());
         return votoRepository.save(voto);
     }
@@ -341,7 +365,9 @@ public class VotoService {
             if (votosPorLista != null && !votosPorLista.isEmpty()) {
                 Map<Long, Long> votosListaMap = votosPorLista.stream()
                         .collect(Collectors.toMap(r -> ((Number) r[0]).longValue(), r -> ((Number) r[1]).longValue()));
-                List<ListaElectoral> listas = listaElectoralRepository.findByEleccionId(eleccionId);
+                List<ListaElectoral> listas = cargoId != null
+                        ? listaElectoralRepository.findByEleccionIdAndCargoId(eleccionId, cargoId)
+                        : listaElectoralRepository.findByEleccionId(eleccionId);
                 for (ListaElectoral l : listas) {
                     Long votos = votosListaMap.get(l.getId());
                     if (votos == null) continue;
@@ -380,25 +406,27 @@ public class VotoService {
     }
 
     private VotoResponse mapToResponse(Voto voto) {
-        return VotoResponse.builder()
+        VotoResponse.VotoResponseBuilder builder = VotoResponse.builder()
                 .id(voto.getId())
-                .candidatoId(voto.getCandidato().getId())
-                .candidatoNombre(voto.getCandidato().getNombre())
-                .candidatoApellido(voto.getCandidato().getApellido())
-                .partidoNombre(voto.getCandidato().getPartido() != null ? 
-                    voto.getCandidato().getPartido().getNombre() : "Independiente")
                 .mesaId(voto.getMesa().getId())
                 .mesaNumero(voto.getMesa().getNumero())
                 .cantidadVotos(voto.getCantidadVotos())
                 .eleccionesId(voto.getElecciones().getId())
-                .listaId(voto.getListaId())
-                .build();
+                .listaId(voto.getListaId());
+        if (voto.getCandidato() != null) {
+            builder.candidatoId(voto.getCandidato().getId())
+                    .candidatoNombre(voto.getCandidato().getNombre())
+                    .candidatoApellido(voto.getCandidato().getApellido())
+                    .partidoNombre(voto.getCandidato().getPartido() != null ?
+                            voto.getCandidato().getPartido().getNombre() : "Independiente");
+        }
+        return builder.build();
     }
 
     private Map<String, Object> mapToJson(Voto voto) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", voto.getId());
-        map.put("candidatoId", voto.getCandidato().getId());
+        map.put("candidatoId", voto.getCandidato() != null ? voto.getCandidato().getId() : null);
         map.put("mesaId", voto.getMesa().getId());
         map.put("cantidadVotos", voto.getCantidadVotos());
         map.put("listaId", voto.getListaId());
@@ -410,7 +438,9 @@ public class VotoService {
         map.put("tipo", "votos");
         map.put("total", votos.size());
         map.put("cantidadTotal", votos.stream().mapToInt(Voto::getCantidadVotos).sum());
-        map.put("listaId", votos.get(0).getListaId());
+        if (!votos.isEmpty()) {
+            map.put("listaId", votos.get(0).getListaId());
+        }
         return map;
     }
 }

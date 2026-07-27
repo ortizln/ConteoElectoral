@@ -5,9 +5,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "votos", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"candidato_id", "mesa_id"})
-})
+@Table(name = "votos")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,7 +16,7 @@ public class Voto {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "candidato_id", nullable = false)
+    @JoinColumn(name = "candidato_id", nullable = true)
     private Candidato candidato;
 
     @ManyToOne(fetch = FetchType.LAZY)
