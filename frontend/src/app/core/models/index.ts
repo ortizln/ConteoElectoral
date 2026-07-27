@@ -160,6 +160,7 @@ export interface DashboardData {
   eleccionNombre: string;
   totalVotos: number;
   totalVotosNulos: number;
+  totalVotosBlanco: number;
   totalMesas: number;
   mesasCerradas: number;
   mesasAbiertas: number;

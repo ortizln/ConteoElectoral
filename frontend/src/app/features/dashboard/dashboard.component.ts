@@ -161,8 +161,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   private procesarResultados(data: DashboardData): void {
     const resultados = [...(data.resultados || [])];
     const totalVotosNulos = data.totalVotosNulos || 0;
+    const totalVotosBlanco = data.totalVotosBlanco || 0;
+    const totalGeneral = data.totalVotos + totalVotosNulos + totalVotosBlanco;
     if (totalVotosNulos > 0) {
-      const totalGeneral = data.totalVotos + totalVotosNulos;
       resultados.push({
         candidatoId: 0,
         nombreCompleto: 'Votos Nulos',
@@ -170,6 +171,16 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         cargoNombre: '—',
         totalVotos: totalVotosNulos,
         porcentaje: totalGeneral > 0 ? Math.round(totalVotosNulos * 10000 / totalGeneral) / 100 : 0
+      });
+    }
+    if (totalVotosBlanco > 0) {
+      resultados.push({
+        candidatoId: -1,
+        nombreCompleto: 'Votos en Blanco',
+        partidoNombre: '—',
+        cargoNombre: '—',
+        totalVotos: totalVotosBlanco,
+        porcentaje: totalGeneral > 0 ? Math.round(totalVotosBlanco * 10000 / totalGeneral) / 100 : 0
       });
     }
     this.resultados = resultados;
@@ -438,9 +449,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   getRowClass(r: any): string {
     if (r.candidatoId === 0) return 'nulos-row';
+    if (r.candidatoId === -1) return 'blanco-row';
     const topSet = this.top3Cargos.get(r.cargoNombre);
     if (topSet?.has(r.nombreCompleto)) {
-      const idx = [...this.resultadosOrdenados.filter(x => x.cargoNombre === r.cargoNombre && x.candidatoId !== 0)]
+      const idx = [...this.resultadosOrdenados.filter(x => x.cargoNombre === r.cargoNombre && x.candidatoId !== 0 && x.candidatoId !== -1)]
         .sort((a, b) => b.totalVotos - a.totalVotos)
         .findIndex(x => x.nombreCompleto === r.nombreCompleto);
       return 'candidato-row top-' + (idx + 1);
@@ -450,9 +462,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   getRankClass(r: any): string {
     if (r.candidatoId === 0) return 'candidato-rank rank-nulos';
+    if (r.candidatoId === -1) return 'candidato-rank rank-blanco';
     const topSet = this.top3Cargos.get(r.cargoNombre);
     if (topSet?.has(r.nombreCompleto)) {
-      const idx = [...this.resultadosOrdenados.filter(x => x.cargoNombre === r.cargoNombre && x.candidatoId !== 0)]
+      const idx = [...this.resultadosOrdenados.filter(x => x.cargoNombre === r.cargoNombre && x.candidatoId !== 0 && x.candidatoId !== -1)]
         .sort((a, b) => b.totalVotos - a.totalVotos)
         .findIndex(x => x.nombreCompleto === r.nombreCompleto);
       return 'candidato-rank rank-top-' + (idx + 1);
@@ -462,9 +475,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   getRankLabel(r: any, i: number): string {
     if (r.candidatoId === 0) return '✗';
+    if (r.candidatoId === -1) return '⬜';
     const topSet = this.top3Cargos.get(r.cargoNombre);
     if (topSet?.has(r.nombreCompleto)) {
-      const idx = [...this.resultadosOrdenados.filter(x => x.cargoNombre === r.cargoNombre && x.candidatoId !== 0)]
+      const idx = [...this.resultadosOrdenados.filter(x => x.cargoNombre === r.cargoNombre && x.candidatoId !== 0 && x.candidatoId !== -1)]
         .sort((a, b) => b.totalVotos - a.totalVotos)
         .findIndex(x => x.nombreCompleto === r.nombreCompleto);
       return ['🥇', '🥈', '🥉'][idx] || (i + 1).toString();

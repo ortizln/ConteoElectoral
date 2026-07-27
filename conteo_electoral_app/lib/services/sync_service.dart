@@ -47,7 +47,7 @@ class SyncService {
         whereArgs: [existingId],
       );
     } else {
-      await _db.enqueueSync('voto', entityId, voto.id != null ? 'UPDATE' : 'CREATE', voto.toJson(), eleccionId: voto.eleccionesId);
+      await _db.enqueueSync('voto', entityId, 'CREATE', voto.toJson(), eleccionId: voto.eleccionesId);
     }
   }
 

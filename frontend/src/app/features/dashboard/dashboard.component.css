@@ -43,6 +43,7 @@
 .stat-mesas::before { background: linear-gradient(90deg, #f59e0b, #f97316); }
 .stat-cerradas::before { background: linear-gradient(90deg, #ef4444, #dc2626); }
 .stat-progreso::before { background: linear-gradient(90deg, #10b981, #059669); }
+.stat-blanco::before { background: linear-gradient(90deg, #64748b, #94a3b8); }
 
 .stat-icon { font-size: 22px; line-height: 1; }
 .stat-info { display: flex; flex-direction: column; gap: 1px; }
@@ -133,10 +134,14 @@
 .rank-top-2 { background: #e2e8f0 !important; color: #334155 !important; }
 .rank-top-3 { background: #fdba74 !important; color: #7c2d12 !important; }
 .rank-nulos { background: #fecaca !important; color: #991b1b !important; }
+.rank-blanco { background: #e2e8f0 !important; color: #475569 !important; }
 
 .nulos-row { cursor: default; }
 .nulos-row td { background: #fef2f2 !important; border-top: 2px dashed #fca5a5; }
 .nulos-row:hover td { background: #fef2f2 !important; }
+.blanco-row { cursor: default; }
+.blanco-row td { background: #f8fafc !important; border-top: 2px dashed #cbd5e1; }
+.blanco-row:hover td { background: #f8fafc !important; }
 
 .fullscreen-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1049; }
 
@@ -192,6 +197,9 @@
 [data-theme="dark"] .table-count { background: #334155 !important; color: #94a3b8 !important; }
 [data-theme="dark"] .candidato-name { color: #e2e8f0 !important; }
 [data-theme="dark"] .candidato-rank { background: #334155 !important; color: #94a3b8 !important; }
+[data-theme="dark"] .rank-blanco { background: #334155 !important; color: #cbd5e1 !important; }
+
+[data-theme="dark"] .stat-blanco::before { background: linear-gradient(90deg, #64748b, #94a3b8); }
 [data-theme="dark"] .partido-badge { background: #1e3a5f !important; color: #93c5fd !important; }
 [data-theme="dark"] .porcentaje-badge { background: #064e3b !important; color: #6ee7b7 !important; }
 
