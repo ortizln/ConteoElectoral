@@ -20,7 +20,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -120,6 +120,7 @@ class DatabaseHelper {
         cantidadVotos INTEGER NOT NULL,
         eleccionesId INTEGER NOT NULL,
         opcionPapeletaId INTEGER,
+        listaId INTEGER,
         sincronizado INTEGER NOT NULL DEFAULT 0,
         fechaRegistro TEXT NOT NULL
       )
@@ -226,6 +227,13 @@ class DatabaseHelper {
     }
     if (oldVersion < 5) {
       await db.execute('ALTER TABLE votos ADD COLUMN listaId INTEGER');
+    }
+    if (oldVersion < 6) {
+      final cols = await db.rawQuery("PRAGMA table_info('votos')");
+      final hasListaId = cols.any((c) => c['name'] == 'listaId');
+      if (!hasListaId) {
+        await db.execute('ALTER TABLE votos ADD COLUMN listaId INTEGER');
+      }
     }
   }
 
