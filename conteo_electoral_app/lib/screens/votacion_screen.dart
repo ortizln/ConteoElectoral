@@ -266,7 +266,6 @@ class _VotacionScreenState extends State<VotacionScreen> {
         return Scaffold(
           appBar: AppBar(
             leading: Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
                   icon: const Icon(Icons.arrow_back),
@@ -1128,23 +1127,12 @@ class _VotacionScreenState extends State<VotacionScreen> {
   }
 
   Widget _statusDot(bool isOnline, {double size = 6}) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4),
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: isOnline ? AppColors.success : AppColors.error,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: (isOnline ? AppColors.success : AppColors.error)
-                  .withValues(alpha: 0.5),
-              blurRadius: 4,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: isOnline ? AppColors.success : AppColors.error,
+        shape: BoxShape.circle,
       ),
     );
   }
