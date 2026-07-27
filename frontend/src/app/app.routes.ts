@@ -17,7 +17,7 @@ export const routes: Routes = [
   { 
     path: 'dashboard', 
     canActivate: [authGuard],
-    loadComponent: () => import('./features/shared/layouts/content-layout.component').then(m => m.ContentLayoutComponent),
+    loadComponent: () => import('./features/admin/layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     children: [
       { 
         path: '', 
@@ -29,7 +29,7 @@ export const routes: Routes = [
     path: 'mesa', 
     canActivate: [authGuard, roleGuard],
     data: { roles: ['MIEMBRO_MESA', 'ADMIN'] },
-    loadComponent: () => import('./features/shared/layouts/content-layout.component').then(m => m.ContentLayoutComponent),
+    loadComponent: () => import('./features/admin/layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     children: [
       { 
         path: '', 

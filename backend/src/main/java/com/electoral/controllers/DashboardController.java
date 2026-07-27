@@ -120,6 +120,19 @@ class WebSocketController {
         SyncPushResponse response = syncService.processPush(request, usuarioId);
         if (response.getResults() != null && !response.getResults().isEmpty()) {
             messagingTemplate.convertAndSend("/topic/sync", response);
+            if (request.getOperations() != null) {
+                for (com.electoral.dto.SyncOperationDTO op : request.getOperations()) {
+                    if (op.getData() != null && op.getData().containsKey("eleccionesId")) {
+                        Object raw = op.getData().get("eleccionesId");
+                        if (raw != null) {
+                            Long eleccionId = Long.valueOf(raw.toString());
+                            messagingTemplate.convertAndSend("/topic/resultados/" + eleccionId,
+                                    java.util.Map.of("tipo", "data-changed"));
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 }

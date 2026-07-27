@@ -151,10 +151,12 @@ class SyncService {
     String? token,
   ) async {
     final entity = entityType.toLowerCase();
-    final stomp = _stomp;
-    if (stomp != null && stomp.isConnected) {
-      try {
-        stomp.send('/app/sync/push', {
+    final uri = Uri.parse('$_baseUrl/sync/push');
+    try {
+      final response = await http.post(
+        uri,
+        headers: _headers(token),
+        body: jsonEncode({
           'operations': [
             {
               'entity': entity,
@@ -163,26 +165,12 @@ class SyncService {
               'data': payload,
             }
           ],
-        });
-        return true;
-      } catch (_) {}
+        }),
+      );
+      return response.statusCode == 200;
+    } catch (_) {
+      return false;
     }
-    final uri = Uri.parse('$_baseUrl/sync/push');
-    final response = await http.post(
-      uri,
-      headers: _headers(token),
-      body: jsonEncode({
-        'operations': [
-          {
-            'entity': entity,
-            'entityId': entityId,
-            'action': operation,
-            'data': payload,
-          }
-        ],
-      }),
-    );
-    return response.statusCode == 200;
   }
 
   Future<int> pullChanges(int eleccionId) async {

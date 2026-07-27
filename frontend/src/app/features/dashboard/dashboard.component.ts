@@ -361,13 +361,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!this.selectedEleccionId) return;
     this.wsSubscription = this.wsService.subscribeToResultados(this.selectedEleccionId)
       .pipe(catchError(err => { console.warn('WebSocket error:', err); return of(null as any); }))
-      .subscribe((data: DashboardData | null) => {
-        if (data) {
-          this.dashboard = data;
-          this.procesarResultados(data);
-          this.ordenarResultados();
-          this.loadDataComplete();
-        }
+      .subscribe(() => {
+        this.recargarSilencioso();
       });
   }
 

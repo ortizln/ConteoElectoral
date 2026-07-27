@@ -10,25 +10,12 @@
     </div>
 
     <nav class="sidebar-nav">
-      <span class="nav-section-title">Menú Principal</span>
-      <a *ngFor="let item of filteredNavItems" [routerLink]="item.path" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
+      <a *ngFor="let item of allNavItems" [routerLink]="item.path" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
         <span class="nav-icon">{{ item.icon }}</span>
         <span class="nav-text">{{ item.label }}</span>
         <span class="nav-indicator"></span>
       </a>
     </nav>
-
-    <div class="extra-links">
-      <span class="nav-section-title">Enlaces Rápidos</span>
-      <a routerLink="/dashboard" class="nav-item" (click)="closeSidebar()">
-        <span class="nav-icon">📊</span>
-        <span class="nav-text">Dashboard Electoral</span>
-      </a>
-      <a routerLink="/mesa" class="nav-item" (click)="closeSidebar()">
-        <span class="nav-icon">🗳️</span>
-        <span class="nav-text">Módulo de Votación</span>
-      </a>
-    </div>
   </aside>
 
   <div class="content-wrapper">

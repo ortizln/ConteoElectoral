@@ -17,6 +17,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
   int? _selectedListaId;
   List<Candidato> _selectedListaCandidates = [];
   final _cantidadCtrl = TextEditingController(text: '1');
+  final _nulosCtrl = TextEditingController(text: '0');
+  final _blancoCtrl = TextEditingController(text: '0');
   String _filtroPartido = '';
   String _filtroCargo = '';
   String _busqueda = '';
@@ -43,6 +45,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
   @override
   void dispose() {
     _cantidadCtrl.dispose();
+    _nulosCtrl.dispose();
+    _blancoCtrl.dispose();
     super.dispose();
   }
 
@@ -496,25 +500,21 @@ class _VotacionScreenState extends State<VotacionScreen> {
                       // Nulos
                       _nulosBlancoControl(
                         label: 'Nulos',
+                        controller: _nulosCtrl,
                         value: provider.votosNulos,
                         icon: Icons.cancel_outlined,
                         color: AppColors.error,
-                        onMinus: () =>
-                            provider.actualizarNulos(provider.votosNulos - 1),
-                        onPlus: () =>
-                            provider.actualizarNulos(provider.votosNulos + 1),
+                        onChanged: (v) => provider.actualizarNulos(v),
                       ),
                       const SizedBox(width: 16),
                       // Blanco
                       _nulosBlancoControl(
                         label: 'Blanco',
+                        controller: _blancoCtrl,
                         value: provider.votosBlanco,
                         icon: Icons.check_circle_outline,
                         color: AppColors.gray,
-                        onMinus: () =>
-                            provider.actualizarBlanco(provider.votosBlanco - 1),
-                        onPlus: () =>
-                            provider.actualizarBlanco(provider.votosBlanco + 1),
+                        onChanged: (v) => provider.actualizarBlanco(v),
                       ),
                     ],
                   ),
@@ -1042,15 +1042,19 @@ class _VotacionScreenState extends State<VotacionScreen> {
 
   Widget _nulosBlancoControl({
     required String label,
+    required TextEditingController controller,
     required int value,
     required IconData icon,
     required Color color,
-    required VoidCallback onMinus,
-    required VoidCallback onPlus,
+    required ValueChanged<int> onChanged,
   }) {
+    final curr = int.tryParse(controller.text) ?? 0;
+    if (curr != value) {
+      controller.text = '$value';
+    }
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
         decoration: BoxDecoration(
           border: Border.all(color: AppColors.border),
           borderRadius: BorderRadius.circular(10),
@@ -1064,7 +1068,13 @@ class _VotacionScreenState extends State<VotacionScreen> {
                     const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
             const Spacer(),
             GestureDetector(
-              onTap: onMinus,
+              onTap: () {
+                final v = int.tryParse(controller.text) ?? 0;
+                if (v > 0) {
+                  controller.text = '${v - 1}';
+                  onChanged(v - 1);
+                }
+              },
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
@@ -1074,12 +1084,33 @@ class _VotacionScreenState extends State<VotacionScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            Text('$value',
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            SizedBox(
+              width: 48,
+              child: TextField(
+                controller: controller,
+                textAlign: TextAlign.center,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 16),
+                decoration: const InputDecoration(
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 6),
+                  isDense: true,
+                  border: InputBorder.none,
+                ),
+                onChanged: (txt) {
+                  final v = int.tryParse(txt) ?? 0;
+                  onChanged(v);
+                },
+              ),
+            ),
             const SizedBox(width: 8),
             GestureDetector(
-              onTap: onPlus,
+              onTap: () {
+                final v = int.tryParse(controller.text) ?? 0;
+                controller.text = '${v + 1}';
+                onChanged(v + 1);
+              },
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(

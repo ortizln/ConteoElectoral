@@ -9,6 +9,7 @@ interface NavItem {
   icon: string;
   label: string;
   roles: string[];
+  isQuickLink?: boolean;
 }
 
 @Component({
@@ -20,30 +21,49 @@ interface NavItem {
 })
 export class AdminLayoutComponent {
   sidebarOpen = false;
+  baseAdminPath = '/admin';
+
+  adminPrefix = (path: string) => `${this.baseAdminPath}/${path}`;
+
   navItems: NavItem[] = [
-    { path: 'elecciones', icon: '🏛️', label: 'Elecciones', roles: ['ADMIN', 'SUPERVISOR'] },
-    { path: 'zonas', icon: '🌍', label: 'Zonas', roles: ['ADMIN'] },
-    { path: 'provincias', icon: '📍', label: 'Provincias', roles: ['ADMIN'] },
-    { path: 'cantones', icon: '🏘️', label: 'Cantones', roles: ['ADMIN'] },
-    { path: 'parroquias', icon: '🏘️', label: 'Parroquias', roles: ['ADMIN'] },
-    { path: 'instituciones', icon: '🏫', label: 'Instituciones', roles: ['ADMIN', 'SUPERVISOR'] },
-    { path: 'partidos', icon: '🎯', label: 'Partidos', roles: ['ADMIN', 'SUPERVISOR'] },
-    { path: 'cargos', icon: '📋', label: 'Cargos', roles: ['ADMIN', 'SUPERVISOR'] },
-    { path: 'candidatos', icon: '👤', label: 'Candidatos', roles: ['ADMIN', 'SUPERVISOR'] },
-    { path: 'mesas', icon: '🗳️', label: 'Mesas', roles: ['ADMIN', 'SUPERVISOR'] },
-    { path: 'asignar-mesas', icon: '📝', label: 'Asignar Mesas', roles: ['ADMIN', 'SUPERVISOR'] },
-    { path: 'listas-electorales', icon: '📋', label: 'Listas Electorales', roles: ['ADMIN'] },
-    { path: 'tipos-eleccion', icon: '⚙️', label: 'Config. Electoral', roles: ['ADMIN'] },
-    { path: 'papeletas', icon: '📄', label: 'Papeletas', roles: ['ADMIN', 'SUPERVISOR'] },
-    { path: 'circunscripciones', icon: '🗺️', label: 'Circunscripciones', roles: ['ADMIN', 'SUPERVISOR'] },
-    { path: 'escrutinio', icon: '🔍', label: 'Escrutinio', roles: ['ADMIN', 'SUPERVISOR'] },
-    { path: 'dashboard-geografico', icon: '🗺️', label: 'Dashboard Geográfico', roles: ['ADMIN', 'SUPERVISOR'] },
-    { path: 'reportes', icon: '📊', label: 'Reportes', roles: ['ADMIN', 'SUPERVISOR'] },
-    { path: 'usuarios', icon: '👥', label: 'Usuarios', roles: ['ADMIN'] },
-    { path: 'roles', icon: '🔐', label: 'Roles y Permisos', roles: ['ADMIN'] },
-    { path: 'reglas-negocio', icon: '⚖️', label: 'Reglas de Negocio', roles: ['ADMIN'] },
-    { path: 'configuracion', icon: '⚙️', label: 'Configuración', roles: ['ADMIN'] }
+    { path: '/dashboard', icon: '📊', label: 'Dashboard Electoral', roles: ['ADMIN', 'SUPERVISOR', 'MIEMBRO_MESA'] },
+    { path: '/mesa', icon: '🗳️', label: 'Módulo de Votación', roles: ['MIEMBRO_MESA', 'ADMIN'] },
   ];
+
+  adminNavItems: NavItem[] = [
+    { path: '/admin/elecciones', icon: '🏛️', label: 'Elecciones', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: '/admin/zonas', icon: '🌍', label: 'Zonas', roles: ['ADMIN'] },
+    { path: '/admin/provincias', icon: '📍', label: 'Provincias', roles: ['ADMIN'] },
+    { path: '/admin/cantones', icon: '🏘️', label: 'Cantones', roles: ['ADMIN'] },
+    { path: '/admin/parroquias', icon: '🏘️', label: 'Parroquias', roles: ['ADMIN'] },
+    { path: '/admin/instituciones', icon: '🏫', label: 'Instituciones', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: '/admin/partidos', icon: '🎯', label: 'Partidos', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: '/admin/cargos', icon: '📋', label: 'Cargos', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: '/admin/candidatos', icon: '👤', label: 'Candidatos', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: '/admin/mesas', icon: '🗳️', label: 'Mesas', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: '/admin/asignar-mesas', icon: '📝', label: 'Asignar Mesas', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: '/admin/listas-electorales', icon: '📋', label: 'Listas Electorales', roles: ['ADMIN'] },
+    { path: '/admin/tipos-eleccion', icon: '⚙️', label: 'Config. Electoral', roles: ['ADMIN'] },
+    { path: '/admin/papeletas', icon: '📄', label: 'Papeletas', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: '/admin/circunscripciones', icon: '🗺️', label: 'Circunscripciones', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: '/admin/escrutinio', icon: '🔍', label: 'Escrutinio', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: '/admin/dashboard-geografico', icon: '🗺️', label: 'Dashboard Geográfico', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: '/admin/reportes', icon: '📊', label: 'Reportes', roles: ['ADMIN', 'SUPERVISOR'] },
+    { path: '/admin/usuarios', icon: '👥', label: 'Usuarios', roles: ['ADMIN'] },
+    { path: '/admin/roles', icon: '🔐', label: 'Roles y Permisos', roles: ['ADMIN'] },
+    { path: '/admin/reglas-negocio', icon: '⚖️', label: 'Reglas de Negocio', roles: ['ADMIN'] },
+    { path: '/admin/configuracion', icon: '⚙️', label: 'Configuración', roles: ['ADMIN'] },
+  ];
+
+  get allNavItems(): NavItem[] {
+    const role = this.userRole;
+    const items: NavItem[] = [];
+    items.push(...this.navItems.filter(item => item.roles.includes(role)));
+    if (role === 'ADMIN' || role === 'SUPERVISOR') {
+      items.push(...this.adminNavItems.filter(item => item.roles.includes(role)));
+    }
+    return items;
+  }
 
   get userRole(): string {
     const user = this.authService.getCurrentUser();
@@ -55,8 +75,8 @@ export class AdminLayoutComponent {
     return user?.nombre + ' ' + user?.apellido || '';
   }
 
-  get filteredNavItems(): NavItem[] {
-    return this.navItems.filter(item => item.roles.includes(this.userRole));
+  get canViewAdmin(): boolean {
+    return this.userRole === 'ADMIN' || this.userRole === 'SUPERVISOR';
   }
 
   get isDark(): boolean {
