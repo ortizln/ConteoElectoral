@@ -36,6 +36,7 @@ class AppProvider extends ChangeNotifier {
   StreamSubscription? _connectivitySub;
   StreamSubscription? _stompSyncSub;
   StreamSubscription? _stompDataSub;
+  Timer? _retryTimer;
 
   List<Candidato> _candidatos = [];
   List<Partido> _partidos = [];
@@ -172,9 +173,10 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
 
     _connectivitySub = Connectivity().onConnectivityChanged.listen((result) {
+      final wasOffline = !_isOnline;
       _isOnline = result != ConnectivityResult.none;
       notifyListeners();
-      if (_isOnline) {
+      if (_isOnline && wasOffline) {
         sincronizarVotos();
       }
     });
@@ -182,6 +184,7 @@ class AppProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _retryTimer?.cancel();
     _connectivitySub?.cancel();
     _stompSyncSub?.cancel();
     _stompDataSub?.cancel();
@@ -365,6 +368,7 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      await _sync.retryFailedOps();
       await _sync.processPush();
       if (_eleccionActual != null) {
         await _sync.pullChanges(_eleccionActual!.id);
@@ -375,6 +379,18 @@ class AppProvider extends ChangeNotifier {
     await _refreshSyncCounts();
     _isSyncing = false;
     notifyListeners();
+
+    final hasPending = _pendingSyncCount + _failedSyncCount > 0;
+    _scheduleRetryIfNeeded(hasPending);
+  }
+
+  void _scheduleRetryIfNeeded(bool hasPending) {
+    _retryTimer?.cancel();
+    if (hasPending && _isOnline) {
+      _retryTimer = Timer(const Duration(seconds: 15), () {
+        sincronizarVotos();
+      });
+    }
   }
 
   Future<void> actualizarNulos(int valor) async {
