@@ -88,6 +88,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   private barChart?: Chart;
   private pieChart?: Chart;
   private wsSubscription?: Subscription;
+  private autoRefreshTimer?: ReturnType<typeof setInterval>;
 
   constructor(
     private api: ApiService,
@@ -138,8 +139,23 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.loadDashboard();
         this.subscribeToUpdates();
         this.subscribeToMesaEstado();
+        this.startAutoRefresh();
       }
     });
+  }
+
+  private startAutoRefresh(): void {
+    this.stopAutoRefresh();
+    this.autoRefreshTimer = setInterval(() => {
+      this.recargarSilencioso();
+    }, 30000);
+  }
+
+  private stopAutoRefresh(): void {
+    if (this.autoRefreshTimer) {
+      clearInterval(this.autoRefreshTimer);
+      this.autoRefreshTimer = undefined;
+    }
   }
 
   private procesarResultados(data: DashboardData): void {
@@ -188,6 +204,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy(): void {
     this.wsSubscription?.unsubscribe();
+    this.stopAutoRefresh();
     this.barChart?.destroy();
     this.pieChart?.destroy();
     document.body.style.overflow = '';
@@ -359,11 +376,20 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   subscribeToUpdates(): void {
     this.wsSubscription?.unsubscribe();
     if (!this.selectedEleccionId) return;
-    this.wsSubscription = this.wsService.subscribeToResultados(this.selectedEleccionId)
-      .pipe(catchError(err => { console.warn('WebSocket error:', err); return of(null as any); }))
-      .subscribe(() => {
-        this.recargarSilencioso();
-      });
+    const subscribe = () => {
+      this.wsSubscription = this.wsService.subscribeToResultados(this.selectedEleccionId!)
+        .pipe(
+          catchError(err => {
+            console.warn('WebSocket error, retrying in 10s:', err);
+            setTimeout(subscribe, 10000);
+            return of(null as any);
+          })
+        )
+        .subscribe(() => {
+          this.recargarSilencioso();
+        });
+    };
+    subscribe();
   }
 
   ordenarResultados(): void {

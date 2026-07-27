@@ -6,6 +6,7 @@ import { ApiService } from '../../../../core/services/api.service';
 import { WebSocketService } from '../../../../core/services/websocket.service';
 import { ReporteResumen, ReporteCandidato, ReportePartido, ReporteLista, Eleccion, Mesa } from '../../../../core/models';
 import { Subscription } from 'rxjs';
+import { catchError, of } from 'rxjs';
 
 Chart.register(...registerables);
 
@@ -41,6 +42,7 @@ export class ReportesComponent implements OnInit, OnDestroy, AfterViewInit {
   private wsSubscription?: Subscription;
   private barChart?: Chart;
   private pieChart?: Chart;
+  private autoRefreshTimer?: ReturnType<typeof setInterval>;
 
   constructor(private api: ApiService, private wsService: WebSocketService) {}
 
@@ -92,6 +94,23 @@ export class ReportesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit(): void {
     this.cargarElecciones();
+    this.startAutoRefresh();
+  }
+
+  private startAutoRefresh(): void {
+    this.stopAutoRefresh();
+    this.autoRefreshTimer = setInterval(() => {
+      if (this.selectedEleccionId) {
+        this.cargarReportes();
+      }
+    }, 30000);
+  }
+
+  private stopAutoRefresh(): void {
+    if (this.autoRefreshTimer) {
+      clearInterval(this.autoRefreshTimer);
+      this.autoRefreshTimer = undefined;
+    }
   }
 
   ngAfterViewInit(): void {
@@ -105,6 +124,7 @@ export class ReportesComponent implements OnInit, OnDestroy, AfterViewInit {
         if (this.elecciones.length > 0) {
           this.selectedEleccionId = this.elecciones[0].id;
           this.cargarReportes();
+          this.subscribeToUpdates();
         }
       },
       error: () => this.error = 'Error al cargar elecciones'
@@ -115,7 +135,6 @@ export class ReportesComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!this.selectedEleccionId) return;
     this.loading = true;
     this.error = '';
-    this.subscribeToUpdates();
 
     this.api.getReporteResumen(this.selectedEleccionId).subscribe({
       next: (r) => this.resumen = r,
@@ -145,28 +164,23 @@ export class ReportesComponent implements OnInit, OnDestroy, AfterViewInit {
   private subscribeToUpdates(): void {
     this.wsSubscription?.unsubscribe();
     if (!this.selectedEleccionId) return;
-    this.wsSubscription = this.wsService.subscribeToResultados(this.selectedEleccionId)
-      .subscribe(() => {
-        this.api.getReporteResumen(this.selectedEleccionId!).subscribe({
-          next: (r) => this.resumen = r
+    const subscribe = () => {
+      this.wsSubscription = this.wsService.subscribeToResultados(this.selectedEleccionId!)
+        .pipe(catchError(err => {
+          console.warn('WebSocket error, retrying in 10s:', err);
+          setTimeout(subscribe, 10000);
+          return of(null);
+        }))
+        .subscribe(() => {
+          this.cargarReportes();
         });
-        this.api.getReporteCandidatos(this.selectedEleccionId!).subscribe({
-          next: (r) => {
-            this.candidatos = r;
-            this.updateCharts();
-          }
-        });
-        this.api.getReportePartidos(this.selectedEleccionId!).subscribe({
-          next: (r) => this.partidos = r
-        });
-        this.api.getReporteListas(this.selectedEleccionId!).subscribe({
-          next: (r) => this.listas = r
-        });
-      });
+    };
+    subscribe();
   }
 
   ngOnDestroy(): void {
     this.wsSubscription?.unsubscribe();
+    this.stopAutoRefresh();
   }
 
   exportarCsv(): void {

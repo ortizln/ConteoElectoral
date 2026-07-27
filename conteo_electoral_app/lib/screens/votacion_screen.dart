@@ -1054,19 +1054,22 @@ class _VotacionScreenState extends State<VotacionScreen> {
     }
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
           border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 18, color: color),
-            const SizedBox(width: 6),
-            Text(label,
-                style:
-                    const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-            const Spacer(),
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(label,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 11, fontWeight: FontWeight.w600)),
+            ),
+            const SizedBox(width: 4),
             GestureDetector(
               onTap: () {
                 final v = int.tryParse(controller.text) ?? 0;
@@ -1076,25 +1079,24 @@ class _VotacionScreenState extends State<VotacionScreen> {
                 }
               },
               child: Container(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
                     color: AppColors.muted,
-                    borderRadius: BorderRadius.circular(6)),
-                child: const Icon(Icons.remove, size: 16),
+                    borderRadius: BorderRadius.circular(5)),
+                child: const Icon(Icons.remove, size: 14),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
             SizedBox(
-              width: 48,
+              width: 36,
               child: TextField(
                 controller: controller,
                 textAlign: TextAlign.center,
                 keyboardType: TextInputType.number,
                 style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 16),
+                    fontWeight: FontWeight.bold, fontSize: 14),
                 decoration: const InputDecoration(
-                  contentPadding:
-                      EdgeInsets.symmetric(vertical: 6),
+                  contentPadding: EdgeInsets.zero,
                   isDense: true,
                   border: InputBorder.none,
                 ),
@@ -1104,7 +1106,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
                 },
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
             GestureDetector(
               onTap: () {
                 final v = int.tryParse(controller.text) ?? 0;
@@ -1112,11 +1114,11 @@ class _VotacionScreenState extends State<VotacionScreen> {
                 onChanged(v + 1);
               },
               child: Container(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
                     color: AppColors.muted,
-                    borderRadius: BorderRadius.circular(6)),
-                child: const Icon(Icons.add, size: 16),
+                    borderRadius: BorderRadius.circular(5)),
+                child: const Icon(Icons.add, size: 14),
               ),
             ),
           ],
