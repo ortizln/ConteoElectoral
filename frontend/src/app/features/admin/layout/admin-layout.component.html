@@ -10,11 +10,22 @@
     </div>
 
     <nav class="sidebar-nav">
-      <a *ngFor="let item of allNavItems" [routerLink]="item.path" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
-        <span class="nav-icon">{{ item.icon }}</span>
-        <span class="nav-text">{{ item.label }}</span>
-        <span class="nav-indicator"></span>
-      </a>
+      <ng-container *ngIf="adminNavItemsFiltered.length > 0">
+        <span class="nav-section-title">Administración</span>
+        <a *ngFor="let item of adminNavItemsFiltered" [routerLink]="item.path" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span class="nav-text">{{ item.label }}</span>
+          <span class="nav-indicator"></span>
+        </a>
+      </ng-container>
+      <ng-container *ngIf="navItemsFiltered.length > 0">
+        <span class="nav-section-title" style="margin-top: 8px;">Menú Principal</span>
+        <a *ngFor="let item of navItemsFiltered" [routerLink]="item.path" routerLinkActive="active" class="nav-item" (click)="closeSidebar()">
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span class="nav-text">{{ item.label }}</span>
+          <span class="nav-indicator"></span>
+        </a>
+      </ng-container>
     </nav>
   </aside>
 

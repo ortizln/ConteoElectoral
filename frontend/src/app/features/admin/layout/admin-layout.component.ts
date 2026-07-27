@@ -55,14 +55,12 @@ export class AdminLayoutComponent {
     { path: '/admin/configuracion', icon: '⚙️', label: 'Configuración', roles: ['ADMIN'] },
   ];
 
-  get allNavItems(): NavItem[] {
-    const role = this.userRole;
-    const items: NavItem[] = [];
-    items.push(...this.navItems.filter(item => item.roles.includes(role)));
-    if (role === 'ADMIN' || role === 'SUPERVISOR') {
-      items.push(...this.adminNavItems.filter(item => item.roles.includes(role)));
-    }
-    return items;
+  get navItemsFiltered(): NavItem[] {
+    return this.navItems.filter(item => item.roles.includes(this.userRole));
+  }
+
+  get adminNavItemsFiltered(): NavItem[] {
+    return this.adminNavItems.filter(item => item.roles.includes(this.userRole));
   }
 
   get userRole(): string {
@@ -75,9 +73,7 @@ export class AdminLayoutComponent {
     return user?.nombre + ' ' + user?.apellido || '';
   }
 
-  get canViewAdmin(): boolean {
-    return this.userRole === 'ADMIN' || this.userRole === 'SUPERVISOR';
-  }
+
 
   get isDark(): boolean {
     return this.themeService.isDarkMode();

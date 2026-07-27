@@ -1,5 +1,6 @@
 package com.electoral.controllers;
 
+import com.electoral.dto.SyncOperationDTO;
 import com.electoral.dto.SyncPullResponse;
 import com.electoral.dto.SyncPushRequest;
 import com.electoral.dto.SyncPushResponse;

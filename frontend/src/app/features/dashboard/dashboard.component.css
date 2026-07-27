@@ -167,3 +167,57 @@
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr; }
 }
+
+/* Dark mode */
+[data-theme="dark"] .dashboard-container { color: #e2e8f0; }
+
+[data-theme="dark"] .header-left h1 { color: #e2e8f0 !important; }
+
+[data-theme="dark"] .filtros-card { background: #1e293b !important; border-color: #334155 !important; }
+[data-theme="dark"] .filtros-header h3 { color: #e2e8f0 !important; }
+[data-theme="dark"] .filtro-group label { color: #94a3b8 !important; }
+
+[data-theme="dark"] .stat-card { background: #1e293b !important; border-color: #334155 !important; }
+[data-theme="dark"] .stat-label { color: #94a3b8 !important; }
+[data-theme="dark"] .stat-value { color: #e2e8f0 !important; }
+[data-theme="dark"] .stat-bar { background: #334155 !important; }
+
+[data-theme="dark"] .chart-card { background: #1e293b !important; border-color: #334155 !important; }
+[data-theme="dark"] .chart-card h3 { color: #e2e8f0 !important; }
+[data-theme="dark"] .card-buttons .btn-card-action { background: #334155 !important; color: #94a3b8 !important; }
+[data-theme="dark"] .card-buttons .btn-card-action:hover { background: #475569 !important; color: #e2e8f0 !important; }
+
+[data-theme="dark"] .table-card { background: #1e293b !important; border-color: #334155 !important; }
+[data-theme="dark"] .table-header h3 { color: #e2e8f0 !important; }
+[data-theme="dark"] .table-count { background: #334155 !important; color: #94a3b8 !important; }
+[data-theme="dark"] .candidato-name { color: #e2e8f0 !important; }
+[data-theme="dark"] .candidato-rank { background: #334155 !important; color: #94a3b8 !important; }
+[data-theme="dark"] .partido-badge { background: #1e3a5f !important; color: #93c5fd !important; }
+[data-theme="dark"] .porcentaje-badge { background: #064e3b !important; color: #6ee7b7 !important; }
+
+[data-theme="dark"] .detalle-header { background: #0f172a !important; }
+[data-theme="dark"] .detalle-info span { color: #94a3b8 !important; }
+
+[data-theme="dark"] .live-badge { background: #334155 !important; color: #94a3b8 !important; border-color: #475569 !important; }
+[data-theme="dark"] .live-badge.active { background: #064e3b !important; color: #6ee7b7 !important; border-color: #065f46 !important; }
+[data-theme="dark"] .update-time { color: #64748b !important; }
+[data-theme="dark"] .btn-refresh { background: #1e293b !important; border-color: #334155 !important; color: #94a3b8 !important; }
+[data-theme="dark"] .btn-refresh:hover { background: #334155 !important; color: #60a5fa !important; border-color: #60a5fa !important; }
+
+[data-theme="dark"] .sortable:hover { color: #60a5fa !important; }
+[data-theme="dark"] .col-text-wrap { color: #e2e8f0 !important; }
+
+[data-theme="dark"] .fullscreen-backdrop { background: rgba(0,0,0,0.7) !important; }
+
+[data-theme="dark"] .empty-msg { color: #64748b !important; }
+
+[data-theme="dark"] .btn-clean { background: #1e293b !important; border-color: #334155 !important; color: #94a3b8 !important; }
+[data-theme="dark"] .btn-clean:hover { background: #334155 !important; color: #fca5a5 !important; border-color: #7f1d1d !important; }
+
+[data-theme="dark"] .detalle-tabs .nav-link { color: #94a3b8 !important; }
+[data-theme="dark"] .detalle-tabs .nav-link.active { color: #60a5fa !important; border-bottom-color: #60a5fa !important; }
+[data-theme="dark"] .detalle-tabs .nav-link:hover { color: #93c5fd !important; }
+[data-theme="dark"] .detalle-total { color: #60a5fa !important; }
+
+[data-theme="dark"] .btn-reabrir { background: #422006 !important; border-color: #78350f !important; color: #fbbf24 !important; }
+[data-theme="dark"] .btn-reabrir:hover { background: #78350f !important; border-color: #f59e0b !important; color: #fef3c7 !important; }

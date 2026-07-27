@@ -96,7 +96,7 @@
           <tbody>
             <!-- Listas rows -->
             <ng-container *ngIf="mostrarListas">
-              <tr *ngFor="let l of listasFiltradas; let i = index" [class.disabled]="mesaActual?.cerrada">
+              <tr *ngFor="let l of listasFiltradas; let i = index" [class.disabled]="mesaActual.cerrada">
                 <td><span class="row-num">{{ i + 1 }}</span></td>
                 <td>
                   <div class="candidato-cell">
@@ -125,7 +125,7 @@
             <ng-container *ngIf="!mostrarListas">
               <tr *ngFor="let c of candidatosFiltrados; let i = index"
                   [class.selected]="candidatoSeleccionado?.id === c.id"
-                  [class.disabled]="mesaActual?.cerrada">
+                  [class.disabled]="mesaActual.cerrada">
                 <td><span class="row-num">{{ i + 1 }}</span></td>
                 <td>
                   <div class="candidato-cell">
