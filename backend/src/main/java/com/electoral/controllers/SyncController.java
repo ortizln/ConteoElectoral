@@ -7,7 +7,6 @@ import com.electoral.services.SyncService;
 import com.electoral.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,15 +28,6 @@ public class SyncController {
             messagingTemplate.convertAndSend("/topic/sync", response);
         }
         return ResponseEntity.ok(response);
-    }
-
-    @MessageMapping("/sync/push")
-    public void pushStomp(SyncPushRequest request) {
-        Long usuarioId = securityUtil.getCurrentUserId();
-        SyncPushResponse response = syncService.processPush(request, usuarioId);
-        if (response.getResults() != null && !response.getResults().isEmpty()) {
-            messagingTemplate.convertAndSend("/topic/sync", response);
-        }
     }
 
     @GetMapping("/pull")
