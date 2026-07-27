@@ -108,7 +108,9 @@ class _CantonesScreenState extends State<CantonesScreen> {
                         child: ElevatedButton(
                             onPressed: () async {
                               if (!formKey.currentState!.validate() ||
-                                  provinciaId == null) return;
+                                  provinciaId == null) {
+                                return;
+                              }
                               final api = context.read<AppProvider>().api;
                               final c = Canton(
                                   id: item?.id ?? 0,

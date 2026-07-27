@@ -91,6 +91,9 @@ public class SyncService {
                             .createdBy(Usuario.builder().id(usuarioId).build())
                             .build();
                 }
+                if (data.containsKey("listaId") && data.get("listaId") != null) {
+                    voto.setListaId(Long.valueOf(data.get("listaId").toString()));
+                }
                 voto = votoRepository.save(voto);
                 return SyncResultDTO.builder()
                         .operationId(op.getOperationId()).success(true)
@@ -102,6 +105,9 @@ public class SyncService {
                         .orElseThrow(() -> new IllegalArgumentException("Voto not found: " + votoId));
                 if (data.containsKey("cantidadVotos")) {
                     voto.setCantidadVotos(Integer.valueOf(data.get("cantidadVotos").toString()));
+                }
+                if (data.containsKey("listaId") && data.get("listaId") != null) {
+                    voto.setListaId(Long.valueOf(data.get("listaId").toString()));
                 }
                 votoRepository.save(voto);
                 return SyncResultDTO.builder()
@@ -171,7 +177,14 @@ public class SyncService {
     public SyncPullResponse pullChanges(Long eleccionId, String sinceTimestamp) {
         List<SyncOperationDTO> operations = new ArrayList<>();
 
-        LocalDateTime since = sinceTimestamp != null ? LocalDateTime.parse(sinceTimestamp) : LocalDateTime.now().minusDays(1);
+        LocalDateTime since = LocalDateTime.now().minusDays(1);
+        if (sinceTimestamp != null) {
+            try {
+                since = LocalDateTime.parse(sinceTimestamp.replace("Z", "").replaceAll("\\.[0-9]+$", ""));
+            } catch (Exception e) {
+                log.warn("Failed to parse since timestamp: {}", sinceTimestamp);
+            }
+        }
 
         List<Voto> votos = votoRepository.findByEleccionesId(eleccionId);
         for (Voto v : votos) {
@@ -182,6 +195,12 @@ public class SyncService {
                 data.put("mesaId", v.getMesa().getId());
                 data.put("cantidadVotos", v.getCantidadVotos());
                 data.put("eleccionesId", v.getElecciones().getId());
+                if (v.getListaId() != null) {
+                    data.put("listaId", v.getListaId());
+                }
+                if (v.getCreatedAt() != null) {
+                    data.put("fechaRegistro", v.getCreatedAt().toString());
+                }
 
                 operations.add(SyncOperationDTO.builder()
                         .operationId("srv-" + v.getId())

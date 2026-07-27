@@ -100,7 +100,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
     }
     if (_busqueda.isNotEmpty) {
       final q = _busqueda.toLowerCase();
-      filtered = filtered.where((c) => c.nombreCompleto.toLowerCase().contains(q));
+      filtered =
+          filtered.where((c) => c.nombreCompleto.toLowerCase().contains(q));
     }
     final grouped = <int, List<Candidato>>{};
     for (final c in filtered) {
@@ -110,7 +111,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
       }
     }
     for (final key in grouped.keys) {
-      grouped[key]!.sort((a, b) => (a.ordenEnLista ?? 0).compareTo(b.ordenEnLista ?? 0));
+      grouped[key]!
+          .sort((a, b) => (a.ordenEnLista ?? 0).compareTo(b.ordenEnLista ?? 0));
     }
     return grouped;
   }
@@ -121,8 +123,6 @@ class _VotacionScreenState extends State<VotacionScreen> {
     return candidatos.fold(0, (sum, c) => sum + provider.getVotosCandidato(c));
   }
 
-
-
   Future<void> _registrar() async {
     final cantidad = int.tryParse(_cantidadCtrl.text) ?? 1;
     if (cantidad <= 0) return;
@@ -130,7 +130,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
     final provider = context.read<AppProvider>();
 
     if (_selectedListaId != null) {
-      await provider.registrarVotosLista(_selectedListaId!, _selectedListaCandidates, cantidad);
+      await provider.registrarVotosLista(
+          _selectedListaId!, _selectedListaCandidates, cantidad);
     } else if (_selected != null) {
       await provider.registrarVoto(_selected!, cantidad);
     } else {
@@ -184,7 +185,10 @@ class _VotacionScreenState extends State<VotacionScreen> {
         if (provider.mesaActual == null) {
           return Scaffold(
             appBar: AppBar(
-              leading: _statusDot(provider.isOnline),
+              leading: Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: _statusDot(provider.isOnline, size: 6),
+              ),
               title: const Text('Votación'),
               actions: [
                 if (provider.failedSyncCount > 0)
@@ -257,7 +261,16 @@ class _VotacionScreenState extends State<VotacionScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            leading: _statusDot(provider.isOnline),
+            leading: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                _statusDot(provider.isOnline, size: 6),
+              ],
+            ),
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -280,12 +293,11 @@ class _VotacionScreenState extends State<VotacionScreen> {
                 ),
               if (provider.failedSyncCount > 0)
                 IconButton(
-                  icon: const Icon(Icons.sync_problem,
-                      color: AppColors.warning),
+                  icon:
+                      const Icon(Icons.sync_problem, color: AppColors.warning),
                   tooltip:
                       '${provider.failedSyncCount} sincronizaciones fallidas',
-                  onPressed: () =>
-                      Navigator.pushNamed(context, '/pendientes'),
+                  onPressed: () => Navigator.pushNamed(context, '/pendientes'),
                 ),
               IconButton(
                   icon: const Icon(Icons.sync),
@@ -364,22 +376,120 @@ class _VotacionScreenState extends State<VotacionScreen> {
                 ),
               ),
 
+              // Mesa info card
+              Container(
+                margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.gradientStart, AppColors.gradientEnd],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Text(
+                          provider.mesaActual?.numero ?? '',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Mesa ${provider.mesaActual?.numero ?? ''}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                            ),
+                          ),
+                          if (provider.mesaActual?.institucionNombre != null)
+                            Text(
+                              provider.mesaActual!.institucionNombre!,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.8),
+                                fontSize: 12,
+                              ),
+                            ),
+                          Text(
+                            'ID: ${provider.mesaActual?.id ?? ''}',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (!(provider.mesaActual?.cerrada ?? false))
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text('Abierta',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600)),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.error.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text('Cerrada',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600)),
+                      ),
+                  ],
+                ),
+              ),
               // Nulos y Blanco controls
               if (provider.mesaActual?.cerrada == true)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   color: AppColors.surface,
                   child: Row(
                     children: [
-                      _nulosBlancoBadge('🗳️ Nulos', provider.votosNulos, AppColors.error),
+                      _nulosBlancoBadge(
+                          '🗳️ Nulos', provider.votosNulos, AppColors.error),
                       const SizedBox(width: 16),
-                      _nulosBlancoBadge('⬜ Blanco', provider.votosBlanco, AppColors.gray),
+                      _nulosBlancoBadge(
+                          '⬜ Blanco', provider.votosBlanco, AppColors.gray),
                     ],
                   ),
                 )
               else
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   color: AppColors.surface,
                   child: Row(
                     children: [
@@ -389,8 +499,10 @@ class _VotacionScreenState extends State<VotacionScreen> {
                         value: provider.votosNulos,
                         icon: Icons.cancel_outlined,
                         color: AppColors.error,
-                        onMinus: () => provider.actualizarNulos(provider.votosNulos - 1),
-                        onPlus: () => provider.actualizarNulos(provider.votosNulos + 1),
+                        onMinus: () =>
+                            provider.actualizarNulos(provider.votosNulos - 1),
+                        onPlus: () =>
+                            provider.actualizarNulos(provider.votosNulos + 1),
                       ),
                       const SizedBox(width: 16),
                       // Blanco
@@ -399,8 +511,10 @@ class _VotacionScreenState extends State<VotacionScreen> {
                         value: provider.votosBlanco,
                         icon: Icons.check_circle_outline,
                         color: AppColors.gray,
-                        onMinus: () => provider.actualizarBlanco(provider.votosBlanco - 1),
-                        onPlus: () => provider.actualizarBlanco(provider.votosBlanco + 1),
+                        onMinus: () =>
+                            provider.actualizarBlanco(provider.votosBlanco - 1),
+                        onPlus: () =>
+                            provider.actualizarBlanco(provider.votosBlanco + 1),
                       ),
                     ],
                   ),
@@ -417,15 +531,15 @@ class _VotacionScreenState extends State<VotacionScreen> {
                               title: 'Sin listas',
                               subtitle: 'No se encontraron listas')
                           : ListView.builder(
-                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 8, 16, 100),
                               itemCount: _agrupadosPorLista.length,
                               itemBuilder: (context, index) {
                                 final listaId =
                                     _agrupadosPorLista.keys.elementAt(index);
                                 final candidatosLista =
                                     _agrupadosPorLista[listaId]!;
-                                final isSelected =
-                                    _selectedListaId == listaId;
+                                final isSelected = _selectedListaId == listaId;
                                 final partidoNombre =
                                     candidatosLista.first.partidoNombre;
 
@@ -486,13 +600,12 @@ class _VotacionScreenState extends State<VotacionScreen> {
                                                           size: 22)
                                                       : Text(
                                                           '${numeroLista ?? ''}',
-                                                          style: TextStyle(
+                                                          style: const TextStyle(
                                                               fontWeight:
                                                                   FontWeight
                                                                       .bold,
-                                                              color:
-                                                                  AppColors
-                                                                      .primary,
+                                                              color: AppColors
+                                                                  .primary,
                                                               fontSize: 18)),
                                                 ),
                                               ),
@@ -503,29 +616,29 @@ class _VotacionScreenState extends State<VotacionScreen> {
                                                       CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
-                                                      listaNombre ??
-                                                          partidoNombre,
-                                                      style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          fontSize: 14)),
+                                                        listaNombre ??
+                                                            partidoNombre,
+                                                        style: const TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w600,
+                                                            fontSize: 14)),
                                                     const SizedBox(height: 2),
-                                                    Text(
-                                                      partidoNombre,
-                                                      style: AppTextStyles
-                                                          .bodySmall),
+                                                    Text(partidoNombre,
+                                                        style: AppTextStyles
+                                                            .bodySmall),
                                                   ],
                                                 ),
                                               ),
                                               Container(
-                                                padding: const EdgeInsets
-                                                    .symmetric(
-                                                    horizontal: 14,
-                                                    vertical: 6),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 14,
+                                                        vertical: 6),
                                                 decoration: BoxDecoration(
                                                   color: votosLista > 0
                                                       ? AppColors.success
-                                                          .withValues(alpha: 0.1)
+                                                          .withValues(
+                                                              alpha: 0.1)
                                                       : AppColors.muted,
                                                   borderRadius:
                                                       BorderRadius.circular(16),
@@ -555,11 +668,10 @@ class _VotacionScreenState extends State<VotacionScreen> {
                                             children: candidatosLista
                                                 .take(5)
                                                 .map((c) => Container(
-                                                      padding:
-                                                          const EdgeInsets
-                                                              .symmetric(
-                                                              horizontal: 6,
-                                                              vertical: 2),
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 6,
+                                                          vertical: 2),
                                                       decoration: BoxDecoration(
                                                         color: AppColors.muted,
                                                         borderRadius:
@@ -568,17 +680,16 @@ class _VotacionScreenState extends State<VotacionScreen> {
                                                       ),
                                                       child: Text(
                                                         c.nombreCompleto,
-                                                        style:
-                                                            const TextStyle(
-                                                                fontSize: 10),
+                                                        style: const TextStyle(
+                                                            fontSize: 10),
                                                       ),
                                                     ))
                                                 .toList(),
                                           ),
                                           if (candidatosLista.length > 5)
                                             Padding(
-                                              padding: const EdgeInsets.only(
-                                                  top: 2),
+                                              padding:
+                                                  const EdgeInsets.only(top: 2),
                                               child: Text(
                                                 '+${candidatosLista.length - 5} más',
                                                 style: const TextStyle(
@@ -599,7 +710,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
                               title: 'Sin candidatos',
                               subtitle: 'No se encontraron candidatos')
                           : ListView.builder(
-                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 8, 16, 100),
                               itemCount: _candidatosFiltrados.length,
                               itemBuilder: (context, index) {
                                 final c = _candidatosFiltrados[index];
@@ -742,11 +854,13 @@ class _VotacionScreenState extends State<VotacionScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                _selectedListaId != null
-                                    ? (_selectedListaCandidates.first.listaNombre ??
-                                        _selectedListaCandidates.first.partidoNombre)
-                                    : _selected!.nombreCompleto,
-                                style: AppTextStyles.h3),
+                                  _selectedListaId != null
+                                      ? (_selectedListaCandidates
+                                              .first.listaNombre ??
+                                          _selectedListaCandidates
+                                              .first.partidoNombre)
+                                      : _selected!.nombreCompleto,
+                                  style: AppTextStyles.h3),
                             ),
                             IconButton(
                               icon: const Icon(Icons.close),
@@ -762,8 +876,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 8),
                             child: Text(
-                              '${_selectedListaCandidates.length} candidatos en la lista',
-                              style: AppTextStyles.bodySmall),
+                                '${_selectedListaCandidates.length} candidatos en la lista',
+                                style: AppTextStyles.bodySmall),
                           ),
                         const SizedBox(height: 12),
                         Row(
@@ -808,10 +922,9 @@ class _VotacionScreenState extends State<VotacionScreen> {
                             ElevatedButton.icon(
                               onPressed: _registrar,
                               icon: const Icon(Icons.how_to_vote, size: 20),
-                              label: Text(
-                                _selectedListaId != null
-                                    ? 'Votar Lista'
-                                    : 'Registrar'),
+                              label: Text(_selectedListaId != null
+                                  ? 'Votar Lista'
+                                  : 'Registrar'),
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 28, vertical: 14),
@@ -910,7 +1023,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
   Widget _nulosBlancoBadge(String label, int value, Color color) {
     return Row(
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+        Text(label,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
         const SizedBox(width: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -918,7 +1032,9 @@ class _VotacionScreenState extends State<VotacionScreen> {
             color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Text('$value', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: color)),
+          child: Text('$value',
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, fontSize: 16, color: color)),
         ),
       ],
     );
@@ -943,24 +1059,32 @@ class _VotacionScreenState extends State<VotacionScreen> {
           children: [
             Icon(icon, size: 18, color: color),
             const SizedBox(width: 6),
-            Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+            Text(label,
+                style:
+                    const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
             const Spacer(),
             GestureDetector(
               onTap: onMinus,
               child: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(color: AppColors.muted, borderRadius: BorderRadius.circular(6)),
+                decoration: BoxDecoration(
+                    color: AppColors.muted,
+                    borderRadius: BorderRadius.circular(6)),
                 child: const Icon(Icons.remove, size: 16),
               ),
             ),
             const SizedBox(width: 8),
-            Text('$value', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text('$value',
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(width: 8),
             GestureDetector(
               onTap: onPlus,
               child: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(color: AppColors.muted, borderRadius: BorderRadius.circular(6)),
+                decoration: BoxDecoration(
+                    color: AppColors.muted,
+                    borderRadius: BorderRadius.circular(6)),
                 child: const Icon(Icons.add, size: 16),
               ),
             ),
@@ -970,12 +1094,12 @@ class _VotacionScreenState extends State<VotacionScreen> {
     );
   }
 
-  Widget _statusDot(bool isOnline) {
+  Widget _statusDot(bool isOnline, {double size = 6}) {
     return Padding(
-      padding: const EdgeInsets.only(left: 12),
+      padding: const EdgeInsets.only(left: 4),
       child: Container(
-        width: 10,
-        height: 10,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
           color: isOnline ? AppColors.success : AppColors.error,
           shape: BoxShape.circle,

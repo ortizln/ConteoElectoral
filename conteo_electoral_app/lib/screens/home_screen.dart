@@ -108,24 +108,14 @@ class _HomeScreenState extends State<HomeScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 10,
-                  height: 10,
+                  width: 6,
+                  height: 6,
                   margin: const EdgeInsets.only(right: 8),
                   decoration: BoxDecoration(
                     color: provider.isOnline
                         ? AppColors.success
                         : AppColors.error,
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: (provider.isOnline
-                                ? AppColors.success
-                                : AppColors.error)
-                            .withValues(alpha: 0.5),
-                        blurRadius: 4,
-                        spreadRadius: 1,
-                      ),
-                    ],
                   ),
                 ),
                 const Text('Conteo Electoral'),
@@ -422,6 +412,14 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {
               Navigator.pop(context);
               Navigator.pushNamed(context, '/pendientes');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.settings_outlined),
+            title: const Text('Configuración'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/configuracion');
             },
           ),
           if (provider.usuario?.rol == 'ADMIN') ...[

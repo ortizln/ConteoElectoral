@@ -738,8 +738,9 @@ class ApiService {
         headers: _headers(),
         body: jsonEncode(data),
       );
-      if (response.statusCode == 200)
+      if (response.statusCode == 200) {
         return Reconteo.fromJson(jsonDecode(response.body));
+      }
     } catch (e) {
       print('Error createReconteo: $e');
     }
@@ -771,8 +772,9 @@ class ApiService {
         headers: _headers(),
         body: jsonEncode(data),
       );
-      if (response.statusCode == 200)
+      if (response.statusCode == 200) {
         return Impugnacion.fromJson(jsonDecode(response.body));
+      }
     } catch (e) {
       print('Error createImpugnacion: $e');
     }
@@ -809,8 +811,9 @@ class ApiService {
         headers: _headers(),
         body: jsonEncode(data),
       );
-      if (response.statusCode == 200)
+      if (response.statusCode == 200) {
         return Observacion.fromJson(jsonDecode(response.body));
+      }
     } catch (e) {
       print('Error createObservacion: $e');
     }
@@ -841,8 +844,9 @@ class ApiService {
         headers: _headers(),
         body: jsonEncode(data),
       );
-      if (response.statusCode == 200)
+      if (response.statusCode == 200) {
         return Resolucion.fromJson(jsonDecode(response.body));
+      }
     } catch (e) {
       print('Error createResolucion: $e');
     }
@@ -990,9 +994,11 @@ class ApiService {
 
   Future<Map<String, String?>> getApkVersion() async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/configuracion/apk/version'),
-      ).timeout(const Duration(seconds: 5));
+      final response = await http
+          .get(
+            Uri.parse('$baseUrl/configuracion/apk/version'),
+          )
+          .timeout(const Duration(seconds: 5));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return {

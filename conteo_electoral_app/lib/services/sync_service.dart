@@ -37,7 +37,7 @@ class SyncService {
 
   Future<void> enqueueVoto(Voto voto) async {
     final entityId = voto.id ?? 0;
-    final existingId = await _findPending('VOTO', entityId);
+    final existingId = await _findPending('voto', entityId);
     if (existingId != null) {
       final db = await _db.database;
       await db.update(
@@ -47,16 +47,16 @@ class SyncService {
         whereArgs: [existingId],
       );
     } else {
-      await _db.enqueueSync('VOTO', entityId, voto.id != null ? 'UPDATE' : 'CREATE', voto.toJson(), eleccionId: voto.eleccionesId);
+      await _db.enqueueSync('voto', entityId, voto.id != null ? 'UPDATE' : 'CREATE', voto.toJson(), eleccionId: voto.eleccionesId);
     }
   }
 
   Future<void> enqueueCerrarMesa(int mesaId, int eleccionId) async {
-    await _db.enqueueSync('MESA', mesaId, 'CLOSE', {'id': mesaId, 'cerrada': true}, eleccionId: eleccionId);
+    await _db.enqueueSync('mesa', mesaId, 'CERRAR', {'id': mesaId, 'cerrada': true}, eleccionId: eleccionId);
   }
 
   Future<void> enqueueNulos(int mesaId, int eleccionId, int votosNulos) async {
-    final existingId = await _findPendingEntity('MESA', mesaId, 'NULOS');
+    final existingId = await _findPendingEntity('mesa', mesaId, 'NULOS');
     if (existingId != null) {
       final db = await _db.database;
       await db.update(
@@ -66,12 +66,12 @@ class SyncService {
         whereArgs: [existingId],
       );
     } else {
-      await _db.enqueueSync('MESA', mesaId, 'NULOS', {'votosNulos': votosNulos}, eleccionId: eleccionId);
+      await _db.enqueueSync('mesa', mesaId, 'NULOS', {'votosNulos': votosNulos}, eleccionId: eleccionId);
     }
   }
 
   Future<void> enqueueBlanco(int mesaId, int eleccionId, int votosBlanco) async {
-    final existingId = await _findPendingEntity('MESA', mesaId, 'BLANCO');
+    final existingId = await _findPendingEntity('mesa', mesaId, 'BLANCO');
     if (existingId != null) {
       final db = await _db.database;
       await db.update(
@@ -81,7 +81,7 @@ class SyncService {
         whereArgs: [existingId],
       );
     } else {
-      await _db.enqueueSync('MESA', mesaId, 'BLANCO', {'votosBlanco': votosBlanco}, eleccionId: eleccionId);
+      await _db.enqueueSync('mesa', mesaId, 'BLANCO', {'votosBlanco': votosBlanco}, eleccionId: eleccionId);
     }
   }
 
@@ -150,13 +150,14 @@ class SyncService {
     Map<String, dynamic> payload,
     String? token,
   ) async {
+    final entity = entityType.toLowerCase();
     final stomp = _stomp;
     if (stomp != null && stomp.isConnected) {
       try {
         stomp.send('/app/sync/push', {
           'operations': [
             {
-              'entity': entityType,
+              'entity': entity,
               'entityId': entityId,
               'action': operation,
               'data': payload,
@@ -173,7 +174,7 @@ class SyncService {
       body: jsonEncode({
         'operations': [
           {
-            'entity': entityType,
+            'entity': entity,
             'entityId': entityId,
             'action': operation,
             'data': payload,
@@ -187,7 +188,10 @@ class SyncService {
   Future<int> pullChanges(int eleccionId) async {
     final token = await _getToken();
     final lastPull = await _db.getLastPullTimestamp();
-    final since = lastPull?.toIso8601String() ?? '1970-01-01T00:00:00';
+    String since = '1970-01-01T00:00:00';
+    if (lastPull != null) {
+      since = lastPull.toUtc().toIso8601String().replaceAll(RegExp(r'[Z].*$'), '');
+    }
 
     final uri = Uri.parse('$_baseUrl/sync/pull?eleccionId=$eleccionId&since=${Uri.encodeComponent(since)}');
     final response = await http.get(uri, headers: _headers(token));
@@ -216,21 +220,23 @@ class SyncService {
   }
 
   Future<void> _applyRemoteChange(String entityType, String operation, Map<String, dynamic> payload) async {
-    if (entityType == 'VOTO') {
+    final et = entityType.toLowerCase();
+    final op = operation.toUpperCase();
+    if (et == 'voto') {
       final voto = Voto.fromJson(payload);
-      if (operation == 'CREATE' || operation == 'UPDATE') {
+      if (op == 'CREATE' || op == 'UPDATE') {
         await _db.guardarVoto(voto);
         await _db.marcarVotoSincronizado(voto.id ?? 0);
-      } else if (operation == 'DELETE') {
+      } else if (op == 'DELETE') {
         final id = payload['id'] as int?;
         if (id != null) await _db.eliminarVoto(id);
       }
-    } else if (entityType == 'MESA') {
+    } else if (et == 'mesa') {
       final mesaId = payload['id'] as int?;
       if (mesaId == null) return;
-      if (operation == 'CLOSE') {
+      if (op == 'CERRAR' || op == 'CLOSE') {
         await _db.cerrarMesaLocal(mesaId);
-      } else if (operation == 'MESA_DATA') {
+      } else if (op == 'MESA_DATA') {
         await _db.actualizarNulosBlanco(mesaId,
           votosNulos: payload['votosNulos'] as int? ?? 0,
           votosBlanco: payload['votosBlanco'] as int? ?? 0,

@@ -108,7 +108,9 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                         child: ElevatedButton(
                             onPressed: () async {
                               if (!formKey.currentState!.validate() ||
-                                  parroquiaId == null) return;
+                                  parroquiaId == null) {
+                                return;
+                              }
                               final api = context.read<AppProvider>().api;
                               final i = InstitucionEducativa(
                                   id: item?.id ?? 0,

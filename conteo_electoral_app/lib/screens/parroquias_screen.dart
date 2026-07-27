@@ -107,7 +107,9 @@ class _ParroquiasScreenState extends State<ParroquiasScreen> {
                         child: ElevatedButton(
                             onPressed: () async {
                               if (!formKey.currentState!.validate() ||
-                                  cantonId == null) return;
+                                  cantonId == null) {
+                                return;
+                              }
                               final api = context.read<AppProvider>().api;
                               final p = Parroquia(
                                   id: item?.id ?? 0,
