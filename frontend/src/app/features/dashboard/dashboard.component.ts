@@ -23,6 +23,8 @@ Chart.register(...registerables);
 export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('barChart') barChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('pieChart') pieChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('partyPieChart') partyPieChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('listPieChart') listPieChartRef!: ElementRef<HTMLCanvasElement>;
 
   elecciones: Eleccion[] = [];
   selectedEleccionId: number | null = null;
@@ -33,6 +35,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   resultadosOrdenados: ResultadoCandidato[] = [];
   showListaResults = false;
   resultadosListas: ResultadoLista[] = [];
+
+  resultadosPorPartido: { partido: string; votos: number; porcentaje: number }[] = [];
+  resultadosListasChart: { lista: string; numero: number; partido: string; votos: number; porcentaje: number }[] = [];
 
   sortColumn: string = 'votos';
   sortDirection: 'asc' | 'desc' = 'desc';
@@ -65,6 +70,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   barChartFullscreen = false;
   pieChartMinimized = false;
   pieChartFullscreen = false;
+  partyChartMinimized = false;
+  partyChartFullscreen = false;
+  listChartMinimized = false;
+  listChartFullscreen = false;
   resultadosMinimized = false;
   resultadosFullscreen = false;
 
@@ -89,6 +98,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private barChart?: Chart;
   private pieChart?: Chart;
+  private partyPieChart?: Chart;
+  private listPieChart?: Chart;
   private wsSubscription?: Subscription;
   private autoRefreshTimer?: ReturnType<typeof setInterval>;
 
@@ -106,19 +117,27 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   toggleMinimize(card: string): void {
     if (card === 'barChart') this.barChartMinimized = !this.barChartMinimized;
     else if (card === 'pieChart') this.pieChartMinimized = !this.pieChartMinimized;
+    else if (card === 'partyChart') this.partyChartMinimized = !this.partyChartMinimized;
+    else if (card === 'listChart') this.listChartMinimized = !this.listChartMinimized;
     else if (card === 'resultados') this.resultadosMinimized = !this.resultadosMinimized;
   }
 
   toggleFullscreen(card: string): void {
     const activating = card === 'barChart' ? !this.barChartFullscreen
       : card === 'pieChart' ? !this.pieChartFullscreen
+      : card === 'partyChart' ? !this.partyChartFullscreen
+      : card === 'listChart' ? !this.listChartFullscreen
       : !this.resultadosFullscreen;
     this.barChartFullscreen = false;
     this.pieChartFullscreen = false;
+    this.partyChartFullscreen = false;
+    this.listChartFullscreen = false;
     this.resultadosFullscreen = false;
     if (activating) {
       if (card === 'barChart') this.barChartFullscreen = true;
       else if (card === 'pieChart') this.pieChartFullscreen = true;
+      else if (card === 'partyChart') this.partyChartFullscreen = true;
+      else if (card === 'listChart') this.listChartFullscreen = true;
       else if (card === 'resultados') this.resultadosFullscreen = true;
       document.body.style.overflow = 'hidden';
     } else {
@@ -127,6 +146,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     setTimeout(() => {
       this.barChart?.resize();
       this.pieChart?.resize();
+      this.partyPieChart?.resize();
+      this.listPieChart?.resize();
     }, 100);
   }
 
@@ -160,53 +181,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  private isCargoLista(cargoId: number | null): boolean {
-    if (!cargoId) return false;
-    return this.cargos.some(c => c.id === cargoId && c.tipoVotacion === 'LISTA');
-  }
-
   private procesarResultados(data: DashboardData): void {
-    this.showListaResults = this.isCargoLista(this.filtroCargoId);
+    this.showListaResults = (data.resultadosListas?.length || 0) > 0;
+    this.resultadosListas = data.resultadosListas || [];
 
-    if (this.showListaResults && data.resultadosListas?.length) {
-      this.resultadosListas = data.resultadosListas;
-      const resultados: ResultadoCandidato[] = data.resultadosListas.map(r => ({
-        candidatoId: -(r.listaId),
-        nombreCompleto: r.listaNombre,
-        partidoNombre: r.partidoNombre || '—',
-        cargoNombre: r.cargoNombre || '—',
-        totalVotos: r.totalVotos,
-        porcentaje: r.porcentaje
-      }));
-      const totalVotosNulos = data.totalVotosNulos || 0;
-      const totalVotosBlanco = data.totalVotosBlanco || 0;
-      const totalGeneral = data.totalVotos + totalVotosNulos + totalVotosBlanco;
-      if (totalVotosNulos > 0) {
-        resultados.push({
-          candidatoId: 0,
-          nombreCompleto: 'Votos Nulos',
-          partidoNombre: '—',
-          cargoNombre: '—',
-          totalVotos: totalVotosNulos,
-          porcentaje: totalGeneral > 0 ? Math.round(totalVotosNulos * 10000 / totalGeneral) / 100 : 0
-        });
-      }
-      if (totalVotosBlanco > 0) {
-        resultados.push({
-          candidatoId: -1,
-          nombreCompleto: 'Votos en Blanco',
-          partidoNombre: '—',
-          cargoNombre: '—',
-          totalVotos: totalVotosBlanco,
-          porcentaje: totalGeneral > 0 ? Math.round(totalVotosBlanco * 10000 / totalGeneral) / 100 : 0
-        });
-      }
-      this.resultados = resultados;
-      return;
-    }
-
-    this.resultadosListas = [];
-    const resultados = [...(data.resultados || [])];
+    const resultados: ResultadoCandidato[] = [...(data.resultados || [])];
     const totalVotosNulos = data.totalVotosNulos || 0;
     const totalVotosBlanco = data.totalVotosBlanco || 0;
     const totalGeneral = data.totalVotos + totalVotosNulos + totalVotosBlanco;
@@ -251,12 +230,19 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit(): void {
     setTimeout(() => {
       this.initCharts();
+      this.initPartyChart();
+      this.initListChart();
       this.updateCharts();
+      this.updatePartyChart();
+      this.updateListChart();
     }, 100);
   }
 
   loadDataComplete(): void {
+    this.computeResultadosPorPartido();
     this.updateCharts();
+    this.updatePartyChart();
+    this.updateListChart();
     this.ultimaActualizacion = new Date().toLocaleTimeString();
   }
 
@@ -265,6 +251,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.stopAutoRefresh();
     this.barChart?.destroy();
     this.pieChart?.destroy();
+    this.partyPieChart?.destroy();
+    this.listPieChart?.destroy();
     document.body.style.overflow = '';
   }
 
@@ -538,13 +526,36 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     return this.sortDirection === 'asc' ? '↑' : '↓';
   }
 
+  private getChartTextColor(): string {
+    return document.documentElement.getAttribute('data-theme') === 'dark' ? '#e2e8f0' : '#334155';
+  }
+
+  private getChartGridColor(): string {
+    return document.documentElement.getAttribute('data-theme') === 'dark' ? '#334155' : '#e2e8f0';
+  }
+
+  private getChartColors(): string[] {
+    return document.documentElement.getAttribute('data-theme') === 'dark'
+      ? ['#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#f472b6', '#2dd4bf', '#fb923c']
+      : ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+  }
+
   initCharts(): void {
+    const textColor = this.getChartTextColor();
     if (this.barChartRef?.nativeElement) {
       if (this.barChart) this.barChart.destroy();
       this.barChart = new Chart(this.barChartRef.nativeElement, {
         type: 'bar',
         data: { labels: [], datasets: [] },
-        options: { responsive: true, animation: false, plugins: { legend: { display: false } } }
+        options: {
+          responsive: true, animation: false,
+          color: textColor,
+          scales: {
+            x: { ticks: { color: textColor }, grid: { color: this.getChartGridColor() } },
+            y: { ticks: { color: textColor }, grid: { color: this.getChartGridColor() } }
+          },
+          plugins: { legend: { display: false, labels: { color: textColor } } }
+        }
       });
     }
     if (this.pieChartRef?.nativeElement) {
@@ -552,15 +563,19 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.pieChart = new Chart(this.pieChartRef.nativeElement, {
         type: 'pie',
         data: { labels: [], datasets: [] },
-        options: { responsive: true, animation: false, plugins: { legend: { position: 'bottom' } } }
+        options: {
+          responsive: true, animation: false,
+          color: textColor,
+          plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
+        }
       });
     }
   }
 
   updateCharts(): void {
-    if (!this.dashboard?.resultados) return;
-    const resultados: any[] = this.dashboard.resultados;
-    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+    if (!this.resultados.length) return;
+    const resultados: any[] = this.resultados;
+    const colors = this.getChartColors();
     if (this.barChart) {
       this.barChart.data.labels = resultados.map((r: any) => r.nombreCompleto);
       this.barChart.data.datasets = [{
@@ -589,6 +604,80 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.filtroParroquiaId) f.parroquiaId = this.filtroParroquiaId;
     if (this.filtroInstitucionId) f.institucionId = this.filtroInstitucionId;
     return f;
+  }
+
+  private computeResultadosPorPartido(): void {
+    const partidoMap = new Map<string, number>();
+    for (const r of this.resultados) {
+      if (r.candidatoId === 0 || r.candidatoId === -1 || (r.candidatoId ?? 0) < -1) continue;
+      const key = r.partidoNombre || 'Sin partido';
+      partidoMap.set(key, (partidoMap.get(key) || 0) + r.totalVotos);
+    }
+    const total = Array.from(partidoMap.values()).reduce((a, b) => a + b, 0);
+    this.resultadosPorPartido = Array.from(partidoMap.entries())
+      .map(([partido, votos]) => ({ partido, votos, porcentaje: total > 0 ? votos * 100 / total : 0 }))
+      .sort((a, b) => b.votos - a.votos);
+
+    if (!this.resultadosListas) { this.resultadosListasChart = []; return; }
+    const listaTotal = this.resultadosListas.reduce((s, l) => s + l.totalVotos, 0);
+    this.resultadosListasChart = this.resultadosListas.map(l => ({
+      lista: l.listaNombre, numero: l.numeroLista, partido: l.partidoNombre || '—',
+      votos: l.totalVotos, porcentaje: listaTotal > 0 ? l.totalVotos * 100 / listaTotal : 0
+    }));
+  }
+
+  initPartyChart(): void {
+    if (!this.partyPieChartRef?.nativeElement) return;
+    if (this.partyPieChart) this.partyPieChart.destroy();
+    this.partyPieChart = new Chart(this.partyPieChartRef.nativeElement, {
+      type: 'doughnut',
+      data: { labels: [], datasets: [] },
+      options: {
+        responsive: true, animation: false,
+        color: this.getChartTextColor(),
+        plugins: { legend: { display: false }, tooltip: { enabled: true } },
+        cutout: '60%'
+      }
+    });
+  }
+
+  initListChart(): void {
+    if (!this.listPieChartRef?.nativeElement) return;
+    if (this.listPieChart) this.listPieChart.destroy();
+    this.listPieChart = new Chart(this.listPieChartRef.nativeElement, {
+      type: 'doughnut',
+      data: { labels: [], datasets: [] },
+      options: {
+        responsive: true, animation: false,
+        color: this.getChartTextColor(),
+        plugins: { legend: { display: false }, tooltip: { enabled: true } },
+        cutout: '60%'
+      }
+    });
+  }
+
+  updatePartyChart(): void {
+    if (!this.partyPieChart || !this.resultadosPorPartido.length) return;
+    const items = this.resultadosPorPartido;
+    const colors = this.getChartColors();
+    this.partyPieChart.data.labels = items.map(i => i.partido);
+    this.partyPieChart.data.datasets = [{
+      data: items.map(i => i.votos),
+      backgroundColor: colors.slice(0, items.length)
+    }];
+    this.partyPieChart.update('none');
+  }
+
+  updateListChart(): void {
+    if (!this.listPieChart || !this.resultadosListasChart.length) return;
+    const items = this.resultadosListasChart;
+    const colors = this.getChartColors();
+    this.listPieChart.data.labels = items.map(i => i.lista);
+    this.listPieChart.data.datasets = [{
+      data: items.map(i => i.votos),
+      backgroundColor: colors.slice(0, items.length)
+    }];
+    this.listPieChart.update('none');
   }
 
   exportarPdf(): void {

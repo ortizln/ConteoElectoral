@@ -42,37 +42,61 @@
 
     <div class="col-md-5" *ngIf="listaDetalle">
       <div class="card">
-        <div class="card-header">
-          <strong>Lista {{ listaDetalle.numeroLista }}</strong> — {{ listaDetalle.nombre }}
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <strong>Lista {{ listaDetalle.numeroLista }} — {{ listaDetalle.nombre }}</strong>
+          <button class="btn btn-sm btn-outline-primary" (click)="openForm(listaDetalle)">
+            <i class="bi bi-pencil"></i> Editar
+          </button>
         </div>
         <div class="card-body">
-          <div class="mb-3">
-            <small class="text-muted">Cargo:</small>
-            <div><strong>{{ listaDetalle.cargoNombre }}</strong></div>
+          <div class="row mb-3">
+            <div class="col-6">
+              <small class="text-muted">Cargo:</small>
+              <div><strong>{{ listaDetalle.cargoNombre }}</strong></div>
+            </div>
+            <div class="col-6">
+              <small class="text-muted">Estado:</small>
+              <span class="badge bg-success ms-1">{{ listaDetalle.estado }}</span>
+            </div>
           </div>
           <div class="mb-3">
             <small class="text-muted">Partido:</small>
             <div><strong>{{ listaDetalle.partidoNombre || 'Independiente' }}</strong>
               <span class="badge bg-secondary ms-2">{{ listaDetalle.partidoSigla }}</span></div>
           </div>
-          <div class="mb-3">
-            <small class="text-muted">Estado:</small>
-            <span class="badge bg-success ms-1">{{ listaDetalle.estado }}</span>
-          </div>
-          <h6 class="mt-3">Candidatos</h6>
+
+          <h6 class="mt-3">Candidatos en esta lista</h6>
           <table class="table table-sm">
-            <thead><tr><th>#</th><th>Nombre</th><th>Tipo</th></tr></thead>
+            <thead><tr><th>#</th><th>Nombre</th><th>Tipo</th><th></th></tr></thead>
             <tbody>
               <tr *ngFor="let c of listaDetalle.candidatos">
                 <td>{{ c.ordenEnLista }}</td>
                 <td>{{ c.nombreCompleto }}</td>
                 <td><span class="badge" [class.bg-primary]="c.tipo === 'PRINCIPAL'" [class.bg-secondary]="c.tipo !== 'PRINCIPAL'">{{ c.tipo }}</span></td>
+                <td>
+                  <button class="btn btn-sm btn-outline-danger" (click)="quitarCandidato(c)" title="Quitar de la lista">&times;</button>
+                </td>
               </tr>
               <tr *ngIf="(!listaDetalle.candidatos || listaDetalle.candidatos.length === 0)">
-                <td colspan="3" class="text-muted text-center">Sin candidatos</td>
+                <td colspan="4" class="text-muted text-center">Sin candidatos</td>
               </tr>
             </tbody>
           </table>
+
+          <h6 class="mt-3">Agregar candidatos</h6>
+          <input class="form-control form-control-sm mb-2" placeholder="Buscar candidato..." [(ngModel)]="filtroCandidato">
+          <div class="lista-candidatos-disponibles">
+            <div *ngFor="let c of candidatosDisponiblesFiltrados" class="d-flex justify-content-between align-items-center py-1 border-bottom">
+              <div>
+                <small><strong>{{ c.nombreCompleto }}</strong></small>
+                <small class="text-muted d-block">{{ c.cargoNombre }} — {{ c.partidoNombre }}</small>
+              </div>
+              <button class="btn btn-sm btn-outline-success" (click)="agregarCandidato(c)" title="Agregar a la lista">+</button>
+            </div>
+            <div *ngIf="candidatosDisponiblesFiltrados.length === 0" class="text-muted text-center py-2">
+              No hay candidatos disponibles
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -83,7 +107,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Nueva Lista Electoral</h5>
+        <h5 class="modal-title">{{ editando ? 'Editar Lista #' + listaDetalle.numeroLista : 'Nueva Lista Electoral' }}</h5>
         <button class="btn-close" (click)="showForm = false"></button>
       </div>
       <div class="modal-body">
@@ -123,7 +147,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" (click)="showForm = false">Cancelar</button>
-        <button class="btn btn-primary" (click)="crearLista()">Crear Lista</button>
+        <button class="btn btn-primary" (click)="guardarLista()">{{ editando ? 'Guardar Cambios' : 'Crear Lista' }}</button>
       </div>
     </div>
   </div>

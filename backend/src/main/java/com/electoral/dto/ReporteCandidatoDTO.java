@@ -13,6 +13,7 @@ public class ReporteCandidatoDTO {
     private String partido;
     private String partidoSigla;
     private String cargo;
+    private String cargoTipoVotacion;
     private long totalVotos;
     private double porcentaje;
 }

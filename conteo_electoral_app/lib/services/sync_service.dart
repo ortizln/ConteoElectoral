@@ -36,7 +36,7 @@ class SyncService {
   }
 
   Future<void> enqueueVoto(Voto voto) async {
-    final entityId = voto.id ?? 0;
+    final entityId = voto.candidatoId != null ? (voto.id ?? 0) : -(voto.listaId ?? 0);
     final existingId = await _findPending('voto', entityId);
     if (existingId != null) {
       final db = await _db.database;

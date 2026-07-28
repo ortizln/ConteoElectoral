@@ -184,6 +184,21 @@ public class CandidatoService {
     }
 
     @Transactional
+    public CandidatoResponse asignarLista(Long candidatoId, Long listaId) {
+        Candidato candidato = candidatoRepository.findById(candidatoId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Candidato no encontrado con ID: " + candidatoId));
+        if (listaId != null) {
+            ListaElectoral lista = listaElectoralRepository.findById(listaId)
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Lista no encontrada con ID: " + listaId));
+            candidato.setLista(lista);
+        } else {
+            candidato.setLista(null);
+        }
+        Candidato saved = candidatoRepository.save(candidato);
+        return mapToResponse(saved);
+    }
+
+    @Transactional
     @Auditable(entidad = "Candidato")
     public void deleteCandidato(Long id) {
         if (!candidatoRepository.existsById(id)) {

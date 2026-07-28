@@ -32,4 +32,11 @@ public class ListaElectoralController {
     public ResponseEntity<ListaElectoralResponse> crearLista(@Valid @RequestBody ListaElectoralRequest request) {
         return ResponseEntity.ok(listaService.crearLista(request));
     }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ListaElectoralResponse> actualizarLista(
+            @PathVariable Long id, @Valid @RequestBody ListaElectoralRequest request) {
+        return ResponseEntity.ok(listaService.actualizarLista(id, request));
+    }
 }

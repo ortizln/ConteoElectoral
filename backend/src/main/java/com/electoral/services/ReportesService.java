@@ -6,6 +6,7 @@ import com.electoral.dto.ReportePartidoDTO;
 import com.electoral.dto.ReporteResumenDTO;
 import com.electoral.entities.Candidato;
 import com.electoral.entities.ListaElectoral;
+import com.electoral.entities.TipoVotacion;
 import com.electoral.repositories.CandidatoRepository;
 import com.electoral.repositories.ListaElectoralRepository;
 import com.electoral.repositories.MesaRepository;
@@ -85,6 +86,7 @@ public class ReportesService {
 
         List<Candidato> todos = candidatoRepository.findByEleccionesId(eleccionId);
         for (Candidato c : todos) {
+            if (c.getCargo() != null && c.getCargo().getTipoVotacion() == TipoVotacion.LISTA) continue;
             long votos = votosMap.getOrDefault(c.getId(), 0L);
             double pct = totalGeneral > 0 ? (double) votos / totalGeneral * 100.0 : 0.0;
 
@@ -96,6 +98,7 @@ public class ReportesService {
                     .partido(c.getPartido() != null ? c.getPartido().getNombre() : "Independiente")
                     .partidoSigla(c.getPartido() != null && c.getPartido().getSigla() != null ? c.getPartido().getSigla() : "")
                     .cargo(c.getCargo() != null ? c.getCargo().getNombre() : "")
+                    .cargoTipoVotacion(c.getCargo() != null && c.getCargo().getTipoVotacion() != null ? c.getCargo().getTipoVotacion().name() : "")
                     .totalVotos(votos)
                     .porcentaje(Math.round(pct * 100.0) / 100.0)
                     .build());
@@ -177,12 +180,22 @@ public class ReportesService {
 
     public String exportCsv(Long eleccionId) {
         List<ReporteCandidatoDTO> candidatos = getResultadosCandidatos(eleccionId);
+        List<ReporteListaDTO> listas = getResultadosListas(eleccionId);
         StringBuilder sb = new StringBuilder();
+        sb.append("TIPO,,,,\n");
+        sb.append("INDIVIDUALES,,,,,\n");
         sb.append("Candidato,Partido,Cargo,Votos,Porcentaje\n");
         for (ReporteCandidatoDTO c : candidatos) {
             sb.append(String.format("\"%s\",\"%s\",\"%s\",%d,%.2f%%\n",
                     c.getNombreCompleto(), c.getPartido(), c.getCargo(),
                     c.getTotalVotos(), c.getPorcentaje()));
+        }
+        sb.append("\nLISTAS,,,,,\n");
+        sb.append("Lista,N°,Partido,Cargo,Votos,Porcentaje\n");
+        for (ReporteListaDTO l : listas) {
+            sb.append(String.format("\"%s\",%d,\"%s\",\"%s\",%d,%.2f%%\n",
+                    l.getListaNombre(), l.getNumeroLista(), l.getPartidoNombre(), l.getCargoNombre(),
+                    l.getTotalVotos(), l.getPorcentaje()));
         }
         return sb.toString();
     }

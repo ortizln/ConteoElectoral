@@ -260,8 +260,8 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     const dir = this.sortDirectionVotos === 'asc' ? 1 : -1;
     this.votosRegistrados = [...this.votosRegistrados].sort((a, b) => {
       switch (this.sortColumnVotos) {
-        case 'candidato': return dir * (a.candidatoNombre + a.candidatoApellido).localeCompare(b.candidatoNombre + b.candidatoApellido);
-        case 'partido': return dir * a.partidoNombre.localeCompare(b.partidoNombre);
+        case 'candidato': return dir * ((a.candidatoNombre ?? '') + (a.candidatoApellido ?? '')).localeCompare((b.candidatoNombre ?? '') + (b.candidatoApellido ?? ''));
+        case 'partido': return dir * (a.partidoNombre ?? '').localeCompare(b.partidoNombre ?? '');
         case 'votos': return dir * (a.cantidadVotos - b.cantidadVotos);
         default: return 0;
       }

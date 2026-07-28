@@ -3,6 +3,7 @@ package com.electoral.services;
 import com.electoral.dto.DashboardResponse;
 import com.electoral.dto.ResultadoCandidato;
 import com.electoral.dto.ResultadoGeo;
+import com.electoral.dto.ResultadoLista;
 import com.electoral.dto.ResultadoRecinto;
 import com.electoral.entities.Mesa;
 import com.itextpdf.io.image.ImageDataFactory;
@@ -170,6 +171,11 @@ public class PdfExportService {
 
             doc.add(new AreaBreak());
             addDetailTable(doc, data);
+
+            if (data.getResultadosListas() != null && !data.getResultadosListas().isEmpty()) {
+                doc.add(new AreaBreak());
+                addListasTable(doc, data);
+            }
 
             if (data.getResultadosProvincia() != null && !data.getResultadosProvincia().isEmpty()) {
                 doc.add(new AreaBreak());
@@ -390,6 +396,34 @@ public class PdfExportService {
                 t.addCell(td(r.getNombreCompleto(), odd, TextAlignment.LEFT));
                 t.addCell(td(r.getPartidoNombre(), odd, TextAlignment.LEFT));
                 t.addCell(td(r.getCargoNombre(), odd, TextAlignment.LEFT));
+                t.addCell(td(String.format("%,d", r.getTotalVotos()), odd, TextAlignment.RIGHT));
+                t.addCell(td(String.format("%.1f%%", r.getPorcentaje()), odd, TextAlignment.RIGHT));
+            }
+        }
+        doc.add(t);
+    }
+
+    private void addListasTable(Document doc, DashboardResponse data) {
+        doc.add(new Paragraph("Resultados por Lista")
+                .setFontSize(14).setBold().setFontColor(C_DARK));
+
+        Table t = new Table(UnitValue.createPercentArray(new float[]{0.5f, 3f, 1f, 2f, 2f, 1.5f, 1.5f}));
+        t.setWidth(UnitValue.createPercentValue(100));
+        String[] hd = {"#", "Lista", "N°", "Partido", "Cargo", "Votos", "%"};
+        for (String h : hd) {
+            Cell hc = new Cell().add(new Paragraph(h).setBold().setFontSize(8).setFontColor(C_WHITE));
+            hc.setBackgroundColor(C_HEADER_BG); hc.setPadding(6); hc.setTextAlignment(TextAlignment.CENTER);
+            t.addHeaderCell(hc);
+        }
+        if (data.getResultadosListas() != null) {
+            for (int i = 0; i < data.getResultadosListas().size(); i++) {
+                ResultadoLista r = data.getResultadosListas().get(i);
+                boolean odd = i % 2 == 1;
+                t.addCell(td(String.valueOf(i + 1), odd, TextAlignment.CENTER));
+                t.addCell(td(r.getListaNombre(), odd, TextAlignment.LEFT));
+                t.addCell(td(String.valueOf(r.getNumeroLista()), odd, TextAlignment.CENTER));
+                t.addCell(td(r.getPartidoNombre() != null ? r.getPartidoNombre() : "—", odd, TextAlignment.LEFT));
+                t.addCell(td(r.getCargoNombre() != null ? r.getCargoNombre() : "—", odd, TextAlignment.LEFT));
                 t.addCell(td(String.format("%,d", r.getTotalVotos()), odd, TextAlignment.RIGHT));
                 t.addCell(td(String.format("%.1f%%", r.getPorcentaje()), odd, TextAlignment.RIGHT));
             }

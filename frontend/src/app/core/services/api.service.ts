@@ -187,6 +187,10 @@ export class ApiService {
     return this.http.put<Candidato>(`${this.API_URL}/candidatos/${id}`, data);
   }
 
+  asignarListaCandidato(candidatoId: number, listaId: number | null): Observable<Candidato> {
+    return this.http.patch<Candidato>(`${this.API_URL}/candidatos/${candidatoId}/lista`, { listaId });
+  }
+
   deleteCandidato(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/candidatos/${id}`);
   }
@@ -742,6 +746,10 @@ export class ApiService {
 
   crearListaElectoral(data: any): Observable<any> {
     return this.http.post<any>(`${this.API_URL}/listas-electorales`, data);
+  }
+
+  actualizarListaElectoral(id: number, data: any): Observable<any> {
+    return this.http.put<any>(`${this.API_URL}/listas-electorales/${id}`, data);
   }
 
   // Plantillas Papeleta

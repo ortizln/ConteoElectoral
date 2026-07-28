@@ -198,8 +198,8 @@
           <tbody>
             <tr *ngFor="let v of votosRegistrados; let i = index">
               <td><span class="row-num">{{ i + 1 }}</span></td>
-              <td>{{ v.candidatoNombre }} {{ v.candidatoApellido }}</td>
-              <td><span class="partido-tag">{{ v.partidoNombre }}</span></td>
+              <td>{{ v.candidatoNombre ? (v.candidatoNombre + ' ' + (v.candidatoApellido || '')) : (v.listaId ? 'Lista #' + v.listaId : '—') }}</td>
+              <td><span class="partido-tag">{{ v.partidoNombre || '—' }}</span></td>
               <td class="text-right"><strong class="voto-count">{{ v.cantidadVotos }}</strong></td>
               <td *ngIf="!mesaActual?.cerrada" class="text-right">
                 <button class="btn btn-eliminar" (click)="eliminarVoto(v.id)">✕</button>

@@ -64,15 +64,51 @@ public class SyncService {
         Map<String, Object> data = op.getData();
         switch (op.getAction()) {
             case "CREATE": {
-                Long candidatoId = Long.valueOf(data.get("candidatoId").toString());
                 Long mesaId = Long.valueOf(data.get("mesaId").toString());
                 Integer cantidad = data.containsKey("cantidadVotos")
                         ? Integer.valueOf(data.get("cantidadVotos").toString()) : 1;
                 Long rawEleccionId = data.containsKey("eleccionesId")
                         ? Long.valueOf(data.get("eleccionesId").toString())
                         : (data.containsKey("eleccionId") ? Long.valueOf(data.get("eleccionId").toString()) : null);
-                final Long eleccionId = resolveEleccionId(rawEleccionId, candidatoId);
+                Long listaId = data.containsKey("listaId") && data.get("listaId") != null
+                        ? Long.valueOf(data.get("listaId").toString()) : null;
+                Long candidatoId = data.containsKey("candidatoId") && data.get("candidatoId") != null
+                        ? Long.valueOf(data.get("candidatoId").toString()) : null;
 
+                if (listaId != null && candidatoId == null) {
+                    Optional<Voto> existing = votoRepository.findByMesaIdAndListaId(mesaId, listaId);
+                    Voto voto;
+                    if (existing.isPresent()) {
+                        voto = existing.get();
+                        voto.setCantidadVotos(voto.getCantidadVotos() + cantidad);
+                    } else {
+                        Mesa mesa = mesaRepository.findById(mesaId)
+                                .orElseThrow(() -> new IllegalArgumentException("Mesa not found: " + mesaId));
+                        Eleccion eleccion = rawEleccionId != null
+                                ? eleccionRepository.findById(rawEleccionId)
+                                        .orElseThrow(() -> new IllegalArgumentException("Eleccion not found: " + rawEleccionId))
+                                : null;
+                        voto = Voto.builder()
+                                .mesa(mesa).elecciones(eleccion)
+                                .listaId(listaId)
+                                .cantidadVotos(cantidad)
+                                .createdBy(Usuario.builder().id(usuarioId).build())
+                                .build();
+                    }
+                    voto = votoRepository.save(voto);
+                    return SyncResultDTO.builder()
+                            .operationId(op.getOperationId()).success(true)
+                            .serverId(voto.getId()).build();
+                }
+
+                if (candidatoId == null) {
+                    return SyncResultDTO.builder()
+                            .operationId(op.getOperationId()).success(false)
+                            .error("Debe proporcionar candidatoId o listaId")
+                            .build();
+                }
+
+                final Long eleccionId = resolveEleccionId(rawEleccionId, candidatoId);
                 Optional<Voto> existing = votoRepository.findByMesaIdAndCandidatoId(mesaId, candidatoId);
                 Voto voto;
                 if (existing.isPresent()) {
@@ -91,8 +127,8 @@ public class SyncService {
                             .createdBy(Usuario.builder().id(usuarioId).build())
                             .build();
                 }
-                if (data.containsKey("listaId") && data.get("listaId") != null) {
-                    voto.setListaId(Long.valueOf(data.get("listaId").toString()));
+                if (listaId != null) {
+                    voto.setListaId(listaId);
                 }
                 voto = votoRepository.save(voto);
                 return SyncResultDTO.builder()
@@ -191,10 +227,10 @@ public class SyncService {
             if (v.getCreatedAt() != null && v.getCreatedAt().isAfter(since)) {
                 Map<String, Object> data = new HashMap<>();
                 data.put("id", v.getId());
-                data.put("candidatoId", v.getCandidato().getId());
+                data.put("candidatoId", v.getCandidato() != null ? v.getCandidato().getId() : null);
                 data.put("mesaId", v.getMesa().getId());
                 data.put("cantidadVotos", v.getCantidadVotos());
-                data.put("eleccionesId", v.getElecciones().getId());
+                data.put("eleccionesId", v.getElecciones() != null ? v.getElecciones().getId() : null);
                 if (v.getListaId() != null) {
                     data.put("listaId", v.getListaId());
                 }

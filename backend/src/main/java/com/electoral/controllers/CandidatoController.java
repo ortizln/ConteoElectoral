@@ -47,6 +47,12 @@ public class CandidatoController {
         return ResponseEntity.ok(candidatoService.updateCandidato(id, request));
     }
 
+    @PatchMapping("/{id}/lista")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CandidatoResponse> asignarLista(@PathVariable Long id, @RequestBody AsignarListaRequest request) {
+        return ResponseEntity.ok(candidatoService.asignarLista(id, request.getListaId()));
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteCandidato(@PathVariable Long id) {

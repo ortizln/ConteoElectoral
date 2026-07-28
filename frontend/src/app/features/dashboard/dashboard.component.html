@@ -171,63 +171,158 @@
     </div>
   </div>
 
-  <div class="table-card" [class.minimized]="resultadosMinimized" [class.fullscreen]="resultadosFullscreen" [class.dimmed]="barChartFullscreen || pieChartFullscreen">
+  <div class="charts-grid" [class.fullscreen-mode]="barChartFullscreen || pieChartFullscreen || partyChartFullscreen || listChartFullscreen || resultadosFullscreen">
+
+    <div class="chart-card" *ngIf="resultadosPorPartido.length > 0"
+         [class.minimized]="partyChartMinimized" [class.fullscreen]="partyChartFullscreen"
+         [class.dimmed]="barChartFullscreen || pieChartFullscreen || listChartFullscreen || resultadosFullscreen">
+      <div class="card-header-actions">
+        <h3>🏛️ Resultados por Partido</h3>
+        <div class="card-buttons">
+          <button class="btn-card-action" (click)="toggleMinimize('partyChart')" [title]="partyChartMinimized ? 'Expandir' : 'Minimizar'"><i [class]="partyChartMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i></button>
+          <button class="btn-card-action" (click)="toggleFullscreen('partyChart')" title="Pantalla completa"><i [class]="partyChartFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-angle-expand'"></i></button>
+        </div>
+      </div>
+      <div class="card-body" [class.hidden]="partyChartMinimized">
+        <div style="display:flex;gap:20px;flex-wrap:wrap;">
+          <div style="flex:0 0 auto;width:220px;height:220px;margin:0 auto;"><canvas #partyPieChart></canvas></div>
+          <div style="flex:1;min-width:220px;">
+            <div *ngFor="let p of resultadosPorPartido" class="progress-item">
+              <div class="progress-header">
+                <span class="progress-label">{{ p.partido }}</span>
+                <span class="progress-value">{{ p.votos | number }} ({{ p.porcentaje | number:'1.1-1' }}%)</span>
+              </div>
+              <div class="stat-bar"><div class="stat-bar-fill" [style.width.%]="p.porcentaje"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-card" *ngIf="resultadosListasChart.length > 0"
+         [class.minimized]="listChartMinimized" [class.fullscreen]="listChartFullscreen"
+         [class.dimmed]="barChartFullscreen || pieChartFullscreen || partyChartFullscreen || resultadosFullscreen">
+      <div class="card-header-actions">
+        <h3>📋 Resultados por Lista</h3>
+        <div class="card-buttons">
+          <button class="btn-card-action" (click)="toggleMinimize('listChart')" [title]="listChartMinimized ? 'Expandir' : 'Minimizar'"><i [class]="listChartMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i></button>
+          <button class="btn-card-action" (click)="toggleFullscreen('listChart')" title="Pantalla completa"><i [class]="listChartFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-angle-expand'"></i></button>
+        </div>
+      </div>
+      <div class="card-body" [class.hidden]="listChartMinimized">
+        <div style="display:flex;gap:20px;flex-wrap:wrap;">
+          <div style="flex:0 0 auto;width:220px;height:220px;margin:0 auto;"><canvas #listPieChart></canvas></div>
+          <div style="flex:1;min-width:220px;">
+            <div *ngFor="let l of resultadosListasChart" class="progress-item">
+              <div class="progress-header">
+                <span class="progress-label">{{ l.lista }} <small style="color:#94a3b8;">(N°{{ l.numero }})</small></span>
+                <span class="progress-value">{{ l.votos | number }} ({{ l.porcentaje | number:'1.1-1' }}%)</span>
+              </div>
+              <div class="stat-bar"><div class="stat-bar-fill" [style.width.%]="l.porcentaje"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="table-card" [class.minimized]="resultadosMinimized" [class.fullscreen]="resultadosFullscreen" [class.dimmed]="barChartFullscreen || pieChartFullscreen || partyChartFullscreen || listChartFullscreen">
     <div class="table-header">
-      <h3>📋 {{ showListaResults ? 'Resultados por Lista' : 'Resultados por Candidato' }}</h3>
+      <h3>📋 Resultados</h3>
       <div class="card-buttons">
-        <span class="table-count">{{ resultados.length }} {{ showListaResults ? 'listas' : 'candidatos' }}</span>
+        <span class="table-count">{{ resultados.length }} candidatos</span>
         <button class="btn-card-action" (click)="toggleMinimize('resultados')" [title]="resultadosMinimized ? 'Expandir' : 'Minimizar'"><i [class]="resultadosMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i></button>
         <button class="btn-card-action" (click)="toggleFullscreen('resultados')" title="Pantalla completa"><i [class]="resultadosFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-angle-expand'"></i></button>
       </div>
     </div>
     <div class="table-wrapper" [class.hidden]="resultadosMinimized">
-      <table class="table-moderno">
-        <thead>
-          <tr>
-            <th class="sortable" (click)="setSortColumn('nombreCompleto')">
-              {{ showListaResults ? 'Lista' : 'Candidato' }} <span class="sort-icon">{{ getSortIcon('nombreCompleto') }}</span>
-            </th>
-            <th class="sortable" (click)="setSortColumn('partidoNombre')">
-              Partido <span class="sort-icon">{{ getSortIcon('partidoNombre') }}</span>
-            </th>
-            <th class="sortable" (click)="setSortColumn('cargoNombre')">
-              Cargo <span class="sort-icon">{{ getSortIcon('cargoNombre') }}</span>
-            </th>
-            <th class="sortable text-right" (click)="setSortColumn('votos')">
-              Votos <span class="sort-icon">{{ getSortIcon('votos') }}</span>
-            </th>
-            <th class="sortable text-right" (click)="setSortColumn('porcentaje')">
-              % <span class="sort-icon">{{ getSortIcon('porcentaje') }}</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let r of resultadosOrdenados; let i = index"
-              [class]="getRowClass(r)"
-              (click)="r.candidatoId > 0 && verDetalleCandidato(r.candidatoId)">
-            <td>
-              <div class="candidato-info-cell">
-                <span class="candidato-rank" [class]="getRankClass(r)">{{ getRankLabel(r, i) }}</span>
-                <span class="candidato-name">{{ r.nombreCompleto }}</span>
-              </div>
-            </td>
-            <td><span class="partido-badge">{{ r.partidoNombre }}</span></td>
-            <td>{{ r.cargoNombre }}</td>
-            <td class="text-right"><strong>{{ r.totalVotos | number }}</strong></td>
-            <td class="text-right">
-              <span class="porcentaje-badge">{{ r.porcentaje | number:'1.1-1' }}%</span>
-            </td>
-          </tr>
-          <tr *ngIf="resultadosOrdenados.length === 0">
-            <td colspan="5" class="text-center empty-msg">No hay resultados disponibles</td>
-          </tr>
-        </tbody>
-      </table>
+
+      <div *ngIf="resultados.length > 0" class="resultados-section">
+        <h4 class="section-title">🏛️ Candidatos Individuales</h4>
+        <table class="table-moderno">
+          <thead>
+            <tr>
+              <th class="sortable" (click)="setSortColumn('nombreCompleto')">
+                Candidato <span class="sort-icon">{{ getSortIcon('nombreCompleto') }}</span>
+              </th>
+              <th class="sortable" (click)="setSortColumn('partidoNombre')">
+                Partido <span class="sort-icon">{{ getSortIcon('partidoNombre') }}</span>
+              </th>
+              <th class="sortable" (click)="setSortColumn('cargoNombre')">
+                Cargo <span class="sort-icon">{{ getSortIcon('cargoNombre') }}</span>
+              </th>
+              <th class="sortable text-right" (click)="setSortColumn('votos')">
+                Votos <span class="sort-icon">{{ getSortIcon('votos') }}</span>
+              </th>
+              <th class="sortable text-right" (click)="setSortColumn('porcentaje')">
+                % <span class="sort-icon">{{ getSortIcon('porcentaje') }}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of resultadosOrdenados; let i = index"
+                [class]="getRowClass(r)"
+                (click)="r.candidatoId > 0 && verDetalleCandidato(r.candidatoId)">
+              <td>
+                <div class="candidato-info-cell">
+                  <span class="candidato-rank" [class]="getRankClass(r)">{{ getRankLabel(r, i) }}</span>
+                  <span class="candidato-name">{{ r.nombreCompleto }}</span>
+                </div>
+              </td>
+              <td><span class="partido-badge">{{ r.partidoNombre }}</span></td>
+              <td>{{ r.cargoNombre }}</td>
+              <td class="text-right"><strong>{{ r.totalVotos | number }}</strong></td>
+              <td class="text-right">
+                <span class="porcentaje-badge">{{ r.porcentaje | number:'1.1-1' }}%</span>
+              </td>
+            </tr>
+            <tr *ngIf="resultadosOrdenados.length === 0">
+              <td colspan="5" class="text-center empty-msg">No hay candidatos individuales</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="showListaResults && resultadosListas.length > 0" class="resultados-section">
+        <h4 class="section-title">📋 Resultados por Lista</h4>
+        <table class="table-moderno">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Lista</th>
+              <th>N°</th>
+              <th>Partido</th>
+              <th>Cargo</th>
+              <th class="text-right">Votos</th>
+              <th class="text-right">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let l of resultadosListas; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td><strong>{{ l.listaNombre }}</strong></td>
+              <td>{{ l.numeroLista }}</td>
+              <td><span class="partido-badge">{{ l.partidoNombre || '—' }}</span></td>
+              <td>{{ l.cargoNombre || '—' }}</td>
+              <td class="text-right"><strong>{{ l.totalVotos | number }}</strong></td>
+              <td class="text-right"><span class="porcentaje-badge">{{ l.porcentaje | number:'1.1-1' }}%</span></td>
+            </tr>
+            <tr *ngIf="resultadosListas.length === 0">
+              <td colspan="7" class="text-center empty-msg">No hay resultados por lista</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="resultados.length === 0 && (!showListaResults || resultadosListas.length === 0)" class="empty-msg text-center py-4">
+        No hay resultados disponibles
+      </div>
     </div>
   </div>
 
   <!-- Fullscreen backdrop -->
-  <div class="fullscreen-backdrop" *ngIf="barChartFullscreen || pieChartFullscreen || resultadosFullscreen" (click)="toggleFullscreen('none')"></div>
+  <div class="fullscreen-backdrop" *ngIf="barChartFullscreen || pieChartFullscreen || partyChartFullscreen || listChartFullscreen || resultadosFullscreen" (click)="toggleFullscreen('none')"></div>
 
   <!-- Modal backdrop -->
   <div class="modal-backdrop show" *ngIf="showDetalle"></div>

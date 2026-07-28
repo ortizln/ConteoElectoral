@@ -14,6 +14,7 @@ public class ResultadoCandidato {
     private String nombreCompleto;
     private String partidoNombre;
     private String cargoNombre;
+    private String cargoTipoVotacion;
     private Long totalVotos;
     private Double porcentaje;
 }

@@ -1,7 +1,14 @@
 package com.electoral.services;
 
 import com.electoral.dto.*;
-import com.electoral.entities.*;
+import com.electoral.entities.Auditoria;
+import com.electoral.entities.Candidato;
+import com.electoral.entities.Eleccion;
+import com.electoral.entities.ListaElectoral;
+import com.electoral.entities.Mesa;
+import com.electoral.entities.TipoVotacion;
+import com.electoral.entities.Usuario;
+import com.electoral.entities.Voto;
 import com.electoral.exception.*;
 import com.electoral.repositories.*;
 import lombok.RequiredArgsConstructor;
@@ -319,6 +326,7 @@ public class VotoService {
         }
 
         List<ResultadoCandidato> resultados = candidatos.stream()
+                .filter(c -> c.getCargo() == null || c.getCargo().getTipoVotacion() != TipoVotacion.LISTA)
                 .map(c -> {
                     Long votos = votosPorCandidato.stream()
                             .filter(o -> ((Number) o[0]).longValue() == c.getId())
@@ -332,6 +340,7 @@ public class VotoService {
                             .nombreCompleto(c.getNombreCompleto())
                             .partidoNombre(c.getPartido() != null ? c.getPartido().getNombre() : "Independiente")
                             .cargoNombre(c.getCargo().getNombre())
+                            .cargoTipoVotacion(c.getCargo().getTipoVotacion() != null ? c.getCargo().getTipoVotacion().name() : null)
                             .totalVotos(votos)
                             .porcentaje(Math.round(porcentaje * 100.0) / 100.0)
                             .build();

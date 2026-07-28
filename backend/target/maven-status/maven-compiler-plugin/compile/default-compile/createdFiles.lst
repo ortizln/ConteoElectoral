@@ -136,7 +136,6 @@ com\electoral\entities\OpcionPapeleta.class
 com\electoral\controllers\VotoPapeletaController.class
 com\electoral\services\CargoService.class
 com\electoral\dto\OpcionPapeletaResponse$OpcionPapeletaResponseBuilder.class
-com\electoral\controllers\VotoController.class
 com\electoral\services\DashboardGeograficoService.class
 com\electoral\dto\CantonRequest$CantonRequestBuilder.class
 com\electoral\dto\SyncPushResponse$SyncPushResponseBuilder.class
@@ -148,7 +147,6 @@ com\electoral\dto\ImportResponse$ImportResponseBuilder.class
 com\electoral\entities\MesaUsuario.class
 com\electoral\services\ReglaNegocioService$1.class
 com\electoral\entities\Auditoria.class
-com\electoral\services\VotoService.class
 com\electoral\services\ImportService.class
 com\electoral\entities\Mesa.class
 com\electoral\repositories\UsuarioRepository.class

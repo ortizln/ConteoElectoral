@@ -41,6 +41,41 @@ public class ListaElectoralService {
     }
 
     @Transactional
+    public ListaElectoralResponse actualizarLista(Long id, ListaElectoralRequest request) {
+        ListaElectoral lista = listaRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Lista no encontrada con ID: " + id));
+
+        if (request.getCargoId() != null) {
+            Cargo cargo = cargoRepository.findById(request.getCargoId())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Cargo no encontrado"));
+            lista.setCargo(cargo);
+        }
+        if (request.getPartidoId() != null) {
+            Partido partido = partidoRepository.findById(request.getPartidoId())
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Partido no encontrado"));
+            lista.setPartido(partido);
+        } else {
+            lista.setPartido(null);
+        }
+        if (request.getCircunscripcionTipo() != null) {
+            lista.setCircunscripcionTipo(request.getCircunscripcionTipo());
+        }
+        if (request.getCircunscripcionId() != null) {
+            lista.setCircunscripcionId(request.getCircunscripcionId());
+        }
+        if (request.getNumeroLista() != null) {
+            lista.setNumeroLista(request.getNumeroLista());
+        }
+        if (request.getNombre() != null) {
+            lista.setNombre(request.getNombre());
+        }
+
+        ListaElectoral saved = listaRepository.save(lista);
+        log.info("Lista electoral actualizada: {} - nro {}", saved.getNombre(), saved.getNumeroLista());
+        return mapToResponse(saved);
+    }
+
+    @Transactional
     public ListaElectoralResponse crearLista(ListaElectoralRequest request) {
         if (listaRepository.existsByEleccionIdAndCargoIdAndPartidoIdAndCircunscripcionTipoAndCircunscripcionId(
                 request.getEleccionId(), request.getCargoId(), request.getPartidoId(),

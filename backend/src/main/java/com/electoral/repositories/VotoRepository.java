@@ -36,10 +36,10 @@ public interface VotoRepository extends JpaRepository<Voto, Long> {
     @Query("SELECT COALESCE(SUM(v.cantidadVotos), 0) FROM Voto v WHERE v.candidato.id = :candidatoId")
     Long sumVotosByCandidato(Long candidatoId);
      
-    @Query("SELECT v.candidato.id, SUM(v.cantidadVotos) FROM Voto v WHERE v.elecciones.id = :eleccionId GROUP BY v.candidato.id")
+    @Query("SELECT v.candidato.id, SUM(v.cantidadVotos) FROM Voto v WHERE v.elecciones.id = :eleccionId AND v.candidato IS NOT NULL GROUP BY v.candidato.id")
     List<Object[]> sumVotosGroupByCandidato(Long eleccionId);
      
-    @Query("SELECT v.candidato.id, SUM(v.cantidadVotos) FROM Voto v WHERE v.elecciones.id = :eleccionId AND v.mesa.id IN :mesaIds GROUP BY v.candidato.id")
+    @Query("SELECT v.candidato.id, SUM(v.cantidadVotos) FROM Voto v WHERE v.elecciones.id = :eleccionId AND v.mesa.id IN :mesaIds AND v.candidato IS NOT NULL GROUP BY v.candidato.id")
     List<Object[]> sumVotosGroupByCandidatoAndMesaIds(@Param("eleccionId") Long eleccionId, @Param("mesaIds") List<Long> mesaIds);
      
     @Query("SELECT v.mesa.institucion.id, SUM(v.cantidadVotos) FROM Voto v WHERE v.elecciones.id = :eleccionId GROUP BY v.mesa.institucion.id")

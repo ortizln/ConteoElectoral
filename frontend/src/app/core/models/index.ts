@@ -134,14 +134,15 @@ export interface Mesa {
 
 export interface Voto {
   id: number;
-  candidatoId: number;
-  candidatoNombre: string;
-  candidatoApellido: string;
-  partidoNombre: string;
+  candidatoId?: number;
+  candidatoNombre?: string;
+  candidatoApellido?: string;
+  partidoNombre?: string;
   mesaId: number;
-  mesaNumero: string;
+  mesaNumero?: string;
   cantidadVotos: number;
   eleccionesId: number;
+  listaId?: number;
 }
 
 export interface ResultadoLista {
@@ -359,6 +360,7 @@ export interface ResultadoCandidato {
   nombreCompleto: string;
   partidoNombre: string;
   cargoNombre: string;
+  cargoTipoVotacion?: string;
   totalVotos: number;
   porcentaje: number;
 }
@@ -395,6 +397,7 @@ export interface ReporteCandidato {
   partido: string;
   partidoSigla: string;
   cargo: string;
+  cargoTipoVotacion?: string;
   totalVotos: number;
   porcentaje: number;
 }

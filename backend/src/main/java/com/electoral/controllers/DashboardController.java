@@ -87,12 +87,25 @@ public class DashboardController {
             @RequestParam(required = false) Long mesaId) {
         DashboardResponse data = votoService.getDashboardDataConFiltros(eleccionesId, cargoId, partidoId,
                 zonaId, provinciaId, cantonId, parroquiaId, institucionId, mesaId);
-        String[] headers = {"Candidato", "Partido", "Cargo", "Votos", "Porcentaje"};
-        List<String[]> rows = data.getResultados().stream()
+
+        String[] headersInd = {"Candidato", "Partido", "Cargo", "Votos", "Porcentaje"};
+        List<String[]> rowsInd = data.getResultados().stream()
                 .map(r -> new String[]{r.getNombreCompleto(), r.getPartidoNombre(), r.getCargoNombre(),
                         String.valueOf(r.getTotalVotos()), String.format("%.2f%%", r.getPorcentaje())})
                 .collect(Collectors.toList());
-        byte[] excel = excelExportService.exportExcel("Resultados", headers, rows);
+        byte[] excel = excelExportService.exportExcel("Resultados", headersInd, rowsInd);
+
+        if (data.getResultadosListas() != null && !data.getResultadosListas().isEmpty()) {
+            String[] headersLis = {"Lista", "N°", "Partido", "Cargo", "Votos", "Porcentaje"};
+            List<String[]> rowsLis = data.getResultadosListas().stream()
+                    .map(r -> new String[]{r.getListaNombre(), String.valueOf(r.getNumeroLista()),
+                            r.getPartidoNombre() != null ? r.getPartidoNombre() : "—",
+                            r.getCargoNombre() != null ? r.getCargoNombre() : "—",
+                            String.valueOf(r.getTotalVotos()), String.format("%.2f%%", r.getPorcentaje())})
+                    .collect(Collectors.toList());
+            excel = excelExportService.appendSheetToExcel(excel, "Listas", headersLis, rowsLis);
+        }
+
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         httpHeaders.setContentDispositionFormData("attachment", "resultados.xlsx");
