@@ -5,8 +5,8 @@
       <select [(ngModel)]="selectedEleccionId" (change)="cargarReportes()" class="form-select">
         <option *ngFor="let e of elecciones" [value]="e.id">{{ e.nombre }}</option>
       </select>
-      <button (click)="exportarCsv()" class="btn btn-success" [disabled]="!selectedEleccionId">
-        Exportar CSV
+      <button (click)="exportarCsv()" class="btn btn-sm btn-success" [disabled]="!selectedEleccionId">
+        Exportar
       </button>
     </div>
   </div>
@@ -92,7 +92,8 @@
           <td class="text-right">{{ c.porcentaje }}%</td>
           <td>
             <div class="bar-container">
-              <div class="bar-fill" [style.width.%]="getMaxVotos() > 0 ? (c.totalVotos / getMaxVotos() * 100) : 0"></div>
+              <div class="bar-fill" [style.width.%]="getMaxVotos() > 0 ? (c.totalVotos / getMaxVotos() * 100) : 0">
+              </div>
             </div>
           </td>
         </tr>
