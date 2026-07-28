@@ -22,6 +22,7 @@ public class AuditoriaService {
     public void registrarAccion(Long usuarioId, Auditoria.TipoAccion accion, String entidad, 
                                  Long entidadId, Map<String, Object> datosAnteriores, 
                                  Map<String, Object> datosNuevos) {
+        if (usuarioId == null) return;
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 

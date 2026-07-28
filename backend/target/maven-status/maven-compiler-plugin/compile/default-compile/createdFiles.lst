@@ -11,6 +11,7 @@ com\electoral\dto\RolPermisoResponse$RolPermisoResponseBuilder.class
 com\electoral\services\PdfExportService$PdfFooterEventHandler.class
 com\electoral\controllers\DashboardGeograficoController.class
 com\electoral\dto\SyncResultDTO.class
+com\electoral\entities\ApkVersion.class
 com\electoral\entities\Zona$ZonaBuilder.class
 com\electoral\controllers\EscrutinioController.class
 com\electoral\repositories\RolPermisoRepository.class
@@ -22,9 +23,11 @@ com\electoral\aspect\AuditoriaAspect$1.class
 com\electoral\exception\RecursoNoEncontradoException.class
 com\electoral\entities\AsignacionEscano$AsignacionEscanoBuilder.class
 com\electoral\dto\ConfiguracionResponse.class
+com\electoral\dto\ReporteListaDTO.class
 com\electoral\dto\CircunscripcionResponse$CircunscripcionResponseBuilder.class
 com\electoral\dto\TipoCircunscripcionResponse$TipoCircunscripcionResponseBuilder.class
 com\electoral\repositories\ParroquiaRepository.class
+com\electoral\dto\AsignarListaRequest.class
 com\electoral\dto\CantonResponse.class
 com\electoral\repositories\ImpugnacionRepository.class
 com\electoral\entities\Provincia$ProvinciaBuilder.class
@@ -35,6 +38,7 @@ com\electoral\dto\ReglaNegocioRequest$ReglaNegocioRequestBuilder.class
 com\electoral\services\MesaService.class
 com\electoral\entities\Canton.class
 com\electoral\dto\VotoRequest$VotoRequestBuilder.class
+com\electoral\dto\ResultadoLista$ResultadoListaBuilder.class
 com\electoral\dto\ReporteResumenDTO.class
 com\electoral\entities\Eleccion$EleccionBuilder.class
 com\electoral\entities\OpcionPapeleta$OpcionPapeletaBuilder.class
@@ -43,6 +47,7 @@ com\electoral\dto\LoginRequest.class
 com\electoral\dto\ResultadoCandidato.class
 com\electoral\entities\CarouselImage$CarouselImageBuilder.class
 com\electoral\controllers\ListaElectoralController.class
+com\electoral\entities\ApkVersion$ApkVersionBuilder.class
 com\electoral\repositories\CargoRepository.class
 com\electoral\services\AuditoriaService.class
 com\electoral\repositories\CantonRepository.class
@@ -54,8 +59,10 @@ com\electoral\entities\Usuario$UsuarioBuilder.class
 com\electoral\entities\RolPermiso.class
 com\electoral\exception\MesaCerradaException.class
 com\electoral\entities\Partido.class
+com\electoral\controllers\ConfiguracionController.class
 com\electoral\controllers\CandidatoController.class
 com\electoral\repositories\AsignacionEscanoRepository.class
+com\electoral\dto\AsignarListaRequest$AsignarListaRequestBuilder.class
 com\electoral\dto\InstitucionEducativaResponse$InstitucionEducativaResponseBuilder.class
 com\electoral\dto\ObservacionResponse.class
 com\electoral\entities\TipoEleccion$TipoEleccionBuilder.class
@@ -68,6 +75,7 @@ com\electoral\repositories\RolRepository.class
 com\electoral\dto\CantonResponse$CantonResponseBuilder.class
 com\electoral\repositories\ListaElectoralRepository.class
 com\electoral\dto\ProvinciaRequest$ProvinciaRequestBuilder.class
+com\electoral\repositories\ApkVersionRepository.class
 com\electoral\repositories\ZonaRepository.class
 com\electoral\dto\VotoPapeletaResponse.class
 com\electoral\controllers\TipoEleccionController.class
@@ -87,6 +95,7 @@ com\electoral\controllers\InstitucionEducativaController.class
 com\electoral\entities\Observacion$ObservacionBuilder.class
 com\electoral\entities\Resolucion$ResolucionBuilder.class
 com\electoral\entities\PlantillaPapeleta$PlantillaPapeletaBuilder.class
+com\electoral\controllers\WebSocketController.class
 com\electoral\entities\TipoCircunscripcion.class
 com\electoral\config\JwtService.class
 com\electoral\dto\ProvinciaResponse$ProvinciaResponseBuilder.class
@@ -136,6 +145,7 @@ com\electoral\entities\OpcionPapeleta.class
 com\electoral\controllers\VotoPapeletaController.class
 com\electoral\services\CargoService.class
 com\electoral\dto\OpcionPapeletaResponse$OpcionPapeletaResponseBuilder.class
+com\electoral\controllers\VotoController.class
 com\electoral\services\DashboardGeograficoService.class
 com\electoral\dto\CantonRequest$CantonRequestBuilder.class
 com\electoral\dto\SyncPushResponse$SyncPushResponseBuilder.class
@@ -146,7 +156,9 @@ com\electoral\controllers\ReglaNegocioController.class
 com\electoral\dto\ImportResponse$ImportResponseBuilder.class
 com\electoral\entities\MesaUsuario.class
 com\electoral\services\ReglaNegocioService$1.class
+com\electoral\controllers\ApkVersionController.class
 com\electoral\entities\Auditoria.class
+com\electoral\services\VotoService.class
 com\electoral\services\ImportService.class
 com\electoral\entities\Mesa.class
 com\electoral\repositories\UsuarioRepository.class
@@ -169,6 +181,7 @@ com\electoral\entities\InstitucionEducativa.class
 com\electoral\controllers\CarouselController.class
 com\electoral\entities\ReglaNegocio.class
 com\electoral\dto\UsuarioResponse$UsuarioResponseBuilder.class
+com\electoral\dto\ApkVersionResponse$ApkVersionResponseBuilder.class
 com\electoral\controllers\SyncController.class
 com\electoral\services\PdfExportService.class
 com\electoral\entities\Usuario.class
@@ -230,6 +243,7 @@ com\electoral\dto\EleccionResponse.class
 com\electoral\services\PdfExportService$PdfHeaderEventHandler.class
 com\electoral\entities\Auditoria$TipoAccion.class
 com\electoral\entities\Candidato.class
+com\electoral\dto\ResultadoLista.class
 com\electoral\dto\CandidatoRequest.class
 com\electoral\security\CustomUserDetailsService.class
 com\electoral\entities\ReglaNegocio$ReglaNegocioBuilder.class
@@ -247,6 +261,7 @@ com\electoral\entities\Rol$RolBuilder.class
 com\electoral\dto\CircunscripcionRequest$CircunscripcionRequestBuilder.class
 com\electoral\dto\TipoCircunscripcionResponse.class
 com\electoral\entities\TipoEleccionCargo.class
+com\electoral\services\ApkVersionService.class
 com\electoral\dto\CandidatoDetalleResponse.class
 com\electoral\dto\ListaElectoralResponse$ListaElectoralResponseBuilder.class
 com\electoral\dto\UsuarioUpdateRequest$UsuarioUpdateRequestBuilder.class
@@ -264,10 +279,12 @@ com\electoral\dto\LoginResponse$LoginResponseBuilder.class
 com\electoral\dto\CantonRequest.class
 com\electoral\dto\SyncPullResponse$SyncPullResponseBuilder.class
 com\electoral\repositories\VotoPapeletaRepository.class
+com\electoral\dto\ReporteListaDTO$ReporteListaDTOBuilder.class
 com\electoral\dto\ConfiguracionRequest.class
 com\electoral\dto\ConfiguracionRequest$ConfiguracionRequestBuilder.class
 com\electoral\controllers\CargoController.class
 com\electoral\services\PartidoService.class
+com\electoral\controllers\DashboardController.class
 com\electoral\dto\ReconteoRequest$ReconteoRequestBuilder.class
 com\electoral\dto\ResultadoDHondtResponse$AsignacionDto$AsignacionDtoBuilder.class
 com\electoral\entities\VotoPapeleta.class
@@ -316,6 +333,7 @@ com\electoral\services\CandidatoService.class
 com\electoral\services\CircunscripcionService.class
 com\electoral\dto\ReportePartidoDTO$ReportePartidoDTOBuilder.class
 com\electoral\entities\Papeleta$PapeletaBuilder.class
+com\electoral\dto\ApkVersionResponse.class
 com\electoral\dto\CargoRequest.class
 com\electoral\dto\RolPermisoRequest.class
 com\electoral\dto\VotoPapeletaResponse$VotoPapeletaResponseBuilder.class

@@ -51,13 +51,17 @@ public class PartidoService {
                 .build();
         log.info("Creando {}: {}", "Partido", partido.getNombre());
         Partido saved = partidoRepository.save(partido);
+        Map<String, Object> datosNuevos = new java.util.HashMap<>();
+        datosNuevos.put("nombre", saved.getNombre());
+        datosNuevos.put("sigla", saved.getSigla());
+        datosNuevos.put("logoUrl", saved.getLogoUrl());
         auditoriaService.registrarAccion(
             securityUtil.getCurrentUserId(),
             Auditoria.TipoAccion.CREATE,
             "Partido",
             saved.getId(),
             null,
-            Map.of("nombre", saved.getNombre(), "sigla", saved.getSigla(), "logoUrl", saved.getLogoUrl())
+            datosNuevos
         );
         return mapToResponse(saved);
     }
@@ -71,18 +75,25 @@ public class PartidoService {
             throw new DuplicateEntityException("Ya existe un partido con el nombre '" + request.getNombre() + "' en esta elección");
         }
         log.info("Actualizando {} con ID: {}", "Partido", id);
-        Map<String, Object> datosAnteriores = Map.of("nombre", partido.getNombre(), "sigla", partido.getSigla(), "logoUrl", partido.getLogoUrl());
+        Map<String, Object> datosAnteriores = new java.util.HashMap<>();
+        datosAnteriores.put("nombre", partido.getNombre());
+        datosAnteriores.put("sigla", partido.getSigla());
+        datosAnteriores.put("logoUrl", partido.getLogoUrl());
         partido.setNombre(request.getNombre());
         partido.setSigla(request.getSigla());
         partido.setLogoUrl(request.getLogoUrl());
         Partido saved = partidoRepository.save(partido);
+        Map<String, Object> datosNuevos = new java.util.HashMap<>();
+        datosNuevos.put("nombre", saved.getNombre());
+        datosNuevos.put("sigla", saved.getSigla());
+        datosNuevos.put("logoUrl", saved.getLogoUrl());
         auditoriaService.registrarAccion(
             securityUtil.getCurrentUserId(),
             Auditoria.TipoAccion.UPDATE,
             "Partido",
             id,
             datosAnteriores,
-            Map.of("nombre", saved.getNombre(), "sigla", saved.getSigla(), "logoUrl", saved.getLogoUrl())
+            datosNuevos
         );
         return mapToResponse(saved);
     }

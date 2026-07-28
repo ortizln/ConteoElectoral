@@ -1,0 +1,282 @@
+[INFO] Scanning for projects...
+Downloading from central: https://repo.maven.apache.org/maven2/org/jooq/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/io/github/git-commit-id/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/springframework/boot/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/flywaydb/maven-metadata.xml
+Progress (1): 234 BProgress (2): 234 B | 255 BProgress (3): 234 B | 255 B | 398 B                                   Downloaded from central: https://repo.maven.apache.org/maven2/io/github/git-commit-id/maven-metadata.xml (255 B at 590 B/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/jooq/maven-metadata.xml (398 B at 914 B/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/flywaydb/maven-metadata.xml (234 B at 537 B/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/liquibase/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/graalvm/buildtools/maven-metadata.xml
+Progress (1): 394 BProgress (2): 394 B | 375 BProgress (3): 394 B | 375 B | 242 B                                   Downloaded from central: https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/maven-metadata.xml (375 B at 10 kB/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/graalvm/buildtools/maven-metadata.xml (242 B at 6.5 kB/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/liquibase/maven-metadata.xml (394 B at 11 kB/s)
+Downloading from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml
+Downloading from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml
+Progress (1): 3.7 kBProgress (2): 3.7 kB | 4.6 kBProgress (2): 7.5 kB | 4.6 kBProgress (2): 7.5 kB | 9.7 kBProgress (2): 13 kB | 9.7 kB Progress (2): 13 kB | 14 kB Progress (2): 19 kB | 14 kBProgress (2): 20 kB | 14 kB                           Downloaded from central: https://repo.maven.apache.org/maven2/org/apache/maven/plugins/maven-metadata.xml (14 kB at 397 kB/s)
+Downloaded from central: https://repo.maven.apache.org/maven2/org/codehaus/mojo/maven-metadata.xml (20 kB at 548 kB/s)
+Progress (1): 249 B                   Downloaded from central: https://repo.maven.apache.org/maven2/org/springframework/boot/maven-metadata.xml (249 B at 478 B/s)
+[INFO] 
+[INFO] -------------------< com.electoral:conteo-electoral >-------------------
+[INFO] Building ConteoElectoral 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.2.1:run (default-cli) > test-compile @ conteo-electoral >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ conteo-electoral ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 10 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ conteo-electoral ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ conteo-electoral ---
+[INFO] Copying 1 resource from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ conteo-electoral ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 6 source files with javac [debug release 17] to target\test-classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] 
+[INFO] <<< spring-boot:3.2.1:run (default-cli) < test-compile @ conteo-electoral <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.2.1:run (default-cli) @ conteo-electoral ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.1)
+
+2026-07-28T10:26:38.694-05:00  INFO 51688 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : Starting ConteoElectoralApplication using Java 21.0.10 with PID 51688 (C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\target\classes started by Alexi in C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend)
+2026-07-28T10:26:38.696-05:00 DEBUG 51688 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : Running with Spring Boot v3.2.1, Spring v6.1.2
+2026-07-28T10:26:38.696-05:00  INFO 51688 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : No active profile set, falling back to 1 default profile: "default"
+2026-07-28T10:26:39.271-05:00  INFO 51688 --- [conteo-electoral] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-28T10:26:39.348-05:00  INFO 51688 --- [conteo-electoral] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 69 ms. Found 34 JPA repository interfaces.
+2026-07-28T10:26:39.828-05:00  INFO 51688 --- [conteo-electoral] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8081 (http)
+2026-07-28T10:26:39.836-05:00  INFO 51688 --- [conteo-electoral] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-07-28T10:26:39.837-05:00  INFO 51688 --- [conteo-electoral] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.17]
+2026-07-28T10:26:39.882-05:00  INFO 51688 --- [conteo-electoral] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-07-28T10:26:39.884-05:00  INFO 51688 --- [conteo-electoral] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1161 ms
+2026-07-28T10:26:39.958-05:00  INFO 51688 --- [conteo-electoral] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-07-28T10:26:40.178-05:00  INFO 51688 --- [conteo-electoral] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@be6d228
+2026-07-28T10:26:40.178-05:00  INFO 51688 --- [conteo-electoral] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-07-28T10:26:40.225-05:00  INFO 51688 --- [conteo-electoral] [           main] o.f.c.internal.license.VersionPrinter    : Flyway Community Edition 9.22.3 by Redgate
+2026-07-28T10:26:40.226-05:00  INFO 51688 --- [conteo-electoral] [           main] o.f.c.internal.license.VersionPrinter    : See release notes here: https://rd.gt/416ObMi
+2026-07-28T10:26:40.226-05:00  INFO 51688 --- [conteo-electoral] [           main] o.f.c.internal.license.VersionPrinter    : 
+2026-07-28T10:26:40.239-05:00  INFO 51688 --- [conteo-electoral] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://192.168.100.215:5432/conteo_electoral (PostgreSQL 16.14)
+2026-07-28T10:26:40.257-05:00  WARN 51688 --- [conteo-electoral] [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: PostgreSQL 16.14 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 15.
+2026-07-28T10:26:40.302-05:00  INFO 51688 --- [conteo-electoral] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 10 migrations (execution time 00:00.028s)
+2026-07-28T10:26:40.336-05:00  INFO 51688 --- [conteo-electoral] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 1.7.0
+2026-07-28T10:26:40.338-05:00  INFO 51688 --- [conteo-electoral] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-07-28T10:26:40.399-05:00  INFO 51688 --- [conteo-electoral] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-07-28T10:26:40.430-05:00  INFO 51688 --- [conteo-electoral] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.1.Final
+2026-07-28T10:26:40.452-05:00  INFO 51688 --- [conteo-electoral] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-07-28T10:26:40.584-05:00  INFO 51688 --- [conteo-electoral] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-28T10:26:41.523-05:00  INFO 51688 --- [conteo-electoral] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-28T10:26:42.022-05:00  INFO 51688 --- [conteo-electoral] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-07-28T10:26:42.197-05:00  INFO 51688 --- [conteo-electoral] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-07-28T10:26:42.432-05:00 DEBUG 51688 --- [conteo-electoral] [           main] c.e.security.JwtAuthenticationFilter     : Filter 'jwtAuthenticationFilter' configured for use
+2026-07-28T10:26:44.118-05:00  INFO 51688 --- [conteo-electoral] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@538a1adf, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@691396a0, org.springframework.security.web.context.SecurityContextHolderFilter@2ffa8ce5, org.springframework.security.web.header.HeaderWriterFilter@32f3174d, org.springframework.web.filter.CorsFilter@35390561, org.springframework.security.web.authentication.logout.LogoutFilter@422ff506, com.electoral.security.JwtAuthenticationFilter@7180b25f, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@30749de8, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@6902e2bf, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@36db5318, org.springframework.security.web.session.SessionManagementFilter@3d59a887, org.springframework.security.web.access.ExceptionTranslationFilter@4c05993e, org.springframework.security.web.access.intercept.AuthorizationFilter@69f6b00b]
+2026-07-28T10:26:44.401-05:00  INFO 51688 --- [conteo-electoral] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8081 (http) with context path ''
+2026-07-28T10:26:44.406-05:00  INFO 51688 --- [conteo-electoral] [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
+2026-07-28T10:26:44.408-05:00  INFO 51688 --- [conteo-electoral] [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@2f815a12]]
+2026-07-28T10:26:44.408-05:00  INFO 51688 --- [conteo-electoral] [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
+2026-07-28T10:26:44.415-05:00  INFO 51688 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : Started ConteoElectoralApplication in 5.966 seconds (process running for 6.188)
+2026-07-28T10:26:44.418-05:00  INFO 51688 --- [conteo-electoral] [           main] com.electoral.DataInitializer            : === INICIANDO DATAINITIALIZER ===
+2026-07-28T10:26:44.636-05:00  INFO 51688 --- [conteo-electoral] [           main] com.electoral.DataInitializer            : Password de admin reseteado a: admin123
+2026-07-28T10:26:44.645-05:00  INFO 51688 --- [conteo-electoral] [           main] com.electoral.DataInitializer            : === DATAINITIALIZER COMPLETADO ===
+2026-07-28T10:26:49.044-05:00  INFO 51688 --- [conteo-electoral] [nio-8081-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-07-28T10:26:49.046-05:00  INFO 51688 --- [conteo-electoral] [nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-07-28T10:26:49.048-05:00  INFO 51688 --- [conteo-electoral] [nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-07-28T10:26:49.062-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /ws/info?t=1785252409008
+2026-07-28T10:26:49.062-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /ws/info?t=1785252409008
+2026-07-28T10:26:49.074-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-07-28T10:26:49.074-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-07-28T10:26:49.076-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /ws/info?t=1785252409008
+2026-07-28T10:26:49.076-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /ws/info?t=1785252409008
+2026-07-28T10:26:49.091-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /ws/096/cuiw32f1/websocket
+2026-07-28T10:26:49.091-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-07-28T10:26:49.092-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /ws/096/cuiw32f1/websocket
+2026-07-28T10:26:49.094-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /ws/729/fkzburvu/websocket
+2026-07-28T10:26:49.095-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-07-28T10:26:49.096-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /ws/729/fkzburvu/websocket
+2026-07-28T10:27:25.012-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/dashboard/eleccion/1
+2026-07-28T10:27:25.093-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/dashboard/eleccion/1
+2026-07-28T10:27:44.394-05:00  INFO 51688 --- [conteo-electoral] [MessageBroker-4] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[2 current WS(2)-HttpStream(0)-HttpPoll(0), 2 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(2)-CONNECTED(2)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 6, active threads = 0, queued tasks = 0, completed tasks = 6], outboundChannel[pool size = 2, active threads = 0, queued tasks = 0, completed tasks = 2], sockJsScheduler[pool size = 22, active threads = 1, queued tasks = 3, completed tasks = 16]
+2026-07-28T10:28:11.282-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/auth/me
+2026-07-28T10:28:11.295-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/auth/me
+2026-07-28T10:28:11.370-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/elecciones
+2026-07-28T10:28:11.383-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/elecciones
+2026-07-28T10:28:11.417-05:00 DEBUG 51688 --- [conteo-electoral] [io-8081-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/partidos/eleccion/1
+2026-07-28T10:28:11.426-05:00 DEBUG 51688 --- [conteo-electoral] [io-8081-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/partidos/eleccion/1
+2026-07-28T10:28:25.007-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/dashboard/eleccion/1
+2026-07-28T10:28:25.015-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/dashboard/eleccion/1
+2026-07-28T10:28:41.034-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-1] o.s.security.web.FilterChainProxy        : Securing POST /api/partidos
+2026-07-28T10:28:41.046-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-1] o.s.security.web.FilterChainProxy        : Secured POST /api/partidos
+2026-07-28T10:28:41.077-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-1] horizationManagerBeforeMethodInterceptor : Authorizing method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.electoral.controllers.PartidoController.createPartido(com.electoral.dto.PartidoRequest); target is of class [com.electoral.controllers.PartidoController]
+2026-07-28T10:28:41.083-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-1] horizationManagerBeforeMethodInterceptor : Authorized method invocation ReflectiveMethodInvocation: public org.springframework.http.ResponseEntity com.electoral.controllers.PartidoController.createPartido(com.electoral.dto.PartidoRequest); target is of class [com.electoral.controllers.PartidoController]
+2026-07-28T10:28:41.091-05:00  INFO 51688 --- [conteo-electoral] [nio-8081-exec-1] com.electoral.services.PartidoService    : Creando Partido: MOVIMIENTO PROVINCIAL "LIDERA CARCHI"
+2026-07-28T10:28:41.102-05:00 ERROR 51688 --- [conteo-electoral] [nio-8081-exec-1] c.e.exception.GlobalExceptionHandler     : Error interno del servidor: null
+
+java.lang.NullPointerException: null
+	at java.base/java.util.Objects.requireNonNull(Objects.java:233) ~[na:na]
+	at java.base/java.util.ImmutableCollections$MapN.<init>(ImmutableCollections.java:1193) ~[na:na]
+	at java.base/java.util.Map.of(Map.java:1407) ~[na:na]
+	at com.electoral.services.PartidoService.createPartido(PartidoService.java:60) ~[classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:352) ~[spring-aop-6.1.2.jar:6.1.2]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196) ~[spring-aop-6.1.2.jar:6.1.2]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163) ~[spring-aop-6.1.2.jar:6.1.2]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765) ~[spring-aop-6.1.2.jar:6.1.2]
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123) ~[spring-tx-6.1.2.jar:6.1.2]
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:385) ~[spring-tx-6.1.2.jar:6.1.2]
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119) ~[spring-tx-6.1.2.jar:6.1.2]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.1.2.jar:6.1.2]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765) ~[spring-aop-6.1.2.jar:6.1.2]
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:717) ~[spring-aop-6.1.2.jar:6.1.2]
+	at com.electoral.services.PartidoService$$SpringCGLIB$$0.createPartido(<generated>) ~[classes/:na]
+	at com.electoral.controllers.PartidoController.createPartido(PartidoController.java:36) ~[classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:352) ~[spring-aop-6.1.2.jar:6.1.2]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196) ~[spring-aop-6.1.2.jar:6.1.2]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163) ~[spring-aop-6.1.2.jar:6.1.2]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765) ~[spring-aop-6.1.2.jar:6.1.2]
+	at org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor.invoke(AuthorizationManagerBeforeMethodInterceptor.java:198) ~[spring-security-core-6.2.1.jar:6.2.1]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.1.2.jar:6.1.2]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765) ~[spring-aop-6.1.2.jar:6.1.2]
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:717) ~[spring-aop-6.1.2.jar:6.1.2]
+	at com.electoral.controllers.PartidoController$$SpringCGLIB$$0.createPartido(<generated>) ~[classes/:na]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580) ~[na:na]
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:262) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:190) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:118) ~[spring-webmvc-6.1.2.jar:6.1.2]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:917) ~[spring-webmvc-6.1.2.jar:6.1.2]
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:829) ~[spring-webmvc-6.1.2.jar:6.1.2]
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:87) ~[spring-webmvc-6.1.2.jar:6.1.2]
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:1089) ~[spring-webmvc-6.1.2.jar:6.1.2]
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:979) ~[spring-webmvc-6.1.2.jar:6.1.2]
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014) ~[spring-webmvc-6.1.2.jar:6.1.2]
+	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:914) ~[spring-webmvc-6.1.2.jar:6.1.2]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:590) ~[tomcat-embed-core-10.1.17.jar:6.0]
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:885) ~[spring-webmvc-6.1.2.jar:6.1.2]
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:658) ~[tomcat-embed-core-10.1.17.jar:6.0]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:205) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:51) ~[tomcat-embed-websocket-10.1.17.jar:10.1.17]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:231) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:365) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:100) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:131) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:85) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:179) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at com.electoral.security.JwtAuthenticationFilter.doFilterInternal(JwtAuthenticationFilter.java:65) ~[classes/:na]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:107) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:93) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.web.filter.CorsFilter.doFilterInternal(CorsFilter.java:91) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:374) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:233) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:191) ~[spring-security-web-6.2.1.jar:6.2.1]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.web.servlet.handler.HandlerMappingIntrospector.lambda$createCacheFilter$3(HandlerMappingIntrospector.java:195) ~[spring-webmvc-6.1.2.jar:6.1.2]
+	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.security.config.annotation.web.configuration.WebMvcSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebMvcSecurityConfiguration.java:225) ~[spring-security-config-6.2.1.jar:6.2.1]
+	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:352) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:268) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) ~[spring-web-6.1.2.jar:6.1.2]
+	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:340) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:391) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1744) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61) ~[tomcat-embed-core-10.1.17.jar:10.1.17]
+	at java.base/java.lang.Thread.run(Thread.java:1583) ~[na:na]
+
+2026-07-28T10:29:24.999-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/dashboard/eleccion/1
+2026-07-28T10:29:25.009-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/dashboard/eleccion/1
+2026-07-28T10:30:24.998-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/dashboard/eleccion/1
+2026-07-28T10:30:25.006-05:00 DEBUG 51688 --- [conteo-electoral] [nio-8081-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/dashboard/eleccion/1
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  04:08 min
+[INFO] Finished at: 2026-07-28T10:30:42-05:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.2.1:run (default-cli) on project conteo-electoral: Process terminated with exit code: -1 -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
