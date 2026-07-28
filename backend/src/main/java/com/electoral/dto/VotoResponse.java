@@ -20,4 +20,5 @@ public class VotoResponse {
     private Integer cantidadVotos;
     private Long eleccionesId;
     private Long listaId;
+    private String fechaRegistro;
 }

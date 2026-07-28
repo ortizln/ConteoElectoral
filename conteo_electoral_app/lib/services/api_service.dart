@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
-import 'dart:convert';
 import '../models/models.dart';
 
 class ApiService {
@@ -34,8 +33,9 @@ class ApiService {
 
   Future<LoginResponse?> login(String username, String password) async {
     try {
+      final uri = Uri.parse('$baseUrl/auth/login');
       final response = await http.post(
-        Uri.parse('$baseUrl/auth/login'),
+        uri,
         headers: _headers(),
         body: jsonEncode({
           'username': username,
@@ -47,8 +47,10 @@ class ApiService {
         final data = jsonDecode(response.body);
         return LoginResponse.fromJson(data);
       }
+      print('Login failed: ${response.statusCode} ${response.body}');
       return null;
     } catch (e) {
+      print('Login error: $e');
       return null;
     }
   }

@@ -197,20 +197,27 @@ class AppProvider extends ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    final response = await _api.login(username, password);
-    
-    if (response != null) {
-      _usuario = response.toUsuario();
-      await _db.guardarSession(_usuario!, response.token);
+    try {
+      final response = await _api.login(username, password);
+      
+      if (response != null) {
+        _usuario = response.toUsuario();
+        await _db.guardarSession(_usuario!, response.token);
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      }
+      
       _isLoading = false;
+      _error = 'Credenciales inválidas. Verifique usuario y contraseña.';
       notifyListeners();
-      return true;
+      return false;
+    } catch (e) {
+      _isLoading = false;
+      _error = 'Error de conexión: $e';
+      notifyListeners();
+      return false;
     }
-    
-    _isLoading = false;
-    _error = 'Credenciales inválidas';
-    notifyListeners();
-    return false;
   }
 
   Future<void> logout() async {
@@ -224,8 +231,8 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> descargarDatos() async {
-    if (_usuario == null) return;
+  Future<bool> descargarDatos() async {
+    if (_usuario == null) return false;
     
     _isLoading = true;
     _error = null;
@@ -233,47 +240,60 @@ class AppProvider extends ChangeNotifier {
 
     try {
       final token = await _db.getToken();
+      if (token == null) {
+        _isLoading = false;
+        _error = 'Sesión no encontrada. Inicie sesión nuevamente.';
+        notifyListeners();
+        return false;
+      }
       
       final elecciones = await _api.getEleccionesActivas(token: token);
-      if (elecciones.isNotEmpty) {
-        await _db.guardarElecciones(elecciones);
-        _eleccionActual = elecciones.first;
-        _stomp.connect(_serverUrl.replaceAll('/api', ''), eleccionId: _eleccionActual!.id);
-        
-        final partidos = await _api.getPartidosByEleccion(_eleccionActual!.id, token: token);
-        await _db.guardarPartidos(partidos);
-        
-        final cargos = await _api.getCargosByEleccion(_eleccionActual!.id, token: token);
-        await _db.guardarCargos(cargos);
-        
-        final candidatos = await _api.getCandidatosByEleccion(_eleccionActual!.id, token: token);
-        await _db.guardarCandidatos(candidatos);
-        
-        final recintos = await _api.getRecintosByEleccion(_eleccionActual!.id, token: token);
-        await _db.guardarRecintos(recintos);
-        
-        final mesas = await _api.getMesasByCurrentUser(_eleccionActual!.id, token: token);
-        await _db.guardarMesas(mesas);
-
-        for (var mesa in mesas) {
-          await _db.limpiarVotosSincronizadosByMesa(mesa.id);
-          final votosServer = await _api.getVotosByMesa(mesa.id, token: token);
-          if (votosServer.isNotEmpty) {
-            await _db.guardarVotosSincronizados(votosServer);
-          }
-        }
-        
-        _partidos = partidos;
-        _cargos = cargos;
-        _candidatos = candidatos;
+      if (elecciones.isEmpty) {
+        _isLoading = false;
+        _error = 'No hay elecciones activas disponibles.';
+        notifyListeners();
+        return false;
       }
+      
+      await _db.guardarElecciones(elecciones);
+      _eleccionActual = elecciones.first;
+      _stomp.connect(_serverUrl.replaceAll('/api', ''), eleccionId: _eleccionActual!.id);
+      
+      final partidos = await _api.getPartidosByEleccion(_eleccionActual!.id, token: token);
+      await _db.guardarPartidos(partidos);
+      
+      final cargos = await _api.getCargosByEleccion(_eleccionActual!.id, token: token);
+      await _db.guardarCargos(cargos);
+      
+      final candidatos = await _api.getCandidatosByEleccion(_eleccionActual!.id, token: token);
+      await _db.guardarCandidatos(candidatos);
+      
+      final recintos = await _api.getRecintosByEleccion(_eleccionActual!.id, token: token);
+      await _db.guardarRecintos(recintos);
+      
+      final mesas = await _api.getMesasByCurrentUser(_eleccionActual!.id, token: token);
+      await _db.guardarMesas(mesas);
+
+      for (var mesa in mesas) {
+        await _db.limpiarVotosSincronizadosByMesa(mesa.id);
+        final votosServer = await _api.getVotosByMesa(mesa.id, token: token);
+        if (votosServer.isNotEmpty) {
+          await _db.guardarVotosSincronizados(votosServer);
+        }
+      }
+      
+      _partidos = partidos;
+      _cargos = cargos;
+      _candidatos = candidatos;
       
       _isLoading = false;
       notifyListeners();
+      return true;
     } catch (e) {
       _isLoading = false;
       _error = 'Error al descargar datos: $e';
       notifyListeners();
+      return false;
     }
   }
 

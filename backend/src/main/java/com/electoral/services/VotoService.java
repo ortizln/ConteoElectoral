@@ -421,7 +421,8 @@ public class VotoService {
                 .mesaNumero(voto.getMesa().getNumero())
                 .cantidadVotos(voto.getCantidadVotos())
                 .eleccionesId(voto.getElecciones().getId())
-                .listaId(voto.getListaId());
+                .listaId(voto.getListaId())
+                .fechaRegistro(voto.getCreatedAt() != null ? voto.getCreatedAt().toString() : null);
         if (voto.getCandidato() != null) {
             builder.candidatoId(voto.getCandidato().getId())
                     .candidatoNombre(voto.getCandidato().getNombre())

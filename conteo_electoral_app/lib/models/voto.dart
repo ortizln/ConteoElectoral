@@ -45,6 +45,7 @@ class Voto {
       'eleccionesId': eleccionesId,
       if (opcionPapeletaId != null) 'opcionPapeletaId': opcionPapeletaId,
       if (listaId != null) 'listaId': listaId,
+      'fechaRegistro': fechaRegistro.toIso8601String(),
     };
   }
 

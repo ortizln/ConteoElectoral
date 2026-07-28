@@ -122,7 +122,7 @@ class DatabaseHelper {
         opcionPapeletaId INTEGER,
         listaId INTEGER,
         sincronizado INTEGER NOT NULL DEFAULT 0,
-        fechaRegistro TEXT NOT NULL
+        fechaRegistro TEXT NOT NULL DEFAULT ''
       )
     ''');
 
@@ -246,10 +246,14 @@ class DatabaseHelper {
           opcionPapeletaId INTEGER,
           listaId INTEGER,
           sincronizado INTEGER NOT NULL DEFAULT 0,
-          fechaRegistro TEXT NOT NULL
+          fechaRegistro TEXT NOT NULL DEFAULT ''
         )
       ''');
-      await db.execute('INSERT INTO votos_new SELECT * FROM votos');
+      await db.execute('''
+        INSERT INTO votos_new (id, candidatoId, mesaId, cantidadVotos, eleccionesId, opcionPapeletaId, listaId, sincronizado, fechaRegistro)
+        SELECT id, candidatoId, mesaId, cantidadVotos, eleccionesId, opcionPapeletaId, listaId, sincronizado, COALESCE(fechaRegistro, '')
+        FROM votos
+      ''');
       await db.execute('DROP TABLE votos');
       await db.execute('ALTER TABLE votos_new RENAME TO votos');
     }

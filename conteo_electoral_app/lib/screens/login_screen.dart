@@ -46,14 +46,16 @@ class _LoginScreenState extends State<LoginScreen>
     final provider = context.read<AppProvider>();
     final success = await provider.login(
         _usernameController.text, _passwordController.text);
-    if (success && mounted) {
-      await provider.descargarDatos();
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-      }
+    if (!success || !mounted) return;
+
+    final dataOk = await provider.descargarDatos();
+    if (!dataOk) return;
+
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
     }
   }
 
@@ -234,12 +236,19 @@ class _LoginScreenState extends State<LoginScreen>
                             Consumer<AppProvider>(
                               builder: (context, provider, _) {
                                 if (provider.error != null) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
+                                  return Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(10),
+                                    margin: const EdgeInsets.only(bottom: 8),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.error.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
                                     child: Text(provider.error!,
                                         style: const TextStyle(
                                             color: AppColors.error,
-                                            fontSize: 13),
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w500),
                                         textAlign: TextAlign.center),
                                   );
                                 }

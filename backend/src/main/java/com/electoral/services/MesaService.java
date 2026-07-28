@@ -92,6 +92,7 @@ public class MesaService {
                         .mesaNumero(v.getMesa().getNumero())
                         .cantidadVotos(v.getCantidadVotos())
                         .eleccionesId(v.getElecciones().getId())
+                        .fechaRegistro(v.getCreatedAt() != null ? v.getCreatedAt().toString() : null)
                         .build())
                 .collect(Collectors.toList());
 
