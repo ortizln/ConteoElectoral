@@ -1,4 +1,4 @@
-<div class="dashboard-container">
+<div class="dashboard-container container-fluid">
   <div class="dashboard-header">
     <div class="header-left">
       <h1><span class="header-icon">📊</span> Dashboard Electoral</h1>
@@ -28,7 +28,8 @@
       </div>
       <div class="card-buttons">
         <button class="btn btn-clean" (click)="limpiarFiltros()">Limpiar</button>
-        <button class="btn-card-action" (click)="filtrosMinimized = !filtrosMinimized" [title]="filtrosMinimized ? 'Expandir' : 'Minimizar'">
+        <button class="btn-card-action" (click)="filtrosMinimized = !filtrosMinimized"
+          [title]="filtrosMinimized ? 'Expandir' : 'Minimizar'">
           <i [class]="filtrosMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i>
         </button>
       </div>
@@ -43,28 +44,32 @@
       </div>
       <div class="filtro-group">
         <label>Provincia</label>
-        <select class="form-select" [(ngModel)]="filtroProvinciaId" (change)="onProvinciaChange()" [disabled]="!filtroZonaId">
+        <select class="form-select" [(ngModel)]="filtroProvinciaId" (change)="onProvinciaChange()"
+          [disabled]="!filtroZonaId">
           <option [ngValue]="null">Todas</option>
           <option *ngFor="let p of provincias" [value]="p.id">{{ p.nombre }}</option>
         </select>
       </div>
       <div class="filtro-group">
         <label>Cantón</label>
-        <select class="form-select" [(ngModel)]="filtroCantonId" (change)="onCantonChange()" [disabled]="!filtroProvinciaId">
+        <select class="form-select" [(ngModel)]="filtroCantonId" (change)="onCantonChange()"
+          [disabled]="!filtroProvinciaId">
           <option [ngValue]="null">Todos</option>
           <option *ngFor="let c of cantones" [value]="c.id">{{ c.nombre }}</option>
         </select>
       </div>
       <div class="filtro-group">
         <label>Parroquia</label>
-        <select class="form-select" [(ngModel)]="filtroParroquiaId" (change)="onParroquiaChange()" [disabled]="!filtroCantonId">
+        <select class="form-select" [(ngModel)]="filtroParroquiaId" (change)="onParroquiaChange()"
+          [disabled]="!filtroCantonId">
           <option [ngValue]="null">Todas</option>
           <option *ngFor="let p of parroquias" [value]="p.id">{{ p.nombre }}</option>
         </select>
       </div>
       <div class="filtro-group">
         <label>Institución</label>
-        <select class="form-select" [(ngModel)]="filtroInstitucionId" (change)="onInstitucionChange()" [disabled]="!filtroParroquiaId">
+        <select class="form-select" [(ngModel)]="filtroInstitucionId" (change)="onInstitucionChange()"
+          [disabled]="!filtroParroquiaId">
           <option [ngValue]="null">Todas</option>
           <option *ngFor="let i of instituciones" [value]="i.id">{{ i.nombre }}</option>
         </select>
@@ -122,7 +127,8 @@
         <span class="stat-value">{{ dashboard.totalMesas }}</span>
       </div>
     </div>
-    <div class="stat-card stat-cerradas" style="cursor:pointer;" (click)="verMesasCerradas()" title="Ver detalle de mesas cerradas">
+    <div class="stat-card stat-cerradas" style="cursor:pointer;" (click)="verMesasCerradas()"
+      title="Ver detalle de mesas cerradas">
       <div class="stat-icon">🔒</div>
       <div class="stat-info">
         <span class="stat-label">Mesas Cerradas</span>
@@ -145,24 +151,32 @@
   </div>
 
   <div class="charts-grid" [class.fullscreen-mode]="barChartFullscreen || pieChartFullscreen">
-    <div class="chart-card" [class.minimized]="barChartMinimized" [class.fullscreen]="barChartFullscreen" [class.dimmed]="pieChartFullscreen || resultadosFullscreen">
+    <div class="chart-card" [class.minimized]="barChartMinimized" [class.fullscreen]="barChartFullscreen"
+      [class.dimmed]="pieChartFullscreen || resultadosFullscreen">
       <div class="card-header-actions">
         <h3>📊 Votos por Candidato</h3>
         <div class="card-buttons">
-          <button class="btn-card-action" (click)="toggleMinimize('barChart')" [title]="barChartMinimized ? 'Expandir' : 'Minimizar'"><i [class]="barChartMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i></button>
-          <button class="btn-card-action" (click)="toggleFullscreen('barChart')" title="Pantalla completa"><i [class]="barChartFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-angle-expand'"></i></button>
+          <button class="btn-card-action" (click)="toggleMinimize('barChart')"
+            [title]="barChartMinimized ? 'Expandir' : 'Minimizar'"><i
+              [class]="barChartMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i></button>
+          <button class="btn-card-action" (click)="toggleFullscreen('barChart')" title="Pantalla completa"><i
+              [class]="barChartFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-angle-expand'"></i></button>
         </div>
       </div>
       <div class="card-body" [class.hidden]="barChartMinimized">
         <canvas #barChart></canvas>
       </div>
     </div>
-    <div class="chart-card" [class.minimized]="pieChartMinimized" [class.fullscreen]="pieChartFullscreen" [class.dimmed]="barChartFullscreen || resultadosFullscreen">
+    <div class="chart-card" [class.minimized]="pieChartMinimized" [class.fullscreen]="pieChartFullscreen"
+      [class.dimmed]="barChartFullscreen || resultadosFullscreen">
       <div class="card-header-actions">
         <h3>🥧 Distribución de Votos</h3>
         <div class="card-buttons">
-          <button class="btn-card-action" (click)="toggleMinimize('pieChart')" [title]="pieChartMinimized ? 'Expandir' : 'Minimizar'"><i [class]="pieChartMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i></button>
-          <button class="btn-card-action" (click)="toggleFullscreen('pieChart')" title="Pantalla completa"><i [class]="pieChartFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-angle-expand'"></i></button>
+          <button class="btn-card-action" (click)="toggleMinimize('pieChart')"
+            [title]="pieChartMinimized ? 'Expandir' : 'Minimizar'"><i
+              [class]="pieChartMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i></button>
+          <button class="btn-card-action" (click)="toggleFullscreen('pieChart')" title="Pantalla completa"><i
+              [class]="pieChartFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-angle-expand'"></i></button>
         </div>
       </div>
       <div class="card-body" [class.hidden]="pieChartMinimized">
@@ -171,16 +185,20 @@
     </div>
   </div>
 
-  <div class="charts-grid" [class.fullscreen-mode]="barChartFullscreen || pieChartFullscreen || partyChartFullscreen || listChartFullscreen || resultadosFullscreen">
+  <div class="charts-grid"
+    [class.fullscreen-mode]="barChartFullscreen || pieChartFullscreen || partyChartFullscreen || listChartFullscreen || resultadosFullscreen">
 
-    <div class="chart-card" *ngIf="resultadosPorPartido.length > 0"
-         [class.minimized]="partyChartMinimized" [class.fullscreen]="partyChartFullscreen"
-         [class.dimmed]="barChartFullscreen || pieChartFullscreen || listChartFullscreen || resultadosFullscreen">
+    <div class="chart-card" *ngIf="resultadosPorPartido.length > 0" [class.minimized]="partyChartMinimized"
+      [class.fullscreen]="partyChartFullscreen"
+      [class.dimmed]="barChartFullscreen || pieChartFullscreen || listChartFullscreen || resultadosFullscreen">
       <div class="card-header-actions">
         <h3>🏛️ Resultados por Partido</h3>
         <div class="card-buttons">
-          <button class="btn-card-action" (click)="toggleMinimize('partyChart')" [title]="partyChartMinimized ? 'Expandir' : 'Minimizar'"><i [class]="partyChartMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i></button>
-          <button class="btn-card-action" (click)="toggleFullscreen('partyChart')" title="Pantalla completa"><i [class]="partyChartFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-angle-expand'"></i></button>
+          <button class="btn-card-action" (click)="toggleMinimize('partyChart')"
+            [title]="partyChartMinimized ? 'Expandir' : 'Minimizar'"><i
+              [class]="partyChartMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i></button>
+          <button class="btn-card-action" (click)="toggleFullscreen('partyChart')" title="Pantalla completa"><i
+              [class]="partyChartFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-angle-expand'"></i></button>
         </div>
       </div>
       <div class="card-body" [class.hidden]="partyChartMinimized">
@@ -192,21 +210,26 @@
                 <span class="progress-label">{{ p.partido }}</span>
                 <span class="progress-value">{{ p.votos | number }} ({{ p.porcentaje | number:'1.1-1' }}%)</span>
               </div>
-              <div class="stat-bar"><div class="stat-bar-fill" [style.width.%]="p.porcentaje"></div></div>
+              <div class="stat-bar">
+                <div class="stat-bar-fill" [style.width.%]="p.porcentaje"></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="chart-card" *ngIf="resultadosListasChart.length > 0"
-         [class.minimized]="listChartMinimized" [class.fullscreen]="listChartFullscreen"
-         [class.dimmed]="barChartFullscreen || pieChartFullscreen || partyChartFullscreen || resultadosFullscreen">
+    <div class="chart-card" *ngIf="resultadosListasChart.length > 0" [class.minimized]="listChartMinimized"
+      [class.fullscreen]="listChartFullscreen"
+      [class.dimmed]="barChartFullscreen || pieChartFullscreen || partyChartFullscreen || resultadosFullscreen">
       <div class="card-header-actions">
         <h3>📋 Resultados por Lista</h3>
         <div class="card-buttons">
-          <button class="btn-card-action" (click)="toggleMinimize('listChart')" [title]="listChartMinimized ? 'Expandir' : 'Minimizar'"><i [class]="listChartMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i></button>
-          <button class="btn-card-action" (click)="toggleFullscreen('listChart')" title="Pantalla completa"><i [class]="listChartFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-angle-expand'"></i></button>
+          <button class="btn-card-action" (click)="toggleMinimize('listChart')"
+            [title]="listChartMinimized ? 'Expandir' : 'Minimizar'"><i
+              [class]="listChartMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i></button>
+          <button class="btn-card-action" (click)="toggleFullscreen('listChart')" title="Pantalla completa"><i
+              [class]="listChartFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-angle-expand'"></i></button>
         </div>
       </div>
       <div class="card-body" [class.hidden]="listChartMinimized">
@@ -215,10 +238,13 @@
           <div style="flex:1;min-width:220px;">
             <div *ngFor="let l of resultadosListasChart" class="progress-item">
               <div class="progress-header">
-                <span class="progress-label">{{ l.lista }} <small style="color:#94a3b8;">(N°{{ l.numero }})</small></span>
+                <span class="progress-label">{{ l.lista }} <small style="color:#94a3b8;">(N°{{ l.numero
+                    }})</small></span>
                 <span class="progress-value">{{ l.votos | number }} ({{ l.porcentaje | number:'1.1-1' }}%)</span>
               </div>
-              <div class="stat-bar"><div class="stat-bar-fill" [style.width.%]="l.porcentaje"></div></div>
+              <div class="stat-bar">
+                <div class="stat-bar-fill" [style.width.%]="l.porcentaje"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -227,13 +253,17 @@
 
   </div>
 
-  <div class="table-card" [class.minimized]="resultadosMinimized" [class.fullscreen]="resultadosFullscreen" [class.dimmed]="barChartFullscreen || pieChartFullscreen || partyChartFullscreen || listChartFullscreen">
+  <div class="table-card" [class.minimized]="resultadosMinimized" [class.fullscreen]="resultadosFullscreen"
+    [class.dimmed]="barChartFullscreen || pieChartFullscreen || partyChartFullscreen || listChartFullscreen">
     <div class="table-header">
       <h3>📋 Resultados</h3>
       <div class="card-buttons">
         <span class="table-count">{{ resultados.length }} candidatos</span>
-        <button class="btn-card-action" (click)="toggleMinimize('resultados')" [title]="resultadosMinimized ? 'Expandir' : 'Minimizar'"><i [class]="resultadosMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i></button>
-        <button class="btn-card-action" (click)="toggleFullscreen('resultados')" title="Pantalla completa"><i [class]="resultadosFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-angle-expand'"></i></button>
+        <button class="btn-card-action" (click)="toggleMinimize('resultados')"
+          [title]="resultadosMinimized ? 'Expandir' : 'Minimizar'"><i
+            [class]="resultadosMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i></button>
+        <button class="btn-card-action" (click)="toggleFullscreen('resultados')" title="Pantalla completa"><i
+            [class]="resultadosFullscreen ? 'bi bi-fullscreen-exit' : 'bi bi-arrows-angle-expand'"></i></button>
       </div>
     </div>
     <div class="table-wrapper" [class.hidden]="resultadosMinimized">
@@ -261,9 +291,8 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let r of resultadosOrdenados; let i = index"
-                [class]="getRowClass(r)"
-                (click)="r.candidatoId > 0 && verDetalleCandidato(r.candidatoId)">
+            <tr *ngFor="let r of resultadosOrdenados; let i = index" [class]="getRowClass(r)"
+              (click)="r.candidatoId > 0 && verDetalleCandidato(r.candidatoId)">
               <td>
                 <div class="candidato-info-cell">
                   <span class="candidato-rank" [class]="getRankClass(r)">{{ getRankLabel(r, i) }}</span>
@@ -315,14 +344,17 @@
         </table>
       </div>
 
-      <div *ngIf="resultados.length === 0 && (!showListaResults || resultadosListas.length === 0)" class="empty-msg text-center py-4">
+      <div *ngIf="resultados.length === 0 && (!showListaResults || resultadosListas.length === 0)"
+        class="empty-msg text-center py-4">
         No hay resultados disponibles
       </div>
     </div>
   </div>
 
   <!-- Fullscreen backdrop -->
-  <div class="fullscreen-backdrop" *ngIf="barChartFullscreen || pieChartFullscreen || partyChartFullscreen || listChartFullscreen || resultadosFullscreen" (click)="toggleFullscreen('none')"></div>
+  <div class="fullscreen-backdrop"
+    *ngIf="barChartFullscreen || pieChartFullscreen || partyChartFullscreen || listChartFullscreen || resultadosFullscreen"
+    (click)="toggleFullscreen('none')"></div>
 
   <!-- Modal backdrop -->
   <div class="modal-backdrop show" *ngIf="showDetalle"></div>
@@ -337,19 +369,22 @@
         </div>
         <div class="modal-body">
           <div *ngIf="detalleLoading" class="text-center py-4">
-            <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div>
+            <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span>
+            </div>
           </div>
           <div *ngIf="detalleCandidato && !detalleLoading">
             <div class="detalle-header">
               <div class="detalle-info">
                 <span><strong>Partido:</strong> {{ detalleCandidato.partidoNombre }}</span>
                 <span><strong>Cargo:</strong> {{ detalleCandidato.cargoNombre }}</span>
-                <span><strong>Total Votos:</strong> <span class="detalle-total">{{ detalleCandidato.totalVotos | number }}</span></span>
+                <span><strong>Total Votos:</strong> <span class="detalle-total">{{ detalleCandidato.totalVotos | number
+                    }}</span></span>
               </div>
             </div>
 
             <ul class="nav nav-tabs detalle-tabs" id="detalleTabs">
-              <li class="nav-item" *ngFor="let tab of geoDetalleTabs" (click)="geoDetalleTab = tab.key" [class.active]="geoDetalleTab === tab.key">
+              <li class="nav-item" *ngFor="let tab of geoDetalleTabs" (click)="geoDetalleTab = tab.key"
+                [class.active]="geoDetalleTab === tab.key">
                 <a class="nav-link" [class.active]="geoDetalleTab === tab.key">{{ tab.label }} ({{ tab.count }})</a>
               </li>
             </ul>
@@ -357,12 +392,26 @@
             <div class="detalle-tab-content" *ngIf="geoDetalleTab === 'mesas'">
               <div class="detalle-tabla-wrapper">
                 <table class="table table-striped">
-                  <thead><tr><th>#</th><th>Mesa</th><th>Institución</th><th>Parroquia</th><th class="text-right">Votos</th></tr></thead>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Mesa</th>
+                      <th>Institución</th>
+                      <th>Parroquia</th>
+                      <th class="text-right">Votos</th>
+                    </tr>
+                  </thead>
                   <tbody>
                     <tr *ngFor="let v of detalleCandidato.votosPorMesa; let i = index">
-                      <td>{{ i + 1 }}</td><td><strong>{{ v.mesaNumero }}</strong></td><td>{{ v.institucion }}</td><td>{{ v.parroquia }}</td><td class="text-right"><strong>{{ v.votos | number }}</strong></td>
+                      <td>{{ i + 1 }}</td>
+                      <td><strong>{{ v.mesaNumero }}</strong></td>
+                      <td>{{ v.institucion }}</td>
+                      <td>{{ v.parroquia }}</td>
+                      <td class="text-right"><strong>{{ v.votos | number }}</strong></td>
                     </tr>
-                    <tr *ngIf="detalleCandidato.votosPorMesa.length === 0"><td colspan="5" class="text-center py-3">Sin votos registrados</td></tr>
+                    <tr *ngIf="detalleCandidato.votosPorMesa.length === 0">
+                      <td colspan="5" class="text-center py-3">Sin votos registrados</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -402,7 +451,8 @@
         </div>
         <div class="modal-body">
           <div *ngIf="mesasCerradasLoading" class="text-center py-4">
-            <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div>
+            <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span>
+            </div>
           </div>
           <div *ngIf="!mesasCerradasLoading && mesasCerradasList.length === 0" class="text-center py-4 text-muted">
             No hay mesas cerradas
@@ -463,7 +513,7 @@
         <div class="modal-body">
           <p>Ingrese su contraseña para reabrir la mesa <strong>#{{ reabrirMesaSeleccionada?.numero }}</strong>:</p>
           <input type="password" class="form-control" [(ngModel)]="reabrirPassword" placeholder="Contraseña"
-                 (keyup.enter)="ejecutarReabrir()" autofocus>
+            (keyup.enter)="ejecutarReabrir()" autofocus>
           <div *ngIf="reabrirError" class="text-danger mt-2 small">{{ reabrirError }}</div>
         </div>
         <div class="modal-footer">

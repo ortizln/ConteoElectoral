@@ -20,9 +20,9 @@ class _VotacionScreenState extends State<VotacionScreen> {
   final _nulosCtrl = TextEditingController(text: '0');
   final _blancoCtrl = TextEditingController(text: '0');
   String _filtroPartido = '';
-  String _filtroCargo = '';
   String _busqueda = '';
   final String _ordenPor = 'cargo';
+  bool _mostrarListas = false;
 
   String? _circunscripcionParaCandidato(Candidato c, AppProvider provider) {
     if (c.cargoId == null) return null;
@@ -63,11 +63,17 @@ class _VotacionScreenState extends State<VotacionScreen> {
     if (_filtroPartido.isNotEmpty) {
       list = list.where((c) => c.partidoNombre == _filtroPartido).toList();
     }
-    if (_filtroCargo.isNotEmpty) {
-      list = list.where((c) => c.cargoNombre == _filtroCargo).toList();
-    }
 
     list = list.where((c) => c.activo != false).toList();
+    // Only show candidates for cargos that are NOT list-type in individual mode
+    list = list.where((c) {
+      if (c.cargoId == null) return true;
+      final cargo = provider.cargos.cast<Cargo?>().firstWhere(
+        (cg) => cg?.id == c.cargoId,
+        orElse: () => null,
+      );
+      return cargo?.tipoVotacion != 'LISTA';
+    }).toList();
 
     switch (_ordenPor) {
       case 'partido':
@@ -88,19 +94,20 @@ class _VotacionScreenState extends State<VotacionScreen> {
     return p.candidatos.map((c) => c.partidoNombre).toSet().toList()..sort();
   }
 
-  bool get _isListaCargo {
-    if (_filtroCargo.isEmpty) return false;
-    final provider = context.read<AppProvider>();
-    return provider.cargos.any(
-      (c) => c.nombre == _filtroCargo && c.tipoVotacion == 'LISTA',
-    );
-  }
-
   Map<int, List<Candidato>> get _agrupadosPorLista {
     final provider = context.read<AppProvider>();
     var filtered = provider.candidatos.where((c) => c.activo != false);
-    if (_filtroCargo.isNotEmpty) {
-      filtered = filtered.where((c) => c.cargoNombre == _filtroCargo);
+    // Only show candidates for list-type cargos in list mode
+    filtered = filtered.where((c) {
+      if (c.cargoId == null) return false;
+      final cargo = provider.cargos.cast<Cargo?>().firstWhere(
+        (cg) => cg?.id == c.cargoId,
+        orElse: () => null,
+      );
+      return cargo?.tipoVotacion == 'LISTA';
+    });
+    if (_filtroPartido.isNotEmpty) {
+      filtered = filtered.where((c) => c.partidoNombre == _filtroPartido);
     }
     if (_busqueda.isNotEmpty) {
       final q = _busqueda.toLowerCase();
@@ -332,17 +339,18 @@ class _VotacionScreenState extends State<VotacionScreen> {
                       onChanged: (v) => setState(() => _busqueda = v),
                     ),
                     const SizedBox(height: 8),
+                    // Individual / Lista mode selector
+                    _buildModoSelector(),
+                    const SizedBox(height: 6),
+                    // Party filter chips + view toggle
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
                           _filterChip('Todos', '',
-                              _filtroPartido.isEmpty && _filtroCargo.isEmpty,
+                              _filtroPartido.isEmpty,
                               () {
-                            setState(() {
-                              _filtroPartido = '';
-                              _filtroCargo = '';
-                            });
+                            setState(() => _filtroPartido = '');
                           }),
                           const SizedBox(width: 6),
                           ..._partidosUnicos.take(5).map((p) => Padding(
@@ -356,6 +364,9 @@ class _VotacionScreenState extends State<VotacionScreen> {
                                               _filtroPartido == p ? '' : p;
                                         })),
                               )),
+                          const SizedBox(width: 8),
+                          // View toggle
+                          _buildViewToggle(),
                         ],
                       ),
                     ),
@@ -528,7 +539,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () async => _sincronizar(),
-                  child: _isListaCargo
+                  child: _mostrarListas
                       ? (_agrupadosPorLista.isEmpty
                           ? const EmptyState(
                               icon: Icons.person_search_outlined,
@@ -1127,6 +1138,73 @@ class _VotacionScreenState extends State<VotacionScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildModoSelector() {
+    final provider = context.read<AppProvider>();
+    final hasListas = provider.cargos.any((c) => c.tipoVotacion == 'LISTA');
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _filterChip('Individual', 'individual', !_mostrarListas, () {
+            setState(() => _mostrarListas = false);
+          }),
+          if (hasListas) ...[
+            const SizedBox(width: 6),
+            _filterChip('Lista', 'lista', _mostrarListas, () {
+              setState(() => _mostrarListas = true);
+            }),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildViewToggle() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.muted,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: () => setState(() => _mostrarListas = false),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: !_mostrarListas ? AppColors.primary : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text('👤',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: !_mostrarListas ? Colors.white : AppColors.gray,
+                    fontWeight: FontWeight.w600,
+                  )),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => setState(() => _mostrarListas = true),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: _mostrarListas ? AppColors.primary : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text('📋',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: _mostrarListas ? Colors.white : AppColors.gray,
+                    fontWeight: FontWeight.w600,
+                  )),
+            ),
+          ),
+        ],
       ),
     );
   }

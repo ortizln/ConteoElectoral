@@ -4,6 +4,7 @@ import '../providers/app_provider.dart';
 import '../database/database_helper.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
+import '../models/models.dart';
 import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -14,6 +15,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  Future<List<Mesa>>? _mesasFuture;
+
   @override
   void initState() {
     super.initState();
@@ -32,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _descargarDatos() async {
     final provider = context.read<AppProvider>();
+    _mesasFuture = null;
     await provider.descargarDatos();
     if (provider.error != null && mounted) {
       ScaffoldMessenger.of(context)
@@ -148,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
               : RefreshIndicator(
                   onRefresh: _descargarDatos,
                   child: ListView(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 16),
                     children: [
                       // User card
                       Container(
@@ -211,21 +215,79 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Stats row
-                      Row(
-                        children: [
-                          Expanded(
-                            child: StatCard(
-                              label: 'Elección',
-                              value: provider.eleccionActual?.nombre ??
-                                  'Sin datos',
-                              icon: Icons.how_to_vote_outlined,
-                              color: AppColors.primary,
+                      // Eleccion title row
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Icon(Icons.how_to_vote_outlined,
+                                  color: AppColors.primary, size: 16),
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 10),
+                            Flexible(
+                              child: Text(
+                                provider.eleccionActual?.nombre ??
+                                    'Sin datos',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 10),
+
+                      // Nulos / Blanco stats row
+                      FutureBuilder<List<Mesa>>(
+                        future: _mesasFuture ??= DatabaseHelper.instance
+                            .getMesasByUsuario(provider.usuario!.id),
+                        builder: (context, snapshot) {
+                          final mesas = snapshot.data ?? <Mesa>[];
+                          int totalNulos = 0, totalBlanco = 0;
+                          for (final m in mesas) {
+                            totalNulos += m.votosNulos ?? 0;
+                            totalBlanco += m.votosBlanco ?? 0;
+                          }
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: _nulosBlancoTile(
+                                  'Nulos',
+                                  totalNulos,
+                                  Icons.cancel_outlined,
+                                  AppColors.error,
+                                  () => _showNulosBlancoDetalle(this.context, mesas, 'Nulos'),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: _nulosBlancoTile(
+                                  'Blanco',
+                                  totalBlanco,
+                                  Icons.check_circle_outline,
+                                  AppColors.gray,
+                                  () => _showNulosBlancoDetalle(this.context, mesas, 'Blanco'),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 10),
 
                       // Votar section
                       if (provider.eleccionActual != null)
@@ -368,6 +430,129 @@ class _HomeScreenState extends State<HomeScreen> {
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
         trailing: const Icon(Icons.chevron_right, color: AppColors.lightGray),
         onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _nulosBlancoTile(String label, int total, IconData icon, Color color, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, size: 16, color: color),
+              const SizedBox(width: 6),
+              Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text('$total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: color)),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.chevron_right, size: 14, color: AppColors.lightGray),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showNulosBlancoDetalle(BuildContext context, List<Mesa> mesas, String tipo) {
+    final color = tipo == 'Nulos' ? AppColors.error : AppColors.gray;
+    final icon = tipo == 'Nulos' ? Icons.cancel_outlined : Icons.check_circle_outline;
+    final conValor = mesas.where((m) {
+      final v = tipo == 'Nulos' ? m.votosNulos : m.votosBlanco;
+      return v != null && v > 0;
+    }).toList();
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: color, size: 20),
+                const SizedBox(width: 8),
+                Text('Votos $tipo por Mesa', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (conValor.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: const Center(child: Text('No hay votos registrados')),
+              )
+            else
+              ...conValor.map((m) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40, height: 40,
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(m.numero, style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 14)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Mesa ${m.numero}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                          if (m.institucionNombre != null)
+                            Text(m.institucionNombre!, style: const TextStyle(fontSize: 11, color: AppColors.gray)),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${tipo == 'Nulos' ? m.votosNulos : m.votosBlanco}',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: color),
+                      ),
+                    ),
+                  ],
+                ),
+              )),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cerrar'),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
