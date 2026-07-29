@@ -96,6 +96,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   reabrirError = '';
   reabrirCargando = false;
 
+  // Nulos/Blanco detail modal
+  showNulosBlancoDetalle = false;
+  nulosBlancoTipo: 'nulos' | 'blanco' = 'nulos';
+  nulosBlancoMesas: any[] = [];
+  nulosBlancoLoading = false;
+
   private barChart?: Chart;
   private pieChart?: Chart;
   private partyPieChart?: Chart;
@@ -785,6 +791,29 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.reabrirCargando = false;
       }
     });
+  }
+
+  verDetalleNulosBlanco(tipo: 'nulos' | 'blanco'): void {
+    if (!this.selectedEleccionId) return;
+    this.showNulosBlancoDetalle = true;
+    this.nulosBlancoTipo = tipo;
+    this.nulosBlancoLoading = true;
+    this.nulosBlancoMesas = [];
+    this.api.getMesasByEleccion(this.selectedEleccionId).subscribe({
+      next: (mesas) => {
+        this.nulosBlancoMesas = mesas.filter(m => {
+          const valor = tipo === 'nulos' ? m.votosNulos : m.votosBlanco;
+          return valor != null && valor > 0;
+        });
+        this.nulosBlancoLoading = false;
+      },
+      error: () => { this.nulosBlancoLoading = false; }
+    });
+  }
+
+  cerrarNulosBlancoDetalle(): void {
+    this.showNulosBlancoDetalle = false;
+    this.nulosBlancoMesas = [];
   }
 
   logout(): void {

@@ -80,7 +80,7 @@ public class SyncService {
                     Voto voto;
                     if (existing.isPresent()) {
                         voto = existing.get();
-                        voto.setCantidadVotos(voto.getCantidadVotos() + cantidad);
+                        voto.setCantidadVotos(cantidad);
                     } else {
                         Mesa mesa = mesaRepository.findById(mesaId)
                                 .orElseThrow(() -> new IllegalArgumentException("Mesa not found: " + mesaId));
@@ -113,7 +113,7 @@ public class SyncService {
                 Voto voto;
                 if (existing.isPresent()) {
                     voto = existing.get();
-                    voto.setCantidadVotos(voto.getCantidadVotos() + cantidad);
+                    voto.setCantidadVotos(cantidad);
                 } else {
                     Candidato candidato = candidatoRepository.findById(candidatoId)
                             .orElseThrow(() -> new IllegalArgumentException("Candidato not found: " + candidatoId));

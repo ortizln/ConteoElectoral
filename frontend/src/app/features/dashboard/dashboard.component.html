@@ -106,14 +106,14 @@
         <span class="stat-value">{{ dashboard.totalVotos | number }}</span>
       </div>
     </div>
-    <div class="stat-card stat-nulos">
+    <div class="stat-card stat-nulos" style="cursor:pointer;" (click)="verDetalleNulosBlanco('nulos')" title="Ver detalle por mesa">
       <div class="stat-icon">❌</div>
       <div class="stat-info">
         <span class="stat-label">Votos Nulos</span>
         <span class="stat-value">{{ dashboard.totalVotosNulos | number }}</span>
       </div>
     </div>
-    <div class="stat-card stat-blanco">
+    <div class="stat-card stat-blanco" style="cursor:pointer;" (click)="verDetalleNulosBlanco('blanco')" title="Ver detalle por mesa">
       <div class="stat-icon">⬜</div>
       <div class="stat-info">
         <span class="stat-label">Votos en Blanco</span>
@@ -521,6 +521,52 @@
           <button class="btn btn-warning" (click)="ejecutarReabrir()" [disabled]="reabrirCargando">
             {{ reabrirCargando ? '...' : 'Reabrir mesa' }}
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nulos / Blanco Detail Modal -->
+  <div class="modal-backdrop show" *ngIf="showNulosBlancoDetalle"></div>
+  <div class="modal show" *ngIf="showNulosBlancoDetalle" style="display:block;">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5>{{ nulosBlancoTipo === 'nulos' ? '❌' : '⬜' }} Votos {{ nulosBlancoTipo === 'nulos' ? 'Nulos' : 'en Blanco' }} por Mesa</h5>
+          <button type="button" class="btn-close" (click)="cerrarNulosBlancoDetalle()"></button>
+        </div>
+        <div class="modal-body">
+          <div *ngIf="nulosBlancoLoading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div>
+          </div>
+          <div *ngIf="!nulosBlancoLoading && nulosBlancoMesas.length === 0" class="text-center py-4 text-muted">
+            No hay votos {{ nulosBlancoTipo === 'nulos' ? 'nulos' : 'en blanco' }} registrados
+          </div>
+          <div *ngIf="!nulosBlancoLoading && nulosBlancoMesas.length > 0" class="detalle-tabla-wrapper">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Mesa</th>
+                  <th class="col-text-wrap">Institución</th>
+                  <th class="text-right">Votos {{ nulosBlancoTipo === 'nulos' ? 'Nulos' : 'Blanco' }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let m of nulosBlancoMesas; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td><strong>{{ m.numero }}</strong></td>
+                  <td class="col-text-wrap" [title]="m.institucionNombre">{{ m.institucionNombre }}</td>
+                  <td class="text-right">
+                    <strong>{{ nulosBlancoTipo === 'nulos' ? m.votosNulos : m.votosBlanco | number }}</strong>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="cerrarNulosBlancoDetalle()">Cerrar</button>
         </div>
       </div>
     </div>
