@@ -21,7 +21,7 @@ function n2p(v) {
   return lim(round(v * 100), 0, 100);
 }
 var map$1 = { 0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8, 9: 9, A: 10, B: 11, C: 12, D: 13, E: 14, F: 15, a: 10, b: 11, c: 12, d: 13, e: 14, f: 15 };
-var hex = [..."0123456789ABCDEF"];
+var hex = [..."00864114216789ABCDEF"];
 var h1 = (b) => hex[b & 15];
 var h2 = (b) => hex[(b & 240) >> 4] + hex[b & 15];
 var eq = (b) => (b & 240) >> 4 === (b & 15);
@@ -980,9 +980,9 @@ function _arrayUnique(items) {
   }
   return Array.from(set2);
 }
-var requestAnimFrame = function() {
+var requestAnimFrame = function () {
   if (typeof window === "undefined") {
-    return function(callback2) {
+    return function (callback2) {
       return callback2();
     };
   }
@@ -991,7 +991,7 @@ var requestAnimFrame = function() {
 function throttled(fn, thisArg) {
   let argsToUse = [];
   let ticking = false;
-  return function(...args) {
+  return function (...args) {
     argsToUse = args;
     if (!ticking) {
       ticking = true;
@@ -1004,7 +1004,7 @@ function throttled(fn, thisArg) {
 }
 function debounce(fn, delay) {
   let timeout;
-  return function(...args) {
+  return function (...args) {
     if (delay) {
       clearTimeout(timeout);
       timeout = setTimeout(fn, delay, args);
@@ -2541,7 +2541,7 @@ function retinaScale(chart, forceRatio, forceStyle) {
   }
   return false;
 }
-var supportsEventListenerOptions = function() {
+var supportsEventListenerOptions = function () {
   let passiveSupported = false;
   try {
     const options = {
@@ -2591,7 +2591,7 @@ function _bezierInterpolation(p1, p2, t, mode) {
   const e = _pointInLine(b, c, t);
   return _pointInLine(d, e, t);
 }
-var getRightToLeftAdapter = function(rectX, width) {
+var getRightToLeftAdapter = function (rectX, width) {
   return {
     x(x) {
       return rectX + rectX + width - x;
@@ -2613,7 +2613,7 @@ var getRightToLeftAdapter = function(rectX, width) {
     }
   };
 };
-var getLeftToRightAdapter = function() {
+var getLeftToRightAdapter = function () {
   return {
     x(x) {
       return x;
@@ -2930,7 +2930,7 @@ function styleChanged(style, prevStyle) {
     return false;
   }
   const cache = [];
-  const replacer = function(key, value) {
+  const replacer = function (key, value) {
     if (!isPatternOrGradient(value)) {
       return value;
     }
@@ -5650,7 +5650,7 @@ function evaluateInteractionItems(chart, axis, position, handler, intersect) {
 function getDistanceMetricForAxis(axis) {
   const useX = axis.indexOf("x") !== -1;
   const useY = axis.indexOf("y") !== -1;
-  return function(pt1, pt2) {
+  return function (pt1, pt2) {
     const deltaX = useX ? Math.abs(pt1.x - pt2.x) : 0;
     const deltaY = useY ? Math.abs(pt1.y - pt2.y) : 0;
     return Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
@@ -5661,7 +5661,7 @@ function getIntersectItems(chart, position, axis, useFinalPosition, includeInvis
   if (!includeInvisible && !chart.isPointInArea(position)) {
     return items;
   }
-  const evaluationFunc = function(element, datasetIndex, index2) {
+  const evaluationFunc = function (element, datasetIndex, index2) {
     if (!includeInvisible && !_isPointInArea(element, chart.chartArea, 0)) {
       return;
     }
@@ -6067,7 +6067,7 @@ var layouts = {
     item.fullSize = item.fullSize || false;
     item.position = item.position || "top";
     item.weight = item.weight || 0;
-    item._layers = item._layers || function() {
+    item._layers = item._layers || function () {
       return [
         {
           z: 0,
@@ -7278,7 +7278,7 @@ var Scale = class _Scale extends Element {
     const borderOpts = border.setContext(this.getContext());
     const axisWidth = borderOpts.display ? borderOpts.width : 0;
     const axisHalfWidth = axisWidth / 2;
-    const alignBorderValue = function(pixel) {
+    const alignBorderValue = function (pixel) {
       return _alignPixel(chart, pixel, axisWidth);
     };
     let borderValue, i, lineValue, alignedLineValue;
@@ -8510,7 +8510,7 @@ function positionIsHorizontal(position, axis) {
   return position === "top" || position === "bottom" || KNOWN_POSITIONS.indexOf(position) === -1 && axis === "x";
 }
 function compare2Level(l1, l2) {
-  return function(a, b) {
+  return function (a, b) {
     return a[l1] === b[l1] ? a[l2] - b[l2] : a[l1] - b[l1];
   };
 }
@@ -10502,10 +10502,10 @@ var plugin_decimation = {
         Object.defineProperty(dataset, "data", {
           configurable: true,
           enumerable: true,
-          get: function() {
+          get: function () {
             return this._decimated;
           },
-          set: function(d) {
+          set: function (d) {
             this._data = d;
           }
         });
@@ -11398,7 +11398,7 @@ var Legend = class extends Element {
     ctx.lineWidth = 0.5;
     ctx.font = labelFont.string;
     const { boxWidth, boxHeight, itemHeight } = getBoxSize(labelOpts, fontSize);
-    const drawLegendBox = function(x, y, legendItem) {
+    const drawLegendBox = function (x, y, legendItem) {
       if (isNaN(boxWidth) || boxWidth <= 0 || isNaN(boxHeight) || boxHeight < 0) {
         return;
       }
@@ -11444,7 +11444,7 @@ var Legend = class extends Element {
       }
       ctx.restore();
     };
-    const fillText = function(x, y, legendItem) {
+    const fillText = function (x, y, legendItem) {
       renderText(ctx, legendItem.text, x, y + itemHeight / 2, labelFont, {
         strikethrough: legendItem.hidden,
         textAlign: rtlHelper.textAlign(legendItem.textAlign)
@@ -12016,7 +12016,7 @@ function getTooltipSize(tooltip, options) {
     height += options.footerMarginTop + footerLineCount * footerFont.lineHeight + (footerLineCount - 1) * options.footerSpacing;
   }
   let widthPadding = 0;
-  const maxLineWidth = function(line) {
+  const maxLineWidth = function (line) {
     width = Math.max(width, ctx.measureText(line).width + widthPadding);
   };
   ctx.save();
@@ -12539,7 +12539,7 @@ var Tooltip = class extends Element {
     let bodyLineHeight = bodyFont.lineHeight;
     let xLinePadding = 0;
     const rtlHelper = getRtlAdapter(options.rtl, this.x, this.width);
-    const fillLineOfText = function(line) {
+    const fillLineOfText = function (line) {
       ctx.fillText(line, rtlHelper.x(pt.x + xLinePadding), pt.y + bodyLineHeight / 2);
       pt.y += bodyLineHeight + bodySpacing;
     };

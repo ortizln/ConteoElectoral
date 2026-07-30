@@ -65,12 +65,12 @@ class CandidatoServiceTest {
         candidato.setId(1L);
         candidato.setNombres("Juan");
         candidato.setApellidos("Pérez");
-        candidato.setCedula("1234567890");
+        candidato.setCedula("08641142167890");
 
         request = new CandidatoRequest();
         request.setNombres("Juan");
         request.setApellidos("Pérez");
-        request.setCedula("1234567890");
+        request.setCedula("08641142167890");
         request.setEleccionId(1L);
         request.setPartidoId(1L);
         request.setCargoId(1L);
@@ -139,7 +139,7 @@ class CandidatoControllerTest {
         mockMvc.perform(post("/api/candidatos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", "Bearer test-token")
-                .content("{\"nombres\":\"Juan\",\"apellidos\":\"Pérez\",\"cedula\":\"1234567890\"}"))
+                .content("{\"nombres\":\"Juan\",\"apellidos\":\"Pérez\",\"cedula\":\"08641142167890\"}"))
             .andExpect(status().isCreated());
     }
 }
@@ -314,7 +314,7 @@ void main() {
         'cargoId': 1,
         'nombres': 'Juan',
         'apellidos': 'Pérez',
-        'cedula': '1234567890',
+        'cedula': '08641142167890',
         'tipo': 'PRINCIPAL',
       };
 

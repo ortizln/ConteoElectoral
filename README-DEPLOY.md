@@ -15,7 +15,7 @@
      -p 8081:8081 \
      -e SPRING_DATASOURCE_URL=jdbc:postgresql://YOUR_DB_HOST:5432/conteo_electoral \
      -e SPRING_DATASOURCE_USERNAME=postgres \
-     -e SPRING_DATASOURCE_PASSWORD=12345 \
+     -e SPRING_DATASOURCE_PASSWORD=086411421 \
      conteo-electoral-backend
    ```
 

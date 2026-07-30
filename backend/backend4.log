@@ -76,7 +76,7 @@ Downloaded from central: https://repo.maven.apache.org/maven2/org/springframewor
 ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
   '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/192.168.1.71
+ =========|_|==============|___/=/_/_/_/192.168.100.215
  :: Spring Boot ::                (v3.2.1)
 
 2026-07-28T10:26:38.694-05:00  INFO 51688 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : Starting ConteoElectoralApplication using Java 21.0.10 with PID 51688 (C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\target\classes started by Alexi in C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend)

@@ -7,7 +7,7 @@
 ## 1. INFRAESTRUCTURA ACTUAL
 
 ```
-Servidor: 192.168.1.71
+Servidor: 192.168.100.215
 ├── PostgreSQL 18 (puerto 5432)
 │   └── Base de datos: conteo_electoral
 └── Backend Spring Boot (puerto 8081)
@@ -16,14 +16,14 @@ Servidor: 192.168.1.71
 Entorno de desarrollo:
 ├── Backend: localhost:8081
 ├── Frontend: localhost:4200 (ng serve)
-└── Base de datos: 192.168.1.71:5432
+└── Base de datos: 192.168.100.215:5432
 ```
 
 ### Credenciales de Base de Datos
 ```properties
-spring.datasource.url=jdbc:postgresql://192.168.1.71:5432/conteo_electoral
+spring.datasource.url=jdbc:postgresql://192.168.100.215:5432/conteo_electoral
 spring.datasource.username=postgres
-spring.datasource.password=12345
+spring.datasource.password=086411421
 ```
 
 ---
@@ -71,8 +71,8 @@ server.servlet.context-path=/
 ```typescript
 export const environment = {
   production: true,
-  apiUrl: 'http://192.168.1.71:8081/api',
-  wsUrl: 'http://192.168.1.71:8081/ws',
+  apiUrl: 'http://192.168.100.215:8081/api',
+  wsUrl: 'http://192.168.100.215:8081/ws',
   appName: 'ERP Electoral',
   version: '1.0.0'
 };
@@ -341,13 +341,13 @@ flutter build web
 ### 6.4 Base de Datos
 ```bash
 # Backup
-pg_dump -h 192.168.1.71 -U postgres conteo_electoral > backup_$(date +%Y%m%d).sql
+pg_dump -h 192.168.100.215 -U postgres conteo_electoral > backup_$(date +%Y%m%d).sql
 
 # Restore
-psql -h 192.168.1.71 -U postgres conteo_electoral < backup.sql
+psql -h 192.168.100.215 -U postgres conteo_electoral < backup.sql
 
 # Conectar
-psql -h 192.168.1.71 -U postgres -d conteo_electoral
+psql -h 192.168.100.215 -U postgres -d conteo_electoral
 ```
 
 ### 6.5 Servicio Systemd (Linux)

@@ -62,7 +62,7 @@ GET /api/candidatos?page=0&size=20
       "id": 1,
       "nombres": "Juan",
       "apellidos": "Pérez",
-      "cedula": "1234567890",
+      "cedula": "08641142167890",
       "partidoNombre": "Partido Azul",
       "cargoNombre": "Presidente",
       "activo": true
@@ -86,7 +86,7 @@ GET /api/candidatos/1
   "id": 1,
   "nombres": "Juan",
   "apellidos": "Pérez",
-  "cedula": "1234567890",
+  "cedula": "08641142167890",
   "tipo": "PRINCIPAL",
   "ordenEnLista": 1,
   "partidoId": 1,

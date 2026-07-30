@@ -4,7 +4,7 @@
 
 Sistema integral para la gestión de procesos electorales, registro de votos, y visualización de resultados en tiempo real.  
 Desarrollado con **Spring Boot 3.2.1** (backend), **Angular 17.3** (frontend web), y **Flutter 3.x** (app móvil).  
-Base de datos **PostgreSQL 18** en servidor `192.168.1.71:5432`, con réplica local **SQLite** en la app móvil para operación offline.
+Base de datos **PostgreSQL 18** en servidor `192.168.100.215:5432`, con réplica local **SQLite** en la app móvil para operación offline.
 
 ---
 
@@ -293,7 +293,7 @@ AppProvider (ChangeNotifier)
 
 ## 5. Base de Datos
 
-### 5.1 Esquema PostgreSQL (servidor: 192.168.1.71)
+### 5.1 Esquema PostgreSQL (servidor: 192.168.100.215)
 ```
 Tablas principales (28):
 zonas, provincias, cantones, parroquias, instituciones_educativas
@@ -347,7 +347,7 @@ flutter build apk --release  # APK de producción
 
 ### 6.4 Configuración de Red
 - **Web** (dev): `http://localhost:8081/api`
-- **Web** (prod): `http://192.168.1.71:8081/api`
+- **Web** (prod): `http://192.168.100.215:8081/api`
 - **Móvil** (emulador): `http://10.0.2.2:8081/api`
 - **Móvil** (producción): URL configurable desde la app
 

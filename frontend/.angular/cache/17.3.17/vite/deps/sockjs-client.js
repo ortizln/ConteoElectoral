@@ -7,13 +7,13 @@ var require_browser_crypto = __commonJS({
   "node_modules/sockjs-client/lib/utils/browser-crypto.js"(exports, module) {
     "use strict";
     if (global.crypto && global.crypto.getRandomValues) {
-      module.exports.randomBytes = function(length) {
+      module.exports.randomBytes = function (length) {
         var bytes = new Uint8Array(length);
         global.crypto.getRandomValues(bytes);
         return bytes;
       };
     } else {
-      module.exports.randomBytes = function(length) {
+      module.exports.randomBytes = function (length) {
         var bytes = new Array(length);
         for (var i = 0; i < length; i++) {
           bytes[i] = Math.floor(Math.random() * 256);
@@ -29,9 +29,9 @@ var require_random = __commonJS({
   "node_modules/sockjs-client/lib/utils/random.js"(exports, module) {
     "use strict";
     var crypto = require_browser_crypto();
-    var _randomStringChars = "abcdefghijklmnopqrstuvwxyz012345";
+    var _randomStringChars = "abcdefghijklmnopqrstuvwxyz0086411421";
     module.exports = {
-      string: function(length) {
+      string: function (length) {
         var max = _randomStringChars.length;
         var bytes = crypto.randomBytes(length);
         var ret = [];
@@ -40,10 +40,10 @@ var require_random = __commonJS({
         }
         return ret.join("");
       },
-      number: function(max) {
+      number: function (max) {
         return Math.floor(Math.random() * max);
       },
-      numberString: function(max) {
+      numberString: function (max) {
         var t = ("" + (max - 1)).length;
         var p = new Array(t + 1).join("0");
         return (p + this.number(max)).slice(-t);
@@ -61,7 +61,7 @@ var require_event = __commonJS({
     var afterUnload = false;
     var isChromePackagedApp = global.chrome && global.chrome.app && global.chrome.app.runtime;
     module.exports = {
-      attachEvent: function(event, listener) {
+      attachEvent: function (event, listener) {
         if (typeof global.addEventListener !== "undefined") {
           global.addEventListener(event, listener, false);
         } else if (global.document && global.attachEvent) {
@@ -69,7 +69,7 @@ var require_event = __commonJS({
           global.attachEvent("on" + event, listener);
         }
       },
-      detachEvent: function(event, listener) {
+      detachEvent: function (event, listener) {
         if (typeof global.addEventListener !== "undefined") {
           global.removeEventListener(event, listener, false);
         } else if (global.document && global.detachEvent) {
@@ -77,7 +77,7 @@ var require_event = __commonJS({
           global.detachEvent("on" + event, listener);
         }
       },
-      unloadAdd: function(listener) {
+      unloadAdd: function (listener) {
         if (isChromePackagedApp) {
           return null;
         }
@@ -88,19 +88,19 @@ var require_event = __commonJS({
         }
         return ref;
       },
-      unloadDel: function(ref) {
+      unloadDel: function (ref) {
         if (ref in onUnload) {
           delete onUnload[ref];
         }
       },
-      triggerUnloadCallbacks: function() {
+      triggerUnloadCallbacks: function () {
         for (var ref in onUnload) {
           onUnload[ref]();
           delete onUnload[ref];
         }
       }
     };
-    var unloadTriggered = function() {
+    var unloadTriggered = function () {
       if (afterUnload) {
         return;
       }
@@ -509,7 +509,7 @@ var require_ms = __commonJS({
     var d = h * 24;
     var w = d * 7;
     var y = d * 365.25;
-    module.exports = function(val, options) {
+    module.exports = function (val, options) {
       options = options || {};
       var type = typeof val;
       if (type === "string" && val.length > 0) {
@@ -628,7 +628,7 @@ var require_common = __commonJS({
       createDebug.enable = enable;
       createDebug.enabled = enabled;
       createDebug.humanize = require_ms();
-      Object.keys(env).forEach(function(key) {
+      Object.keys(env).forEach(function (key) {
         createDebug[key] = env[key];
       });
       createDebug.instances = [];
@@ -665,7 +665,7 @@ var require_common = __commonJS({
             args.unshift("%O");
           }
           var index = 0;
-          args[0] = args[0].replace(/%([a-zA-Z%])/g, function(match, format) {
+          args[0] = args[0].replace(/%([a-zA-Z%])/g, function (match, format) {
             if (match === "%%") {
               return match;
             }
@@ -794,10 +794,10 @@ var require_browser = __commonJS({
         return false;
       }
       return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || // Is firebug? http://stackoverflow.com/a/398120/376773
-      typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // Is firefox >= v31?
-      // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-      typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
-      typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
+        typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // Is firefox >= v31?
+        // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+        typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
+        typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
     }
     function formatArgs(args) {
       args[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args[0] + (this.useColors ? "%c " : " ") + "+" + module.exports.humanize(this.diff);
@@ -808,7 +808,7 @@ var require_browser = __commonJS({
       args.splice(1, 0, c, "color: inherit");
       var index = 0;
       var lastC = 0;
-      args[0].replace(/%[a-zA-Z%]/g, function(match) {
+      args[0].replace(/%[a-zA-Z%]/g, function (match) {
         if (match === "%%") {
           return;
         }
@@ -852,7 +852,7 @@ var require_browser = __commonJS({
     }
     module.exports = require_common()(exports);
     var formatters = module.exports.formatters;
-    formatters.j = function(v) {
+    formatters.j = function (v) {
       try {
         return JSON.stringify(v);
       } catch (error) {
@@ -867,13 +867,13 @@ var require_url = __commonJS({
   "node_modules/sockjs-client/lib/utils/url.js"(exports, module) {
     "use strict";
     var URL = require_url_parse();
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:utils:url");
     }
     module.exports = {
-      getOrigin: function(url) {
+      getOrigin: function (url) {
         if (!url) {
           return null;
         }
@@ -887,22 +887,22 @@ var require_url = __commonJS({
         }
         return p.protocol + "//" + p.hostname + ":" + port;
       },
-      isOriginEqual: function(a, b) {
+      isOriginEqual: function (a, b) {
         var res = this.getOrigin(a) === this.getOrigin(b);
         debug("same", a, b, res);
         return res;
       },
-      isSchemeEqual: function(a, b) {
+      isSchemeEqual: function (a, b) {
         return a.split(":")[0] === b.split(":")[0];
       },
-      addPath: function(url, path) {
+      addPath: function (url, path) {
         var qs = url.split("?");
         return qs[0] + path + (qs[1] ? "?" + qs[1] : "");
       },
-      addQuery: function(url, q) {
+      addQuery: function (url, q) {
         return url + (url.indexOf("?") === -1 ? "?" + q : "&" + q);
       },
-      isLoopbackAddr: function(addr) {
+      isLoopbackAddr: function (addr) {
         return /^127\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$/i.test(addr) || /^\[::1\]$/.test(addr);
       }
     };
@@ -930,7 +930,7 @@ var require_inherits_browser = __commonJS({
       module.exports = function inherits(ctor, superCtor) {
         if (superCtor) {
           ctor.super_ = superCtor;
-          var TempCtor = function() {
+          var TempCtor = function () {
           };
           TempCtor.prototype = superCtor.prototype;
           ctor.prototype = new TempCtor();
@@ -948,7 +948,7 @@ var require_eventtarget = __commonJS({
     function EventTarget() {
       this._listeners = {};
     }
-    EventTarget.prototype.addEventListener = function(eventType, listener) {
+    EventTarget.prototype.addEventListener = function (eventType, listener) {
       if (!(eventType in this._listeners)) {
         this._listeners[eventType] = [];
       }
@@ -958,7 +958,7 @@ var require_eventtarget = __commonJS({
       }
       this._listeners[eventType] = arr;
     };
-    EventTarget.prototype.removeEventListener = function(eventType, listener) {
+    EventTarget.prototype.removeEventListener = function (eventType, listener) {
       var arr = this._listeners[eventType];
       if (!arr) {
         return;
@@ -973,7 +973,7 @@ var require_eventtarget = __commonJS({
         return;
       }
     };
-    EventTarget.prototype.dispatchEvent = function() {
+    EventTarget.prototype.dispatchEvent = function () {
       var event = arguments[0];
       var t = event.type;
       var args = arguments.length === 1 ? [event] : Array.apply(null, arguments);
@@ -1001,14 +1001,14 @@ var require_emitter = __commonJS({
       EventTarget.call(this);
     }
     inherits(EventEmitter, EventTarget);
-    EventEmitter.prototype.removeAllListeners = function(type) {
+    EventEmitter.prototype.removeAllListeners = function (type) {
       if (type) {
         delete this._listeners[type];
       } else {
         this._listeners = {};
       }
     };
-    EventEmitter.prototype.once = function(type, listener) {
+    EventEmitter.prototype.once = function (type, listener) {
       var self2 = this, fired = false;
       function g() {
         self2.removeListener(type, g);
@@ -1019,7 +1019,7 @@ var require_emitter = __commonJS({
       }
       this.on(type, g);
     };
-    EventEmitter.prototype.emit = function() {
+    EventEmitter.prototype.emit = function () {
       var type = arguments[0];
       var listeners = this._listeners[type];
       if (!listeners) {
@@ -1064,7 +1064,7 @@ var require_websocket2 = __commonJS({
     var inherits = require_inherits_browser();
     var EventEmitter = require_emitter().EventEmitter;
     var WebsocketDriver = require_websocket();
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:websocket");
@@ -1084,32 +1084,32 @@ var require_websocket2 = __commonJS({
       }
       this.url = url;
       this.ws = new WebsocketDriver(this.url, [], options);
-      this.ws.onmessage = function(e) {
+      this.ws.onmessage = function (e) {
         debug("message event", e.data);
         self2.emit("message", e.data);
       };
-      this.unloadRef = utils.unloadAdd(function() {
+      this.unloadRef = utils.unloadAdd(function () {
         debug("unload");
         self2.ws.close();
       });
-      this.ws.onclose = function(e) {
+      this.ws.onclose = function (e) {
         debug("close event", e.code, e.reason);
         self2.emit("close", e.code, e.reason);
         self2._cleanup();
       };
-      this.ws.onerror = function(e) {
+      this.ws.onerror = function (e) {
         debug("error event", e);
         self2.emit("close", 1006, "WebSocket connection broken");
         self2._cleanup();
       };
     }
     inherits(WebSocketTransport, EventEmitter);
-    WebSocketTransport.prototype.send = function(data) {
+    WebSocketTransport.prototype.send = function (data) {
       var msg = "[" + data + "]";
       debug("send", msg);
       this.ws.send(msg);
     };
-    WebSocketTransport.prototype.close = function() {
+    WebSocketTransport.prototype.close = function () {
       debug("close");
       var ws = this.ws;
       this._cleanup();
@@ -1117,7 +1117,7 @@ var require_websocket2 = __commonJS({
         ws.close();
       }
     };
-    WebSocketTransport.prototype._cleanup = function() {
+    WebSocketTransport.prototype._cleanup = function () {
       debug("_cleanup");
       var ws = this.ws;
       if (ws) {
@@ -1127,7 +1127,7 @@ var require_websocket2 = __commonJS({
       this.unloadRef = this.ws = null;
       this.removeAllListeners();
     };
-    WebSocketTransport.enabled = function() {
+    WebSocketTransport.enabled = function () {
       debug("enabled");
       return !!WebsocketDriver;
     };
@@ -1143,7 +1143,7 @@ var require_buffered_sender = __commonJS({
     "use strict";
     var inherits = require_inherits_browser();
     var EventEmitter = require_emitter().EventEmitter;
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:buffered-sender");
@@ -1156,34 +1156,34 @@ var require_buffered_sender = __commonJS({
       this.url = url;
     }
     inherits(BufferedSender, EventEmitter);
-    BufferedSender.prototype.send = function(message) {
+    BufferedSender.prototype.send = function (message) {
       debug("send", message);
       this.sendBuffer.push(message);
       if (!this.sendStop) {
         this.sendSchedule();
       }
     };
-    BufferedSender.prototype.sendScheduleWait = function() {
+    BufferedSender.prototype.sendScheduleWait = function () {
       debug("sendScheduleWait");
       var self2 = this;
       var tref;
-      this.sendStop = function() {
+      this.sendStop = function () {
         debug("sendStop");
         self2.sendStop = null;
         clearTimeout(tref);
       };
-      tref = setTimeout(function() {
+      tref = setTimeout(function () {
         debug("timeout");
         self2.sendStop = null;
         self2.sendSchedule();
       }, 25);
     };
-    BufferedSender.prototype.sendSchedule = function() {
+    BufferedSender.prototype.sendSchedule = function () {
       debug("sendSchedule", this.sendBuffer.length);
       var self2 = this;
       if (this.sendBuffer.length > 0) {
         var payload = "[" + this.sendBuffer.join(",") + "]";
-        this.sendStop = this.sender(this.url, payload, function(err) {
+        this.sendStop = this.sender(this.url, payload, function (err) {
           self2.sendStop = null;
           if (err) {
             debug("error", err);
@@ -1196,11 +1196,11 @@ var require_buffered_sender = __commonJS({
         this.sendBuffer = [];
       }
     };
-    BufferedSender.prototype._cleanup = function() {
+    BufferedSender.prototype._cleanup = function () {
       debug("_cleanup");
       this.removeAllListeners();
     };
-    BufferedSender.prototype.close = function() {
+    BufferedSender.prototype.close = function () {
       debug("close");
       this._cleanup();
       if (this.sendStop) {
@@ -1218,7 +1218,7 @@ var require_polling = __commonJS({
     "use strict";
     var inherits = require_inherits_browser();
     var EventEmitter = require_emitter().EventEmitter;
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:polling");
@@ -1232,15 +1232,15 @@ var require_polling = __commonJS({
       this._scheduleReceiver();
     }
     inherits(Polling, EventEmitter);
-    Polling.prototype._scheduleReceiver = function() {
+    Polling.prototype._scheduleReceiver = function () {
       debug("_scheduleReceiver");
       var self2 = this;
       var poll = this.poll = new this.Receiver(this.receiveUrl, this.AjaxObject);
-      poll.on("message", function(msg) {
+      poll.on("message", function (msg) {
         debug("message", msg);
         self2.emit("message", msg);
       });
-      poll.once("close", function(code, reason) {
+      poll.once("close", function (code, reason) {
         debug("close", code, reason, self2.pollIsClosing);
         self2.poll = poll = null;
         if (!self2.pollIsClosing) {
@@ -1253,7 +1253,7 @@ var require_polling = __commonJS({
         }
       });
     };
-    Polling.prototype.abort = function() {
+    Polling.prototype.abort = function () {
       debug("abort");
       this.removeAllListeners();
       this.pollIsClosing = true;
@@ -1273,7 +1273,7 @@ var require_sender_receiver = __commonJS({
     var urlUtils = require_url();
     var BufferedSender = require_buffered_sender();
     var Polling = require_polling();
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:sender-receiver");
@@ -1284,11 +1284,11 @@ var require_sender_receiver = __commonJS({
       var self2 = this;
       BufferedSender.call(this, transUrl, senderFunc);
       this.poll = new Polling(Receiver, pollUrl, AjaxObject);
-      this.poll.on("message", function(msg) {
+      this.poll.on("message", function (msg) {
         debug("poll message", msg);
         self2.emit("message", msg);
       });
-      this.poll.once("close", function(code, reason) {
+      this.poll.once("close", function (code, reason) {
         debug("poll close", code, reason);
         self2.poll = null;
         self2.emit("close", code, reason);
@@ -1296,7 +1296,7 @@ var require_sender_receiver = __commonJS({
       });
     }
     inherits(SenderReceiver, BufferedSender);
-    SenderReceiver.prototype.close = function() {
+    SenderReceiver.prototype.close = function () {
       BufferedSender.prototype.close.call(this);
       debug("close");
       this.removeAllListeners();
@@ -1316,13 +1316,13 @@ var require_ajax_based = __commonJS({
     var inherits = require_inherits_browser();
     var urlUtils = require_url();
     var SenderReceiver = require_sender_receiver();
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:ajax-based");
     }
     function createAjaxSender(AjaxObject) {
-      return function(url, payload, callback) {
+      return function (url, payload, callback) {
         debug("create ajax sender", url, payload);
         var opt = {};
         if (typeof payload === "string") {
@@ -1330,7 +1330,7 @@ var require_ajax_based = __commonJS({
         }
         var ajaxUrl = urlUtils.addPath(url, "/xhr_send");
         var xo = new AjaxObject("POST", ajaxUrl, payload, opt);
-        xo.once("finish", function(status) {
+        xo.once("finish", function (status) {
           debug("finish", status);
           xo = null;
           if (status !== 200 && status !== 204) {
@@ -1338,7 +1338,7 @@ var require_ajax_based = __commonJS({
           }
           callback();
         });
-        return function() {
+        return function () {
           debug("abort");
           xo.close();
           xo = null;
@@ -1362,7 +1362,7 @@ var require_xhr = __commonJS({
     "use strict";
     var inherits = require_inherits_browser();
     var EventEmitter = require_emitter().EventEmitter;
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:receiver:xhr");
@@ -1374,7 +1374,7 @@ var require_xhr = __commonJS({
       this.bufferPosition = 0;
       this.xo = new AjaxObject("POST", url, null);
       this.xo.on("chunk", this._chunkHandler.bind(this));
-      this.xo.once("finish", function(status, text) {
+      this.xo.once("finish", function (status, text) {
         debug("finish", status, text);
         self2._chunkHandler(status, text);
         self2.xo = null;
@@ -1385,7 +1385,7 @@ var require_xhr = __commonJS({
       });
     }
     inherits(XhrReceiver, EventEmitter);
-    XhrReceiver.prototype._chunkHandler = function(status, text) {
+    XhrReceiver.prototype._chunkHandler = function (status, text) {
       debug("_chunkHandler", status);
       if (status !== 200 || !text) {
         return;
@@ -1403,11 +1403,11 @@ var require_xhr = __commonJS({
         }
       }
     };
-    XhrReceiver.prototype._cleanup = function() {
+    XhrReceiver.prototype._cleanup = function () {
       debug("_cleanup");
       this.removeAllListeners();
     };
-    XhrReceiver.prototype.abort = function() {
+    XhrReceiver.prototype.abort = function () {
       debug("abort");
       if (this.xo) {
         this.xo.close();
@@ -1430,7 +1430,7 @@ var require_abstract_xhr = __commonJS({
     var utils = require_event();
     var urlUtils = require_url();
     var XHR = global.XMLHttpRequest;
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:browser:xhr");
@@ -1439,12 +1439,12 @@ var require_abstract_xhr = __commonJS({
       debug(method, url);
       var self2 = this;
       EventEmitter.call(this);
-      setTimeout(function() {
+      setTimeout(function () {
         self2._start(method, url, payload, opts);
       }, 0);
     }
     inherits(AbstractXHRObject, EventEmitter);
-    AbstractXHRObject.prototype._start = function(method, url, payload, opts) {
+    AbstractXHRObject.prototype._start = function (method, url, payload, opts) {
       var self2 = this;
       try {
         this.xhr = new XHR();
@@ -1457,7 +1457,7 @@ var require_abstract_xhr = __commonJS({
         return;
       }
       url = urlUtils.addQuery(url, "t=" + +/* @__PURE__ */ new Date());
-      this.unloadRef = utils.unloadAdd(function() {
+      this.unloadRef = utils.unloadAdd(function () {
         debug("unload cleanup");
         self2._cleanup(true);
       });
@@ -1465,7 +1465,7 @@ var require_abstract_xhr = __commonJS({
         this.xhr.open(method, url, true);
         if (this.timeout && "timeout" in this.xhr) {
           this.xhr.timeout = this.timeout;
-          this.xhr.ontimeout = function() {
+          this.xhr.ontimeout = function () {
             debug("xhr timeout");
             self2.emit("finish", 0, "");
             self2._cleanup(false);
@@ -1486,7 +1486,7 @@ var require_abstract_xhr = __commonJS({
           this.xhr.setRequestHeader(key, opts.headers[key]);
         }
       }
-      this.xhr.onreadystatechange = function() {
+      this.xhr.onreadystatechange = function () {
         if (self2.xhr) {
           var x = self2.xhr;
           var text, status;
@@ -1530,14 +1530,14 @@ var require_abstract_xhr = __commonJS({
         self2._cleanup(false);
       }
     };
-    AbstractXHRObject.prototype._cleanup = function(abort) {
+    AbstractXHRObject.prototype._cleanup = function (abort) {
       debug("cleanup");
       if (!this.xhr) {
         return;
       }
       this.removeAllListeners();
       utils.unloadDel(this.unloadRef);
-      this.xhr.onreadystatechange = function() {
+      this.xhr.onreadystatechange = function () {
       };
       if (this.xhr.ontimeout) {
         this.xhr.ontimeout = null;
@@ -1550,7 +1550,7 @@ var require_abstract_xhr = __commonJS({
       }
       this.unloadRef = this.xhr = null;
     };
-    AbstractXHRObject.prototype.close = function() {
+    AbstractXHRObject.prototype.close = function () {
       debug("close");
       this._cleanup(true);
     };
@@ -1558,7 +1558,7 @@ var require_abstract_xhr = __commonJS({
     var axo = ["Active"].concat("Object").join("X");
     if (!AbstractXHRObject.enabled && axo in global) {
       debug("overriding xmlhttprequest");
-      XHR = function() {
+      XHR = function () {
         try {
           return new global[axo]("Microsoft.XMLHTTP");
         } catch (e) {
@@ -1614,13 +1614,13 @@ var require_browser2 = __commonJS({
   "node_modules/sockjs-client/lib/utils/browser.js"(exports, module) {
     "use strict";
     module.exports = {
-      isOpera: function() {
+      isOpera: function () {
         return global.navigator && /opera/i.test(global.navigator.userAgent);
       },
-      isKonqueror: function() {
+      isKonqueror: function () {
         return global.navigator && /konqueror/i.test(global.navigator.userAgent);
       },
-      hasDomain: function() {
+      hasDomain: function () {
         if (!global.document) {
           return true;
         }
@@ -1651,7 +1651,7 @@ var require_xhr_streaming = __commonJS({
       AjaxBasedTransport.call(this, transUrl, "/xhr_streaming", XhrReceiver, XHRCorsObject);
     }
     inherits(XhrStreamingTransport, AjaxBasedTransport);
-    XhrStreamingTransport.enabled = function(info) {
+    XhrStreamingTransport.enabled = function (info) {
       if (info.nullOrigin) {
         return false;
       }
@@ -1676,7 +1676,7 @@ var require_xdr = __commonJS({
     var eventUtils = require_event();
     var browser = require_browser2();
     var urlUtils = require_url();
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:sender:xdr");
@@ -1685,35 +1685,35 @@ var require_xdr = __commonJS({
       debug(method, url);
       var self2 = this;
       EventEmitter.call(this);
-      setTimeout(function() {
+      setTimeout(function () {
         self2._start(method, url, payload);
       }, 0);
     }
     inherits(XDRObject, EventEmitter);
-    XDRObject.prototype._start = function(method, url, payload) {
+    XDRObject.prototype._start = function (method, url, payload) {
       debug("_start");
       var self2 = this;
       var xdr = new global.XDomainRequest();
       url = urlUtils.addQuery(url, "t=" + +/* @__PURE__ */ new Date());
-      xdr.onerror = function() {
+      xdr.onerror = function () {
         debug("onerror");
         self2._error();
       };
-      xdr.ontimeout = function() {
+      xdr.ontimeout = function () {
         debug("ontimeout");
         self2._error();
       };
-      xdr.onprogress = function() {
+      xdr.onprogress = function () {
         debug("progress", xdr.responseText);
         self2.emit("chunk", 200, xdr.responseText);
       };
-      xdr.onload = function() {
+      xdr.onload = function () {
         debug("load");
         self2.emit("finish", 200, xdr.responseText);
         self2._cleanup(false);
       };
       this.xdr = xdr;
-      this.unloadRef = eventUtils.unloadAdd(function() {
+      this.unloadRef = eventUtils.unloadAdd(function () {
         self2._cleanup(true);
       });
       try {
@@ -1726,11 +1726,11 @@ var require_xdr = __commonJS({
         this._error();
       }
     };
-    XDRObject.prototype._error = function() {
+    XDRObject.prototype._error = function () {
       this.emit("finish", 0, "");
       this._cleanup(false);
     };
-    XDRObject.prototype._cleanup = function(abort) {
+    XDRObject.prototype._cleanup = function (abort) {
       debug("cleanup", abort);
       if (!this.xdr) {
         return;
@@ -1746,7 +1746,7 @@ var require_xdr = __commonJS({
       }
       this.unloadRef = this.xdr = null;
     };
-    XDRObject.prototype.close = function() {
+    XDRObject.prototype.close = function () {
       debug("close");
       this._cleanup(true);
     };
@@ -1770,7 +1770,7 @@ var require_xdr_streaming = __commonJS({
       AjaxBasedTransport.call(this, transUrl, "/xhr_streaming", XhrReceiver, XDRObject);
     }
     inherits(XdrStreamingTransport, AjaxBasedTransport);
-    XdrStreamingTransport.enabled = function(info) {
+    XdrStreamingTransport.enabled = function (info) {
       if (info.cookie_needed || info.nullOrigin) {
         return false;
       }
@@ -1796,7 +1796,7 @@ var require_eventsource2 = __commonJS({
     var inherits = require_inherits_browser();
     var EventEmitter = require_emitter().EventEmitter;
     var EventSourceDriver = require_eventsource();
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:receiver:eventsource");
@@ -1806,11 +1806,11 @@ var require_eventsource2 = __commonJS({
       EventEmitter.call(this);
       var self2 = this;
       var es = this.es = new EventSourceDriver(url);
-      es.onmessage = function(e) {
+      es.onmessage = function (e) {
         debug("message", e.data);
         self2.emit("message", decodeURI(e.data));
       };
-      es.onerror = function(e) {
+      es.onerror = function (e) {
         debug("error", es.readyState, e);
         var reason = es.readyState !== 2 ? "network" : "permanent";
         self2._cleanup();
@@ -1818,12 +1818,12 @@ var require_eventsource2 = __commonJS({
       };
     }
     inherits(EventSourceReceiver, EventEmitter);
-    EventSourceReceiver.prototype.abort = function() {
+    EventSourceReceiver.prototype.abort = function () {
       debug("abort");
       this._cleanup();
       this._close("user");
     };
-    EventSourceReceiver.prototype._cleanup = function() {
+    EventSourceReceiver.prototype._cleanup = function () {
       debug("cleanup");
       var es = this.es;
       if (es) {
@@ -1832,10 +1832,10 @@ var require_eventsource2 = __commonJS({
         this.es = null;
       }
     };
-    EventSourceReceiver.prototype._close = function(reason) {
+    EventSourceReceiver.prototype._close = function (reason) {
       debug("close", reason);
       var self2 = this;
-      setTimeout(function() {
+      setTimeout(function () {
         self2.emit("close", null, reason);
         self2.removeAllListeners();
       }, 200);
@@ -1860,7 +1860,7 @@ var require_eventsource3 = __commonJS({
       AjaxBasedTransport.call(this, transUrl, "/eventsource", EventSourceReceiver, XHRCorsObject);
     }
     inherits(EventSourceTransport, AjaxBasedTransport);
-    EventSourceTransport.enabled = function() {
+    EventSourceTransport.enabled = function () {
       return !!EventSourceDriver;
     };
     EventSourceTransport.transportName = "eventsource";
@@ -1882,7 +1882,7 @@ var require_iframe = __commonJS({
     "use strict";
     var eventUtils = require_event();
     var browser = require_browser2();
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:utils:iframe");
@@ -1890,12 +1890,12 @@ var require_iframe = __commonJS({
     module.exports = {
       WPrefix: "_jp",
       currentWindowId: null,
-      polluteGlobalNamespace: function() {
+      polluteGlobalNamespace: function () {
         if (!(module.exports.WPrefix in global)) {
           global[module.exports.WPrefix] = {};
         }
       },
-      postMessage: function(type, data) {
+      postMessage: function (type, data) {
         if (global.parent !== global) {
           global.parent.postMessage(JSON.stringify({
             windowId: module.exports.currentWindowId,
@@ -1906,10 +1906,10 @@ var require_iframe = __commonJS({
           debug("Cannot postMessage, no parent window.", type, data);
         }
       },
-      createIframe: function(iframeUrl, errorCallback) {
+      createIframe: function (iframeUrl, errorCallback) {
         var iframe = global.document.createElement("iframe");
         var tref, unloadRef;
-        var unattach = function() {
+        var unattach = function () {
           debug("unattach");
           clearTimeout(tref);
           try {
@@ -1918,11 +1918,11 @@ var require_iframe = __commonJS({
           }
           iframe.onerror = null;
         };
-        var cleanup = function() {
+        var cleanup = function () {
           debug("cleanup");
           if (iframe) {
             unattach();
-            setTimeout(function() {
+            setTimeout(function () {
               if (iframe) {
                 iframe.parentNode.removeChild(iframe);
               }
@@ -1931,16 +1931,16 @@ var require_iframe = __commonJS({
             eventUtils.unloadDel(unloadRef);
           }
         };
-        var onerror = function(err) {
+        var onerror = function (err) {
           debug("onerror", err);
           if (iframe) {
             cleanup();
             errorCallback(err);
           }
         };
-        var post = function(msg, origin) {
+        var post = function (msg, origin) {
           debug("post", msg, origin);
-          setTimeout(function() {
+          setTimeout(function () {
             try {
               if (iframe && iframe.contentWindow) {
                 iframe.contentWindow.postMessage(msg, origin);
@@ -1952,18 +1952,18 @@ var require_iframe = __commonJS({
         iframe.src = iframeUrl;
         iframe.style.display = "none";
         iframe.style.position = "absolute";
-        iframe.onerror = function() {
+        iframe.onerror = function () {
           onerror("onerror");
         };
-        iframe.onload = function() {
+        iframe.onload = function () {
           debug("onload");
           clearTimeout(tref);
-          tref = setTimeout(function() {
+          tref = setTimeout(function () {
             onerror("onload timeout");
           }, 2e3);
         };
         global.document.body.appendChild(iframe);
-        tref = setTimeout(function() {
+        tref = setTimeout(function () {
           onerror("timeout");
         }, 15e3);
         unloadRef = eventUtils.unloadAdd(cleanup);
@@ -1973,16 +1973,16 @@ var require_iframe = __commonJS({
           loaded: unattach
         };
       },
-      createHtmlfile: function(iframeUrl, errorCallback) {
+      createHtmlfile: function (iframeUrl, errorCallback) {
         var axo = ["Active"].concat("Object").join("X");
         var doc = new global[axo]("htmlfile");
         var tref, unloadRef;
         var iframe;
-        var unattach = function() {
+        var unattach = function () {
           clearTimeout(tref);
           iframe.onerror = null;
         };
-        var cleanup = function() {
+        var cleanup = function () {
           if (doc) {
             unattach();
             eventUtils.unloadDel(unloadRef);
@@ -1991,16 +1991,16 @@ var require_iframe = __commonJS({
             CollectGarbage();
           }
         };
-        var onerror = function(r) {
+        var onerror = function (r) {
           debug("onerror", r);
           if (doc) {
             cleanup();
             errorCallback(r);
           }
         };
-        var post = function(msg, origin) {
+        var post = function (msg, origin) {
           try {
-            setTimeout(function() {
+            setTimeout(function () {
               if (iframe && iframe.contentWindow) {
                 iframe.contentWindow.postMessage(msg, origin);
               }
@@ -2017,10 +2017,10 @@ var require_iframe = __commonJS({
         iframe = doc.createElement("iframe");
         c.appendChild(iframe);
         iframe.src = iframeUrl;
-        iframe.onerror = function() {
+        iframe.onerror = function () {
           onerror("onerror");
         };
-        tref = setTimeout(function() {
+        tref = setTimeout(function () {
           onerror("timeout");
         }, 15e3);
         unloadRef = eventUtils.unloadAdd(cleanup);
@@ -2049,7 +2049,7 @@ var require_iframe2 = __commonJS({
     var iframeUtils = require_iframe();
     var eventUtils = require_event();
     var random = require_random();
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:transport:iframe");
@@ -2067,7 +2067,7 @@ var require_iframe2 = __commonJS({
       this.windowId = random.string(8);
       var iframeUrl = urlUtils.addPath(baseUrl, "/iframe.html") + "#" + this.windowId;
       debug(transport, transUrl, iframeUrl);
-      this.iframeObj = iframeUtils.createIframe(iframeUrl, function(r) {
+      this.iframeObj = iframeUtils.createIframe(iframeUrl, function (r) {
         debug("err callback");
         self2.emit("close", 1006, "Unable to load an iframe (" + r + ")");
         self2.close();
@@ -2076,7 +2076,7 @@ var require_iframe2 = __commonJS({
       eventUtils.attachEvent("message", this.onmessageCallback);
     }
     inherits(IframeTransport, EventEmitter);
-    IframeTransport.prototype.close = function() {
+    IframeTransport.prototype.close = function () {
       debug("close");
       this.removeAllListeners();
       if (this.iframeObj) {
@@ -2090,7 +2090,7 @@ var require_iframe2 = __commonJS({
         this.onmessageCallback = this.iframeObj = null;
       }
     };
-    IframeTransport.prototype._message = function(e) {
+    IframeTransport.prototype._message = function (e) {
       debug("message", e.data);
       if (!urlUtils.isOriginEqual(e.origin, this.origin)) {
         debug("not same origin", e.origin, this.origin);
@@ -2133,7 +2133,7 @@ var require_iframe2 = __commonJS({
           break;
       }
     };
-    IframeTransport.prototype.postMessage = function(type, data) {
+    IframeTransport.prototype.postMessage = function (type, data) {
       debug("postMessage", type, data);
       this.iframeObj.post(JSON.stringify({
         windowId: this.windowId,
@@ -2141,11 +2141,11 @@ var require_iframe2 = __commonJS({
         data: data || ""
       }), this.origin);
     };
-    IframeTransport.prototype.send = function(message) {
+    IframeTransport.prototype.send = function (message) {
       debug("send", message);
       this.postMessage("m", message);
     };
-    IframeTransport.enabled = function() {
+    IframeTransport.enabled = function () {
       return iframeUtils.iframeEnabled;
     };
     IframeTransport.transportName = "iframe";
@@ -2159,11 +2159,11 @@ var require_object = __commonJS({
   "node_modules/sockjs-client/lib/utils/object.js"(exports, module) {
     "use strict";
     module.exports = {
-      isObject: function(obj) {
+      isObject: function (obj) {
         var type = typeof obj;
         return type === "function" || type === "object" && !!obj;
       },
-      extend: function(obj) {
+      extend: function (obj) {
         if (!this.isObject(obj)) {
           return obj;
         }
@@ -2189,12 +2189,12 @@ var require_iframe_wrap = __commonJS({
     var inherits = require_inherits_browser();
     var IframeTransport = require_iframe2();
     var objectUtils = require_object();
-    module.exports = function(transport) {
+    module.exports = function (transport) {
       function IframeWrapTransport(transUrl, baseUrl) {
         IframeTransport.call(this, transport.transportName, transUrl, baseUrl);
       }
       inherits(IframeWrapTransport, IframeTransport);
-      IframeWrapTransport.enabled = function(url, info) {
+      IframeWrapTransport.enabled = function (url, info) {
         if (!global.document) {
           return false;
         }
@@ -2220,7 +2220,7 @@ var require_htmlfile = __commonJS({
     var urlUtils = require_url();
     var EventEmitter = require_emitter().EventEmitter;
     var random = require_random();
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:receiver:htmlfile");
@@ -2235,33 +2235,33 @@ var require_htmlfile = __commonJS({
       debug("using htmlfile", HtmlfileReceiver.htmlfileEnabled);
       var constructFunc = HtmlfileReceiver.htmlfileEnabled ? iframeUtils.createHtmlfile : iframeUtils.createIframe;
       global[iframeUtils.WPrefix][this.id] = {
-        start: function() {
+        start: function () {
           debug("start");
           self2.iframeObj.loaded();
         },
-        message: function(data) {
+        message: function (data) {
           debug("message", data);
           self2.emit("message", data);
         },
-        stop: function() {
+        stop: function () {
           debug("stop");
           self2._cleanup();
           self2._close("network");
         }
       };
-      this.iframeObj = constructFunc(url, function() {
+      this.iframeObj = constructFunc(url, function () {
         debug("callback");
         self2._cleanup();
         self2._close("permanent");
       });
     }
     inherits(HtmlfileReceiver, EventEmitter);
-    HtmlfileReceiver.prototype.abort = function() {
+    HtmlfileReceiver.prototype.abort = function () {
       debug("abort");
       this._cleanup();
       this._close("user");
     };
-    HtmlfileReceiver.prototype._cleanup = function() {
+    HtmlfileReceiver.prototype._cleanup = function () {
       debug("_cleanup");
       if (this.iframeObj) {
         this.iframeObj.cleanup();
@@ -2269,7 +2269,7 @@ var require_htmlfile = __commonJS({
       }
       delete global[iframeUtils.WPrefix][this.id];
     };
-    HtmlfileReceiver.prototype._close = function(reason) {
+    HtmlfileReceiver.prototype._close = function (reason) {
       debug("_close", reason);
       this.emit("close", null, reason);
       this.removeAllListeners();
@@ -2302,7 +2302,7 @@ var require_htmlfile2 = __commonJS({
       AjaxBasedTransport.call(this, transUrl, "/htmlfile", HtmlfileReceiver, XHRLocalObject);
     }
     inherits(HtmlFileTransport, AjaxBasedTransport);
-    HtmlFileTransport.enabled = function(info) {
+    HtmlFileTransport.enabled = function (info) {
       return HtmlfileReceiver.enabled && info.sameOrigin;
     };
     HtmlFileTransport.transportName = "htmlfile";
@@ -2327,7 +2327,7 @@ var require_xhr_polling = __commonJS({
       AjaxBasedTransport.call(this, transUrl, "/xhr", XhrReceiver, XHRCorsObject);
     }
     inherits(XhrPollingTransport, AjaxBasedTransport);
-    XhrPollingTransport.enabled = function(info) {
+    XhrPollingTransport.enabled = function (info) {
       if (info.nullOrigin) {
         return false;
       }
@@ -2375,7 +2375,7 @@ var require_jsonp = __commonJS({
     var urlUtils = require_url();
     var inherits = require_inherits_browser();
     var EventEmitter = require_emitter().EventEmitter;
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:receiver:jsonp");
@@ -2389,13 +2389,13 @@ var require_jsonp = __commonJS({
       var urlWithId = urlUtils.addQuery(url, "c=" + encodeURIComponent(utils.WPrefix + "." + this.id));
       global[utils.WPrefix][this.id] = this._callback.bind(this);
       this._createScript(urlWithId);
-      this.timeoutId = setTimeout(function() {
+      this.timeoutId = setTimeout(function () {
         debug("timeout");
         self2._abort(new Error("JSONP script loaded abnormally (timeout)"));
       }, JsonpReceiver.timeout);
     }
     inherits(JsonpReceiver, EventEmitter);
-    JsonpReceiver.prototype.abort = function() {
+    JsonpReceiver.prototype.abort = function () {
       debug("abort");
       if (global[utils.WPrefix][this.id]) {
         var err = new Error("JSONP user aborted read");
@@ -2405,7 +2405,7 @@ var require_jsonp = __commonJS({
     };
     JsonpReceiver.timeout = 35e3;
     JsonpReceiver.scriptErrorTimeout = 1e3;
-    JsonpReceiver.prototype._callback = function(data) {
+    JsonpReceiver.prototype._callback = function (data) {
       debug("_callback", data);
       this._cleanup();
       if (this.aborting) {
@@ -2418,14 +2418,14 @@ var require_jsonp = __commonJS({
       this.emit("close", null, "network");
       this.removeAllListeners();
     };
-    JsonpReceiver.prototype._abort = function(err) {
+    JsonpReceiver.prototype._abort = function (err) {
       debug("_abort", err);
       this._cleanup();
       this.aborting = true;
       this.emit("close", err.code, err.message);
       this.removeAllListeners();
     };
-    JsonpReceiver.prototype._cleanup = function() {
+    JsonpReceiver.prototype._cleanup = function () {
       debug("_cleanup");
       clearTimeout(this.timeoutId);
       if (this.script2) {
@@ -2440,19 +2440,19 @@ var require_jsonp = __commonJS({
       }
       delete global[utils.WPrefix][this.id];
     };
-    JsonpReceiver.prototype._scriptError = function() {
+    JsonpReceiver.prototype._scriptError = function () {
       debug("_scriptError");
       var self2 = this;
       if (this.errorTimer) {
         return;
       }
-      this.errorTimer = setTimeout(function() {
+      this.errorTimer = setTimeout(function () {
         if (!self2.loadedOkay) {
           self2._abort(new Error("JSONP script loaded abnormally (onerror)"));
         }
       }, JsonpReceiver.scriptErrorTimeout);
     };
-    JsonpReceiver.prototype._createScript = function(url) {
+    JsonpReceiver.prototype._createScript = function (url) {
       debug("_createScript", url);
       var self2 = this;
       var script = this.script = global.document.createElement("script");
@@ -2462,11 +2462,11 @@ var require_jsonp = __commonJS({
       script.type = "text/javascript";
       script.charset = "UTF-8";
       script.onerror = this._scriptError.bind(this);
-      script.onload = function() {
+      script.onload = function () {
         debug("onload");
         self2._abort(new Error("JSONP script loaded abnormally (onload)"));
       };
-      script.onreadystatechange = function() {
+      script.onreadystatechange = function () {
         debug("onreadystatechange", script.readyState);
         if (/loaded|closed/.test(script.readyState)) {
           if (script && script.htmlFor && script.onclick) {
@@ -2514,7 +2514,7 @@ var require_jsonp2 = __commonJS({
     "use strict";
     var random = require_random();
     var urlUtils = require_url();
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:sender:jsonp");
@@ -2544,7 +2544,7 @@ var require_jsonp2 = __commonJS({
       form.appendChild(area);
       global.document.body.appendChild(form);
     }
-    module.exports = function(url, payload, callback) {
+    module.exports = function (url, payload, callback) {
       debug(url, payload);
       if (!form) {
         createForm();
@@ -2561,13 +2561,13 @@ var require_jsonp2 = __commonJS({
       } catch (e) {
       }
       form.submit();
-      var completed = function(err) {
+      var completed = function (err) {
         debug("completed", id, err);
         if (!iframe.onerror) {
           return;
         }
         iframe.onreadystatechange = iframe.onerror = iframe.onload = null;
-        setTimeout(function() {
+        setTimeout(function () {
           debug("cleaning up", id);
           iframe.parentNode.removeChild(iframe);
           iframe = null;
@@ -2575,21 +2575,21 @@ var require_jsonp2 = __commonJS({
         area.value = "";
         callback(err);
       };
-      iframe.onerror = function() {
+      iframe.onerror = function () {
         debug("onerror", id);
         completed();
       };
-      iframe.onload = function() {
+      iframe.onload = function () {
         debug("onload", id);
         completed();
       };
-      iframe.onreadystatechange = function(e) {
+      iframe.onreadystatechange = function (e) {
         debug("onreadystatechange", id, iframe.readyState, e);
         if (iframe.readyState === "complete") {
           completed();
         }
       };
-      return function() {
+      return function () {
         debug("aborted", id);
         completed(new Error("Aborted"));
       };
@@ -2612,7 +2612,7 @@ var require_jsonp_polling = __commonJS({
       SenderReceiver.call(this, transUrl, "/jsonp", jsonpSender, JsonpReceiver);
     }
     inherits(JsonPTransport, SenderReceiver);
-    JsonPTransport.enabled = function() {
+    JsonPTransport.enabled = function () {
       return !!global.document;
     };
     JsonPTransport.transportName = "jsonp-polling";
@@ -2653,7 +2653,7 @@ var require_shims = __commonJS({
     var StringPrototype = String.prototype;
     var array_slice = ArrayPrototype.slice;
     var _toString = ObjectPrototype.toString;
-    var isFunction = function(val) {
+    var isFunction = function (val) {
       return ObjectPrototype.toString.call(val) === "[object Function]";
     };
     var isArray = function isArray2(obj) {
@@ -2662,7 +2662,7 @@ var require_shims = __commonJS({
     var isString = function isString2(obj) {
       return _toString.call(obj) === "[object String]";
     };
-    var supportsDescriptors = Object.defineProperty && function() {
+    var supportsDescriptors = Object.defineProperty && function () {
       try {
         Object.defineProperty({}, "x", {});
         return true;
@@ -2672,7 +2672,7 @@ var require_shims = __commonJS({
     }();
     var defineProperty;
     if (supportsDescriptors) {
-      defineProperty = function(object, name, method, forceAssign) {
+      defineProperty = function (object, name, method, forceAssign) {
         if (!forceAssign && name in object) {
           return;
         }
@@ -2684,21 +2684,21 @@ var require_shims = __commonJS({
         });
       };
     } else {
-      defineProperty = function(object, name, method, forceAssign) {
+      defineProperty = function (object, name, method, forceAssign) {
         if (!forceAssign && name in object) {
           return;
         }
         object[name] = method;
       };
     }
-    var defineProperties = function(object, map, forceAssign) {
+    var defineProperties = function (object, map, forceAssign) {
       for (var name in map) {
         if (ObjectPrototype.hasOwnProperty.call(map, name)) {
           defineProperty(object, name, map[name], forceAssign);
         }
       }
     };
-    var toObject = function(o) {
+    var toObject = function (o) {
       if (o == null) {
         throw new TypeError("can't convert " + o + " to object");
       }
@@ -2725,7 +2725,7 @@ var require_shims = __commonJS({
           throw new TypeError("Function.prototype.bind called on incompatible " + target);
         }
         var args = array_slice.call(arguments, 1);
-        var binder = function() {
+        var binder = function () {
           if (this instanceof bound) {
             var result = target.apply(
               this,
@@ -2763,12 +2763,12 @@ var require_shims = __commonJS({
       var properlyBoxesNonStrict = true;
       var properlyBoxesStrict = true;
       if (method) {
-        method.call("foo", function(_, __, context) {
+        method.call("foo", function (_, __, context) {
           if (typeof context !== "object") {
             properlyBoxesNonStrict = false;
           }
         });
-        method.call([1], function() {
+        method.call([1], function () {
           "use strict";
           properlyBoxesStrict = typeof this === "string";
         }, "x");
@@ -2810,9 +2810,9 @@ var require_shims = __commonJS({
     }, hasFirefox2IndexOfBug);
     var string_split = StringPrototype.split;
     if ("ab".split(/(?:ab)*/).length !== 2 || ".".split(/(.?)(.?)/).length !== 4 || "tesst".split(/(s)*/)[1] === "t" || "test".split(/(?:)/, -1).length !== 4 || "".split(/.?/).length || ".".split(/()()/).length > 1) {
-      (function() {
+      (function () {
         var compliantExecNpcg = /()??/.exec("")[1] === void 0;
-        StringPrototype.split = function(separator, limit) {
+        StringPrototype.split = function (separator, limit) {
           var string = this;
           if (separator === void 0 && limit === 0) {
             return [];
@@ -2821,7 +2821,7 @@ var require_shims = __commonJS({
             return string_split.call(this, separator, limit);
           }
           var output = [], flags = (separator.ignoreCase ? "i" : "") + (separator.multiline ? "m" : "") + (separator.extended ? "x" : "") + // Proposed for ES6
-          (separator.sticky ? "y" : ""), lastLastIndex = 0, separator2, match, lastIndex, lastLength;
+            (separator.sticky ? "y" : ""), lastLastIndex = 0, separator2, match, lastIndex, lastLength;
           separator = new RegExp(separator.source, flags + "g");
           string += "";
           if (!compliantExecNpcg) {
@@ -2836,7 +2836,7 @@ var require_shims = __commonJS({
             if (lastIndex > lastLastIndex) {
               output.push(string.slice(lastLastIndex, match.index));
               if (!compliantExecNpcg && match.length > 1) {
-                match[0].replace(separator2, function() {
+                match[0].replace(separator2, function () {
                   for (var i = 1; i < arguments.length - 2; i++) {
                     if (arguments[i] === void 0) {
                       match[i] = void 0;
@@ -2895,7 +2895,7 @@ var require_escape = __commonJS({
     "use strict";
     var extraEscapable = /[\x00-\x1f\ud800-\udfff\ufffe\uffff\u0300-\u0333\u033d-\u0346\u034a-\u034c\u0350-\u0352\u0357-\u0358\u035c-\u0362\u0374\u037e\u0387\u0591-\u05af\u05c4\u0610-\u0617\u0653-\u0654\u0657-\u065b\u065d-\u065e\u06df-\u06e2\u06eb-\u06ec\u0730\u0732-\u0733\u0735-\u0736\u073a\u073d\u073f-\u0741\u0743\u0745\u0747\u07eb-\u07f1\u0951\u0958-\u095f\u09dc-\u09dd\u09df\u0a33\u0a36\u0a59-\u0a5b\u0a5e\u0b5c-\u0b5d\u0e38-\u0e39\u0f43\u0f4d\u0f52\u0f57\u0f5c\u0f69\u0f72-\u0f76\u0f78\u0f80-\u0f83\u0f93\u0f9d\u0fa2\u0fa7\u0fac\u0fb9\u1939-\u193a\u1a17\u1b6b\u1cda-\u1cdb\u1dc0-\u1dcf\u1dfc\u1dfe\u1f71\u1f73\u1f75\u1f77\u1f79\u1f7b\u1f7d\u1fbb\u1fbe\u1fc9\u1fcb\u1fd3\u1fdb\u1fe3\u1feb\u1fee-\u1fef\u1ff9\u1ffb\u1ffd\u2000-\u2001\u20d0-\u20d1\u20d4-\u20d7\u20e7-\u20e9\u2126\u212a-\u212b\u2329-\u232a\u2adc\u302b-\u302c\uaab2-\uaab3\uf900-\ufa0d\ufa10\ufa12\ufa15-\ufa1e\ufa20\ufa22\ufa25-\ufa26\ufa2a-\ufa2d\ufa30-\ufa6d\ufa70-\ufad9\ufb1d\ufb1f\ufb2a-\ufb36\ufb38-\ufb3c\ufb3e\ufb40-\ufb41\ufb43-\ufb44\ufb46-\ufb4e\ufff0-\uffff]/g;
     var extraLookup;
-    var unrollLookup = function(escapable) {
+    var unrollLookup = function (escapable) {
       var i;
       var unrolled = {};
       var c = [];
@@ -2903,7 +2903,7 @@ var require_escape = __commonJS({
         c.push(String.fromCharCode(i));
       }
       escapable.lastIndex = 0;
-      c.join("").replace(escapable, function(a) {
+      c.join("").replace(escapable, function (a) {
         unrolled[a] = "\\u" + ("0000" + a.charCodeAt(0).toString(16)).slice(-4);
         return "";
       });
@@ -2911,7 +2911,7 @@ var require_escape = __commonJS({
       return unrolled;
     };
     module.exports = {
-      quote: function(string) {
+      quote: function (string) {
         var quoted = JSON.stringify(string);
         extraEscapable.lastIndex = 0;
         if (!extraEscapable.test(quoted)) {
@@ -2920,7 +2920,7 @@ var require_escape = __commonJS({
         if (!extraLookup) {
           extraLookup = unrollLookup(extraEscapable);
         }
-        return quoted.replace(extraEscapable, function(a) {
+        return quoted.replace(extraEscapable, function (a) {
           return extraLookup[a];
         });
       }
@@ -2932,14 +2932,14 @@ var require_escape = __commonJS({
 var require_transport = __commonJS({
   "node_modules/sockjs-client/lib/utils/transport.js"(exports, module) {
     "use strict";
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:utils:transport");
     }
-    module.exports = function(availableTransports) {
+    module.exports = function (availableTransports) {
       return {
-        filterToEnabled: function(transportsWhitelist, info) {
+        filterToEnabled: function (transportsWhitelist, info) {
           var transports = {
             main: [],
             facade: []
@@ -2949,7 +2949,7 @@ var require_transport = __commonJS({
           } else if (typeof transportsWhitelist === "string") {
             transportsWhitelist = [transportsWhitelist];
           }
-          availableTransports.forEach(function(trans) {
+          availableTransports.forEach(function (trans) {
             if (!trans) {
               return;
             }
@@ -2983,15 +2983,15 @@ var require_log = __commonJS({
   "node_modules/sockjs-client/lib/utils/log.js"(exports, module) {
     "use strict";
     var logObject = {};
-    ["log", "debug", "warn"].forEach(function(level) {
+    ["log", "debug", "warn"].forEach(function (level) {
       var levelExists;
       try {
         levelExists = global.console && global.console[level] && global.console[level].apply;
       } catch (e) {
       }
-      logObject[level] = levelExists ? function() {
+      logObject[level] = levelExists ? function () {
         return global.console[level].apply(global.console, arguments);
-      } : level === "log" ? function() {
+      } : level === "log" ? function () {
       } : logObject.log;
     });
     module.exports = logObject;
@@ -3005,16 +3005,16 @@ var require_event2 = __commonJS({
     function Event(eventType) {
       this.type = eventType;
     }
-    Event.prototype.initEvent = function(eventType, canBubble, cancelable) {
+    Event.prototype.initEvent = function (eventType, canBubble, cancelable) {
       this.type = eventType;
       this.bubbles = canBubble;
       this.cancelable = cancelable;
       this.timeStamp = +/* @__PURE__ */ new Date();
       return this;
     };
-    Event.prototype.stopPropagation = function() {
+    Event.prototype.stopPropagation = function () {
     };
-    Event.prototype.preventDefault = function() {
+    Event.prototype.preventDefault = function () {
     };
     Event.CAPTURING_PHASE = 1;
     Event.AT_TARGET = 2;
@@ -3081,12 +3081,12 @@ var require_xhr_fake = __commonJS({
     function XHRFake() {
       var self2 = this;
       EventEmitter.call(this);
-      this.to = setTimeout(function() {
+      this.to = setTimeout(function () {
         self2.emit("finish", 200, "{}");
       }, XHRFake.timeout);
     }
     inherits(XHRFake, EventEmitter);
-    XHRFake.prototype.close = function() {
+    XHRFake.prototype.close = function () {
       clearTimeout(this.to);
     };
     XHRFake.timeout = 2e3;
@@ -3101,7 +3101,7 @@ var require_info_ajax = __commonJS({
     var EventEmitter = require_emitter().EventEmitter;
     var inherits = require_inherits_browser();
     var objectUtils = require_object();
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:info-ajax");
@@ -3111,7 +3111,7 @@ var require_info_ajax = __commonJS({
       var self2 = this;
       var t0 = +/* @__PURE__ */ new Date();
       this.xo = new AjaxObject("GET", url);
-      this.xo.once("finish", function(status, text) {
+      this.xo.once("finish", function (status, text) {
         var info, rtt;
         if (status === 200) {
           rtt = +/* @__PURE__ */ new Date() - t0;
@@ -3131,7 +3131,7 @@ var require_info_ajax = __commonJS({
       });
     }
     inherits(InfoAjax, EventEmitter);
-    InfoAjax.prototype.close = function() {
+    InfoAjax.prototype.close = function () {
       this.removeAllListeners();
       this.xo.close();
     };
@@ -3151,14 +3151,14 @@ var require_info_iframe_receiver = __commonJS({
       var self2 = this;
       EventEmitter.call(this);
       this.ir = new InfoAjax(transUrl, XHRLocalObject);
-      this.ir.once("finish", function(info, rtt) {
+      this.ir.once("finish", function (info, rtt) {
         self2.ir = null;
         self2.emit("message", JSON.stringify([info, rtt]));
       });
     }
     inherits(InfoReceiverIframe, EventEmitter);
     InfoReceiverIframe.transportName = "iframe-info-receiver";
-    InfoReceiverIframe.prototype.close = function() {
+    InfoReceiverIframe.prototype.close = function () {
       if (this.ir) {
         this.ir.close();
         this.ir = null;
@@ -3178,7 +3178,7 @@ var require_info_iframe = __commonJS({
     var utils = require_event();
     var IframeTransport = require_iframe2();
     var InfoReceiverIframe = require_info_iframe_receiver();
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:info-iframe");
@@ -3186,9 +3186,9 @@ var require_info_iframe = __commonJS({
     function InfoIframe(baseUrl, url) {
       var self2 = this;
       EventEmitter.call(this);
-      var go = function() {
+      var go = function () {
         var ifr = self2.ifr = new IframeTransport(InfoReceiverIframe.transportName, url, baseUrl);
-        ifr.once("message", function(msg) {
+        ifr.once("message", function (msg) {
           if (msg) {
             var d;
             try {
@@ -3204,7 +3204,7 @@ var require_info_iframe = __commonJS({
           }
           self2.close();
         });
-        ifr.once("close", function() {
+        ifr.once("close", function () {
           self2.emit("finish");
           self2.close();
         });
@@ -3216,10 +3216,10 @@ var require_info_iframe = __commonJS({
       }
     }
     inherits(InfoIframe, EventEmitter);
-    InfoIframe.enabled = function() {
+    InfoIframe.enabled = function () {
       return IframeTransport.enabled();
     };
-    InfoIframe.prototype.close = function() {
+    InfoIframe.prototype.close = function () {
       if (this.ifr) {
         this.ifr.close();
       }
@@ -3243,7 +3243,7 @@ var require_info_receiver = __commonJS({
     var XHRFake = require_xhr_fake();
     var InfoIframe = require_info_iframe();
     var InfoAjax = require_info_ajax();
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:info-receiver");
@@ -3252,12 +3252,12 @@ var require_info_receiver = __commonJS({
       debug(baseUrl);
       var self2 = this;
       EventEmitter.call(this);
-      setTimeout(function() {
+      setTimeout(function () {
         self2.doXhr(baseUrl, urlInfo);
       }, 0);
     }
     inherits(InfoReceiver, EventEmitter);
-    InfoReceiver._getReceiver = function(baseUrl, url, urlInfo) {
+    InfoReceiver._getReceiver = function (baseUrl, url, urlInfo) {
       if (urlInfo.sameOrigin) {
         return new InfoAjax(url, XHRLocal);
       }
@@ -3272,22 +3272,22 @@ var require_info_receiver = __commonJS({
       }
       return new InfoAjax(url, XHRFake);
     };
-    InfoReceiver.prototype.doXhr = function(baseUrl, urlInfo) {
+    InfoReceiver.prototype.doXhr = function (baseUrl, urlInfo) {
       var self2 = this, url = urlUtils.addPath(baseUrl, "/info");
       debug("doXhr", url);
       this.xo = InfoReceiver._getReceiver(baseUrl, url, urlInfo);
-      this.timeoutRef = setTimeout(function() {
+      this.timeoutRef = setTimeout(function () {
         debug("timeout");
         self2._cleanup(false);
         self2.emit("finish");
       }, InfoReceiver.timeout);
-      this.xo.once("finish", function(info, rtt) {
+      this.xo.once("finish", function (info, rtt) {
         debug("finish", info, rtt);
         self2._cleanup(true);
         self2.emit("finish", info, rtt);
       });
     };
-    InfoReceiver.prototype._cleanup = function(wasClean) {
+    InfoReceiver.prototype._cleanup = function (wasClean) {
       debug("_cleanup");
       clearTimeout(this.timeoutRef);
       this.timeoutRef = null;
@@ -3296,7 +3296,7 @@ var require_info_receiver = __commonJS({
       }
       this.xo = null;
     };
-    InfoReceiver.prototype.close = function() {
+    InfoReceiver.prototype.close = function () {
       debug("close");
       this.removeAllListeners();
       this._cleanup(false);
@@ -3316,16 +3316,16 @@ var require_facade = __commonJS({
       transport.on("message", this._transportMessage.bind(this));
       transport.on("close", this._transportClose.bind(this));
     }
-    FacadeJS.prototype._transportClose = function(code, reason) {
+    FacadeJS.prototype._transportClose = function (code, reason) {
       iframeUtils.postMessage("c", JSON.stringify([code, reason]));
     };
-    FacadeJS.prototype._transportMessage = function(frame) {
+    FacadeJS.prototype._transportMessage = function (frame) {
       iframeUtils.postMessage("t", frame);
     };
-    FacadeJS.prototype._send = function(data) {
+    FacadeJS.prototype._send = function (data) {
       this._transport.send(data);
     };
-    FacadeJS.prototype._close = function() {
+    FacadeJS.prototype._close = function () {
       this._transport.close();
       this._transport.removeAllListeners();
     };
@@ -3343,24 +3343,24 @@ var require_iframe_bootstrap = __commonJS({
     var InfoIframeReceiver = require_info_iframe_receiver();
     var iframeUtils = require_iframe();
     var loc = require_location();
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:iframe-bootstrap");
     }
-    module.exports = function(SockJS, availableTransports) {
+    module.exports = function (SockJS, availableTransports) {
       var transportMap = {};
-      availableTransports.forEach(function(at) {
+      availableTransports.forEach(function (at) {
         if (at.facadeTransport) {
           transportMap[at.facadeTransport.transportName] = at.facadeTransport;
         }
       });
       transportMap[InfoIframeReceiver.transportName] = InfoIframeReceiver;
       var parentOrigin;
-      SockJS.bootstrap_iframe = function() {
+      SockJS.bootstrap_iframe = function () {
         var facade;
         iframeUtils.currentWindowId = loc.hash.slice(1);
-        var onMessage = function(e) {
+        var onMessage = function (e) {
           if (e.source !== parent) {
             return;
           }
@@ -3441,7 +3441,7 @@ var require_main = __commonJS({
     var CloseEvent = require_close();
     var TransportMessageEvent = require_trans_message();
     var InfoReceiver = require_info_receiver();
-    var debug = function() {
+    var debug = function () {
     };
     if (true) {
       debug = require_browser()("sockjs-client:main");
@@ -3469,7 +3469,7 @@ var require_main = __commonJS({
       if (typeof sessionId === "function") {
         this._generateSessionId = sessionId;
       } else if (typeof sessionId === "number") {
-        this._generateSessionId = function() {
+        this._generateSessionId = function () {
           return random.string(sessionId);
         };
       } else {
@@ -3496,7 +3496,7 @@ var require_main = __commonJS({
         protocols = [protocols];
       }
       var sortedProtocols = protocols.sort();
-      sortedProtocols.forEach(function(proto, i) {
+      sortedProtocols.forEach(function (proto, i) {
         if (!proto) {
           throw new SyntaxError("The protocols entry '" + proto + "' is invalid.");
         }
@@ -3521,7 +3521,7 @@ var require_main = __commonJS({
     function userSetCode(code) {
       return code === 1e3 || code >= 3e3 && code <= 4999;
     }
-    SockJS.prototype.close = function(code, reason) {
+    SockJS.prototype.close = function (code, reason) {
       if (code && !userSetCode(code)) {
         throw new Error("InvalidAccessError: Invalid code");
       }
@@ -3534,7 +3534,7 @@ var require_main = __commonJS({
       var wasClean = true;
       this._close(code || 1e3, reason || "Normal closure", wasClean);
     };
-    SockJS.prototype.send = function(data) {
+    SockJS.prototype.send = function (data) {
       if (typeof data !== "string") {
         data = "" + data;
       }
@@ -3551,7 +3551,7 @@ var require_main = __commonJS({
     SockJS.OPEN = 1;
     SockJS.CLOSING = 2;
     SockJS.CLOSED = 3;
-    SockJS.prototype._receiveInfo = function(info, rtt) {
+    SockJS.prototype._receiveInfo = function (info, rtt) {
       debug("_receiveInfo", rtt);
       this._ir = null;
       if (!info) {
@@ -3567,7 +3567,7 @@ var require_main = __commonJS({
       debug(this._transports.length + " enabled transports");
       this._connect();
     };
-    SockJS.prototype._connect = function() {
+    SockJS.prototype._connect = function () {
       for (var Transport = this._transports.shift(); Transport; Transport = this._transports.shift()) {
         debug("attempt", Transport.transportName);
         if (Transport.needBody) {
@@ -3593,7 +3593,7 @@ var require_main = __commonJS({
       }
       this._close(2e3, "All transports failed", false);
     };
-    SockJS.prototype._transportTimeout = function() {
+    SockJS.prototype._transportTimeout = function () {
       debug("_transportTimeout");
       if (this.readyState === SockJS.CONNECTING) {
         if (this._transport) {
@@ -3602,7 +3602,7 @@ var require_main = __commonJS({
         this._transportClose(2007, "Transport timed out");
       }
     };
-    SockJS.prototype._transportMessage = function(msg) {
+    SockJS.prototype._transportMessage = function (msg) {
       debug("_transportMessage", msg);
       var self2 = this, type = msg.slice(0, 1), content = msg.slice(1), payload;
       switch (type) {
@@ -3628,7 +3628,7 @@ var require_main = __commonJS({
       switch (type) {
         case "a":
           if (Array.isArray(payload)) {
-            payload.forEach(function(p) {
+            payload.forEach(function (p) {
               debug("message", self2.transport, p);
               self2.dispatchEvent(new TransportMessageEvent(p));
             });
@@ -3645,7 +3645,7 @@ var require_main = __commonJS({
           break;
       }
     };
-    SockJS.prototype._transportClose = function(code, reason) {
+    SockJS.prototype._transportClose = function (code, reason) {
       debug("_transportClose", this.transport, code, reason);
       if (this._transport) {
         this._transport.removeAllListeners();
@@ -3658,7 +3658,7 @@ var require_main = __commonJS({
       }
       this._close(code, reason);
     };
-    SockJS.prototype._open = function() {
+    SockJS.prototype._open = function () {
       debug("_open", this._transport && this._transport.transportName, this.readyState);
       if (this.readyState === SockJS.CONNECTING) {
         if (this._transportTimeoutId) {
@@ -3673,7 +3673,7 @@ var require_main = __commonJS({
         this._close(1006, "Server lost session");
       }
     };
-    SockJS.prototype._close = function(code, reason, wasClean) {
+    SockJS.prototype._close = function (code, reason, wasClean) {
       debug("_close", this.transport, code, reason, wasClean, this.readyState);
       var forceFail = false;
       if (this._ir) {
@@ -3690,7 +3690,7 @@ var require_main = __commonJS({
         throw new Error("InvalidStateError: SockJS has already been closed");
       }
       this.readyState = SockJS.CLOSING;
-      setTimeout(function() {
+      setTimeout(function () {
         this.readyState = SockJS.CLOSED;
         if (forceFail) {
           this.dispatchEvent(new Event("error"));
@@ -3704,13 +3704,13 @@ var require_main = __commonJS({
         debug("disconnected");
       }.bind(this), 0);
     };
-    SockJS.prototype.countRTO = function(rtt) {
+    SockJS.prototype.countRTO = function (rtt) {
       if (rtt > 100) {
         return 4 * rtt;
       }
       return 300 + rtt;
     };
-    module.exports = function(availableTransports) {
+    module.exports = function (availableTransports) {
       transports = transport(availableTransports);
       require_iframe_bootstrap()(SockJS, availableTransports);
       return SockJS;
