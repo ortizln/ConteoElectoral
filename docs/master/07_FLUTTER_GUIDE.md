@@ -340,7 +340,7 @@ class AppProvider extends ChangeNotifier {
 
 ```dart
 class ApiService {
-  static const String _baseUrl = 'http://192.168.100.215:8081/api';
+  static const String _baseUrl = 'http://192.168.1.71:8081/api';
   static String? _token;
 
   static void setToken(String? token) {

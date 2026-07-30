@@ -6,9 +6,9 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.100.215:5432/conteo_electoral
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.1.71:5432/conteo_electoral
       - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=086411421
+      - SPRING_DATASOURCE_PASSWORD=12345
     networks:
       - app-network
 

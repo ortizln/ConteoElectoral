@@ -5,9 +5,9 @@ spring:
   application:
     name: conteo-electoral
   datasource:
-    url: jdbc:postgresql://192.168.100.215:5432/conteo_electoral
+    url: jdbc:postgresql://192.168.1.71:5432/conteo_electoral
     username: postgres
-    password: 086411421
+    password: 12345
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
