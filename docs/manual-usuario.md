@@ -65,7 +65,7 @@ El **Sistema de Conteo Electoral** es una plataforma integral para la gestión y
 ### App Móvil
 
 1. Abrir la aplicación "Conteo Electoral"
-2. Configurar la URL del servidor (ej. `http://192.168.100.215:8081`)
+2. Configurar la URL del servidor (ej. `http://192.168.1.43:8081`)
 3. Ingresar las mismas credenciales del web
 4. Presionar **Iniciar Sesión**
 
@@ -307,7 +307,7 @@ Los cambios se guardan automáticamente después de una pausa de 400ms.
 1. Instalar el APK en el dispositivo Android
 2. Al iniciar, configurar la URL del servidor:
    - **Opción por defecto:** `http://10.0.2.2:8081/api` (emulador)
-   - **Producción:** `http://192.168.100.215:8081/api`
+   - **Producción:** `http://192.168.1.43:8081/api`
 3. Presionar **Probar Conexión** para verificar
 
 ### 5.2. Inicio de Sesión

@@ -108,7 +108,7 @@ docs/master/
 | Backend | `http://localhost:8081` |
 | Frontend (dev) | `http://localhost:4200` |
 | Swagger | `http://localhost:8081/swagger-ui.html` |
-| PostgreSQL | `192.168.100.215:5432` |
+| PostgreSQL | `192.168.1.43:5432` |
 | BD name | `conteo_electoral` |
 | Login admin | `admin / admin123` |
 

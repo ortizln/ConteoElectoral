@@ -36,7 +36,7 @@ docker run -d \
   --name conteo-backend \
   --restart unless-stopped \
   -p 8081:8081 \
-  -e SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.100.215:5432/conteo_electoral \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.1.43:5432/conteo_electoral \
   -e SPRING_DATASOURCE_USERNAME=postgres \
   -e SPRING_DATASOURCE_PASSWORD=086411421 \
   conteo-electoral-backend:latest

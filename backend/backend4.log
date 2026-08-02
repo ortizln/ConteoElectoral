@@ -76,7 +76,7 @@ Downloaded from central: https://repo.maven.apache.org/maven2/org/springframewor
 ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
   '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/192.168.100.215
+ =========|_|==============|___/=/_/_/_/192.168.1.43
  :: Spring Boot ::                (v3.2.1)
 
 2026-07-28T10:26:38.694-05:00  INFO 51688 --- [conteo-electoral] [           main] c.electoral.ConteoElectoralApplication   : Starting ConteoElectoralApplication using Java 21.0.10 with PID 51688 (C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\target\classes started by Alexi in C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend)
@@ -95,7 +95,7 @@ Downloaded from central: https://repo.maven.apache.org/maven2/org/springframewor
 2026-07-28T10:26:40.225-05:00  INFO 51688 --- [conteo-electoral] [           main] o.f.c.internal.license.VersionPrinter    : Flyway Community Edition 9.22.3 by Redgate
 2026-07-28T10:26:40.226-05:00  INFO 51688 --- [conteo-electoral] [           main] o.f.c.internal.license.VersionPrinter    : See release notes here: https://rd.gt/416ObMi
 2026-07-28T10:26:40.226-05:00  INFO 51688 --- [conteo-electoral] [           main] o.f.c.internal.license.VersionPrinter    : 
-2026-07-28T10:26:40.239-05:00  INFO 51688 --- [conteo-electoral] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://192.168.100.215:5432/conteo_electoral (PostgreSQL 16.14)
+2026-07-28T10:26:40.239-05:00  INFO 51688 --- [conteo-electoral] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://192.168.1.43:5432/conteo_electoral (PostgreSQL 16.14)
 2026-07-28T10:26:40.257-05:00  WARN 51688 --- [conteo-electoral] [           main] o.f.c.internal.database.base.Database    : Flyway upgrade recommended: PostgreSQL 16.14 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 15.
 2026-07-28T10:26:40.302-05:00  INFO 51688 --- [conteo-electoral] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 10 migrations (execution time 00:00.028s)
 2026-07-28T10:26:40.336-05:00  INFO 51688 --- [conteo-electoral] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 1.7.0
