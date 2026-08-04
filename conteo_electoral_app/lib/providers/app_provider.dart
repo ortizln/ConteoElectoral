@@ -8,6 +8,7 @@ import '../services/api_service.dart';
 import '../services/sync_service.dart';
 import '../services/stomp_service.dart';
 import '../database/database_helper.dart';
+import '../config/server_url.dart';
 
 class AppProvider extends ChangeNotifier {
   final DatabaseHelper _db = DatabaseHelper.instance;
@@ -87,7 +88,7 @@ class AppProvider extends ChangeNotifier {
   }
 
   void _initStomp() {
-    final wsBaseUrl = _serverUrl.replaceAll('/api', '');
+    final wsBaseUrl = ServerUrl.stripApiSuffix(_serverUrl);
     _stomp.connect(wsBaseUrl, eleccionId: _eleccionActual?.id);
     _sync.setStomp(_stomp);
     _stompSyncSub = _stomp.onSyncEvent.listen((_) {
@@ -100,15 +101,16 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> _loadServerUrl() async {
     final prefs = await SharedPreferences.getInstance();
-    _serverUrl = prefs.getString('server_url') ?? 'http://10.0.2.2:8081/api';
+    _serverUrl = ServerUrl.normalizeApiUrl(
+        prefs.getString('server_url') ?? 'http://10.0.2.2:8081/api');
     await _api.setServerUrl(_serverUrl);
   }
 
   Future<void> setServerUrl(String url) async {
     final prefs = await SharedPreferences.getInstance();
-    _serverUrl = url.endsWith('/api') ? url : '$url/api';
+    _serverUrl = ServerUrl.normalizeApiUrl(url);
     await prefs.setString('server_url', _serverUrl);
-    await _api.setServerUrl(url);
+    await _api.setServerUrl(_serverUrl);
     notifyListeners();
   }
 
@@ -257,7 +259,7 @@ class AppProvider extends ChangeNotifier {
       
       await _db.guardarElecciones(elecciones);
       _eleccionActual = elecciones.first;
-      _stomp.connect(_serverUrl.replaceAll('/api', ''), eleccionId: _eleccionActual!.id);
+      _stomp.connect(ServerUrl.stripApiSuffix(_serverUrl), eleccionId: _eleccionActual!.id);
       
       final partidos = await _api.getPartidosByEleccion(_eleccionActual!.id, token: token);
       await _db.guardarPartidos(partidos);

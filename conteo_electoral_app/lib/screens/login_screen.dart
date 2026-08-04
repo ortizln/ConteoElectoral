@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
+import '../config/server_url.dart';
 import '../theme/app_theme.dart';
 import 'home_screen.dart';
 
@@ -61,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   void _showServerConfig() {
     _serverController.text =
-        context.read<AppProvider>().serverUrl.replaceAll('/api', '');
+        ServerUrl.stripApiSuffix(context.read<AppProvider>().serverUrl);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -168,7 +169,7 @@ class _LoginScreenState extends State<LoginScreen>
                     const SizedBox(height: 4),
                     Consumer<AppProvider>(
                       builder: (context, provider, _) => Text(
-                        provider.serverUrl.replaceAll('/api', ''),
+                        ServerUrl.stripApiSuffix(provider.serverUrl),
                         style: TextStyle(
                             fontSize: 13,
                             color: Colors.white.withValues(alpha: 0.7)),

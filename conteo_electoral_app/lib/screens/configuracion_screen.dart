@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
+import '../config/server_url.dart';
 import '../theme/app_theme.dart';
 import '../widgets/widgets.dart';
 
@@ -19,7 +20,7 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
   @override
   void initState() {
     super.initState();
-    _serverCtrl = TextEditingController(text: context.read<AppProvider>().serverUrl.replaceAll('/api', ''));
+    _serverCtrl = TextEditingController(text: ServerUrl.stripApiSuffix(context.read<AppProvider>().serverUrl));
   }
 
   @override

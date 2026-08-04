@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
+import '../config/server_url.dart';
 import '../models/models.dart';
 
 class ApiService {
@@ -17,7 +18,7 @@ class ApiService {
 
   Future<void> setServerUrl(String url) async {
     final prefs = await SharedPreferences.getInstance();
-    _baseUrl = url.endsWith('/api') ? url : '$url/api';
+    _baseUrl = ServerUrl.normalizeApiUrl(url);
     await prefs.setString(_serverUrlKey, _baseUrl);
   }
 
