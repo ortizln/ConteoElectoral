@@ -1015,7 +1015,7 @@ class ApiService {
 
   Future<Map<String, dynamic>> testConnection() async {
     try {
-      await http
+      final response = await http
           .post(
             Uri.parse('$baseUrl/auth/login'),
             headers: {'Content-Type': 'application/json'},
@@ -1023,7 +1023,13 @@ class ApiService {
           )
           .timeout(const Duration(seconds: 5));
 
-      return {'success': true, 'message': 'Conexión exitosa al servidor'};
+      if (response.statusCode == 200 || response.statusCode == 401) {
+        return {'success': true, 'message': 'Conexión exitosa al servidor'};
+      }
+      return {
+        'success': false,
+        'message': 'El servidor respondió ${response.statusCode} (posible bloqueo de red)'
+      };
     } catch (e) {
       return {'success': false, 'message': 'No se pudo conectar: $e'};
     }
