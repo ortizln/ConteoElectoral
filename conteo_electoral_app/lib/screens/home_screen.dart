@@ -72,8 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
           title: const Text('Actualización disponible'),
-          content: Text(
-              'Nueva versión ${provider.latestVersion} disponible.\n'
+          content: Text('Nueva versión ${provider.latestVersion} disponible.\n'
               'Tu versión actual: v${provider.currentVersion}\n\n'
               'Contacta al administrador para obtener la nueva APK.'),
           actions: [
@@ -116,9 +115,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 6,
                   margin: const EdgeInsets.only(right: 8),
                   decoration: BoxDecoration(
-                    color: provider.isOnline
-                        ? AppColors.success
-                        : AppColors.error,
+                    color:
+                        provider.isOnline ? AppColors.success : AppColors.error,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -133,12 +131,11 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               if (provider.failedSyncCount + provider.pendingSyncCount > 0)
                 IconButton(
-                  icon: const Icon(Icons.sync_problem,
-                      color: AppColors.warning),
+                  icon:
+                      const Icon(Icons.sync_problem, color: AppColors.warning),
                   tooltip:
                       '${provider.pendingSyncCount} pendientes, ${provider.failedSyncCount} fallidos',
-                  onPressed: () =>
-                      Navigator.pushNamed(context, '/pendientes'),
+                  onPressed: () => Navigator.pushNamed(context, '/pendientes'),
                 ),
               IconButton(
                 icon: const Icon(Icons.logout),
@@ -217,7 +214,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       // Eleccion title row
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
                           color: AppColors.surface,
                           borderRadius: BorderRadius.circular(10),
@@ -237,8 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(width: 10),
                             Flexible(
                               child: Text(
-                                provider.eleccionActual?.nombre ??
-                                    'Sin datos',
+                                provider.eleccionActual?.nombre ?? 'Sin datos',
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,
@@ -270,7 +267,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   totalNulos,
                                   Icons.cancel_outlined,
                                   AppColors.error,
-                                  () => _showNulosBlancoDetalle(this.context, mesas, 'Nulos'),
+                                  () => _showNulosBlancoDetalle(
+                                      this.context, mesas, 'Nulos'),
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -280,7 +278,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   totalBlanco,
                                   Icons.check_circle_outline,
                                   AppColors.gray,
-                                  () => _showNulosBlancoDetalle(this.context, mesas, 'Blanco'),
+                                  () => _showNulosBlancoDetalle(
+                                      this.context, mesas, 'Blanco'),
                                 ),
                               ),
                             ],
@@ -404,7 +403,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ],
 
                       const SizedBox(height: 16),
-                      SyncIndicator(isOnline: provider.isOnline, pendientes: provider.pendingSyncCount),
+                      SyncIndicator(
+                          isOnline: provider.isOnline,
+                          pendientes: provider.pendingSyncCount),
                       const SizedBox(height: 24),
                     ],
                   ),
@@ -434,7 +435,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _nulosBlancoTile(String label, int total, IconData icon, Color color, VoidCallback onTap) {
+  Widget _nulosBlancoTile(
+      String label, int total, IconData icon, Color color, VoidCallback onTap) {
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(8),
@@ -452,7 +454,9 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Icon(icon, size: 16, color: color),
               const SizedBox(width: 6),
-              Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+              Text(label,
+                  style: const TextStyle(
+                      fontSize: 12, fontWeight: FontWeight.w600)),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -460,10 +464,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text('$total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: color)),
+                child: Text('$total',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: color)),
               ),
               const SizedBox(width: 4),
-              const Icon(Icons.chevron_right, size: 14, color: AppColors.lightGray),
+              const Icon(Icons.chevron_right,
+                  size: 14, color: AppColors.lightGray),
             ],
           ),
         ),
@@ -471,9 +480,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showNulosBlancoDetalle(BuildContext context, List<Mesa> mesas, String tipo) {
+  void _showNulosBlancoDetalle(
+      BuildContext context, List<Mesa> mesas, String tipo) {
     final color = tipo == 'Nulos' ? AppColors.error : AppColors.gray;
-    final icon = tipo == 'Nulos' ? Icons.cancel_outlined : Icons.check_circle_outline;
+    final icon =
+        tipo == 'Nulos' ? Icons.cancel_outlined : Icons.check_circle_outline;
     final conValor = mesas.where((m) {
       final v = tipo == 'Nulos' ? m.votosNulos : m.votosBlanco;
       return v != null && v > 0;
@@ -494,55 +505,71 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Icon(icon, color: color, size: 20),
                 const SizedBox(width: 8),
-                Text('Votos $tipo por Mesa', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text('Votos $tipo por Mesa',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold)),
               ],
             ),
             const SizedBox(height: 16),
             if (conValor.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: const Center(child: Text('No hay votos registrados')),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Center(child: Text('No hay votos registrados')),
               )
             else
               ...conValor.map((m) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 40, height: 40,
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: Text(m.numero, style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 14)),
-                      ),
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Center(
+                            child: Text(m.numero,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: color,
+                                    fontSize: 14)),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Mesa ${m.numero}',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 14)),
+                              if (m.institucionNombre != null)
+                                Text(m.institucionNombre!,
+                                    style: const TextStyle(
+                                        fontSize: 11, color: AppColors.gray)),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${tipo == 'Nulos' ? m.votosNulos : m.votosBlanco}',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: color),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Mesa ${m.numero}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-                          if (m.institucionNombre != null)
-                            Text(m.institucionNombre!, style: const TextStyle(fontSize: 11, color: AppColors.gray)),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '${tipo == 'Nulos' ? m.votosNulos : m.votosBlanco}',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: color),
-                      ),
-                    ),
-                  ],
-                ),
-              )),
+                  )),
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
@@ -591,7 +618,8 @@ class _HomeScreenState extends State<HomeScreen> {
             leading: const Icon(Icons.sync, color: AppColors.warning),
             title: const Text('Sync Pendientes'),
             subtitle: provider.pendingSyncCount + provider.failedSyncCount > 0
-                ? Text('${provider.pendingSyncCount} pend, ${provider.failedSyncCount} fallidos',
+                ? Text(
+                    '${provider.pendingSyncCount} pend, ${provider.failedSyncCount} fallidos',
                     style: const TextStyle(fontSize: 11, color: AppColors.gray))
                 : null,
             onTap: () {
@@ -667,8 +695,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Text('v${provider.currentVersion}',
-                  style: const TextStyle(
-                      fontSize: 12, color: AppColors.gray)),
+                  style: const TextStyle(fontSize: 12, color: AppColors.gray)),
             ),
           const Divider(),
           ListTile(
