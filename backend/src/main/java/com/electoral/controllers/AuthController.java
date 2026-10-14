@@ -28,12 +28,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
-        
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         String token = jwtService.generateToken(userDetails);
-        
+
         LoginResponse response = LoginResponse.builder()
                 .token(token)
                 .type("Bearer")
@@ -43,7 +42,7 @@ public class AuthController {
                 .apellido(userDetails.getApellido())
                 .rol(userDetails.getRol())
                 .build();
-        
+
         return ResponseEntity.ok(response);
     }
 
@@ -51,7 +50,7 @@ public class AuthController {
     public ResponseEntity<UsuarioResponse> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        
+
         return ResponseEntity.ok(usuarioService.getUsuarioById(userDetails.getId()));
     }
 
@@ -62,5 +61,10 @@ public class AuthController {
         String password = body.get("password");
         boolean valid = usuarioService.verifyPassword(userDetails.getId(), password);
         return ResponseEntity.ok(Map.of("valid", valid));
+    }
+
+    @GetMapping("/ping")
+    public ResponseEntity<?> ping() {
+        return ResponseEntity.ok("STATUS OK");
     }
 }

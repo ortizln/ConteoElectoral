@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
-import '../config/server_url.dart';
 import '../theme/app_theme.dart';
-import '../widgets/widgets.dart';
 
 class ConfiguracionScreen extends StatefulWidget {
   const ConfiguracionScreen({super.key});
@@ -20,7 +18,8 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
   @override
   void initState() {
     super.initState();
-    _serverCtrl = TextEditingController(text: ServerUrl.stripApiSuffix(context.read<AppProvider>().serverUrl));
+    _serverCtrl = TextEditingController(
+        text: context.read<AppProvider>().serverUrl);
   }
 
   @override
@@ -30,7 +29,10 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
   }
 
   Future<void> _testConnection() async {
-    setState(() { _testing = true; _testResult = null; });
+    setState(() {
+      _testing = true;
+      _testResult = null;
+    });
     final provider = context.read<AppProvider>();
     try {
       final result = await provider.testServerConnection();
@@ -42,7 +44,9 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
     } catch (e) {
       _testResult = 'Error: $e';
     }
-    setState(() { _testing = false; });
+    setState(() {
+      _testing = false;
+    });
   }
 
   Future<void> _saveServer() async {
@@ -107,14 +111,16 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                           ),
                           const SizedBox(height: 4),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               provider.usuario?.rol ?? '',
-                              style: const TextStyle(color: Colors.white, fontSize: 11),
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 11),
                             ),
                           ),
                         ],
@@ -140,7 +146,9 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                             width: 8,
                             height: 8,
                             decoration: BoxDecoration(
-                              color: provider.isOnline ? AppColors.success : AppColors.error,
+                              color: provider.isOnline
+                                  ? AppColors.success
+                                  : AppColors.error,
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -149,7 +157,9 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                             provider.isOnline ? 'Conectado' : 'Desconectado',
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              color: provider.isOnline ? AppColors.success : AppColors.error,
+                              color: provider.isOnline
+                                  ? AppColors.success
+                                  : AppColors.error,
                             ),
                           ),
                         ],
@@ -160,7 +170,8 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                         decoration: const InputDecoration(
                           labelText: 'URL del servidor',
                           hintText: 'http://192.168.1.100:8081',
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          contentPadding: EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 12),
                           border: OutlineInputBorder(),
                           isDense: true,
                         ),
@@ -171,11 +182,15 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                           Expanded(
                             child: OutlinedButton(
                               onPressed: _testing ? null : _testConnection,
-                              style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                              style: OutlinedButton.styleFrom(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14)),
                               child: _testing
                                   ? const SizedBox(
-                                      width: 20, height: 20,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2),
                                     )
                                   : const Icon(Icons.wifi_find, size: 20),
                             ),
@@ -184,7 +199,9 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                           Expanded(
                             child: FilledButton(
                               onPressed: _saveServer,
-                              style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                              style: FilledButton.styleFrom(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14)),
                               child: const Icon(Icons.save, size: 20),
                             ),
                           ),
@@ -195,7 +212,9 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                         Text(
                           _testResult!,
                           style: TextStyle(
-                            color: _testResult == 'Conexión exitosa' ? AppColors.success : AppColors.error,
+                            color: _testResult == 'Conexión exitosa'
+                                ? AppColors.success
+                                : AppColors.error,
                             fontSize: 13,
                           ),
                         ),
@@ -235,8 +254,10 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(color: AppColors.gray, fontSize: 13)),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+        Text(label,
+            style: const TextStyle(color: AppColors.gray, fontSize: 13)),
+        Text(value,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
       ],
     );
   }
