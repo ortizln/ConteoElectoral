@@ -1,2 +1,4 @@
 conteo_electoral_app/deploy/conteo-electoral.apk
 *.apk
+target/
+node_modules/
