@@ -40,10 +40,14 @@ class SyncServiceIntegrationTest {
     @Autowired private ProvinciaRepository provinciaRepository;
     @Autowired private CantonRepository cantonRepository;
     @Autowired private ParroquiaRepository parroquiaRepository;
+    @Autowired private MesaUsuarioRepository mesaUsuarioRepository;
+    @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired private SyncOperationLogRepository syncOperationLogRepository;
 
     private Eleccion eleccion;
     private Candidato candidato;
     private Mesa mesa;
+    private Usuario usuario;
 
     @BeforeEach
     void setUp() {
@@ -77,6 +81,17 @@ class SyncServiceIntegrationTest {
                 .numero("001").sexo(Mesa.SexoMesa.MIXTA)
                 .institucion(inst).elecciones(eleccion)
                 .build());
+
+        usuario = usuarioRepository.findById(1L).orElse(null);
+        if (usuario == null) {
+            usuario = usuarioRepository.save(Usuario.builder()
+                    .username("testuser").password("pass")
+                    .nombre("Test").apellido("User")
+                    .build());
+        }
+
+        mesaUsuarioRepository.save(MesaUsuario.builder()
+                .mesa(mesa).usuario(usuario).build());
     }
 
     @Test
@@ -94,7 +109,7 @@ class SyncServiceIntegrationTest {
                         .build()))
                 .build();
 
-        SyncPushResponse response = syncService.processPush(request, 1L);
+        SyncPushResponse response = syncService.processPush(request, usuario.getId());
 
         assertNotNull(response);
         assertFalse(response.getResults().isEmpty());
@@ -107,7 +122,7 @@ class SyncServiceIntegrationTest {
     }
 
     @Test
-    void processPush_creaVoto_Acumula() {
+    void processPush_creaVoto_Sobrescribe() {
         SyncPushRequest req1 = SyncPushRequest.builder()
                 .operations(List.of(SyncOperationDTO.builder()
                         .operationId("op-1").entity("voto").action("CREATE")
@@ -120,7 +135,7 @@ class SyncServiceIntegrationTest {
                         ))
                         .build()))
                 .build();
-        syncService.processPush(req1, 1L);
+        syncService.processPush(req1, usuario.getId());
 
         SyncPushRequest req2 = SyncPushRequest.builder()
                 .operations(List.of(SyncOperationDTO.builder()
@@ -134,11 +149,11 @@ class SyncServiceIntegrationTest {
                         ))
                         .build()))
                 .build();
-        SyncPushResponse response = syncService.processPush(req2, 1L);
+        SyncPushResponse response = syncService.processPush(req2, usuario.getId());
 
         assertTrue(response.getResults().get(0).isSuccess());
         long total = votoRepository.sumVotosByEleccion(eleccion.getId());
-        assertEquals(12, total);
+        assertEquals(5, total, "CREATE con mismo candidato+mesa sobrescribe cantidadVotos");
     }
 
     @Test
@@ -153,7 +168,7 @@ class SyncServiceIntegrationTest {
                         .build()))
                 .build();
 
-        SyncPushResponse response = syncService.processPush(request, 1L);
+        SyncPushResponse response = syncService.processPush(request, usuario.getId());
 
         assertTrue(response.getResults().get(0).isSuccess());
         Mesa actualizada = mesaRepository.findById(mesa.getId()).orElseThrow();
@@ -174,7 +189,7 @@ class SyncServiceIntegrationTest {
                         ))
                         .build()))
                 .build();
-        syncService.processPush(request, 1L);
+        syncService.processPush(request, usuario.getId());
 
         SyncPullResponse pull = syncService.pullChanges(eleccion.getId(),
                 LocalDateTime.now().minusHours(1).toString());
@@ -202,7 +217,7 @@ class SyncServiceIntegrationTest {
                         .build()))
                 .build();
 
-        SyncPushResponse response = syncService.processPush(request, 1L);
+        SyncPushResponse response = syncService.processPush(request, usuario.getId());
 
         assertFalse(response.getResults().get(0).isSuccess());
         assertNotNull(response.getResults().get(0).getError());
@@ -241,10 +256,123 @@ class SyncServiceIntegrationTest {
                 ))
                 .build();
 
-        SyncPushResponse response = syncService.processPush(request, 1L);
+        SyncPushResponse response = syncService.processPush(request, usuario.getId());
 
         assertEquals(2, response.getResults().size());
         assertTrue(response.getResults().get(0).isSuccess());
         assertTrue(response.getResults().get(1).isSuccess());
+    }
+
+    @Test
+    void processPush_idempotencia_operationIdDuplicado() {
+        SyncPushRequest request = SyncPushRequest.builder()
+                .operations(List.of(SyncOperationDTO.builder()
+                        .operationId("idem-op-1").entity("voto").action("CREATE")
+                        .entityId(0L)
+                        .data(Map.of(
+                                "candidatoId", candidato.getId(),
+                                "mesaId", mesa.getId(),
+                                "cantidadVotos", 20,
+                                "eleccionesId", eleccion.getId()
+                        ))
+                        .build()))
+                .build();
+
+        SyncPushResponse response1 = syncService.processPush(request, usuario.getId());
+        assertTrue(response1.getResults().get(0).isSuccess());
+        long total1 = votoRepository.sumVotosByEleccion(eleccion.getId());
+        assertEquals(20, total1);
+
+        SyncPushResponse response2 = syncService.processPush(request, usuario.getId());
+        assertTrue(response2.getResults().get(0).isSuccess());
+        long total2 = votoRepository.sumVotosByEleccion(eleccion.getId());
+        assertEquals(20, total2, "No debe duplicar voto con mismo operationId");
+
+        assertTrue(syncOperationLogRepository.existsByOperationId("idem-op-1"));
+    }
+
+    @Test
+    void processPush_votoEnMesaCerrada_retornaError() {
+        mesa.setCerrada(true);
+        mesaRepository.save(mesa);
+
+        SyncPushRequest request = SyncPushRequest.builder()
+                .operations(List.of(SyncOperationDTO.builder()
+                        .operationId("op-cerrada").entity("voto").action("CREATE")
+                        .entityId(0L)
+                        .data(Map.of(
+                                "candidatoId", candidato.getId(),
+                                "mesaId", mesa.getId(),
+                                "cantidadVotos", 10,
+                                "eleccionesId", eleccion.getId()
+                        ))
+                        .build()))
+                .build();
+
+        SyncPushResponse response = syncService.processPush(request, usuario.getId());
+
+        assertFalse(response.getResults().get(0).isSuccess());
+        assertNotNull(response.getResults().get(0).getError());
+        assertTrue(response.getResults().get(0).getError().contains("cerrada"));
+    }
+
+    @Test
+    void processPush_votoEnMesaNoAsignada_retornaError() {
+        mesaUsuarioRepository.deleteAll();
+
+        SyncPushRequest request = SyncPushRequest.builder()
+                .operations(List.of(SyncOperationDTO.builder()
+                        .operationId("op-noasignada").entity("voto").action("CREATE")
+                        .entityId(0L)
+                        .data(Map.of(
+                                "candidatoId", candidato.getId(),
+                                "mesaId", mesa.getId(),
+                                "cantidadVotos", 10,
+                                "eleccionesId", eleccion.getId()
+                        ))
+                        .build()))
+                .build();
+
+        SyncPushResponse response = syncService.processPush(request, 999L);
+
+        assertFalse(response.getResults().get(0).isSuccess());
+        assertTrue(response.getResults().get(0).getError().contains("asignado"));
+    }
+
+    @Test
+    void processPush_batchConOperacionFallida_lasDemasSeProcesan() {
+        SyncPushRequest request = SyncPushRequest.builder()
+                .operations(List.of(
+                        SyncOperationDTO.builder()
+                                .operationId("op-ok").entity("voto").action("CREATE")
+                                .entityId(0L)
+                                .data(Map.of(
+                                        "candidatoId", candidato.getId(),
+                                        "mesaId", mesa.getId(),
+                                        "cantidadVotos", 8,
+                                        "eleccionesId", eleccion.getId()
+                                ))
+                                .build(),
+                        SyncOperationDTO.builder()
+                                .operationId("op-fail").entity("voto").action("CREATE")
+                                .entityId(0L)
+                                .data(Map.of(
+                                        "candidatoId", 99999L,
+                                        "mesaId", mesa.getId(),
+                                        "cantidadVotos", 5,
+                                        "eleccionesId", eleccion.getId()
+                                ))
+                                .build()
+                ))
+                .build();
+
+        SyncPushResponse response = syncService.processPush(request, usuario.getId());
+
+        assertEquals(2, response.getResults().size());
+        assertTrue(response.getResults().get(0).isSuccess());
+        assertFalse(response.getResults().get(1).isSuccess());
+
+        long total = votoRepository.sumVotosByEleccion(eleccion.getId());
+        assertEquals(8, total, "Solo la operación válida debe procesarse");
     }
 }

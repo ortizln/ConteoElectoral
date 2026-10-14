@@ -9,6 +9,7 @@ import com.electoral.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,6 +22,7 @@ public class SyncController {
     private final SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/push")
+    @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<SyncPushResponse> push(
             @RequestBody SyncPushRequest request) {
         Long usuarioId = securityUtil.getCurrentUserId();
@@ -47,6 +49,7 @@ public class SyncController {
     }
 
     @GetMapping("/pull")
+    @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<SyncPullResponse> pull(
             @RequestParam Long eleccionId,
             @RequestParam(required = false) String since) {

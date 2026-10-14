@@ -89,7 +89,9 @@ class AppProvider extends ChangeNotifier {
 
   void _initStomp() {
     final wsBaseUrl = ServerUrl.stripApiSuffix(_serverUrl);
-    _stomp.connect(wsBaseUrl, eleccionId: _eleccionActual?.id);
+    _db.getToken().then((token) {
+      _stomp.connect(wsBaseUrl, eleccionId: _eleccionActual?.id, token: token);
+    });
     _sync.setStomp(_stomp);
     _stompSyncSub = _stomp.onSyncEvent.listen((_) {
       sincronizarVotos();
@@ -259,7 +261,7 @@ class AppProvider extends ChangeNotifier {
       
       await _db.guardarElecciones(elecciones);
       _eleccionActual = elecciones.first;
-      _stomp.connect(ServerUrl.stripApiSuffix(_serverUrl), eleccionId: _eleccionActual!.id);
+      _stomp.connect(ServerUrl.stripApiSuffix(_serverUrl), eleccionId: _eleccionActual!.id, token: token);
       
       final partidos = await _api.getPartidosByEleccion(_eleccionActual!.id, token: token);
       await _db.guardarPartidos(partidos);

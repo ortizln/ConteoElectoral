@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/models.dart';
@@ -8,6 +9,11 @@ class DatabaseHelper {
   static Database? _database;
 
   DatabaseHelper._internal();
+
+  @visibleForTesting
+  static void resetForTesting() {
+    _database = null;
+  }
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -20,7 +26,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 7,
+      version: 8,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -138,6 +144,7 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE sync_queue (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        operation_id TEXT NOT NULL UNIQUE,
         entity_type TEXT NOT NULL,
         entity_id INTEGER NOT NULL,
         operation TEXT NOT NULL,
@@ -145,8 +152,10 @@ class DatabaseHelper {
         eleccion_id INTEGER,
         status TEXT NOT NULL DEFAULT 'PENDING',
         created_at TEXT NOT NULL,
+        last_attempt_at TEXT,
         retry_count INTEGER DEFAULT 0,
-        last_error TEXT
+        last_error TEXT,
+        ack_at TEXT
       )
     ''');
 
@@ -154,16 +163,18 @@ class DatabaseHelper {
       CREATE TABLE sync_meta (
         id INTEGER PRIMARY KEY,
         last_sync_at TEXT,
-        last_pull_at TEXT
+        last_pull_at TEXT,
+        server_cursor INTEGER DEFAULT 0
       )
     ''');
 
-    await db.execute('INSERT OR IGNORE INTO sync_meta (id, last_sync_at, last_pull_at) VALUES (1, NULL, NULL)');
+    await db.execute('INSERT OR IGNORE INTO sync_meta (id, last_sync_at, last_pull_at, server_cursor) VALUES (1, NULL, NULL, 0)');
 
     await db.execute('CREATE INDEX idx_votos_mesa ON votos(mesaId)');
     await db.execute('CREATE INDEX idx_votos_sinc ON votos(sincronizado)');
     await db.execute('CREATE INDEX idx_sync_queue_status ON sync_queue(status)');
     await db.execute('CREATE INDEX idx_sync_queue_entity ON sync_queue(entity_type, entity_id)');
+    await db.execute('CREATE UNIQUE INDEX idx_sync_queue_opid ON sync_queue(operation_id)');
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -236,26 +247,37 @@ class DatabaseHelper {
       }
     }
     if (oldVersion < 7) {
-      await db.execute('''
-        CREATE TABLE votos_new (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          candidatoId INTEGER,
-          mesaId INTEGER NOT NULL,
-          cantidadVotos INTEGER NOT NULL,
-          eleccionesId INTEGER NOT NULL,
-          opcionPapeletaId INTEGER,
-          listaId INTEGER,
-          sincronizado INTEGER NOT NULL DEFAULT 0,
-          fechaRegistro TEXT NOT NULL DEFAULT ''
-        )
-      ''');
-      await db.execute('''
-        INSERT INTO votos_new (id, candidatoId, mesaId, cantidadVotos, eleccionesId, opcionPapeletaId, listaId, sincronizado, fechaRegistro)
-        SELECT id, candidatoId, mesaId, cantidadVotos, eleccionesId, opcionPapeletaId, listaId, sincronizado, COALESCE(fechaRegistro, '')
-        FROM votos
-      ''');
-      await db.execute('DROP TABLE votos');
-      await db.execute('ALTER TABLE votos_new RENAME TO votos');
+      await db.transaction((txn) async {
+        await txn.execute('''
+          CREATE TABLE votos_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            candidatoId INTEGER,
+            mesaId INTEGER NOT NULL,
+            cantidadVotos INTEGER NOT NULL,
+            eleccionesId INTEGER NOT NULL,
+            opcionPapeletaId INTEGER,
+            listaId INTEGER,
+            sincronizado INTEGER NOT NULL DEFAULT 0,
+            fechaRegistro TEXT NOT NULL DEFAULT ''
+          )
+        ''');
+        await txn.execute('''
+          INSERT INTO votos_new (id, candidatoId, mesaId, cantidadVotos, eleccionesId, opcionPapeletaId, listaId, sincronizado, fechaRegistro)
+          SELECT id, candidatoId, mesaId, cantidadVotos, eleccionesId, opcionPapeletaId, listaId, sincronizado, COALESCE(fechaRegistro, '')
+          FROM votos
+        ''');
+        await txn.execute('DROP TABLE votos');
+        await txn.execute('ALTER TABLE votos_new RENAME TO votos');
+      });
+    }
+    if (oldVersion < 8) {
+      await db.execute('ALTER TABLE sync_queue ADD COLUMN operation_id TEXT');
+      await db.execute('ALTER TABLE sync_queue ADD COLUMN last_attempt_at TEXT');
+      await db.execute('ALTER TABLE sync_queue ADD COLUMN ack_at TEXT');
+      await db.execute('ALTER TABLE sync_meta ADD COLUMN server_cursor INTEGER DEFAULT 0');
+      await db.execute("UPDATE sync_meta SET server_cursor = 0 WHERE server_cursor IS NULL");
+      await db.execute("UPDATE sync_queue SET operation_id = lower(hex(randomblob(16))) WHERE operation_id IS NULL");
+      await db.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_sync_queue_opid ON sync_queue(operation_id)');
     }
   }
 
@@ -489,6 +511,8 @@ class DatabaseHelper {
     final db = await database;
     final batch = db.batch();
     for (var mesa in mesas) {
+      // INSERT OR IGNORE: no sobrescribir mesas existentes para preservar estado local pendiente
+      // (cerrada, votosNulos, votosBlanco pueden tener cambios no sincronizados)
       batch.insert(
         'mesas',
         {
@@ -503,7 +527,7 @@ class DatabaseHelper {
           'votosNulos': mesa.votosNulos ?? 0,
           'votosBlanco': mesa.votosBlanco ?? 0,
         },
-        conflictAlgorithm: ConflictAlgorithm.replace,
+        conflictAlgorithm: ConflictAlgorithm.ignore,
       );
     }
     await batch.commit(noResult: true);
@@ -679,6 +703,8 @@ class DatabaseHelper {
     final db = await database;
     final batch = db.batch();
     for (var voto in votos) {
+      // Solo insertar si no existe localmente con ID igual (evitar colisión de espacio de IDs)
+      // y si el voto local no está pendiente de sincronización
       batch.insert(
         'votos',
         {
@@ -692,7 +718,7 @@ class DatabaseHelper {
           'sincronizado': 1,
           'fechaRegistro': voto.fechaRegistro.toIso8601String(),
         },
-        conflictAlgorithm: ConflictAlgorithm.replace,
+        conflictAlgorithm: ConflictAlgorithm.ignore,
       );
     }
     await batch.commit(noResult: true);
@@ -705,7 +731,7 @@ class DatabaseHelper {
 
   Future<void> eliminarVoto(int id) async {
     final db = await database;
-    await db.delete('votos', where: 'id = ?', whereArgs: [id]);
+    await db.delete('votos', where: 'id = ? AND sincronizado = 1', whereArgs: [id]);
   }
 
   Future<void> cerrarMesaLocal(int mesaId) async {
@@ -778,7 +804,9 @@ class DatabaseHelper {
 
   Future<int> enqueueSync(String entityType, int entityId, String operation, Map<String, dynamic> payload, {int? eleccionId}) async {
     final db = await database;
+    final operationId = _generateUUID();
     return await db.insert('sync_queue', {
+      'operation_id': operationId,
       'entity_type': entityType,
       'entity_id': entityId,
       'operation': operation,
@@ -787,6 +815,13 @@ class DatabaseHelper {
       'status': 'PENDING',
       'created_at': DateTime.now().toIso8601String(),
     });
+  }
+
+  String _generateUUID() {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final rand = now.hashCode.toRadixString(16);
+    final rand2 = (now * 7 + 13).hashCode.toRadixString(16);
+    return '$now-$rand-$rand2';
   }
 
   Future<List<Map<String, dynamic>>> getPendingSyncOps({int limit = 50}) async {
@@ -802,14 +837,19 @@ class DatabaseHelper {
 
   Future<void> markSyncDone(int id) async {
     final db = await database;
-    await db.delete('sync_queue', where: 'id = ?', whereArgs: [id]);
+    await db.update(
+      'sync_queue',
+      {'status': 'ACKNOWLEDGED', 'ack_at': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<void> markSyncFailed(int id, String error) async {
     final db = await database;
     await db.update(
       'sync_queue',
-      {'status': 'FAILED', 'last_error': error, 'retry_count': 0},
+      {'status': 'FAILED', 'last_error': error, 'last_attempt_at': DateTime.now().toIso8601String()},
       where: 'id = ?',
       whereArgs: [id],
     );
@@ -818,8 +858,8 @@ class DatabaseHelper {
   Future<void> incrementRetry(int id) async {
     final db = await database;
     await db.rawUpdate(
-      'UPDATE sync_queue SET retry_count = retry_count + 1 WHERE id = ?',
-      [id],
+      'UPDATE sync_queue SET retry_count = retry_count + 1, last_attempt_at = ? WHERE id = ?',
+      [DateTime.now().toIso8601String(), id],
     );
   }
 
@@ -875,12 +915,20 @@ class DatabaseHelper {
     await db.update('sync_meta', {'last_sync_at': dt.toIso8601String()}, where: 'id = 1');
   }
 
-  Future<void> cleanFailedSyncOps({Duration olderThan = const Duration(hours: 24)}) async {
+  Future<int> getServerCursor() async {
     final db = await database;
-    final cutoff = DateTime.now().subtract(olderThan).toIso8601String();
-    await db.delete('sync_queue',
-      where: "status = 'FAILED' AND created_at < ?",
-      whereArgs: [cutoff],
-    );
+    final maps = await db.query('sync_meta', limit: 1);
+    if (maps.isEmpty) return 0;
+    return maps.first['server_cursor'] as int? ?? 0;
+  }
+
+  Future<void> setServerCursor(int cursor) async {
+    final db = await database;
+    await db.update('sync_meta', {'server_cursor': cursor}, where: 'id = 1');
+  }
+
+  Future<void> cleanFailedSyncOps({Duration olderThan = const Duration(hours: 24)}) async {
+    // DESHABILITADO: No purgar automáticamente. El usuario decide desde la UI de pendientes.
+    // Ver plan de correcciones: sección "Retener hasta confirmación".
   }
 }

@@ -54,6 +54,7 @@ C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\ele
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\entities\TipoVotacion.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\ParroquiaResponse.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\CircunscripcionRequest.java
+C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\config\StompAuthInterceptor.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\entities\Observacion.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\controllers\VotoController.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\controllers\CircunscripcionController.java
@@ -164,6 +165,7 @@ C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\ele
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\services\ZonaService.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\DashboardResponse.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\EscrutinioResumenResponse.java
+C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\repositories\SyncOperationLogRepository.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\services\CandidatoService.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\services\DHondtService.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\controllers\TipoEleccionController.java
@@ -195,6 +197,7 @@ C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\ele
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\services\ExcelExportService.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\config\SecurityConfig.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\entities\AsignacionEscano.java
+C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\entities\SyncOperationLog.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\TipoEleccionResponse.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\ReporteListaDTO.java
 C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\backend\src\main\java\com\electoral\dto\VotoPapeletaRequest.java

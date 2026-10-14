@@ -22,7 +22,6 @@ class SyncService {
   };
 
   Future<void> init() async {
-    await _db.cleanFailedSyncOps();
     await _resetStalePending();
   }
 
@@ -114,12 +113,15 @@ class SyncService {
     final ops = await _db.getPendingSyncOps(limit: 50);
     if (ops.isEmpty) return 0;
 
-    int sent = 0;
+    final List<Map<String, dynamic>> batch = [];
+    final List<int> ids = [];
+
     for (final op in ops) {
       final id = op['id'] as int;
       final entityType = op['entity_type'] as String;
       final entityId = op['entity_id'] as int;
       final operation = op['operation'] as String;
+      final operationId = op['operation_id'] as String? ?? '';
       final payload = jsonDecode(op['payload'] as String) as Map<String, dynamic>;
       final retryCount = op['retry_count'] as int? ?? 0;
 
@@ -128,48 +130,55 @@ class SyncService {
         continue;
       }
 
-      try {
-        final success = await _sendOperation(entityType, entityId, operation, payload, token);
-        if (success) {
-          await _db.markSyncDone(id);
-          sent++;
-        } else {
-          await _db.incrementRetry(id);
-        }
-      } catch (e) {
-        await _db.markSyncFailed(id, e.toString());
-      }
+      batch.add({
+        'operationId': operationId,
+        'entity': entityType.toLowerCase(),
+        'entityId': entityId,
+        'action': operation,
+        'data': payload,
+      });
+      ids.add(id);
     }
-    return sent;
-  }
 
-  Future<bool> _sendOperation(
-    String entityType,
-    int entityId,
-    String operation,
-    Map<String, dynamic> payload,
-    String? token,
-  ) async {
-    final entity = entityType.toLowerCase();
-    final uri = Uri.parse('$_baseUrl/sync/push');
+    if (batch.isEmpty) return 0;
+
     try {
       final response = await http.post(
-        uri,
+        Uri.parse('$_baseUrl/sync/push'),
         headers: _headers(token),
-        body: jsonEncode({
-          'operations': [
-            {
-              'entity': entity,
-              'entityId': entityId,
-              'action': operation,
-              'data': payload,
-            }
-          ],
-        }),
+        body: jsonEncode({'operations': batch}),
       );
-      return response.statusCode == 200;
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        final results = body['results'] as List<dynamic>? ?? [];
+        int acked = 0;
+        for (final r in results) {
+          final rid = r['operationId'] as String?;
+          final ok = r['success'] as bool? ?? false;
+          final err = r['error'] as String?;
+          final idx = batch.indexWhere((b) => b['operationId'] == rid);
+          if (idx >= 0 && idx < ids.length) {
+            if (ok) {
+              await _db.markSyncDone(ids[idx]);
+              acked++;
+            } else {
+              await _db.markSyncFailed(ids[idx], err ?? 'Error desconocido');
+            }
+          }
+        }
+        return acked;
+      } else {
+        for (final id in ids) {
+          await _db.incrementRetry(id);
+        }
+        return 0;
+      }
     } catch (_) {
-      return false;
+      for (final id in ids) {
+        await _db.incrementRetry(id);
+      }
+      return 0;
     }
   }
 
@@ -191,6 +200,7 @@ class SyncService {
     if (cambios.isEmpty) return 0;
 
     int applied = 0;
+    bool anyFailed = false;
     for (final c in cambios) {
       final ct = (c['entity'] ?? c['entityType']) as String?;
       final op = (c['action'] ?? c['operation']) as String?;
@@ -200,10 +210,15 @@ class SyncService {
       try {
         await _applyRemoteChange(ct, op, p);
         applied++;
-      } catch (_) {}
+      } catch (_) {
+        anyFailed = true;
+      }
     }
 
-    await _db.setLastPullTimestamp(DateTime.now());
+    // Solo avanzar cursor si todos los cambios se aplicaron exitosamente
+    if (!anyFailed) {
+      await _db.setLastPullTimestamp(DateTime.now());
+    }
     return applied;
   }
 

@@ -16,12 +16,13 @@ class StompService {
   Stream<void> get onDataChanged => _dataChangedController.stream;
   bool get isConnected => _client?.connected ?? false;
 
-  void connect(String wsBaseUrl, {int? eleccionId}) {
+  void connect(String wsBaseUrl, {int? eleccionId, String? token}) {
     _eleccionId = eleccionId;
     disconnect();
     _client = StompClient(
       config: StompConfig(
         url: '$wsBaseUrl/ws',
+        stompConnectHeaders: token != null ? {'Authorization': 'Bearer $token'} : null,
         onConnect: (StompFrame frame) {
           _connectionController.add(true);
           _subscribe();
