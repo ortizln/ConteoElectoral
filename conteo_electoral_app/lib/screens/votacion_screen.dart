@@ -218,7 +218,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
                   ),
               ],
             ),
-            body: const Center(
+            body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -255,7 +255,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
                   ),
               ],
             ),
-            body: const Center(
+            body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -294,7 +294,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
                 if (provider.mesaActual?.institucionNombre != null)
                   Text(provider.mesaActual!.institucionNombre!,
                       style:
-                          const TextStyle(fontSize: 11, color: AppColors.gray)),
+                          TextStyle(fontSize: 11, color: AppColors.gray)),
               ],
             ),
             actions: [
@@ -707,7 +707,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
                                                   const EdgeInsets.only(top: 2),
                                               child: Text(
                                                 '+${candidatosLista.length - 5} más',
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                     fontSize: 10,
                                                     color: AppColors.gray),
                                               ),
@@ -1011,7 +1011,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(circ,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 10,
                     color: AppColors.gray,
                     fontWeight: FontWeight.w600)),

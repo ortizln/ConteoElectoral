@@ -132,7 +132,7 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
               const SizedBox(height: 24),
 
               // Server connection section
-              const Text('Conexión al Servidor', style: AppTextStyles.h3),
+              Text('Conexión al Servidor', style: AppTextStyles.h3),
               const SizedBox(height: 12),
               Card(
                 child: Padding(
@@ -226,7 +226,7 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
               const SizedBox(height: 24),
 
               // App info
-              const Text('Información', style: AppTextStyles.h3),
+              Text('Información', style: AppTextStyles.h3),
               const SizedBox(height: 12),
               Card(
                 child: Padding(
@@ -255,7 +255,7 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label,
-            style: const TextStyle(color: AppColors.gray, fontSize: 13)),
+            style: TextStyle(color: AppColors.gray, fontSize: 13)),
         Text(value,
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
       ],

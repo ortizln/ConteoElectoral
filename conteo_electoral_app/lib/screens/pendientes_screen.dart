@@ -88,7 +88,7 @@ class _PendientesScreenState extends State<PendientesScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _ops.isEmpty
-              ? const Center(
+              ? Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -129,7 +129,9 @@ class _PendientesScreenState extends State<PendientesScreen> {
                           : createdAt;
 
                       return Card(
-                        color: isFailed ? Colors.red.shade50 : Colors.white,
+                        color: isFailed
+                            ? AppColors.error.withValues(alpha: 0.08)
+                            : AppColors.surface,
                         child: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Row(
@@ -185,7 +187,7 @@ class _PendientesScreenState extends State<PendientesScreen> {
                                     const SizedBox(height: 2),
                                     Text(
                                       '${operation == 'CREATE' ? 'Crear' : operation == 'UPDATE' ? 'Actualizar' : operation == 'CLOSE' ? 'Cerrar' : operation} ${entityType == 'VOTO' ? 'voto' : 'mesa'}',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           fontSize: 12, color: AppColors.gray),
                                     ),
                                     if (retryCount > 0)
@@ -207,7 +209,7 @@ class _PendientesScreenState extends State<PendientesScreen> {
                                       ),
                                     Text(
                                       date,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           fontSize: 10, color: AppColors.lightGray),
                                     ),
                                   ],

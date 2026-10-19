@@ -352,7 +352,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 color: m.cerrada
                                                     ? AppColors.error
                                                     : AppColors.success)),
-                                        trailing: const Icon(
+                                        trailing: Icon(
                                             Icons.chevron_right,
                                             color: AppColors.lightGray),
                                         onTap: m.cerrada
@@ -369,7 +369,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                       // Admin sections
                       if (provider.usuario?.rol == 'ADMIN') ...[
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(left: 4, bottom: 8),
                           child:
                               Text('Administración', style: AppTextStyles.h3),
@@ -429,7 +429,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         title: Text(label,
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-        trailing: const Icon(Icons.chevron_right, color: AppColors.lightGray),
+        trailing: Icon(Icons.chevron_right, color: AppColors.lightGray),
         onTap: onTap,
       ),
     );
@@ -471,7 +471,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: color)),
               ),
               const SizedBox(width: 4),
-              const Icon(Icons.chevron_right,
+              Icon(Icons.chevron_right,
                   size: 14, color: AppColors.lightGray),
             ],
           ),
@@ -547,7 +547,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       fontSize: 14)),
                               if (m.institucionNombre != null)
                                 Text(m.institucionNombre!,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                         fontSize: 11, color: AppColors.gray)),
                             ],
                           ),
@@ -620,7 +620,7 @@ class _HomeScreenState extends State<HomeScreen> {
             subtitle: provider.pendingSyncCount + provider.failedSyncCount > 0
                 ? Text(
                     '${provider.pendingSyncCount} pend, ${provider.failedSyncCount} fallidos',
-                    style: const TextStyle(fontSize: 11, color: AppColors.gray))
+                    style: TextStyle(fontSize: 11, color: AppColors.gray))
                 : null,
             onTap: () {
               Navigator.pop(context);
@@ -637,7 +637,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           if (provider.usuario?.rol == 'ADMIN') ...[
             const Divider(),
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(left: 16, top: 8, bottom: 4),
               child: Text('ADMINISTRACIÓN',
                   style: TextStyle(
@@ -695,7 +695,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Text('v${provider.currentVersion}',
-                  style: const TextStyle(fontSize: 12, color: AppColors.gray)),
+                  style: TextStyle(fontSize: 12, color: AppColors.gray)),
             ),
           const Divider(),
           ListTile(

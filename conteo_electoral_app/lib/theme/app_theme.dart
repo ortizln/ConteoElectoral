@@ -18,14 +18,41 @@ class AppColors {
   static const error = AlantekColors.danger;
   static const info = AlantekColors.info;
 
-  // Neutros (tema claro)
-  static const dark = AlantekColors.military900;
-  static const gray = AlantekColors.neutral700;
-  static const lightGray = AlantekColors.neutral500;
-  static const muted = AlantekColors.neutral100;
-  static const background = AlantekColors.cream100;
-  static const surface = AlantekColors.white;
-  static const border = AlantekColors.neutral200;
+  // Neutros (adaptables light/dark).
+  // ThemeProvider llama a applyTheme() al cambiar de modo; los valores por
+  // defecto son los del tema claro. Por eso NO son const.
+  static Color dark = AlantekColors.military900;
+  static Color gray = AlantekColors.neutral700;
+  static Color lightGray = AlantekColors.neutral500;
+  static Color muted = AlantekColors.neutral100;
+  static Color background = AlantekColors.cream100;
+  static Color surface = AlantekColors.white;
+  static Color border = AlantekColors.neutral200;
+
+  static bool _isDark = false;
+  static bool get isDarkMode => _isDark;
+
+  /// Aplica la paleta neutra del tema (llamar antes de notifyListeners).
+  static void applyTheme({required bool isDark}) {
+    _isDark = isDark;
+    if (isDark) {
+      dark = const Color(0xFFF2F5F0);
+      gray = const Color(0xFFA3ADA1);
+      lightGray = const Color(0xFF8B958A);
+      muted = const Color(0xFF2A352B);
+      background = AlantekColors.neutral900;
+      surface = AlantekColors.military700;
+      border = const Color(0xFF3F4D42);
+    } else {
+      dark = AlantekColors.military900;
+      gray = AlantekColors.neutral700;
+      lightGray = AlantekColors.neutral500;
+      muted = AlantekColors.neutral100;
+      background = AlantekColors.cream100;
+      surface = AlantekColors.white;
+      border = AlantekColors.neutral200;
+    }
+  }
 
   // Gradiente de encabezados
   static const gradientStart = AlantekColors.military500;
@@ -40,11 +67,11 @@ class AppTheme {
   // ---------------- CLARO ----------------
   static ThemeData get light => _base(
         brightness: Brightness.light,
-        scaffoldBg: AppColors.background,
-        surface: AppColors.surface,
-        onSurface: AppColors.dark,
-        outline: AppColors.border,
-        inputFill: AppColors.muted,
+        scaffoldBg: AlantekColors.cream100,
+        surface: AlantekColors.white,
+        onSurface: AlantekColors.military900,
+        outline: AlantekColors.neutral200,
+        inputFill: AlantekColors.neutral100,
       );
 
   // ---------------- OSCURO ----------------
@@ -155,9 +182,9 @@ class AppTheme {
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        prefixIconColor: isDark ? const Color(0xFFA3ADA1) : AppColors.gray,
+        prefixIconColor: isDark ? const Color(0xFFA3ADA1) : AlantekColors.neutral700,
         labelStyle: TextStyle(
-          color: isDark ? const Color(0xFFA3ADA1) : AppColors.gray,
+          color: isDark ? const Color(0xFFA3ADA1) : AlantekColors.neutral700,
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -171,7 +198,7 @@ class AppTheme {
         selectedColor: primary.withValues(alpha: 0.15),
         labelStyle: TextStyle(
           fontSize: 13,
-          color: isDark ? const Color(0xFFCfd6CB) : AppColors.dark,
+          color: isDark ? const Color(0xFFCfd6CB) : AlantekColors.military900,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
@@ -182,7 +209,7 @@ class AppTheme {
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: surface,
         selectedItemColor: primary,
-        unselectedItemColor: isDark ? const Color(0xFFA3ADA1) : AppColors.gray,
+        unselectedItemColor: isDark ? const Color(0xFFA3ADA1) : AlantekColors.neutral700,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),
@@ -205,17 +232,19 @@ class AppTheme {
 class AppTextStyles {
   AppTextStyles._();
 
-  static const h1 = TextStyle(
+  static TextStyle get h1 => TextStyle(
       fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.dark);
-  static const h2 = TextStyle(
+  static TextStyle get h2 => TextStyle(
       fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.dark);
-  static const h3 = TextStyle(
+  static TextStyle get h3 => TextStyle(
       fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.dark);
-  static const body = TextStyle(fontSize: 15, color: AppColors.dark);
-  static const bodySmall = TextStyle(fontSize: 13, color: AppColors.gray);
-  static const caption = TextStyle(fontSize: 12, color: AppColors.lightGray);
-  static const statValue = TextStyle(
+  static TextStyle get body => TextStyle(fontSize: 15, color: AppColors.dark);
+  static TextStyle get bodySmall =>
+      TextStyle(fontSize: 13, color: AppColors.gray);
+  static TextStyle get caption =>
+      TextStyle(fontSize: 12, color: AppColors.lightGray);
+  static TextStyle get statValue => TextStyle(
       fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.dark);
-  static const statLabel = TextStyle(
-      fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.gray);
+  static TextStyle get statLabel =>
+      TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.gray);
 }

@@ -196,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            const Text('Iniciar Sesión',
+                            Text('Iniciar Sesión',
                                 style: AppTextStyles.h3,
                                 textAlign: TextAlign.center),
                             const SizedBox(height: 24),
