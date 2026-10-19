@@ -26,14 +26,17 @@
 
 ## Frontend (Nginx sin Docker)
 
-1. **Actualizar la URL de producción:**
+1. **URL de producción (relativa, mismo origen):**
    Editar `frontend/src/environments/environment.prod.ts`:
    ```typescript
    export const environment = {
      production: true,
-     apiUrl: 'http://YOUR_SERVER_IP:8081/api'
+     apiUrl: '/api'
    };
    ```
+   > ⚠️ No usar `http://IP:8081/api` en producción HTTPS: el navegador lo bloquea
+   > por *mixed content* y por el permiso de acceso a la red local. Nginx debe
+   > hacer proxy de `/api/` y `/ws/` hacia `127.0.0.1:8081` (ver `frontend/nginx.conf`).
 
 2. **Construir para producción:**
    ```bash
