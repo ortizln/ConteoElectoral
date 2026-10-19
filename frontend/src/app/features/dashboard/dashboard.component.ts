@@ -532,18 +532,22 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     return this.sortDirection === 'asc' ? '↑' : '↓';
   }
 
+  private isDarkMode(): boolean {
+    return document.body.getAttribute('data-theme') === 'dark';
+  }
+
   private getChartTextColor(): string {
-    return document.documentElement.getAttribute('data-theme') === 'dark' ? '#e2e8f0' : '#334155';
+    return this.isDarkMode() ? '#f2f5f0' : '#263329';
   }
 
   private getChartGridColor(): string {
-    return document.documentElement.getAttribute('data-theme') === 'dark' ? '#334155' : '#e2e8f0';
+    return this.isDarkMode() ? '#3f4d42' : '#e3e7e0';
   }
 
   private getChartColors(): string[] {
-    return document.documentElement.getAttribute('data-theme') === 'dark'
-      ? ['#60a5fa', '#34d399', '#fbbf24', '#f87171', '#a78bfa', '#f472b6', '#2dd4bf', '#fb923c']
-      : ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+    return this.isDarkMode()
+      ? ['#7d9a72', '#e08a45', '#e6b94f', '#e8705f', '#6fb3d0', '#5fbb86', '#b98a5e', '#a3ada1']
+      : ['#48563c', '#d97732', '#e6b94f', '#c0392b', '#2d6a8a', '#2f7d4f', '#78543d', '#6b766f'];
   }
 
   initCharts(): void {

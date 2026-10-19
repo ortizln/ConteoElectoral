@@ -1,12 +1,13 @@
 .admin-layout { display: flex; min-height: 100vh; }
 
+/* ---------------- Sidebar ALANTEK ---------------- */
 .sidebar {
   width: 270px;
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(180deg, var(--alantek-primary-dark) 0%, var(--alantek-primary-strong) 100%);
   color: white;
   display: flex;
   flex-direction: column;
-  box-shadow: 2px 0 15px rgba(0,0,0,0.15);
+  box-shadow: 2px 0 15px rgba(0, 0, 0, 0.18);
   position: fixed;
   top: 0;
   left: 0;
@@ -15,12 +16,41 @@
   overflow-y: auto;
 }
 
-.sidebar-header { padding: 24px 20px 16px; border-bottom: 1px solid rgba(255,255,255,0.06); }
-.sidebar-header h2 { margin: 0; font-size: 20px; font-weight: 800; background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-.sidebar-subtitle { font-size: 11px; color: #475569; text-transform: uppercase; letter-spacing: 1px; }
+.sidebar-header {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #f6f0e5, var(--alantek-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.sidebar-subtitle {
+  font-size: 11px;
+  color: #9aa896;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
-.sidebar-nav { flex: 1; padding: 12px 12px; overflow-y: auto; }
-.nav-section-title { display: block; padding: 12px 12px 6px; font-size: 10px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1px; }
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 12px;
+  overflow-y: auto;
+}
+.nav-section-title {
+  display: block;
+  padding: 12px 12px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #8a987f;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 
 .nav-item {
   display: flex;
@@ -29,22 +59,47 @@
   padding: 11px 14px;
   margin-bottom: 2px;
   border-radius: 10px;
-  color: #94a3b8;
+  color: #c9d2c4;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
   font-size: 14px;
   font-weight: 500;
   position: relative;
 }
-.nav-item:hover { background: rgba(255,255,255,0.08); color: #e2e8f0; }
-.nav-item.active { background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(99,102,241,0.1)); color: white; }
-.nav-item.active .nav-indicator { position: absolute; left: -2px; top: 50%; transform: translateY(-50%); width: 3px; height: 20px; background: linear-gradient(180deg, #3b82f6, #6366f1); border-radius: 0 3px 3px 0; }
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f6f0e5;
+}
+.nav-item.active {
+  background: rgba(217, 119, 50, 0.18);
+  color: #ffffff;
+}
+.nav-item.active .nav-indicator {
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: linear-gradient(180deg, var(--alantek-accent), var(--alantek-highlight));
+  border-radius: 0 3px 3px 0;
+}
 
-.nav-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
+.nav-icon {
+  font-size: 17px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
 .nav-text { flex: 1; }
 
-.extra-links { padding: 0 12px 8px; border-top: 1px solid rgba(255,255,255,0.06); margin-top: 4px; }
+.extra-links {
+  padding: 0 12px 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin-top: 4px;
+}
 
+/* ---------------- Content wrapper ---------------- */
 .content-wrapper {
   margin-left: 270px;
   flex: 1;
@@ -53,8 +108,9 @@
   min-height: 100vh;
 }
 
+/* ---------------- Topbar ALANTEK ---------------- */
 .top-header {
-  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(135deg, var(--alantek-primary), var(--alantek-primary-strong));
   color: white;
   padding: 0 2rem;
   height: 60px;
@@ -64,7 +120,7 @@
   position: sticky;
   top: 0;
   z-index: 99;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: var(--alantek-shadow-md);
 }
 
 .header-left {
@@ -100,49 +156,58 @@
   font-size: 10px;
   font-weight: 700;
   padding: 2px 8px;
-  border-radius: 6px;
+  border-radius: var(--alantek-radius-sm);
   text-transform: uppercase;
   letter-spacing: 0.3px;
+  background: var(--alantek-accent);
+  color: #ffffff;
 }
 
-.header-role-badge.admin { background: rgba(255,255,255,0.2); color: white; }
-.header-role-badge.supervisor { background: rgba(255,255,255,0.2); color: white; }
+.header-role-badge.supervisor {
+  background: var(--alantek-highlight);
+  color: var(--alantek-primary-dark);
+}
 
 .theme-toggle {
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   color: white;
   width: 36px;
   height: 36px;
-  border-radius: 8px;
+  border-radius: var(--alantek-radius-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .theme-toggle:hover {
-  background: rgba(255,255,255,0.25);
-  border-color: rgba(255,255,255,0.5);
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--alantek-accent);
+  outline-offset: 2px;
 }
 
 .header-logout {
-  border-color: rgba(255,255,255,0.4) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
   color: white !important;
   font-size: 0.8rem;
   padding: 0.3rem 0.75rem;
 }
 
 .header-logout:hover {
-  background: rgba(255,255,255,0.15) !important;
-  border-color: rgba(255,255,255,0.6) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.6) !important;
 }
 
+/* ---------------- Main / footer ---------------- */
 .main-content {
   flex: 1;
-  background: var(--bg-light);
+  background: var(--alantek-background);
   padding: 1.5rem 2rem 4rem;
   overflow-y: auto;
 }
@@ -153,15 +218,15 @@
   left: 270px;
   right: 0;
   z-index: 98;
-  background: var(--bg-light);
-  border-top: 1px solid var(--border-color);
+  background: var(--alantek-background);
+  border-top: 1px solid var(--alantek-border);
   padding: 0.75rem 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: var(--alantek-text-muted);
 }
 
 .footer-brand {
@@ -169,14 +234,14 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.85rem;
-  color: var(--text-muted);
+  color: var(--alantek-text-muted);
   letter-spacing: 0.5px;
 }
 
 .footer-logo-placeholder {
   width: 22px;
   height: 22px;
-  border: 1.5px dashed var(--text-muted);
+  border: 1.5px dashed var(--alantek-text-muted);
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
@@ -184,16 +249,16 @@
   flex-shrink: 0;
 }
 
-[data-theme="dark"] .app-footer {
-  background: #1e293b;
-  border-top-color: #334155;
+/* Dark (tokens — styles/_themes.scss) */
+[data-theme='dark'] .app-footer {
+  background: var(--alantek-background);
+  border-top-color: var(--alantek-border);
+}
+[data-theme='dark'] .main-content {
+  background: var(--alantek-background);
 }
 
-[data-theme="dark"] .main-content {
-  background: #0f172a;
-}
-
-/* Mobile sidebar toggle button */
+/* ---------------- Mobile ---------------- */
 .sidebar-toggle {
   display: none;
   background: none;
@@ -205,7 +270,6 @@
   line-height: 1;
 }
 
-/* Overlay for mobile sidebar */
 .sidebar-overlay {
   display: none;
 }
@@ -213,7 +277,7 @@
 @media (max-width: 991px) {
   .sidebar {
     transform: translateX(-100%);
-    transition: transform 0.3s ease;
+    transition: transform 0.25s ease;
   }
   .sidebar.open {
     transform: translateX(0);
@@ -222,7 +286,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     z-index: 99;
   }
   .sidebar-overlay.visible {
