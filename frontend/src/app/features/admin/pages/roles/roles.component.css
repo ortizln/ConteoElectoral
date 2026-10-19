@@ -12,7 +12,7 @@
   margin: 0;
   font-size: 24px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--alantek-text);
 }
 
 .alert {
@@ -22,22 +22,22 @@
 }
 
 .alert-error {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
+  background: var(--alantek-danger-bg);
+  color: var(--alantek-danger);
+  border: 1px solid var(--alantek-danger);
 }
 
 .alert-success {
-  background: #ecfdf5;
-  color: #059669;
-  border: 1px solid #a7f3d0;
+  background: var(--alantek-success-bg);
+  color: var(--alantek-success);
+  border: 1px solid var(--alantek-success);
 }
 
 .roles-tabs {
   display: flex;
   gap: 8px;
   margin-bottom: 24px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--alantek-border);
   padding-bottom: 0;
 }
 
@@ -47,7 +47,7 @@
   background: none;
   font-size: 14px;
   font-weight: 500;
-  color: #64748b;
+  color: var(--alantek-text-muted);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
@@ -55,31 +55,31 @@
 }
 
 .tab-btn:hover {
-  color: #4F46E5;
+  color: var(--alantek-secondary);
 }
 
 .tab-btn.active {
-  color: #4F46E5;
-  border-bottom-color: #4F46E5;
+  color: var(--alantek-secondary);
+  border-bottom-color: var(--alantek-secondary);
 }
 
 .loading {
   text-align: center;
   padding: 40px;
-  color: #64748b;
+  color: var(--alantek-text-muted);
 }
 
 .empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: #94a3b8;
-  background: white;
+  color: var(--alantek-text-muted);
+  background: var(--alantek-surface);
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .permisos-table-card {
-  background: white;
+  background: var(--alantek-surface);
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -94,21 +94,21 @@
   padding: 12px 16px;
   font-size: 12px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--alantek-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--alantek-border);
 }
 
 .table td {
   padding: 12px 16px;
   font-size: 14px;
-  color: #334155;
-  border-bottom: 1px solid #f1f5f9;
+  color: var(--alantek-text-secondary);
+  border-bottom: 1px solid var(--alantek-border);
 }
 
 .table tr:hover td {
-  background: #f8fafc;
+  background: var(--alantek-background);
 }
 
 .text-center {
@@ -118,9 +118,9 @@
 .toggle-btn {
   width: 36px;
   height: 36px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--alantek-border);
   border-radius: 8px;
-  background: white;
+  background: var(--alantek-surface);
   font-size: 16px;
   cursor: pointer;
   transition: all 0.2s;
@@ -130,12 +130,12 @@
 }
 
 .toggle-btn:hover:not(:disabled) {
-  border-color: #4F46E5;
+  border-color: var(--alantek-secondary);
 }
 
 .toggle-btn.active {
-  background: #4F46E5;
-  border-color: #4F46E5;
+  background: var(--alantek-secondary);
+  border-color: var(--alantek-secondary);
   color: white;
 }
 
@@ -147,6 +147,6 @@
 .saving-text {
   margin: 12px 0 0;
   font-size: 13px;
-  color: #64748b;
+  color: var(--alantek-text-muted);
   font-style: italic;
 }
