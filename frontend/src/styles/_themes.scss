@@ -1,0 +1,60 @@
+// ============================================================
+// ALANTEK THEMES — claro/oscuro
+// Dark mode se activa con body[data-theme="dark"] (mismo
+// mecanismo que ya usa ThemeService en la app).
+// ============================================================
+
+@mixin alantek-dark-tokens {
+  // Superficies
+  --alantek-surface: #{$alantek-military-700};
+  --alantek-surface-raised: #{$alantek-military-500};
+  --alantek-background: #{$alantek-neutral-900};
+
+  // Texto
+  --alantek-text: #f2f5f0;
+  --alantek-text-secondary: #cfd6cb;
+  --alantek-text-muted: #a3ada1;
+
+  // Borde
+  --alantek-border: #3f4d42;
+  --alantek-border-strong: #55654f;
+
+  // Acentos (ajustados para contraste sobre fondo oscuro)
+  --alantek-primary: #7d9a72;
+  --alantek-accent: #e08a45;
+  --alantek-highlight: #e6b94f;
+
+  // Semánticos (fondos más sobrios en oscuro)
+  --alantek-success: #5fbb86;
+  --alantek-success-bg: #23392c;
+  --alantek-danger: #e8705f;
+  --alantek-danger-bg: #432723;
+  --alantek-warning: #e6b94f;
+  --alantek-warning-bg: #3d3520;
+  --alantek-info: #6fb3d0;
+  --alantek-info-bg: #223540;
+
+  --alantek-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --alantek-shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --alantek-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  // Compatibilidad
+  --primary-color: #7d9a72;
+  --secondary-color: #e08a45;
+  --success-color: #5fbb86;
+  --danger-color: #e8705f;
+  --warning-color: #e6b94f;
+  --bg-light: #{$alantek-neutral-900};
+  --text-dark: #f2f5f0;
+  --text-muted: #a3ada1;
+  --border-color: #3f4d42;
+}
+
+body[data-theme='dark'] {
+  @include alantek-dark-tokens;
+}
+
+// Alternativa futura: data-bs-theme de Bootstrap 5.3
+[data-bs-theme='dark'] {
+  @include alantek-dark-tokens;
+}

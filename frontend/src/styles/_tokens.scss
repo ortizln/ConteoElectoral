@@ -1,0 +1,162 @@
+// ============================================================
+// ALANTEK DESIGN TOKENS — Conteo Electoral
+// Paleta, tipografía, espaciado, radios, sombras y estados.
+// Fase 1: fuente única de verdad para web (SCSS + CSS vars).
+// ============================================================
+
+// ---------- Paleta ALANTEK (SCSS) ----------
+$alantek-military-900: #263329;
+$alantek-military-700: #344331;
+$alantek-military-500: #48563c;
+$alantek-orange-500:   #d97732;
+$alantek-brown-600:    #78543d;
+$alantek-yellow-400:   #e6b94f;
+$alantek-cream-100:    #f6f0e5;
+$alantek-white:        #ffffff;
+
+// Neutral derivados (ajustados para contraste WCAG AA)
+$alantek-neutral-900:  #1b241d; // fondo oscuro
+$alantek-neutral-700:  #45514a; // texto secundario claro
+$alantek-neutral-500:  #6b766f; // texto muted claro
+$alantek-neutral-300:  #c9cfc7; // bordes oscuros
+$alantek-neutral-200:  #e3e7e0; // bordes claros
+$alantek-neutral-100:  #f0f3ee;
+
+// Semánticos (estado — nunca usar solo color para indicar estado)
+$alantek-success:      #2f7d4f;
+$alantek-success-bg:   #e4f2e9;
+$alantek-danger:       #c0392b;
+$alantek-danger-bg:    #fbe9e7;
+$alantek-warning-fg:   #8a6a1f; // texto sobre amarillo (AA)
+$alantek-warning-bg:   #fbf3dc;
+$alantek-info:         #2d6a8a;
+$alantek-info-bg:      #e5f0f5;
+
+// Alias de compatibilidad con variables existentes del proyecto.
+// Migración progresiva: los componentes que ya usan estas vars
+// adoptan ALANTEK automáticamente.
+$primary:   $alantek-military-500 !default;
+$secondary: $alantek-brown-600 !default;
+$warning:   $alantek-yellow-400 !default;
+$body-bg:   $alantek-cream-100 !default;
+
+// ---------- Tipografía ----------
+$alantek-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$alantek-font-size-xs:  0.75rem;   // 12px
+$alantek-font-size-sm:  0.875rem;  // 14px
+$alantek-font-size-base: 1rem;     // 16px
+$alantek-font-size-lg:  1.125rem;  // 18px
+$alantek-font-size-xl:  1.25rem;   // 20px
+$alantek-font-size-2xl: 1.5rem;    // 24px
+$alantek-font-size-3xl: 1.875rem;  // 30px
+$alantek-font-size-4xl: 2.25rem;   // 36px
+$alantek-font-weight-regular:  400;
+$alantek-font-weight-medium:   500;
+$alantek-font-weight-semibold: 600;
+$alantek-font-weight-bold:     700;
+
+// ---------- Espaciado (base 4/8px) ----------
+$alantek-space-1: 0.25rem; // 4
+$alantek-space-2: 0.5rem;  // 8
+$alantek-space-3: 0.75rem; // 12
+$alantek-space-4: 1rem;    // 16
+$alantek-space-5: 1.5rem;  // 24
+$alantek-space-6: 2rem;    // 32
+$alantek-space-7: 3rem;    // 48
+
+// ---------- Radios y sombras ----------
+$alantek-radius-sm:   8px;
+$alantek-radius-md:   12px;
+$alantek-radius-lg:   16px;
+$alantek-radius-pill: 999px;
+
+$alantek-shadow-sm: 0 1px 2px rgba(27, 36, 29, 0.08);
+$alantek-shadow-md: 0 2px 8px rgba(27, 36, 29, 0.10);
+$alantek-shadow-lg: 0 8px 24px rgba(27, 36, 29, 0.14);
+
+// ---------- Transiciones ----------
+$alantek-transition-fast: 150ms ease;
+$alantek-transition-base:  200ms ease;
+$alantek-transition-slow:  250ms ease;
+
+// ---------- Breakpoints (mobile-first) ----------
+$alantek-bp-sm:  576px;
+$alantek-bp-md:  768px;
+$alantek-bp-lg:  992px;
+$alantek-bp-xl:  1200px;
+
+@mixin alantek-above($bp) {
+  @media (min-width: $bp) { @content; }
+}
+@mixin alantek-below($bp) {
+  @media (max-width: #{$bp - 0.02px}) { @content; }
+}
+
+// Respeto de accesibilidad: movimiento reducido
+@mixin alantek-reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+// Anillo de foco accesible (teclado)
+@mixin alantek-focus-ring($color: $alantek-orange-500) {
+  outline: 2px solid $color;
+  outline-offset: 2px;
+}
+
+// ============================================================
+// CSS Custom Properties — tema CLARO (light)
+// Se exponen como variables globales para componentes CSS.
+// ============================================================
+:root {
+  // ALANTEK tokens
+  --alantek-primary: #{$alantek-military-500};
+  --alantek-primary-strong: #{$alantek-military-700};
+  --alantek-primary-dark: #{$alantek-military-900};
+  --alantek-accent: #{$alantek-orange-500};
+  --alantek-accent-hover: #{$alantek-brown-600};
+  --alantek-secondary: #{$alantek-brown-600};
+  --alantek-highlight: #{$alantek-yellow-400};
+  --alantek-surface: #{$alantek-white};
+  --alantek-background: #{$alantek-cream-100};
+  --alantek-text: #{$alantek-military-900};
+  --alantek-text-secondary: #{$alantek-neutral-700};
+  --alantek-text-muted: #{$alantek-neutral-500};
+  --alantek-border: #{$alantek-neutral-200};
+  --alantek-border-strong: #{$alantek-neutral-300};
+
+  --alantek-success: #{$alantek-success};
+  --alantek-success-bg: #{$alantek-success-bg};
+  --alantek-danger: #{$alantek-danger};
+  --alantek-danger-bg: #{$alantek-danger-bg};
+  --alantek-warning: #{$alantek-warning-fg};
+  --alantek-warning-bg: #{$alantek-warning-bg};
+  --alantek-info: #{$alantek-info};
+  --alantek-info-bg: #{$alantek-info-bg};
+
+  --alantek-radius-sm: #{$alantek-radius-sm};
+  --alantek-radius-md: #{$alantek-radius-md};
+  --alantek-radius-lg: #{$alantek-radius-lg};
+
+  --alantek-shadow-sm: #{$alantek-shadow-sm};
+  --alantek-shadow-md: #{$alantek-shadow-md};
+  --alantek-shadow-lg: #{$alantek-shadow-lg};
+
+  --alantek-transition-fast: #{$alantek-transition-fast};
+  --alantek-transition-base: #{$alantek-transition-base};
+
+  // Compatibilidad: nombres existentes → ALANTEK
+  --primary-color: #{$alantek-military-500};
+  --secondary-color: #{$alantek-brown-600};
+  --success-color: #{$alantek-success};
+  --danger-color: #{$alantek-danger};
+  --warning-color: #{$alantek-yellow-400};
+  --bg-light: #{$alantek-cream-100};
+  --text-dark: #{$alantek-military-900};
+  --text-muted: #{$alantek-neutral-500};
+  --border-color: #{$alantek-neutral-200};
+}

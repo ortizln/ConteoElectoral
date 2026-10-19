@@ -1,0 +1,37 @@
+// ============================================================
+// ALANTEK × BOOTSTRAP 5.3 — variables de Sass del framework
+// Se importa ANTES que los estilos legacy para que todo
+// componente Bootstrap herede la identidad ALANTEK.
+// ============================================================
+
+// ---- Variables ALANTEK aplicadas a Bootstrap ----
+$primary:   $alantek-military-500;
+$secondary: $alantek-brown-600;
+$success:   $alantek-success;
+$danger:    $alantek-danger;
+$warning:   $alantek-yellow-400;
+$info:      $alantek-info;
+$light:     $alantek-cream-100;
+$dark:      $alantek-military-900;
+
+$body-bg:    $alantek-cream-100;
+$body-color: $alantek-military-900;
+
+$link-color:          $alantek-military-700;
+$link-hover-color:    $alantek-brown-600;
+
+$border-radius:    0.75rem; // 12px
+$border-radius-sm: 0.5rem;  // 8px
+$border-radius-lg: 1rem;    // 16px
+
+$font-family-sans-serif: $alantek-font-sans;
+
+$card-border-color:   $alantek-neutral-200;
+$modal-content-bg:    $alantek-white;
+$input-bg:            $alantek-white;
+$input-border-color:  $alantek-neutral-300;
+
+$enable-smooth-scroll: true;
+
+// Import completo de Bootstrap (solo la primera vez)
+@import '../../node_modules/bootstrap/scss/bootstrap';

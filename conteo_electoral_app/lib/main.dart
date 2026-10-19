@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'theme/app_theme.dart';
 import 'providers/app_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/votacion_screen.dart';
@@ -15,7 +16,12 @@ import 'screens/configuracion_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ConteoElectoralApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider()..load(),
+      child: const ConteoElectoralApp(),
+    ),
+  );
 }
 
 class ConteoElectoralApp extends StatelessWidget {
@@ -23,6 +29,7 @@ class ConteoElectoralApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = context.watch<ThemeProvider>().mode;
     return ChangeNotifierProvider(
       create: (_) => AppProvider()..init(),
       child: Consumer<AppProvider>(
@@ -31,6 +38,8 @@ class ConteoElectoralApp extends StatelessWidget {
             title: 'Conteo Electoral',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            themeMode: themeMode,
             home: provider.usuario == null
                 ? const LoginScreen()
                 : const HomeScreen(),

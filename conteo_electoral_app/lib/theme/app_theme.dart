@@ -1,77 +1,115 @@
 import 'package:flutter/material.dart';
+import '../core/theme/alantek_colors.dart';
 
+/// Colores semánticos de la app.
+/// API ESTABLE: las pantallas usan AppColors.* — no renombrar.
+/// Los valores provienen de la paleta ALANTEK (AlantekColors).
 class AppColors {
-  static const primary = Color(0xFF8B5CF6);
-  static const primaryLight = Color(0xFFA78BFA);
-  static const primaryDark = Color(0xFF7C3AED);
-  static const secondary = Color(0xFF6366F1);
-  static const accent = Color(0xFF3B82F6);
-  static const success = Color(0xFF22C55E);
-  static const warning = Color(0xFFF59E0B);
-  static const error = Color(0xFFEF4444);
-  static const info = Color(0xFF06B6D4);
+  AppColors._();
 
-  static const dark = Color(0xFF1E293B);
-  static const gray = Color(0xFF64748B);
-  static const lightGray = Color(0xFF94A3B8);
-  static const muted = Color(0xFFF1F5F9);
-  static const background = Color(0xFFF8FAFC);
-  static const surface = Color(0xFFFFFFFF);
-  static const border = Color(0xFFE2E8F0);
+  // Primarios / acentos (paleta ALANTEK)
+  static const primary = AlantekColors.military500;
+  static const primaryLight = AlantekColors.military700;
+  static const primaryDark = AlantekColors.military900;
+  static const secondary = AlantekColors.brown600;
+  static const accent = AlantekColors.orange500;
+  static const success = AlantekColors.success;
+  static const warning = AlantekColors.yellow400;
+  static const error = AlantekColors.danger;
+  static const info = AlantekColors.info;
 
-  static const gradientStart = Color(0xFF8B5CF6);
-  static const gradientEnd = Color(0xFF6366F1);
+  // Neutros (tema claro)
+  static const dark = AlantekColors.military900;
+  static const gray = AlantekColors.neutral700;
+  static const lightGray = AlantekColors.neutral500;
+  static const muted = AlantekColors.neutral100;
+  static const background = AlantekColors.cream100;
+  static const surface = AlantekColors.white;
+  static const border = AlantekColors.neutral200;
 
-  static const List<Color> chartColors = [
-    Color(0xFF8B5CF6),
-    Color(0xFF6366F1),
-    Color(0xFF3B82F6),
-    Color(0xFF06B6D4),
-    Color(0xFF22C55E),
-    Color(0xFFF59E0B),
-    Color(0xFFF97316),
-    Color(0xFFEF4444),
-    Color(0xFFEC4899),
-    Color(0xFFA855F7),
-  ];
+  // Gradiente de encabezados
+  static const gradientStart = AlantekColors.military500;
+  static const gradientEnd = AlantekColors.military700;
+
+  static const List<Color> chartColors = AlantekColors.chartColors;
 }
 
 class AppTheme {
-  static ThemeData get light {
+  AppTheme._();
+
+  // ---------------- CLARO ----------------
+  static ThemeData get light => _base(
+        brightness: Brightness.light,
+        scaffoldBg: AppColors.background,
+        surface: AppColors.surface,
+        onSurface: AppColors.dark,
+        outline: AppColors.border,
+        inputFill: AppColors.muted,
+      );
+
+  // ---------------- OSCURO ----------------
+  static ThemeData get dark => _base(
+        brightness: Brightness.dark,
+        scaffoldBg: AlantekColors.neutral900,
+        surface: AlantekColors.military700,
+        onSurface: const Color(0xFFF2F5F0),
+        outline: const Color(0xFF3F4D42),
+        inputFill: AlantekColors.military900,
+      );
+
+  static ThemeData _base({
+    required Brightness brightness,
+    required Color scaffoldBg,
+    required Color surface,
+    required Color onSurface,
+    required Color outline,
+    required Color inputFill,
+  }) {
+    final isDark = brightness == Brightness.dark;
+    final primary = isDark ? const Color(0xFF7D9A72) : AppColors.primary;
+    final accent = isDark ? const Color(0xFFE08A45) : AppColors.accent;
+    final error = isDark ? const Color(0xFFE8705F) : AppColors.error;
+
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.light,
-      colorScheme: const ColorScheme.light(
-        primary: AppColors.primary,
-        secondary: AppColors.secondary,
-        surface: AppColors.surface,
-        error: AppColors.error,
+      brightness: brightness,
+      colorScheme: ColorScheme(
+        brightness: brightness,
+        primary: primary,
+        onPrimary: isDark ? AppColors.dark : Colors.white,
+        secondary: accent,
+        onSecondary: isDark ? AppColors.dark : Colors.white,
+        error: error,
+        onError: Colors.white,
+        surface: surface,
+        onSurface: onSurface,
+        outline: outline,
       ),
-      scaffoldBackgroundColor: AppColors.background,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.dark,
+      scaffoldBackgroundColor: scaffoldBg,
+      appBarTheme: AppBarTheme(
+        backgroundColor: surface,
+        foregroundColor: onSurface,
         elevation: 0,
         centerTitle: true,
         titleTextStyle: TextStyle(
-          color: AppColors.dark,
+          color: onSurface,
           fontSize: 18,
           fontWeight: FontWeight.w600,
         ),
       ),
       cardTheme: CardThemeData(
-        color: AppColors.surface,
+        color: surface,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppColors.border, width: 1),
+          side: BorderSide(color: outline, width: 1),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          backgroundColor: primary,
+          foregroundColor: isDark ? AppColors.dark : Colors.white,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
@@ -85,8 +123,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary),
+          foregroundColor: primary,
+          side: BorderSide(color: primary),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -94,13 +132,11 @@ class AppTheme {
         ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
-        ),
+        style: TextButton.styleFrom(foregroundColor: primary),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.muted,
+        fillColor: inputFill,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
           borderSide: BorderSide.none,
@@ -111,46 +147,46 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: BorderSide(color: primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.error),
+          borderSide: BorderSide(color: error),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        prefixIconColor: AppColors.gray,
-        labelStyle: const TextStyle(color: AppColors.gray),
+        prefixIconColor: isDark ? const Color(0xFFA3ADA1) : AppColors.gray,
+        labelStyle: TextStyle(
+          color: isDark ? const Color(0xFFA3ADA1) : AppColors.gray,
+        ),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primary,
+        foregroundColor: isDark ? AppColors.dark : Colors.white,
         elevation: 4,
       ),
-      dividerTheme: const DividerThemeData(
-        color: AppColors.border,
-        thickness: 1,
-      ),
+      dividerTheme: DividerThemeData(color: outline, thickness: 1),
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.muted,
-        selectedColor: AppColors.primary.withValues(alpha: 0.15),
-        labelStyle: const TextStyle(fontSize: 13, color: AppColors.dark),
+        backgroundColor: inputFill,
+        selectedColor: primary.withValues(alpha: 0.15),
+        labelStyle: TextStyle(
+          fontSize: 13,
+          color: isDark ? const Color(0xFFCfd6CB) : AppColors.dark,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
         side: BorderSide.none,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.primary,
-        unselectedItemColor: AppColors.gray,
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: surface,
+        selectedItemColor: primary,
+        unselectedItemColor: isDark ? const Color(0xFFA3ADA1) : AppColors.gray,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),
-      drawerTheme: const DrawerThemeData(
-        backgroundColor: AppColors.surface,
-      ),
+      drawerTheme: DrawerThemeData(backgroundColor: surface),
       dialogTheme: DialogThemeData(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -167,6 +203,8 @@ class AppTheme {
 }
 
 class AppTextStyles {
+  AppTextStyles._();
+
   static const h1 = TextStyle(
       fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.dark);
   static const h2 = TextStyle(

@@ -1,16 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-:root {
-  --primary-color: #1e3a8a;
-  --secondary-color: #3b82f6;
-  --success-color: #10b981;
-  --danger-color: #ef4444;
-  --warning-color: #f59e0b;
-  --bg-light: #f8fafc;
-  --text-dark: #1e293b;
-  --text-muted: #64748b;
-  --border-color: #e2e8f0;
-}
+// ============================================================
+// ALANTEK — Sistema de diseño (Fase 1)
+// Tokens → Bootstrap SCSS → Temas. El resto es legado que se
+// migra progresivamente a tokens en Fases 2/4.
+// ============================================================
+@import 'styles/tokens';
+@import 'styles/bootstrap';
+@import 'styles/themes';
+
 
 * {
   margin: 0;
@@ -373,18 +371,7 @@ td .dropdown {
   .stat-card { padding: 1rem; }
 }
 
-/* Dark mode */
-[data-theme="dark"] {
-  --primary-color: #60a5fa;
-  --secondary-color: #93c5fd;
-  --success-color: #34d399;
-  --danger-color: #f87171;
-  --warning-color: #fbbf24;
-  --bg-light: #0f172a;
-  --text-dark: #e2e8f0;
-  --text-muted: #94a3b8;
-  --border-color: #334155;
-}
+/* Dark mode — variables ahora definidas en styles/_themes.scss (ALANTEK) */
 
 [data-theme="dark"] body,
 [data-theme="dark"] {
