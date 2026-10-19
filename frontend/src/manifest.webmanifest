@@ -1,7 +1,7 @@
 {
   "name": "conteo-electoral",
   "short_name": "conteo-electoral",
-  "theme_color": "#1976d2",
+  "theme_color": "#48563C",
   "background_color": "#fafafa",
   "display": "standalone",
   "scope": "./",
