@@ -17,7 +17,12 @@ class SyncIndicator extends StatelessWidget {
     final status = isOnline ? 'En línea' : 'Sin conexión';
     final icon = isOnline ? Icons.wifi : Icons.wifi_off;
 
-    return Container(
+    return Semantics(
+      container: true,
+      label: pendientes > 0
+          ? '$status, $pendientes pendientes de sincronizar'
+          : status,
+      child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
@@ -41,6 +46,7 @@ class SyncIndicator extends StatelessWidget {
             ),
           ],
         ],
+      ),
       ),
     );
   }
