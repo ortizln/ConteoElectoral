@@ -19,14 +19,8 @@ CREATE INDEX IF NOT EXISTS idx_sync_op_log_entity ON sync_operations_log(entity_
 CREATE INDEX IF NOT EXISTS idx_sync_op_log_created ON sync_operations_log(created_at);
 
 -- Constraint única en votos para prevenir duplicados por mesa+lista
--- (Solo si no existe ya - protege contra races en CREATE)
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint 
-        WHERE conname = 'uk_voto_mesa_lista'
-    ) THEN
-        ALTER TABLE votos ADD CONSTRAINT uk_voto_mesa_lista UNIQUE (mesa_id, lista_id)
-        WHERE lista_id IS NOT NULL AND candidato_id IS NULL;
-    END IF;
-END $$;
+-- (PostgreSQL no admite WHERE en ALTER TABLE ADD CONSTRAINT UNIQUE;
+--  se usa un índice único parcial, que ofrece la misma garantía)
+CREATE UNIQUE INDEX IF NOT EXISTS uk_voto_mesa_lista
+ON votos (mesa_id, lista_id)
+WHERE lista_id IS NOT NULL AND candidato_id IS NULL;
