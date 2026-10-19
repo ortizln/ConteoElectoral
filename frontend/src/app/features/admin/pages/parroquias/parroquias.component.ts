@@ -234,8 +234,8 @@ export class ParroquiasComponent implements OnInit {
 
   private finishImport(errors: number): void {
     this.importing = false;
-    if (errors === 0) this.importSuccess = `✅ ${this.importPreview!.length} registros importados correctamente.`;
-    else this.importSuccess = `⚠️ Importación completada con ${errors} error(es).`;
+    if (errors === 0) this.importSuccess = `${this.importPreview!.length} registros importados correctamente.`;
+    else this.importSuccess = `Importación completada con ${errors} error(es).`;
     this.load();
   }
 }

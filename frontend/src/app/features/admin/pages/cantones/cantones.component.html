@@ -8,11 +8,11 @@
       <ul class="dropdown-menu dropdown-menu-end">
         <li><button class="dropdown-item fw-bold" (click)="openModal()">+ Nuevo Cantón</button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><button class="dropdown-item" (click)="descargarTemplate()">📄 Descargar Plantilla</button></li>
-        <li><button class="dropdown-item" (click)="openImportModal()">📥 Importar desde Excel</button></li>
+        <li><button class="dropdown-item" (click)="descargarTemplate()"><i class="bi bi-file-earmark-arrow-down"></i> Descargar Plantilla</button></li>
+        <li><button class="dropdown-item" (click)="openImportModal()"><i class="bi bi-box-arrow-in-down"></i> Importar desde Excel</button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><button class="dropdown-item" (click)="api.exportCantonesPdf()">📄 Imprimir PDF</button></li>
-        <li><button class="dropdown-item" (click)="api.exportCantonesExcel()">📊 Exportar Excel</button></li>
+        <li><button class="dropdown-item" (click)="api.exportCantonesPdf()"><i class="bi bi-printer"></i> Imprimir PDF</button></li>
+        <li><button class="dropdown-item" (click)="api.exportCantonesExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> Exportar Excel</button></li>
       </ul>
     </div>
   </div>
@@ -92,7 +92,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5>📥 Importar Cantones desde Excel</h5>
+          <h5><i class="bi bi-box-arrow-in-down"></i> Importar Cantones desde Excel</h5>
           <button class="btn-close" (click)="closeImportModal()">×</button>
         </div>
         <div class="modal-body">
@@ -100,8 +100,8 @@
           <div class="upload-section mb-3">
             <input type="file" autocomplete="off" (change)="onImportFileSelected($event)" accept=".xlsx,.xls" id="importFileInput" />
             <label for="importFileInput" class="file-label">
-              <span *ngIf="!importFile">📂 Seleccionar archivo Excel...</span>
-              <span *ngIf="importFile">📄 {{ importFile.name }}</span>
+              <span *ngIf="!importFile"><i class="bi bi-folder2-open"></i> Seleccionar archivo Excel...</span>
+              <span *ngIf="importFile"><i class="bi bi-file-earmark-text"></i> {{ importFile.name }}</span>
             </label>
           </div>
           <div *ngIf="importPreview && importPreview.length > 0" class="import-preview">

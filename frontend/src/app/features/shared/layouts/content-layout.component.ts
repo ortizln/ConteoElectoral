@@ -19,7 +19,7 @@ import { AuthService } from '../../../core/services/auth.service';
             <span class="header-role-badge">{{ userRole }}</span>
           </div>
           <button (click)="logout()" class="btn btn-outline-light btn-sm header-logout">
-            <span>🚪</span> Salir
+            <span><i class="bi bi-box-arrow-right"></i></span> Salir
           </button>
         </div>
       </header>

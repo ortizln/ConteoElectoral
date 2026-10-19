@@ -514,16 +514,21 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     return 'candidato-rank';
   }
 
-  getRankLabel(r: any, i: number): string {
-    if (r.candidatoId === 0) return '✗';
-    if (r.candidatoId === -1) return '⬜';
+  getRankIcon(r: any, i: number): string {
+    if (r.candidatoId === 0) return 'bi-x-circle-fill';
+    if (r.candidatoId === -1) return 'bi-square';
     const topSet = this.top3Cargos.get(r.cargoNombre);
     if (topSet?.has(r.nombreCompleto)) {
       const idx = [...this.resultadosOrdenados.filter(x => x.cargoNombre === r.cargoNombre && x.candidatoId !== 0 && x.candidatoId !== -1)]
         .sort((a, b) => b.totalVotos - a.totalVotos)
         .findIndex(x => x.nombreCompleto === r.nombreCompleto);
-      return ['🥇', '🥈', '🥉'][idx] || (i + 1).toString();
+      return ['bi-trophy-fill', 'bi-award-fill', 'bi-award'][idx] || '';
     }
+    return '';
+  }
+
+  getRankLabel(r: any, i: number): string {
+    if (this.getRankIcon(r, i)) return '';
     return (i + 1).toString();
   }
 

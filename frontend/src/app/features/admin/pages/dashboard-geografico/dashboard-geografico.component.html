@@ -1,6 +1,6 @@
 <div class="geo-container">
   <div class="geo-header">
-    <h1>🗺️ Dashboard Geográfico</h1>
+    <h1><i class="bi bi-geo-alt"></i> Dashboard Geográfico</h1>
     <div class="geo-controls">
       <select class="form-select" (change)="onEleccionChange()" [(ngModel)]="selectedEleccionId">
         <option *ngFor="let e of elecciones" [ngValue]="e.id">{{ e.nombre }}</option>
@@ -21,7 +21,7 @@
         <h3>{{ tituloNivel }}</h3>
         <span class="total-badge">Total: {{ totalVotos | number }} votos</span>
       </div>
-      <div *ngIf="nivel !== 'provincia'" class="back-link" (click)="volver()">← Volver</div>
+      <div *ngIf="nivel !== 'provincia'" class="back-link" (click)="volver()"><i class="bi bi-arrow-left"></i> Volver</div>
       <div class="sidebar-list" *ngIf="!loading; else loadingTpl">
         <div class="geo-item" *ngFor="let item of items" (click)="onSidebarClick(item)">
           <div class="item-info">

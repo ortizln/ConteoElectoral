@@ -1,7 +1,7 @@
 <div class="mesa-container">
   <div class="mesa-header">
     <div class="header-left">
-      <h1><span class="header-icon">🗳️</span> Registro de Votos</h1>
+      <h1><span class="header-icon"><i class="bi bi-check2-square"></i></span> Registro de Votos</h1>
       <div class="header-meta">
         <span *ngIf="mesaActual" [class]="'mesa-estado ' + getEstadoMesaClass()">
           <span class="estado-dot"></span>
@@ -12,7 +12,7 @@
   </div>
 
   <div *ngIf="mesaActual?.cerrada" class="alert-cerrada">
-    <span class="alert-icon">🔒</span>
+    <span class="alert-icon"><i class="bi bi-lock-fill"></i></span>
     <div class="alert-content">
       <strong>Mesa Cerrada</strong>
       <p>Esta mesa ha sido cerrada. No se pueden registrar ni modificar votos.</p>
@@ -20,7 +20,7 @@
   </div>
 
   <div class="mesa-selector-card" *ngIf="mesasDisponibles.length > 1">
-    <div class="selector-label">📌 Selecciona una mesa para trabajar:</div>
+    <div class="selector-label"><i class="bi bi-pin-map"></i> Selecciona una mesa para trabajar:</div>
     <div class="mesa-opciones">
       <button *ngFor="let m of mesasDisponibles"
               class="mesa-opcion"
@@ -28,7 +28,7 @@
               [class.cerrada]="m.cerrada"
               (click)="seleccionarMesa(m)">
         <span class="mesa-numero">Mesa #{{ m.numero }}</span>
-        <span class="mesa-sexo">{{ m.sexo === 'HOMBRES' ? '♂' : m.sexo === 'MUJERES' ? '♀' : '⚤' }} {{ m.sexo }}</span>
+        <span class="mesa-sexo"><i class="bi" [ngClass]="m.sexo === 'HOMBRES' ? 'bi-gender-male' : m.sexo === 'MUJERES' ? 'bi-gender-female' : 'bi-gender-ambiguous'"></i> {{ m.sexo }}</span>
         <span class="mesa-institucion">{{ m.institucionNombre }}</span>
         <span class="mesa-estado-tag" [class.tag-cerrada]="m.cerrada" [class.tag-abierta]="!m.cerrada">
           {{ m.cerrada ? 'Cerrada' : 'Activa' }}
@@ -41,15 +41,15 @@
     <div class="mesa-actual-info">
       <div class="mesa-actual-numero">Mesa #{{ mesaActual.numero }}</div>
       <div class="mesa-actual-detalles">
-        <span>📍 {{ mesaActual.institucionNombre }}</span>
-        <span>⚤ {{ mesaActual.sexo }}</span>
-        <span>📊 {{ totalVotos }} votos registrados</span>
+        <span><i class="bi bi-geo-alt"></i> {{ mesaActual.institucionNombre }}</span>
+        <span><i class="bi bi-gender-ambiguous"></i> {{ mesaActual.sexo }}</span>
+        <span><i class="bi bi-bar-chart-fill"></i> {{ totalVotos }} votos registrados</span>
       </div>
     </div>
   </div>
 
   <div class="alert alert-info" *ngIf="mesasDisponibles.length === 0">
-    <span class="alert-icon">ℹ️</span>
+    <span class="alert-icon"><i class="bi bi-info-circle-fill"></i></span>
     <div class="alert-content">
       <strong>Sin mesas asignadas</strong>
       <p>No tiene mesas asignadas para esta elección. Contacte al administrador si considera que esto es un error.</p>
@@ -59,7 +59,7 @@
   <div class="content-grid" *ngIf="mesaActual">
     <div class="card candidatos-card">
       <div class="card-header">
-        <h3>👤 Candidatos</h3>
+        <h3><i class="bi bi-person"></i> Candidatos</h3>
         <span class="card-badge">{{ candidatosFiltrados.length }} candidatos</span>
       </div>
 
@@ -166,14 +166,14 @@
 
     <div class="card votos-card">
       <div class="card-header">
-        <h3>📋 Votos Registrados</h3>
+        <h3><i class="bi bi-clipboard-data"></i> Votos Registrados</h3>
         <div class="card-header-actions">
           <span class="total-votos-badge">Total: <strong>{{ totalVotos }}</strong></span>
           <button *ngIf="mesaActual?.cerrada" class="btn btn-acta" (click)="imprimirActa()">
-            📄 Imprimir Acta
+            <i class="bi bi-printer"></i> Imprimir Acta
           </button>
           <button *ngIf="!mesaActual?.cerrada" class="btn btn-cerrar" (click)="cerrarMesa()">
-            🔒 Cerrar Acta
+            <i class="bi bi-lock-fill"></i> Cerrar Acta
           </button>
         </div>
       </div>
@@ -202,7 +202,7 @@
               <td><span class="partido-tag">{{ v.partidoNombre || '—' }}</span></td>
               <td class="text-right"><strong class="voto-count">{{ v.cantidadVotos }}</strong></td>
               <td *ngIf="!mesaActual?.cerrada" class="text-right">
-                <button class="btn btn-eliminar" (click)="eliminarVoto(v.id)">✕</button>
+                <button class="btn btn-eliminar" (click)="eliminarVoto(v.id)"><i class="bi bi-x-lg"></i></button>
               </td>
             </tr>
             <tr *ngIf="votosRegistrados.length === 0">
@@ -218,7 +218,7 @@
             <tr class="nulos-row">
               <td></td>
               <td colspan="2">
-                <span class="nulos-label">🗳️ Votos Nulos</span>
+                <span class="nulos-label"><i class="bi bi-check2-square"></i> Votos Nulos</span>
               </td>
               <td class="text-right">
                 <span *ngIf="!mesaActual?.cerrada" class="nulos-input-group">
@@ -234,7 +234,7 @@
             <tr class="blanco-row">
               <td></td>
               <td colspan="2">
-                <span class="blanco-label">⬜ Votos en Blanco</span>
+                <span class="blanco-label"><i class="bi bi-square"></i> Votos en Blanco</span>
               </td>
               <td class="text-right">
                 <span *ngIf="!mesaActual?.cerrada" class="nulos-input-group">
@@ -259,7 +259,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5>📋 {{ listaLlamada?.nombre || 'Lista' }}</h5>
+          <h5><i class="bi bi-clipboard-data"></i> {{ listaLlamada?.nombre || 'Lista' }}</h5>
           <button type="button" class="btn-close" (click)="cerrarListaModal()"></button>
         </div>
         <div class="modal-body">
@@ -307,7 +307,7 @@
     <div class="modal-dialog modal-sm modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5>🗑️ Eliminar voto</h5>
+          <h5><i class="bi bi-trash3"></i> Eliminar voto</h5>
           <button type="button" class="btn-close" (click)="cancelarDeleteVoto()"></button>
         </div>
         <div class="modal-body">

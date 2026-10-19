@@ -1,7 +1,7 @@
 <div class="dashboard-container container-fluid">
   <div class="dashboard-header">
     <div class="header-left">
-      <h1><span class="header-icon">📊</span> Dashboard Electoral</h1>
+      <h1><span class="header-icon"><i class="bi bi-bar-chart-fill"></i></span> Dashboard Electoral</h1>
       <div class="header-badges">
         <span class="eleccion-badge">{{ eleccionNombre }}</span>
         <span class="live-badge active">
@@ -14,9 +14,9 @@
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn btn-excel" (click)="exportarExcel()" title="Exportar a Excel">📊 Excel</button>
-      <button class="btn btn-pdf" (click)="exportarPdf()" title="Exportar a PDF">📄 PDF</button>
-      <button class="btn btn-refresh" (click)="recargarSilencioso()">↻</button>
+      <button class="btn btn-excel" (click)="exportarExcel()" title="Exportar a Excel"><i class="bi bi-file-earmark-spreadsheet"></i> Excel</button>
+      <button class="btn btn-pdf" (click)="exportarPdf()" title="Exportar a PDF"><i class="bi bi-filetype-pdf"></i> PDF</button>
+      <button class="btn btn-refresh" (click)="recargarSilencioso()"><i class="bi bi-arrow-clockwise"></i></button>
     </div>
   </div>
 
@@ -24,7 +24,7 @@
   <div class="filtros-card">
     <div class="filtros-header">
       <div class="filtros-title">
-        <h3>🔍 Filtros de Búsqueda</h3>
+        <h3><i class="bi bi-search"></i> Filtros de Búsqueda</h3>
       </div>
       <div class="card-buttons">
         <button class="btn btn-clean" (click)="limpiarFiltros()">Limpiar</button>
@@ -100,28 +100,28 @@
 
   <div *ngIf="dashboard" class="stats-grid">
     <div class="stat-card stat-votos">
-      <div class="stat-icon">🗳️</div>
+      <div class="stat-icon"><i class="bi bi-check2-square"></i></div>
       <div class="stat-info">
         <span class="stat-label">Total Votos</span>
         <span class="stat-value">{{ dashboard.totalVotos | number }}</span>
       </div>
     </div>
     <div class="stat-card stat-nulos" style="cursor:pointer;" (click)="verDetalleNulosBlanco('nulos')" title="Ver detalle por mesa">
-      <div class="stat-icon">❌</div>
+      <div class="stat-icon"><i class="bi bi-x-circle-fill"></i></div>
       <div class="stat-info">
         <span class="stat-label">Votos Nulos</span>
         <span class="stat-value">{{ dashboard.totalVotosNulos | number }}</span>
       </div>
     </div>
     <div class="stat-card stat-blanco" style="cursor:pointer;" (click)="verDetalleNulosBlanco('blanco')" title="Ver detalle por mesa">
-      <div class="stat-icon">⬜</div>
+      <div class="stat-icon"><i class="bi bi-square"></i></div>
       <div class="stat-info">
         <span class="stat-label">Votos en Blanco</span>
         <span class="stat-value">{{ dashboard.totalVotosBlanco | number }}</span>
       </div>
     </div>
     <div class="stat-card stat-mesas">
-      <div class="stat-icon">📋</div>
+      <div class="stat-icon"><i class="bi bi-clipboard-data"></i></div>
       <div class="stat-info">
         <span class="stat-label">Mesas Totales</span>
         <span class="stat-value">{{ dashboard.totalMesas }}</span>
@@ -129,7 +129,7 @@
     </div>
     <div class="stat-card stat-cerradas" style="cursor:pointer;" (click)="verMesasCerradas()"
       title="Ver detalle de mesas cerradas">
-      <div class="stat-icon">🔒</div>
+      <div class="stat-icon"><i class="bi bi-lock-fill"></i></div>
       <div class="stat-info">
         <span class="stat-label">Mesas Cerradas</span>
         <span class="stat-value">{{ dashboard.mesasCerradas }}</span>
@@ -139,7 +139,7 @@
       </div>
     </div>
     <div class="stat-card stat-progreso">
-      <div class="stat-icon">📈</div>
+      <div class="stat-icon"><i class="bi bi-graph-up"></i></div>
       <div class="stat-info">
         <span class="stat-label">Progreso</span>
         <span class="stat-value">{{ dashboard.porcentajeMesasCerradas | number:'1.1-1' }}%</span>
@@ -154,7 +154,7 @@
     <div class="chart-card" [class.minimized]="barChartMinimized" [class.fullscreen]="barChartFullscreen"
       [class.dimmed]="pieChartFullscreen || resultadosFullscreen">
       <div class="card-header-actions">
-        <h3>📊 Votos por Candidato</h3>
+        <h3><i class="bi bi-bar-chart-fill"></i> Votos por Candidato</h3>
         <div class="card-buttons">
           <button class="btn-card-action" (click)="toggleMinimize('barChart')"
             [title]="barChartMinimized ? 'Expandir' : 'Minimizar'"><i
@@ -170,7 +170,7 @@
     <div class="chart-card" [class.minimized]="pieChartMinimized" [class.fullscreen]="pieChartFullscreen"
       [class.dimmed]="barChartFullscreen || resultadosFullscreen">
       <div class="card-header-actions">
-        <h3>🥧 Distribución de Votos</h3>
+        <h3><i class="bi bi-pie-chart"></i> Distribución de Votos</h3>
         <div class="card-buttons">
           <button class="btn-card-action" (click)="toggleMinimize('pieChart')"
             [title]="pieChartMinimized ? 'Expandir' : 'Minimizar'"><i
@@ -192,7 +192,7 @@
       [class.fullscreen]="partyChartFullscreen"
       [class.dimmed]="barChartFullscreen || pieChartFullscreen || listChartFullscreen || resultadosFullscreen">
       <div class="card-header-actions">
-        <h3>🏛️ Resultados por Partido</h3>
+        <h3><i class="bi bi-bank"></i> Resultados por Partido</h3>
         <div class="card-buttons">
           <button class="btn-card-action" (click)="toggleMinimize('partyChart')"
             [title]="partyChartMinimized ? 'Expandir' : 'Minimizar'"><i
@@ -223,7 +223,7 @@
       [class.fullscreen]="listChartFullscreen"
       [class.dimmed]="barChartFullscreen || pieChartFullscreen || partyChartFullscreen || resultadosFullscreen">
       <div class="card-header-actions">
-        <h3>📋 Resultados por Lista</h3>
+        <h3><i class="bi bi-clipboard-data"></i> Resultados por Lista</h3>
         <div class="card-buttons">
           <button class="btn-card-action" (click)="toggleMinimize('listChart')"
             [title]="listChartMinimized ? 'Expandir' : 'Minimizar'"><i
@@ -256,7 +256,7 @@
   <div class="table-card" [class.minimized]="resultadosMinimized" [class.fullscreen]="resultadosFullscreen"
     [class.dimmed]="barChartFullscreen || pieChartFullscreen || partyChartFullscreen || listChartFullscreen">
     <div class="table-header">
-      <h3>📋 Resultados</h3>
+      <h3><i class="bi bi-clipboard-data"></i> Resultados</h3>
       <div class="card-buttons">
         <span class="table-count">{{ resultados.length }} candidatos</span>
         <button class="btn-card-action" (click)="toggleMinimize('resultados')"
@@ -269,7 +269,7 @@
     <div class="table-wrapper" [class.hidden]="resultadosMinimized">
 
       <div *ngIf="resultados.length > 0" class="resultados-section">
-        <h4 class="section-title">🏛️ Candidatos Individuales</h4>
+        <h4 class="section-title"><i class="bi bi-person"></i> Candidatos Individuales</h4>
         <table class="table-moderno">
           <thead>
             <tr>
@@ -295,7 +295,12 @@
               (click)="r.candidatoId > 0 && verDetalleCandidato(r.candidatoId)">
               <td>
                 <div class="candidato-info-cell">
-                  <span class="candidato-rank" [class]="getRankClass(r)">{{ getRankLabel(r, i) }}</span>
+                  <span class="candidato-rank" [class]="getRankClass(r)">
+                    <ng-container *ngIf="getRankIcon(r, i) as icon; else rankNumber">
+                      <i class="bi" [ngClass]="icon"></i>
+                    </ng-container>
+                    <ng-template #rankNumber>{{ getRankLabel(r, i) }}</ng-template>
+                  </span>
                   <span class="candidato-name">{{ r.nombreCompleto }}</span>
                 </div>
               </td>
@@ -314,7 +319,7 @@
       </div>
 
       <div *ngIf="showListaResults && resultadosListas.length > 0" class="resultados-section">
-        <h4 class="section-title">📋 Resultados por Lista</h4>
+        <h4 class="section-title"><i class="bi bi-clipboard-data"></i> Resultados por Lista</h4>
         <table class="table-moderno">
           <thead>
             <tr>
@@ -364,7 +369,7 @@
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 *ngIf="detalleCandidato">📊 {{ detalleCandidato.nombreCompleto }}</h5>
+          <h5 *ngIf="detalleCandidato"><i class="bi bi-bar-chart-fill"></i> {{ detalleCandidato.nombreCompleto }}</h5>
           <button type="button" class="btn-close" (click)="cerrarDetalle()"></button>
         </div>
         <div class="modal-body">
@@ -446,7 +451,7 @@
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h5>🔒 Mesas Cerradas</h5>
+          <h5><i class="bi bi-lock-fill"></i> Mesas Cerradas</h5>
           <button type="button" class="btn-close" (click)="cerrarMesasCerradas()"></button>
         </div>
         <div class="modal-body">
@@ -532,7 +537,7 @@
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h5>{{ nulosBlancoTipo === 'nulos' ? '❌' : '⬜' }} Votos {{ nulosBlancoTipo === 'nulos' ? 'Nulos' : 'en Blanco' }} por Mesa</h5>
+          <h5><i class="bi" [ngClass]="nulosBlancoTipo === 'nulos' ? 'bi-x-circle-fill' : 'bi-square'"></i> Votos {{ nulosBlancoTipo === 'nulos' ? 'Nulos' : 'en Blanco' }} por Mesa</h5>
           <button type="button" class="btn-close" (click)="cerrarNulosBlancoDetalle()"></button>
         </div>
         <div class="modal-body">

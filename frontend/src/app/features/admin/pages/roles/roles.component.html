@@ -33,22 +33,22 @@
           <td>{{ p.modulo }}</td>
           <td class="text-center">
             <button class="toggle-btn" [class.active]="p.puedeVer" (click)="togglePermiso(p, 'puedeVer')" [disabled]="saving">
-              {{ p.puedeVer ? '✓' : '✗' }}
+              <i class="bi" [ngClass]="p.puedeVer ? 'bi-check-lg' : 'bi-x-lg'"></i>
             </button>
           </td>
           <td class="text-center">
             <button class="toggle-btn" [class.active]="p.puedeCrear" (click)="togglePermiso(p, 'puedeCrear')" [disabled]="saving">
-              {{ p.puedeCrear ? '✓' : '✗' }}
+              <i class="bi" [ngClass]="p.puedeCrear ? 'bi-check-lg' : 'bi-x-lg'"></i>
             </button>
           </td>
           <td class="text-center">
             <button class="toggle-btn" [class.active]="p.puedeEditar" (click)="togglePermiso(p, 'puedeEditar')" [disabled]="saving">
-              {{ p.puedeEditar ? '✓' : '✗' }}
+              <i class="bi" [ngClass]="p.puedeEditar ? 'bi-check-lg' : 'bi-x-lg'"></i>
             </button>
           </td>
           <td class="text-center">
             <button class="toggle-btn" [class.active]="p.puedeEliminar" (click)="togglePermiso(p, 'puedeEliminar')" [disabled]="saving">
-              {{ p.puedeEliminar ? '✓' : '✗' }}
+              <i class="bi" [ngClass]="p.puedeEliminar ? 'bi-check-lg' : 'bi-x-lg'"></i>
             </button>
           </td>
         </tr>

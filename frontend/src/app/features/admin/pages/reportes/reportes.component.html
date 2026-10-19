@@ -16,42 +16,42 @@
 
   <div *ngIf="resumen" class="resumen-grid">
     <div class="resumen-card">
-      <div class="card-icon votos">🗳️</div>
+      <div class="card-icon votos"><i class="bi bi-check2-square"></i></div>
       <div class="card-body">
         <span class="card-value">{{ resumen.totalVotos | number }}</span>
         <span class="card-label">Total Votos</span>
       </div>
     </div>
     <div class="resumen-card clickable" (click)="openMesasModal()">
-      <div class="card-icon cerradas">✅</div>
+      <div class="card-icon cerradas"><i class="bi bi-check-circle"></i></div>
       <div class="card-body">
         <span class="card-value">{{ resumen.mesasCerradas }} / {{ resumen.totalMesas }}</span>
         <span class="card-label">Mesas Cerradas</span>
       </div>
     </div>
     <div class="resumen-card">
-      <div class="card-icon participacion">📊</div>
+      <div class="card-icon participacion"><i class="bi bi-bar-chart"></i></div>
       <div class="card-body">
         <span class="card-value">{{ resumen.participacion }}%</span>
         <span class="card-label">Participación</span>
       </div>
     </div>
     <div class="resumen-card clickable" (click)="openCandidatosModal()">
-      <div class="card-icon candidatos">👤</div>
+      <div class="card-icon candidatos"><i class="bi bi-person"></i></div>
       <div class="card-body">
         <span class="card-value">{{ resumen.totalCandidatos }}</span>
         <span class="card-label">Candidatos</span>
       </div>
     </div>
     <div class="resumen-card clickable" (click)="openPartidosModal()">
-      <div class="card-icon partidos">🎯</div>
+      <div class="card-icon partidos"><i class="bi bi-bullseye"></i></div>
       <div class="card-body">
         <span class="card-value">{{ resumen.totalPartidos }}</span>
         <span class="card-label">Partidos</span>
       </div>
     </div>
     <div class="resumen-card clickable" (click)="openNulosModal()">
-      <div class="card-icon nulos">⚠️</div>
+      <div class="card-icon nulos"><i class="bi bi-exclamation-triangle"></i></div>
       <div class="card-body">
         <span class="card-value">{{ resumen.votosNulos }} / {{ resumen.votosBlanco }}</span>
         <span class="card-label">Nulos / Blanco</span>

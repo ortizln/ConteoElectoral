@@ -8,8 +8,8 @@
       <ul class="dropdown-menu dropdown-menu-end">
         <li *ngIf="isAdmin"><button class="dropdown-item fw-bold" (click)="openModal()">+ Nueva Elección</button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><button class="dropdown-item" (click)="api.exportEleccionesPdf()">📄 Imprimir PDF</button></li>
-        <li><button class="dropdown-item" (click)="api.exportEleccionesExcel()">📊 Exportar Excel</button></li>
+        <li><button class="dropdown-item" (click)="api.exportEleccionesPdf()"><i class="bi bi-printer"></i> Imprimir PDF</button></li>
+        <li><button class="dropdown-item" (click)="api.exportEleccionesExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> Exportar Excel</button></li>
       </ul>
     </div>
   </div>

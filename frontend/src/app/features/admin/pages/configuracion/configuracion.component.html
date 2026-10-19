@@ -15,29 +15,29 @@
   <!-- Tabs -->
   <div class="tabs" *ngIf="!loading">
     <button class="tab" [class.active]="activeTab === 'config'" (click)="activeTab = 'config'">
-      <span>⚙️</span> Configuración
+      <span><i class="bi bi-gear"></i></span> Configuración
     </button>
     <button class="tab" [class.active]="activeTab === 'carousel'" (click)="activeTab = 'carousel'">
-      <span>📷</span> Carrusel
+      <span><i class="bi bi-camera"></i></span> Carrusel
     </button>
     <button class="tab" [class.active]="activeTab === 'apk'" (click)="loadApkVersions(); activeTab = 'apk'">
-      <span>📱</span> Versiones APK
+      <span><i class="bi bi-phone"></i></span> Versiones APK
     </button>
     <button class="tab" [class.active]="activeTab === 'usuarios'" (click)="activeTab = 'usuarios'">
-      <span>👥</span> Usuarios
+      <span><i class="bi bi-people"></i></span> Usuarios
     </button>
     <button class="tab" [class.active]="activeTab === 'importar'" (click)="activeTab = 'importar'">
-      <span>📥</span> Importar Datos
+      <span><i class="bi bi-box-arrow-in-down"></i></span> Importar Datos
     </button>
     <button class="tab" [class.active]="activeTab === 'permisos'" (click)="activeTab = 'permisos'">
-      <span>🔐</span> Permisos
+      <span><i class="bi bi-shield-lock"></i></span> Permisos
     </button>
   </div>
 
   <!-- Tab: Configuración -->
   <div *ngIf="!loading && activeTab === 'config'" class="config-grid">
     <div class="card">
-      <h5><span>🏷️</span> Información del Partido</h5>
+      <h5><span><i class="bi bi-tag"></i></span> Información del Partido</h5>
       <div class="form-group">
         <label for="nombrePartido">Nombre del Partido</label>
         <input id="nombrePartido" type="text" class="form-control" autocomplete="off" [(ngModel)]="config.nombrePartido"
@@ -53,7 +53,7 @@
       </button>
     </div>
     <div class="card">
-      <h5><span>🖼️</span> Logo del Partido</h5>
+      <h5><span><i class="bi bi-image"></i></span> Logo del Partido</h5>
       <div class="logo-preview">
         <div *ngIf="logoUrl" class="logo-display">
           <img [src]="logoUrl" class="logo-img" alt="Logo del partido" />
@@ -72,7 +72,7 @@
       </div>
     </div>
     <div class="card">
-      <h5><span>📖</span> Manual de Usuario</h5>
+      <h5><span><i class="bi bi-book"></i></span> Manual de Usuario</h5>
       <p class="text-muted">Descarga el manual completo del sistema en formato PDF.</p>
       <a [href]="manualUrl" class="btn btn-primary" download>
         <i class="bi bi-file-pdf"></i> Descargar Manual PDF
@@ -84,7 +84,7 @@
   <div *ngIf="!loading && activeTab === 'carousel'" class="tab-content">
     <div class="carousel-upload-card">
       <div class="upload-header">
-        <h4>📷 Agregar Nueva Imagen</h4>
+        <h4><i class="bi bi-camera"></i> Agregar Nueva Imagen</h4>
       </div>
       <div class="drop-zone"
         [class.drag-over]="carouselDragOver"
@@ -94,7 +94,7 @@
         (drop)="onCarouselDrop($event)">
         <input type="file" autocomplete="off" (change)="onCarouselFileSelected($event)" accept="image/png,image/jpeg,image/webp" #carouselFileInput />
         <div class="drop-content" *ngIf="!carouselFile" (click)="carouselFileInput.click()">
-          <div class="drop-icon">🖼️</div>
+          <div class="drop-icon"><i class="bi bi-image"></i></div>
           <p class="drop-text">Arrastra una imagen aquí o <span class="drop-link">haz clic para seleccionar</span></p>
           <p class="drop-hint">PNG, JPEG o WebP</p>
         </div>
@@ -104,7 +104,7 @@
             <span class="drop-preview-name">{{ carouselFile.name }}</span>
             <span class="drop-preview-size">{{ (carouselFile.size / 1024 / 1024).toFixed(1) }} MB</span>
           </div>
-          <button class="btn-clear-file" (click)="clearCarouselFile(); $event.preventDefault()">✕</button>
+          <button class="btn-clear-file" (click)="clearCarouselFile(); $event.preventDefault()"><i class="bi bi-x-lg"></i></button>
         </div>
       </div>
       <div class="form-row">
@@ -156,7 +156,7 @@
   <div *ngIf="!loading && activeTab === 'apk'" class="tab-content">
     <div class="card mb-4">
       <div class="card-body">
-        <h5 class="card-title mb-3">📱 Subir Nueva Versión APK</h5>
+        <h5 class="card-title mb-3"><i class="bi bi-phone"></i> Subir Nueva Versión APK</h5>
         <div class="row g-3 align-items-end">
           <div class="col-md-3">
             <label class="form-label">Versión</label>
@@ -189,7 +189,7 @@
         <div class="card h-100 shadow-sm">
           <div class="card-body d-flex flex-column">
             <div class="d-flex justify-content-between align-items-start mb-2">
-              <h6 class="card-title mb-0">📱 v{{ v.version }}</h6>
+              <h6 class="card-title mb-0"><i class="bi bi-phone"></i> v{{ v.version }}</h6>
               <span class="badge bg-light text-muted small">{{ v.fechaSubida | date:'short' }}</span>
             </div>
             <p class="card-text small text-muted mb-3 flex-grow-1">{{ v.nombreArchivo }}</p>
