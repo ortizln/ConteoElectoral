@@ -148,14 +148,27 @@ class _LoginScreenState extends State<LoginScreen>
                   children: [
                     // Logo
                     Container(
-                      width: 90,
-                      height: 90,
+                      width: 100,
+                      height: 100,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
-                      child: const Icon(Icons.how_to_vote,
-                          size: 48, color: Colors.white),
+                      padding: const EdgeInsets.all(10),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset(
+                          'assets/icono.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 20),
                     const Text(
