@@ -29,24 +29,25 @@ fi
 
 # Construir la aplicación para producción
 echo "Construyendo Angular app (producción)..."
-npm install
-ng build --configuration=production
+npm ci
+npm run build -- --configuration production
 
 # Verificar que se generó la carpeta dist
-if [ ! -d "dist/conteo-electoral" ]; then
-    echo "ERROR: No se generó la carpeta dist/conteo-electoral"
+BUILD_DIR="dist/conteo-electoral/browser"
+if [ ! -f "$BUILD_DIR/index.html" ]; then
+    echo "ERROR: Missing $BUILD_DIR/index.html"
     exit 1
 fi
 
-echo "Build completado: frontend/dist/conteo-electoral"
+echo "Build completado: frontend/$BUILD_DIR"
 
 # Copiar archivos a Nginx
 echo "Copiando archivos a Nginx..."
-sudo mkdir -p /var/www/conteo-electoral
-sudo cp -r dist/conteo-electoral/* /var/www/conteo-electoral/
+sudo mkdir -p /var/www/conteo-electoral/browser
+sudo cp -a "$BUILD_DIR/." /var/www/conteo-electoral/browser/
 
 echo ""
 echo "=== Frontend desplegado exitosamente ==="
 echo "Archivos en: /var/www/conteo-electoral"
 echo ""
-echo "IMPORTANTE: Actualizar environment.prod.ts con la IP correcta del servidor"
+echo "La API usa /api, reenviada por Nginx al backend"
