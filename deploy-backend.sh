@@ -5,6 +5,10 @@
 
 set -e
 
+: "${SPRING_DATASOURCE_URL:?Define SPRING_DATASOURCE_URL antes del despliegue}"
+: "${SPRING_DATASOURCE_USERNAME:?Define SPRING_DATASOURCE_USERNAME antes del despliegue}"
+: "${SPRING_DATASOURCE_PASSWORD:?Define SPRING_DATASOURCE_PASSWORD antes del despliegue}"
+
 echo "=== Desplegando backend ==="
 
 # Detectar ruta del script (funciona en WSL y Linux)
@@ -36,9 +40,9 @@ docker run -d \
   --name conteo-backend \
   --restart unless-stopped \
   -p 8081:8081 \
-  -e SPRING_DATASOURCE_URL=jdbc:postgresql://192.168.1.43:5432/conteo_electoral \
-  -e SPRING_DATASOURCE_USERNAME=postgres \
-  -e SPRING_DATASOURCE_PASSWORD=086411421 \
+  -e SPRING_DATASOURCE_URL \
+  -e SPRING_DATASOURCE_USERNAME \
+  -e SPRING_DATASOURCE_PASSWORD \
   conteo-electoral-backend:latest
 
 echo ""

@@ -23,7 +23,7 @@ Entorno de desarrollo:
 ```properties
 spring.datasource.url=jdbc:postgresql://192.168.1.43:5432/conteo_electoral
 spring.datasource.username=postgres
-spring.datasource.password=086411421
+spring.datasource.password=${DB_PASSWORD}
 ```
 
 ---

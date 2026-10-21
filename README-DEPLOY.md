@@ -1,68 +1,35 @@
-# Instrucciones de Despliegue
+# Despliegue
 
-## Backend (Docker)
+## Backend con Docker Compose
 
-1. **Construir la imagen:**
+1. Copia `.env.example` como `.env` y configura la URL, el usuario y la contraseña de PostgreSQL. El `.env` está excluido de Git.
+2. Desde la raíz del proyecto ejecuta:
+
    ```bash
-   cd backend
-   docker build -t conteo-electoral-backend .
+   docker compose up -d --build backend
    ```
 
-2. **Ejecutar el contenedor:**
-   ```bash
-   docker run -d \
-     --name backend \
-     -p 8081:8081 \
-     -e SPRING_DATASOURCE_URL=jdbc:postgresql://YOUR_DB_HOST:5432/conteo_electoral \
-     -e SPRING_DATASOURCE_USERNAME=postgres \
-     -e SPRING_DATASOURCE_PASSWORD=086411421 \
-     conteo-electoral-backend
-   ```
+3. Revisa el arranque con `docker compose logs -f backend`.
 
-3. **O usar docker-compose:**
-   ```bash
-   docker-compose up -d backend
-   ```
+Para desplegar con `deploy-backend.sh`, exporta las mismas tres variables en la sesión antes de ejecutarlo. El script falla claramente si falta alguna.
 
-## Frontend (Nginx sin Docker)
+## Frontend
 
-1. **URL de producción (relativa, mismo origen):**
-   Editar `frontend/src/environments/environment.prod.ts`:
-   ```typescript
-   export const environment = {
-     production: true,
-     apiUrl: '/api'
-   };
-   ```
-   > ⚠️ No usar `http://IP:8081/api` en producción HTTPS: el navegador lo bloquea
-   > por *mixed content* y por el permiso de acceso a la red local. Nginx debe
-   > hacer proxy de `/api/` y `/ws/` hacia `127.0.0.1:8081` (ver `frontend/nginx.conf`).
-
-2. **Construir para producción:**
-   ```bash
-   cd frontend
-   ng build --configuration=production
-   ```
-
-3. **Copiar archivos a Nginx:**
-   - Copiar contenido de `frontend/dist/conteo-electoral` a `C:\nginx\html\conteo-electoral`
-   - Copiar `frontend/nginx.conf` a `C:\nginx\conf\conteo-electoral.conf`
-   - Editar `nginx.conf` principal y agregar: `include conteo-electoral.conf;`
-   - Recargar Nginx: `nginx -s reload`
-
-## Docker Compose (Todo el stack)
+El frontend de producción usa `apiUrl: '/api'`. Nginx debe servir la aplicación bajo `/conteo-electoral/` y reenviar `/api/` y `/ws/` al backend en `127.0.0.1:8081`. Construye y copia los archivos con:
 
 ```bash
-docker-compose up -d
+cd frontend
+npm ci
+npm run build -- --configuration production
 ```
 
-Esto levantará:
-- Backend en `http://localhost:8081`
-- Base de datos PostgreSQL en `localhost:5432`
-- Frontend en `http://localhost:80` (vía Nginx)
+El resultado Angular actual está en `frontend/dist/conteo-electoral/browser`. Copia ese contenido a `/var/www/conteo-electoral/browser/` y carga `frontend/nginx.conf` desde la configuración principal de Nginx. Si el sitio también usa HTTPS, incluye los mismos bloques `location` dentro del servidor TLS.
 
-## Notas
+## Diagnóstico
 
-- Asegurarse de que el puerto 8081 esté disponible para el backend
-- La base de datos se inicializa automáticamente con el usuario admin (password: admin123)
-- Para producción, cambiar las contraseñas y configurar HTTPS
+- `docker compose ps` muestra el estado del contenedor.
+- `docker compose logs --tail=200 backend` muestra errores de conexión o arranque.
+- Desde el servidor, confirma que PostgreSQL escucha en la dirección y puerto configurados y que acepta conexiones desde Docker.
+- Comprueba la configuración de Nginx con `nginx -t` antes de recargarla.
+
+No guardes credenciales en `application.yml`, scripts versionados o el repositorio. Si una contraseña real se compartió o subió al repositorio, cámbiala en PostgreSQL y actualiza el `.env` del servidor.
