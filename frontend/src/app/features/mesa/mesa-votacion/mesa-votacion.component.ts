@@ -71,6 +71,9 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   // Votos registrados drawer (mobile)
   showVotosPanel = false;
 
+  // Selector de mesa colapsable
+  selectorColapsado = false;
+
   private colors: string[] = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#e11d48'];
 
   constructor(
@@ -376,6 +379,10 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
 
   toggleVotosPanel(): void {
     this.showVotosPanel = !this.showVotosPanel;
+  }
+
+  toggleSelector(): void {
+    this.selectorColapsado = !this.selectorColapsado;
   }
 
   ejecutarDeleteVoto(): void {

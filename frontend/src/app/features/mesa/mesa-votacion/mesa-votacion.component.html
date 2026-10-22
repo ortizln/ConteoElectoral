@@ -41,8 +41,15 @@
   </div>
 
   <div class="mesa-selector-card" *ngIf="mesasDisponibles.length > 1">
-    <div class="selector-label"><i class="bi bi-pin-map"></i> Selecciona una mesa para trabajar:</div>
-    <div class="mesa-opciones">
+    <div class="selector-header">
+      <div class="selector-label"><i class="bi bi-pin-map"></i> Selecciona una mesa para trabajar:</div>
+      <button type="button" class="selector-toggle" (click)="toggleSelector()"
+              [attr.aria-expanded]="!selectorColapsado"
+              [title]="selectorColapsado ? 'Mostrar mesas' : 'Minimizar'">
+        <i class="bi" [class.bi-chevron-up]="!selectorColapsado" [class.bi-chevron-down]="selectorColapsado"></i>
+      </button>
+    </div>
+    <div class="mesa-opciones" *ngIf="!selectorColapsado">
       <button *ngFor="let m of mesasDisponibles"
               class="mesa-opcion"
               [class.active]="m.id === mesaActual?.id"

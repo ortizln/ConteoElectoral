@@ -20,8 +20,14 @@
 .alert-content p { margin: 4px 0 0; color: var(--alantek-danger); font-size: 13px; }
 
 .mesa-selector-card { background: linear-gradient(135deg, var(--alantek-info-bg), var(--alantek-surface)); border: 1px solid var(--alantek-info); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+.selector-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.selector-header .selector-label { margin-bottom: 0; flex: 1; min-width: 0; }
+.selector-toggle { width: 30px; height: 30px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--alantek-info); background: var(--alantek-surface); color: var(--alantek-info); border-radius: 8px; font-size: 14px; cursor: pointer; transition: background-color 0.2s ease, transform 0.2s ease; }
+.selector-toggle:hover { background: var(--alantek-info-bg); }
+.selector-toggle:active { transform: scale(0.94); }
+.selector-toggle:focus-visible { outline: 2px solid var(--alantek-primary); outline-offset: 2px; }
 .selector-label { font-size: 15px; font-weight: 600; color: var(--alantek-info); margin-bottom: 12px; }
-.mesa-opciones { display: flex; gap: 12px; flex-wrap: wrap; }
+.mesa-opciones { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
 .mesa-opcion { display: flex; flex-direction: column; gap: 4px; padding: 14px 18px; background: var(--alantek-surface); border: 2px solid var(--alantek-border); border-radius: 12px; cursor: pointer; transition: all 0.2s; min-width: 180px; text-align: left; }
 .mesa-opcion:hover { border-color: var(--alantek-primary); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(217,119,50,0.15); }
 .mesa-opcion.active { border-color: var(--alantek-primary); background: var(--alantek-info-bg); box-shadow: 0 0 0 3px rgba(217,119,50,0.15); }
