@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/features/mesa/mesa-votacion-papeleta/mesa-votacion-papeleta.component.css"],
-  "sourcesContent": [".cursor-pointer { cursor: pointer; }\r\n.cursor-pointer:hover { box-shadow: var(--alantek-shadow-md); }\r\n.nav-tabs .nav-link { font-size: .85rem; padding: .4rem .8rem; }\r\n"],
-  "mappings": ";AAAA,CAAC;AAAiB,UAAQ;AAAS;AACnC,CADC,cACc;AAAS,cAAY,IAAI;AAAsB;AAC9D,CAAC,SAAS,CAAC;AAAW,aAAW;AAAQ,WAAS,MAAM;AAAO;",
-  "names": []
-}

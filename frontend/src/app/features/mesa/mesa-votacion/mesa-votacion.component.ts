@@ -68,6 +68,9 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   deleteError = '';
   deleteCargando = false;
 
+  // Votos registrados drawer (mobile)
+  showVotosPanel = false;
+
   private colors: string[] = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#e11d48'];
 
   constructor(
@@ -369,6 +372,10 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     this.deleteVotoId = null;
     this.deletePassword = '';
     this.deleteError = '';
+  }
+
+  toggleVotosPanel(): void {
+    this.showVotosPanel = !this.showVotosPanel;
   }
 
   ejecutarDeleteVoto(): void {
