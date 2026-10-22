@@ -9,15 +9,23 @@ class AppConfig {
 }
 
 class AppEnvironment {
+  static const defaultApiUrl = 'https://alan-tek.com/api';
+
   static const local = AppConfig(
-    baseUrl: 'http://192.168.1.43:8081/api',
+    baseUrl: defaultApiUrl,
     isProduction: false,
   );
 
   static const production = AppConfig(
-    baseUrl: 'http://192.168.1.43:8081/api',
+    baseUrl: defaultApiUrl,
     isProduction: true,
   );
 
-  static const current = local; // Change to production for release build
+  // Opcional: uso en red local sin internet (mismo servidor)
+  static const lan = AppConfig(
+    baseUrl: 'http://192.168.1.43:8081/api',
+    isProduction: false,
+  );
+
+  static const current = production;
 }

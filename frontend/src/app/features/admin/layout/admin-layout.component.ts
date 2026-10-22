@@ -21,6 +21,7 @@ interface NavItem {
 })
 export class AdminLayoutComponent {
   sidebarOpen = false;
+  sidebarCollapsed = false;
   baseAdminPath = '/admin';
 
   adminPrefix = (path: string) => `${this.baseAdminPath}/${path}`;
@@ -85,9 +86,16 @@ export class AdminLayoutComponent {
     private authService: AuthService,
     private router: Router,
     private themeService: ThemeService
-  ) {}
+  ) {
+    this.sidebarCollapsed = localStorage.getItem('sidebar_collapsed') === 'true';
+  }
 
   toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
+
+  toggleCollapse(): void {
+    this.sidebarCollapsed = !this.sidebarCollapsed;
+    localStorage.setItem('sidebar_collapsed', String(this.sidebarCollapsed));
+  }
 
   closeSidebar(): void {
     if (this.isMobile) this.sidebarOpen = false;

@@ -20,7 +20,7 @@ class StompService {
     _eleccionId = eleccionId;
     disconnect();
     _client = StompClient(
-      config: StompConfig(
+      config: StompConfig.sockJS(
         url: '$wsBaseUrl/ws',
         stompConnectHeaders: token != null ? {'Authorization': 'Bearer $token'} : null,
         onConnect: (StompFrame frame) {

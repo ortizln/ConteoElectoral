@@ -169,7 +169,7 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
                         controller: _serverCtrl,
                         decoration: const InputDecoration(
                           labelText: 'URL del servidor',
-                          hintText: 'http://192.168.1.100:8081',
+                          hintText: 'https://alan-tek.com',
                           contentPadding: EdgeInsets.symmetric(
                               horizontal: 12, vertical: 12),
                           border: OutlineInputBorder(),

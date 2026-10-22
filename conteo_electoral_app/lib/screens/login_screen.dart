@@ -73,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen>
               controller: _serverController,
               decoration: const InputDecoration(
                 labelText: 'URL del servidor',
-                hintText: 'http://192.168.1.100:8081',
+                hintText: 'https://alan-tek.com',
                 prefixIcon: Icon(Icons.language),
               ),
             ),

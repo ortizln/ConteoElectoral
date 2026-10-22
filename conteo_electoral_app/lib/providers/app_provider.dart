@@ -9,6 +9,7 @@ import '../services/sync_service.dart';
 import '../services/stomp_service.dart';
 import '../database/database_helper.dart';
 import '../config/server_url.dart';
+import '../config/app_config.dart';
 
 class AppProvider extends ChangeNotifier {
   final DatabaseHelper _db = DatabaseHelper.instance;
@@ -24,7 +25,7 @@ class AppProvider extends ChangeNotifier {
   bool _isOnline = true;
   bool _isLoading = false;
   String? _error;
-  String _serverUrl = 'http://10.0.2.2:8081/api';
+  String _serverUrl = AppEnvironment.defaultApiUrl;
   int _pendingSyncCount = 0;
   int _failedSyncCount = 0;
   bool _isSyncing = false;
@@ -103,8 +104,15 @@ class AppProvider extends ChangeNotifier {
 
   Future<void> _loadServerUrl() async {
     final prefs = await SharedPreferences.getInstance();
-    _serverUrl = ServerUrl.normalizeApiUrl(
-        prefs.getString('server_url') ?? 'http://10.0.2.2:8081/api');
+    var saved = prefs.getString('server_url');
+    // Migrar URLs antiguas hardcodeadas (emulador/LAN) al dominio
+    if (saved == null ||
+        saved == 'http://10.0.2.2:8081/api' ||
+        saved == 'http://192.168.1.43:8081/api') {
+      saved = AppEnvironment.defaultApiUrl;
+      await prefs.setString('server_url', saved);
+    }
+    _serverUrl = ServerUrl.normalizeApiUrl(saved);
     await _api.setServerUrl(_serverUrl);
   }
 
