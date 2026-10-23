@@ -602,6 +602,50 @@ class DatabaseHelper {
     });
   }
 
+  Future<void> upsertVotoRemoto(Voto voto) async {
+    final db = await database;
+    final existente = await db.query(
+      'votos',
+      where:
+          'mesaId = ? AND COALESCE(candidatoId, -1) = ? AND COALESCE(listaId, -1) = ? AND COALESCE(opcionPapeletaId, -1) = ?',
+      whereArgs: [
+        voto.mesaId,
+        voto.candidatoId ?? -1,
+        voto.listaId ?? -1,
+        voto.opcionPapeletaId ?? -1,
+      ],
+      limit: 1,
+    );
+    if (existente.isNotEmpty) {
+      await db.update(
+        'votos',
+        {
+          'cantidadVotos': voto.cantidadVotos,
+          'sincronizado': 1,
+          'fechaRegistro': voto.fechaRegistro.toIso8601String(),
+        },
+        where: 'id = ?',
+        whereArgs: [existente.first['id']],
+      );
+      return;
+    }
+    await db.insert(
+      'votos',
+      {
+        if (voto.id != null) 'id': voto.id,
+        'candidatoId': voto.candidatoId,
+        'mesaId': voto.mesaId,
+        'cantidadVotos': voto.cantidadVotos,
+        'eleccionesId': voto.eleccionesId,
+        'opcionPapeletaId': voto.opcionPapeletaId,
+        'listaId': voto.listaId,
+        'sincronizado': 1,
+        'fechaRegistro': voto.fechaRegistro.toIso8601String(),
+      },
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+  }
+
   Future<void> actualizarVoto(int id, Voto voto) async {
     final db = await database;
     await db.update(
@@ -759,11 +803,15 @@ class DatabaseHelper {
     );
   }
 
-  Future<void> actualizarNulosBlanco(int mesaId, {required int votosNulos, required int votosBlanco}) async {
+  Future<void> actualizarNulosBlanco(int mesaId, {int? votosNulos, int? votosBlanco}) async {
     final db = await database;
+    final data = <String, Object?>{};
+    if (votosNulos != null) data['votosNulos'] = votosNulos;
+    if (votosBlanco != null) data['votosBlanco'] = votosBlanco;
+    if (data.isEmpty) return;
     await db.update(
       'mesas',
-      {'votosNulos': votosNulos, 'votosBlanco': votosBlanco},
+      data,
       where: 'id = ?',
       whereArgs: [mesaId],
     );

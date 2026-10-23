@@ -28,10 +28,8 @@ class SyncService {
 
   Future<void> _resetStalePending() async {
     final db = await _db.database;
-    final stale = DateTime.now().subtract(const Duration(hours: 1)).toIso8601String();
     await db.rawUpdate(
-      "UPDATE sync_queue SET status = 'PENDING' WHERE status = 'FAILED' AND retry_count < $maxRetries AND created_at > ?",
-      [stale],
+      "UPDATE sync_queue SET status = 'PENDING', last_error = NULL, retry_count = 0 WHERE status = 'FAILED' AND retry_count < $maxRetries",
     );
   }
 
@@ -233,8 +231,7 @@ class SyncService {
     if (et == 'voto') {
       final voto = Voto.fromJson(payload);
       if (op == 'CREATE' || op == 'UPDATE') {
-        await _db.guardarVoto(voto);
-        await _db.marcarVotoSincronizado(voto.id ?? 0);
+        await _db.upsertVotoRemoto(voto);
       } else if (op == 'DELETE') {
         final id = payload['id'] as int?;
         if (id != null) await _db.eliminarVoto(id);
@@ -245,9 +242,13 @@ class SyncService {
       if (op == 'CERRAR' || op == 'CLOSE') {
         await _db.cerrarMesaLocal(mesaId);
       } else if (op == 'MESA_DATA') {
-        await _db.actualizarNulosBlanco(mesaId,
-          votosNulos: payload['votosNulos'] as int? ?? 0,
-          votosBlanco: payload['votosBlanco'] as int? ?? 0,
+        // No pisar valores con operaciones locales aún no sincronizadas
+        final nulosPendientes = await _findPendingEntity('mesa', mesaId, 'NULOS');
+        final blancoPendientes = await _findPendingEntity('mesa', mesaId, 'BLANCO');
+        await _db.actualizarNulosBlanco(
+          mesaId,
+          votosNulos: nulosPendientes != null ? null : payload['votosNulos'] as int?,
+          votosBlanco: blancoPendientes != null ? null : payload['votosBlanco'] as int?,
         );
         final cerrada = payload['cerrada'] as bool? ?? false;
         if (cerrada) await _db.cerrarMesaLocal(mesaId);
@@ -255,12 +256,12 @@ class SyncService {
     }
   }
 
-  Future<int> retryFailedOps() async {
+  Future<int> retryFailedOps({bool force = false}) async {
     final db = await _db.database;
-    final result = await db.rawUpdate(
-      "UPDATE sync_queue SET status = 'PENDING', last_error = NULL WHERE status = 'FAILED'",
-    );
-    return result;
+    final String sql = force
+        ? "UPDATE sync_queue SET status = 'PENDING', last_error = NULL, retry_count = 0 WHERE status = 'FAILED'"
+        : "UPDATE sync_queue SET status = 'PENDING', last_error = NULL, retry_count = 0 WHERE status = 'FAILED' AND retry_count < $maxRetries";
+    return await db.rawUpdate(sql);
   }
 
   Future<Map<String, int>> getSyncStatus() async {

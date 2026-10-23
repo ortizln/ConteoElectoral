@@ -6,7 +6,7 @@ param(
     [string]$BuildType = "debug"
 )
 
-$ProjectDir = "C:\Users\Alexi\Documents\PROYECTOS\ConteoElectoral\conteo_electoral_app"
+$ProjectDir = Join-Path $PSScriptRoot "conteo_electoral_app"
 $ApkDir = "$ProjectDir\build\app\outputs\flutter-apk"
 
 Write-Host "=== Iniciando construcción de APK ($BuildType) ===" -ForegroundColor Green

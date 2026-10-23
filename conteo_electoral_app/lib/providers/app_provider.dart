@@ -14,7 +14,7 @@ import '../config/app_config.dart';
 class AppProvider extends ChangeNotifier {
   final DatabaseHelper _db = DatabaseHelper.instance;
   final ApiService _api = ApiService();
-  late final SyncService _sync;
+  late SyncService _sync;
 
   ApiService get api => _api;
 
@@ -39,6 +39,8 @@ class AppProvider extends ChangeNotifier {
   StreamSubscription? _stompSyncSub;
   StreamSubscription? _stompDataSub;
   Timer? _retryTimer;
+  Timer? _nulosDebounce;
+  Timer? _blancoDebounce;
 
   List<Candidato> _candidatos = [];
   List<Partido> _partidos = [];
@@ -121,6 +123,9 @@ class AppProvider extends ChangeNotifier {
     _serverUrl = ServerUrl.normalizeApiUrl(url);
     await prefs.setString('server_url', _serverUrl);
     await _api.setServerUrl(_serverUrl);
+    _sync = SyncService(_api.baseUrl);
+    await _sync.init();
+    _sync.setStomp(_stomp);
     notifyListeners();
   }
 
@@ -197,6 +202,8 @@ class AppProvider extends ChangeNotifier {
   @override
   void dispose() {
     _retryTimer?.cancel();
+    _nulosDebounce?.cancel();
+    _blancoDebounce?.cancel();
     _connectivitySub?.cancel();
     _stompSyncSub?.cancel();
     _stompDataSub?.cancel();
@@ -432,7 +439,7 @@ class AppProvider extends ChangeNotifier {
   }
 
   Future<int> retryFailedSync() async {
-    final count = await _sync.retryFailedOps();
+    final count = await _sync.retryFailedOps(force: true);
     if (count > 0 && _isOnline) await sincronizarVotos();
     await _refreshSyncCounts();
     return count;
@@ -474,20 +481,32 @@ class AppProvider extends ChangeNotifier {
     if (_mesaActual == null) return;
     _votosNulos = valor < 0 ? 0 : valor;
     await _db.actualizarNulosBlanco(_mesaActual!.id, votosNulos: _votosNulos, votosBlanco: _votosBlanco);
-    await _sync.enqueueNulos(_mesaActual!.id, _mesaActual!.eleccionesId, _votosNulos);
-    await _refreshSyncCounts();
-    if (_isOnline) await sincronizarVotos();
     notifyListeners();
+    _nulosDebounce?.cancel();
+    final mesa = _mesaActual!;
+    final nulos = _votosNulos;
+    _nulosDebounce = Timer(const Duration(milliseconds: 500), () async {
+      await _sync.enqueueNulos(mesa.id, mesa.eleccionesId, nulos);
+      await _refreshSyncCounts();
+      notifyListeners();
+      if (_isOnline) await sincronizarVotos();
+    });
   }
 
   Future<void> actualizarBlanco(int valor) async {
     if (_mesaActual == null) return;
     _votosBlanco = valor < 0 ? 0 : valor;
     await _db.actualizarNulosBlanco(_mesaActual!.id, votosNulos: _votosNulos, votosBlanco: _votosBlanco);
-    await _sync.enqueueBlanco(_mesaActual!.id, _mesaActual!.eleccionesId, _votosBlanco);
-    await _refreshSyncCounts();
-    if (_isOnline) await sincronizarVotos();
     notifyListeners();
+    _blancoDebounce?.cancel();
+    final mesa = _mesaActual!;
+    final blanco = _votosBlanco;
+    _blancoDebounce = Timer(const Duration(milliseconds: 500), () async {
+      await _sync.enqueueBlanco(mesa.id, mesa.eleccionesId, blanco);
+      await _refreshSyncCounts();
+      notifyListeners();
+      if (_isOnline) await sincronizarVotos();
+    });
   }
 
   Future<void> cerrarActa() async {
@@ -521,7 +540,7 @@ class AppProvider extends ChangeNotifier {
     final db = await _db.database;
     await db.update(
       'sync_queue',
-      {'status': 'PENDING', 'last_error': null},
+      {'status': 'PENDING', 'last_error': null, 'retry_count': 0},
       where: 'id = ?',
       whereArgs: [id],
     );
