@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { WebSocketService } from '../../../core/services/websocket.service';
-import { Eleccion, Candidato, Mesa, Voto, Partido, Cargo, ListaElectoral } from '../../../core/models';
+import { Eleccion, Candidato, Mesa, MesaNuloBlancoPorCargo, Voto, Partido, Cargo, ListaElectoral } from '../../../core/models';
 
 interface VotoConIndice extends Voto {
   indice: number;
@@ -34,8 +34,9 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   totalVotos = 0;
   votosNulos = 0;
   votosBlanco = 0;
-  private nulosTimeout: any = null;
-  private blancoTimeout: any = null;
+  nulosBlancosPorCargo: MesaNuloBlancoPorCargo[] = [];
+  cargoNuloId: number | null = null;
+  private nulosBlancoTimeouts: { [tipo: string]: any } = {};
 
   filtroTexto = '';
   filtroPartidoId: number | null = null;
@@ -128,6 +129,9 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     this.api.getCargosByEleccion(eleccionId).subscribe((data: Cargo[]) => {
       this.cargos = data;
       this.cargosConLista = data.filter(c => c.tipoVotacion === 'LISTA');
+      if (this.mesaActual && this.cargoNuloId == null && data.length > 0) {
+        this.cargoNuloId = this.cargoDefaultId(this.nulosBlancosPorCargo);
+      }
     });
     this.api.getListasByEleccion(eleccionId).subscribe((data: ListaElectoral[]) => {
       this.listas = data;
@@ -146,7 +150,50 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     this.cantidadVotos = 1;
     this.votosNulos = mesa.votosNulos ?? 0;
     this.votosBlanco = mesa.votosBlanco ?? 0;
+    this.nulosBlancosPorCargo = [];
+    this.cargoNuloId = null;
+    this.cargarNulosBlancosPorCargo(mesa);
     this.loadVotos();
+  }
+
+  private cargarNulosBlancosPorCargo(mesa: Mesa): void {
+    this.api.getNulosBlancosPorCargo(mesa.id).subscribe({
+      next: (filas) => {
+        let finales = filas;
+        const vacias = filas.every(f => (f.nulos || 0) === 0 && (f.blancos || 0) === 0);
+        const conHistorico = (mesa.votosNulos ?? 0) > 0 || (mesa.votosBlanco ?? 0) > 0;
+        const cargoDefault = this.cargoDefaultId(filas);
+        if (vacias && conHistorico && cargoDefault != null) {
+          // Histórico global: atribuirlo al cargo default (Alcaldes)
+          finales = filas.map(f => f.cargoId === cargoDefault
+            ? { ...f, nulos: mesa.votosNulos ?? 0, blancos: mesa.votosBlanco ?? 0 }
+            : f);
+          if (!mesa.cerrada) {
+            const nulos = mesa.votosNulos ?? 0;
+            const blancos = mesa.votosBlanco ?? 0;
+            if (nulos > 0) {
+              this.api.actualizarNuloBlanco(mesa.id, cargoDefault, 'NULO', nulos).subscribe({ error: () => {} });
+            }
+            if (blancos > 0) {
+              this.api.actualizarNuloBlanco(mesa.id, cargoDefault, 'BLANCO', blancos).subscribe({ error: () => {} });
+            }
+          }
+        }
+        this.nulosBlancosPorCargo = finales;
+        this.cargoNuloId = cargoDefault;
+      },
+      error: () => {
+        this.nulosBlancosPorCargo = [];
+        this.cargoNuloId = this.cargoDefaultId([]);
+      }
+    });
+  }
+
+  private cargoDefaultId(filas: MesaNuloBlancoPorCargo[]): number | null {
+    const alcalde = this.cargos.find(c => /alcalde/i.test(c.nombre));
+    if (alcalde) return alcalde.id;
+    if (filas.length > 0) return filas[0].cargoId;
+    return this.cargos.length > 0 ? this.cargos[0].id : null;
   }
 
   loadVotos(): void {
@@ -284,50 +331,92 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     this.cantidadVotos = 1;
   }
 
+  get nulosCargoSel(): number {
+    return this.nulosBlancosPorCargo.find(f => f.cargoId === this.cargoNuloId)?.nulos ?? 0;
+  }
+
+  set nulosCargoSel(valor: number) {
+    this.actualizarFilaCargo('nulos', Math.max(0, valor || 0));
+  }
+
+  get blancosCargoSel(): number {
+    return this.nulosBlancosPorCargo.find(f => f.cargoId === this.cargoNuloId)?.blancos ?? 0;
+  }
+
+  set blancosCargoSel(valor: number) {
+    this.actualizarFilaCargo('blancos', Math.max(0, valor || 0));
+  }
+
+  get cargoNuloNombre(): string {
+    return this.cargos.find(c => c.id === this.cargoNuloId)?.nombre ?? '';
+  }
+
+  get totalNulosGlobal(): number {
+    if (this.nulosBlancosPorCargo.length === 0) return this.votosNulos;
+    return this.nulosBlancosPorCargo.reduce((s, f) => s + (f.nulos || 0), 0);
+  }
+
+  get totalBlancosGlobal(): number {
+    if (this.nulosBlancosPorCargo.length === 0) return this.votosBlanco;
+    return this.nulosBlancosPorCargo.reduce((s, f) => s + (f.blancos || 0), 0);
+  }
+
   incrementarNulos(): void {
-    this.votosNulos = (this.votosNulos || 0) + 1;
-    this.guardarVotosNulos();
+    this.nulosCargoSel = this.nulosCargoSel + 1;
   }
 
   decrementarNulos(): void {
-    if ((this.votosNulos || 0) > 0) {
-      this.votosNulos = this.votosNulos - 1;
-      this.guardarVotosNulos();
-    }
+    if (this.nulosCargoSel > 0) this.nulosCargoSel = this.nulosCargoSel - 1;
   }
 
   incrementarBlanco(): void {
-    this.votosBlanco = (this.votosBlanco || 0) + 1;
-    this.guardarVotosBlanco();
+    this.blancosCargoSel = this.blancosCargoSel + 1;
   }
 
   decrementarBlanco(): void {
-    if ((this.votosBlanco || 0) > 0) {
-      this.votosBlanco = this.votosBlanco - 1;
-      this.guardarVotosBlanco();
-    }
+    if (this.blancosCargoSel > 0) this.blancosCargoSel = this.blancosCargoSel - 1;
   }
 
-  guardarVotosBlanco(): void {
-    if (!this.mesaActual) return;
-    if (this.blancoTimeout) clearTimeout(this.blancoTimeout);
-    this.blancoTimeout = setTimeout(() => {
-      this.api.actualizarVotosBlanco(this.mesaActual!.id, this.votosBlanco || 0).subscribe({
-        next: (m) => { this.mesaActual!.votosBlanco = m.votosBlanco; },
-        error: () => {}
-      });
-    }, 400);
+  private actualizarFilaCargo(campo: 'nulos' | 'blancos', valor: number): void {
+    if (this.cargoNuloId == null) return;
+    const idx = this.nulosBlancosPorCargo.findIndex(f => f.cargoId === this.cargoNuloId);
+    if (idx < 0) return;
+    const actualizadas = [...this.nulosBlancosPorCargo];
+    actualizadas[idx] = { ...actualizadas[idx], [campo]: valor };
+    this.nulosBlancosPorCargo = actualizadas;
+    this.programarGuardadoNuloBlanco(campo === 'nulos' ? 'NULO' : 'BLANCO');
   }
 
-  guardarVotosNulos(): void {
-    if (!this.mesaActual) return;
-    if (this.nulosTimeout) clearTimeout(this.nulosTimeout);
-    this.nulosTimeout = setTimeout(() => {
-      this.api.actualizarVotosNulos(this.mesaActual!.id, this.votosNulos || 0).subscribe({
-        next: (m) => { this.mesaActual!.votosNulos = m.votosNulos; },
-        error: () => {}
-      });
-    }, 400);
+  private programarGuardadoNuloBlanco(tipo: 'NULO' | 'BLANCO'): void {
+    if (this.nulosBlancoTimeouts[tipo]) clearTimeout(this.nulosBlancoTimeouts[tipo]);
+    this.nulosBlancoTimeouts[tipo] = setTimeout(() => this.guardarNuloBlanco(tipo), 400);
+  }
+
+  guardarNuloBlanco(tipo: 'NULO' | 'BLANCO'): void {
+    if (!this.mesaActual || this.cargoNuloId == null) return;
+    const fila = this.nulosBlancosPorCargo.find(f => f.cargoId === this.cargoNuloId);
+    if (!fila) return;
+    const cantidad = tipo === 'NULO' ? (fila.nulos || 0) : (fila.blancos || 0);
+    this.api.actualizarNuloBlanco(this.mesaActual.id, this.cargoNuloId, tipo, cantidad).subscribe({
+      next: (m) => {
+        if (this.mesaActual) {
+          this.mesaActual.votosNulos = m.votosNulos;
+          this.mesaActual.votosBlanco = m.votosBlanco;
+          this.votosNulos = m.votosNulos ?? 0;
+          this.votosBlanco = m.votosBlanco ?? 0;
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  siglaDe(partidoNombre?: string | null): string {
+    if (!partidoNombre) return '—';
+    const partido = this.partidos.find(p => p.nombre === partidoNombre);
+    if (partido?.sigla) return partido.sigla;
+    const iniciales = partidoNombre.split(/\s+/).filter(Boolean)
+      .map(palabra => palabra[0]).join('').substring(0, 4).toUpperCase();
+    return iniciales || partidoNombre;
   }
 
   registrarVoto(): void {

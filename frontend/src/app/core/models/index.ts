@@ -132,6 +132,13 @@ export interface Mesa {
   usuarioNombre: string | null;
 }
 
+export interface MesaNuloBlancoPorCargo {
+  cargoId: number;
+  cargoNombre: string;
+  nulos: number;
+  blancos: number;
+}
+
 export interface Voto {
   id: number;
   candidatoId?: number;

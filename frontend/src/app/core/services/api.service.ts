@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApkVersionItem, Eleccion, Partido, Cargo, Candidato, Mesa, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse, ReglaNegocio, Circunscripcion, ResultadoDHondt, Reconteo, Impugnacion, Observacion, Resolucion, EscrutinioResumen, GeoResumen, DatoGeografico, ReporteResumen, ReporteCandidato, ReportePartido, ReporteLista } from '../models';
+import { ApkVersionItem, Eleccion, Partido, Cargo, Candidato, Mesa, MesaNuloBlancoPorCargo, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse, ReglaNegocio, Circunscripcion, ResultadoDHondt, Reconteo, Impugnacion, Observacion, Resolucion, EscrutinioResumen, GeoResumen, DatoGeografico, ReporteResumen, ReporteCandidato, ReportePartido, ReporteLista } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -250,6 +250,14 @@ export class ApiService {
 
   actualizarVotosBlanco(mesaId: number, votosBlanco: number): Observable<Mesa> {
     return this.http.put<Mesa>(`${this.API_URL}/mesas/${mesaId}/votos-blanco`, { votosBlanco });
+  }
+
+  getNulosBlancosPorCargo(mesaId: number): Observable<MesaNuloBlancoPorCargo[]> {
+    return this.http.get<MesaNuloBlancoPorCargo[]>(`${this.API_URL}/mesas/${mesaId}/nulos-blancos`);
+  }
+
+  actualizarNuloBlanco(mesaId: number, cargoId: number, tipo: 'NULO' | 'BLANCO', cantidad: number): Observable<Mesa> {
+    return this.http.put<Mesa>(`${this.API_URL}/mesas/${mesaId}/nulos-blancos`, { cargoId, tipo, cantidad });
   }
 
   verifyPassword(password: string): Observable<{ valid: boolean }> {

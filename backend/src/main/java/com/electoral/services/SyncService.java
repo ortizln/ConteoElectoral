@@ -314,6 +314,7 @@ public class SyncService {
                 Integer prevNulos = mesa.getVotosNulos();
                 mesa.setVotosNulos(votosNulos);
                 mesaRepository.save(mesa);
+                mesaService.sincronizarDesgloseNulosBlancos(mesaId, "NULOS", votosNulos);
                 auditoriaService.registrarAccion(usuarioId, Auditoria.TipoAccion.UPDATE,
                         "mesa_sync", mesaId,
                         Map.of("votosNulos", prevNulos != null ? prevNulos : 0),
@@ -328,6 +329,7 @@ public class SyncService {
                 Integer prevBlanco = mesa.getVotosBlanco();
                 mesa.setVotosBlanco(votosBlanco);
                 mesaRepository.save(mesa);
+                mesaService.sincronizarDesgloseNulosBlancos(mesaId, "BLANCO", votosBlanco);
                 auditoriaService.registrarAccion(usuarioId, Auditoria.TipoAccion.UPDATE,
                         "mesa_sync", mesaId,
                         Map.of("votosBlanco", prevBlanco != null ? prevBlanco : 0),

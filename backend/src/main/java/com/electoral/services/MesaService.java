@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +34,8 @@ public class MesaService {
     private final SimpMessagingTemplate messagingTemplate;
     private final PdfExportService pdfExportService;
     private final VotoRepository votoRepository;
+    private final MesaNuloBlancoRepository mesaNuloBlancoRepository;
+    private final CargoRepository cargoRepository;
 
     @Transactional(readOnly = true)
     public List<MesaResponse> getMesasByEleccion(Long eleccionesId) {
@@ -209,7 +213,9 @@ public class MesaService {
     public MesaResponse actualizarVotosNulos(Long id, Integer votosNulos) {
         Mesa mesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
-        mesa.setVotosNulos(votosNulos != null ? votosNulos : 0);
+        int total = votosNulos != null ? votosNulos : 0;
+        mesa.setVotosNulos(total);
+        sincronizarDesgloseNulosBlancos(id, MesaNuloBlanco.Tipo.NULO.name(), total);
         MesaResponse response = mapToResponse(mesaRepository.save(mesa));
         notifyDataChanged(mesa.getElecciones().getId());
         return response;
@@ -219,7 +225,118 @@ public class MesaService {
     public MesaResponse actualizarVotosBlanco(Long id, Integer votosBlanco) {
         Mesa mesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
-        mesa.setVotosBlanco(votosBlanco != null ? votosBlanco : 0);
+        int total = votosBlanco != null ? votosBlanco : 0;
+        mesa.setVotosBlanco(total);
+        sincronizarDesgloseNulosBlancos(id, MesaNuloBlanco.Tipo.BLANCO.name(), total);
+        MesaResponse response = mapToResponse(mesaRepository.save(mesa));
+        notifyDataChanged(mesa.getElecciones().getId());
+        return response;
+    }
+
+    /**
+     * Mantiene el desglose por cargo consistente con el total global (rutas legacy/sync
+     * de la app móvil): ajusta la fila del cargo por defecto (Alcaldes o el primero)
+     * para que la suma por cargos coincida con el total recibido.
+     */
+    @Transactional
+    public void sincronizarDesgloseNulosBlancos(Long mesaId, String tipo, int total) {
+        Mesa mesa = mesaRepository.findById(mesaId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + mesaId));
+        List<Cargo> cargos = cargoRepository.findByEleccionesId(mesa.getElecciones().getId());
+        if (cargos.isEmpty()) {
+            return;
+        }
+        Cargo cargoDefault = cargos.stream()
+                .filter(c -> c.getNombre() != null && c.getNombre().toUpperCase().contains("ALCALDE"))
+                .findFirst()
+                .orElse(cargos.get(0));
+        int sumaOtros = 0;
+        for (MesaNuloBlanco nb : mesaNuloBlancoRepository.findByMesaId(mesaId)) {
+            if (tipo.equals(nb.getTipo()) && !cargoDefault.getId().equals(nb.getCargo().getId())) {
+                sumaOtros += nb.getCantidad();
+            }
+        }
+        MesaNuloBlanco registro = mesaNuloBlancoRepository
+                .findByMesaIdAndCargoIdAndTipo(mesaId, cargoDefault.getId(), tipo)
+                .orElseGet(() -> MesaNuloBlanco.builder()
+                        .mesa(mesa)
+                        .cargo(cargoDefault)
+                        .tipo(tipo)
+                        .cantidad(0)
+                        .build());
+        registro.setCantidad(Math.max(0, total - sumaOtros));
+        mesaNuloBlancoRepository.save(registro);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MesaNuloBlancoPorCargoResponse> getNulosBlancosPorCargo(Long mesaId) {
+        Mesa mesa = mesaRepository.findById(mesaId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + mesaId));
+        List<Cargo> cargos = cargoRepository.findByEleccionesId(mesa.getElecciones().getId());
+        Map<Long, MesaNuloBlancoPorCargoResponse> porCargo = new LinkedHashMap<>();
+        for (Cargo cargo : cargos) {
+            porCargo.put(cargo.getId(), MesaNuloBlancoPorCargoResponse.builder()
+                    .cargoId(cargo.getId())
+                    .cargoNombre(cargo.getNombre())
+                    .nulos(0)
+                    .blancos(0)
+                    .build());
+        }
+        for (MesaNuloBlanco nb : mesaNuloBlancoRepository.findByMesaId(mesaId)) {
+            MesaNuloBlancoPorCargoResponse r = porCargo.get(nb.getCargo().getId());
+            if (r == null) {
+                continue;
+            }
+            if (MesaNuloBlanco.Tipo.NULO.name().equals(nb.getTipo())) {
+                r.setNulos(nb.getCantidad());
+            } else if (MesaNuloBlanco.Tipo.BLANCO.name().equals(nb.getTipo())) {
+                r.setBlancos(nb.getCantidad());
+            }
+        }
+        return new ArrayList<>(porCargo.values());
+    }
+
+    @Transactional
+    public MesaResponse actualizarNulosBlancos(Long mesaId, MesaNuloBlancoRequest request) {
+        Mesa mesa = mesaRepository.findById(mesaId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + mesaId));
+        if (mesa.getCerrada()) {
+            throw new IllegalStateException("La mesa está cerrada");
+        }
+        String tipo = request.getTipo() != null ? request.getTipo().toUpperCase() : "";
+        if (!MesaNuloBlanco.Tipo.NULO.name().equals(tipo) && !MesaNuloBlanco.Tipo.BLANCO.name().equals(tipo)) {
+            throw new IllegalArgumentException("Tipo inválido (debe ser NULO o BLANCO)");
+        }
+        Cargo cargo = cargoRepository.findById(request.getCargoId())
+                .orElseThrow(() -> new RecursoNoEncontradoException("Cargo no encontrado con ID: " + request.getCargoId()));
+        if (cargo.getElecciones() == null || mesa.getElecciones() == null
+                || !cargo.getElecciones().getId().equals(mesa.getElecciones().getId())) {
+            throw new IllegalArgumentException("El cargo no pertenece a la elección de la mesa");
+        }
+
+        MesaNuloBlanco registro = mesaNuloBlancoRepository
+                .findByMesaIdAndCargoIdAndTipo(mesaId, cargo.getId(), tipo)
+                .orElseGet(() -> MesaNuloBlanco.builder()
+                        .mesa(mesa)
+                        .cargo(cargo)
+                        .tipo(tipo)
+                        .cantidad(0)
+                        .build());
+        registro.setCantidad(request.getCantidad());
+        mesaNuloBlancoRepository.save(registro);
+
+        // Recalcular totales globales = suma por cargos (compatibilidad reportes/acta/sync móvil)
+        int totalNulos = 0;
+        int totalBlanco = 0;
+        for (MesaNuloBlanco nb : mesaNuloBlancoRepository.findByMesaId(mesaId)) {
+            if (MesaNuloBlanco.Tipo.NULO.name().equals(nb.getTipo())) {
+                totalNulos += nb.getCantidad();
+            } else if (MesaNuloBlanco.Tipo.BLANCO.name().equals(nb.getTipo())) {
+                totalBlanco += nb.getCantidad();
+            }
+        }
+        mesa.setVotosNulos(totalNulos);
+        mesa.setVotosBlanco(totalBlanco);
         MesaResponse response = mapToResponse(mesaRepository.save(mesa));
         notifyDataChanged(mesa.getElecciones().getId());
         return response;

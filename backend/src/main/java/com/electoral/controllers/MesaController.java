@@ -91,6 +91,18 @@ public class MesaController {
         return ResponseEntity.ok(mesaService.actualizarVotosBlanco(id, body.get("votosBlanco")));
     }
 
+    @GetMapping("/{id}/nulos-blancos")
+    public ResponseEntity<List<MesaNuloBlancoPorCargoResponse>> getNulosBlancosPorCargo(@PathVariable Long id) {
+        return ResponseEntity.ok(mesaService.getNulosBlancosPorCargo(id));
+    }
+
+    @PutMapping("/{id}/nulos-blancos")
+    @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<MesaResponse> actualizarNulosBlancos(@PathVariable Long id,
+            @Valid @RequestBody MesaNuloBlancoRequest request) {
+        return ResponseEntity.ok(mesaService.actualizarNulosBlancos(id, request));
+    }
+
     @PostMapping("/{id}/cerrar")
     @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<MesaResponse> cerrarMesa(@PathVariable Long id) {
