@@ -64,6 +64,36 @@ class _ConfiguracionScreenState extends State<ConfiguracionScreen> {
   Widget build(BuildContext context) {
     return Consumer<AppProvider>(
       builder: (context, provider, _) {
+        if (provider.usuario?.rol != 'ADMIN') {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('Configuración'),
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.lock_outline,
+                      size: 64, color: AppColors.error),
+                  const SizedBox(height: 16),
+                  const Text('Acceso restringido',
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.error)),
+                  const SizedBox(height: 8),
+                  Text('Solo administradores pueden acceder aquí',
+                      style: TextStyle(color: AppColors.gray)),
+                  const SizedBox(height: 24),
+                  OutlinedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Volver'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
         return Scaffold(
           appBar: AppBar(
             title: const Text('Configuración'),

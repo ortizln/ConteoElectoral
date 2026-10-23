@@ -16,7 +16,6 @@ class _LoginScreenState extends State<LoginScreen>
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _serverController = TextEditingController();
   bool _obscurePassword = true;
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -36,7 +35,6 @@ class _LoginScreenState extends State<LoginScreen>
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
-    _serverController.dispose();
     _animController.dispose();
     super.dispose();
   }
@@ -57,71 +55,6 @@ class _LoginScreenState extends State<LoginScreen>
         MaterialPageRoute(builder: (_) => const HomeScreen()),
       );
     }
-  }
-
-  void _showServerConfig() {
-    _serverController.text =
-        context.read<AppProvider>().serverUrl;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Configurar Servidor'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _serverController,
-              decoration: const InputDecoration(
-                labelText: 'URL del servidor',
-                hintText: 'https://alan-tek.com',
-                prefixIcon: Icon(Icons.language),
-              ),
-            ),
-            const SizedBox(height: 12),
-            Consumer<AppProvider>(
-              builder: (context, provider, _) => provider.isLoading
-                  ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2))
-                  : SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () async {
-                          final messenger = ScaffoldMessenger.of(context);
-                          final result = await provider.testServerConnection();
-                          if (!context.mounted) return;
-                          messenger.showSnackBar(SnackBar(
-                            content: Text(result['message']?.toString() ?? ''),
-                            backgroundColor: result['success'] == true
-                                ? AppColors.success
-                                : AppColors.error,
-                          ));
-                        },
-                        icon: const Icon(Icons.wifi_tethering, size: 18),
-                        label: const Text('Probar conexión'),
-                      ),
-                    ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancelar')),
-          ElevatedButton(
-            onPressed: () async {
-              final url = _serverController.text.trim();
-              if (url.isNotEmpty) {
-                await context.read<AppProvider>().setServerUrl(url);
-                if (mounted) Navigator.pop(ctx);
-              }
-            },
-            child: const Text('Guardar'),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -177,16 +110,6 @@ class _LoginScreenState extends State<LoginScreen>
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: Colors.white),
-                    ),
-                    const SizedBox(height: 4),
-                    Consumer<AppProvider>(
-                      builder: (context, provider, _) => Text(
-                        provider.serverUrl,
-                        style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.white.withValues(alpha: 0.7)),
-                        overflow: TextOverflow.ellipsis,
-                      ),
                     ),
                     const SizedBox(height: 40),
 
@@ -296,16 +219,6 @@ class _LoginScreenState extends State<LoginScreen>
                           ],
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Server config link
-                    TextButton.icon(
-                      onPressed: _showServerConfig,
-                      icon: const Icon(Icons.settings_outlined, size: 18),
-                      label: const Text('Configurar servidor'),
-                      style:
-                          TextButton.styleFrom(foregroundColor: Colors.white70),
                     ),
                   ],
                 ),

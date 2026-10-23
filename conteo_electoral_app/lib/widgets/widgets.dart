@@ -7,3 +7,4 @@ export 'crud_list_tile.dart';
 export 'confirm_dialog.dart';
 export 'status_badge.dart';
 export 'sync_status_banner.dart';
+export 'resumen_mesa_dialog.dart';

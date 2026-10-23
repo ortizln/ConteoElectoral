@@ -17,8 +17,6 @@ class _VotacionScreenState extends State<VotacionScreen> {
   int? _selectedListaId;
   List<Candidato> _selectedListaCandidates = [];
   final _cantidadCtrl = TextEditingController(text: '1');
-  final _nulosCtrl = TextEditingController(text: '0');
-  final _blancoCtrl = TextEditingController(text: '0');
   String _filtroPartido = '';
   String _busqueda = '';
   final String _ordenPor = 'cargo';
@@ -45,8 +43,6 @@ class _VotacionScreenState extends State<VotacionScreen> {
   @override
   void dispose() {
     _cantidadCtrl.dispose();
-    _nulosCtrl.dispose();
-    _blancoCtrl.dispose();
     super.dispose();
   }
 
@@ -178,10 +174,22 @@ class _VotacionScreenState extends State<VotacionScreen> {
       confirmColor: AppColors.error,
     );
     if (confirm && mounted) {
-      await context.read<AppProvider>().cerrarActa();
+      final provider = context.read<AppProvider>();
+      await provider.cerrarActa();
       if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text('Acta cerrada')));
+        final mesa = provider.mesaActual;
+        if (mesa != null) {
+          await showResumenMesaDialog(
+            context,
+            mesa: mesa,
+            votos: provider.votosMesa,
+            candidatos: provider.candidatos,
+            nulos: provider.votosNulos,
+            blanco: provider.votosBlanco,
+          );
+        }
       }
     }
   }
@@ -269,6 +277,24 @@ class _VotacionScreenState extends State<VotacionScreen> {
                   SizedBox(height: 8),
                   Text('No se pueden modificar los votos',
                       style: TextStyle(color: AppColors.gray)),
+                  SizedBox(height: 24),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      final provider = context.read<AppProvider>();
+                      final mesa = provider.mesaActual;
+                      if (mesa == null) return;
+                      showResumenMesaDialog(
+                        context,
+                        mesa: mesa,
+                        votos: provider.votosMesa,
+                        candidatos: provider.candidatos,
+                        nulos: provider.votosNulos,
+                        blanco: provider.votosBlanco,
+                      );
+                    },
+                    icon: const Icon(Icons.summarize_outlined, size: 18),
+                    label: const Text('Ver resumen'),
+                  ),
                 ],
               ),
             ),
@@ -489,51 +515,6 @@ class _VotacionScreenState extends State<VotacionScreen> {
                   ],
                 ),
               ),
-              // Nulos y Blanco controls
-              if (provider.mesaActual?.cerrada == true)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  color: AppColors.surface,
-                  child: Row(
-                    children: [
-                      _nulosBlancoBadge(
-                          '🗳️ Nulos', provider.votosNulos, AppColors.error),
-                      const SizedBox(width: 16),
-                      _nulosBlancoBadge(
-                          '⬜ Blanco', provider.votosBlanco, AppColors.gray),
-                    ],
-                  ),
-                )
-              else
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  color: AppColors.surface,
-                  child: Row(
-                    children: [
-                      // Nulos
-                      _nulosBlancoControl(
-                        label: 'Nulos',
-                        controller: _nulosCtrl,
-                        value: provider.votosNulos,
-                        icon: Icons.cancel_outlined,
-                        color: AppColors.error,
-                        onChanged: (v) => provider.actualizarNulos(v),
-                      ),
-                      const SizedBox(width: 16),
-                      // Blanco
-                      _nulosBlancoControl(
-                        label: 'Blanco',
-                        controller: _blancoCtrl,
-                        value: provider.votosBlanco,
-                        icon: Icons.check_circle_outline,
-                        color: AppColors.gray,
-                        onChanged: (v) => provider.actualizarBlanco(v),
-                      ),
-                    ],
-                  ),
-                ),
               const Divider(height: 1),
               // Candidate list
               Expanded(
@@ -548,8 +529,13 @@ class _VotacionScreenState extends State<VotacionScreen> {
                           : ListView.builder(
                               padding:
                                   const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                              itemCount: _agrupadosPorLista.length,
+                              itemCount: _agrupadosPorLista.length + 2,
                               itemBuilder: (context, index) {
+                                if (index >= _agrupadosPorLista.length) {
+                                  return _nulosBlancoFila(
+                                      index - _agrupadosPorLista.length,
+                                      provider);
+                                }
                                 final listaId =
                                     _agrupadosPorLista.keys.elementAt(index);
                                 final candidatosLista =
@@ -727,8 +713,13 @@ class _VotacionScreenState extends State<VotacionScreen> {
                           : ListView.builder(
                               padding:
                                   const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                              itemCount: _candidatosFiltrados.length,
+                              itemCount: _candidatosFiltrados.length + 2,
                               itemBuilder: (context, index) {
+                                if (index >= _candidatosFiltrados.length) {
+                                  return _nulosBlancoFila(
+                                      index - _candidatosFiltrados.length,
+                                      provider);
+                                }
                                 final c = _candidatosFiltrados[index];
                                 final votos = provider.getVotosCandidato(c);
                                 final isSelected = _selected?.id == c.id;
@@ -1035,111 +1026,190 @@ class _VotacionScreenState extends State<VotacionScreen> {
     );
   }
 
-  Widget _nulosBlancoBadge(String label, int value, Color color) {
-    return Row(
-      children: [
-        Text(label,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-        const SizedBox(width: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text('$value',
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, fontSize: 16, color: color)),
-        ),
-      ],
-    );
-  }
-
-  Widget _nulosBlancoControl({
-    required String label,
-    required TextEditingController controller,
-    required int value,
-    required IconData icon,
-    required Color color,
-    required ValueChanged<int> onChanged,
-  }) {
-    final curr = int.tryParse(controller.text) ?? 0;
-    if (curr != value) {
-      controller.text = '$value';
-    }
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, size: 16, color: color),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(label,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                      fontSize: 11, fontWeight: FontWeight.w600)),
-            ),
-            const SizedBox(width: 4),
-            GestureDetector(
-              onTap: () {
-                final v = int.tryParse(controller.text) ?? 0;
-                if (v > 0) {
-                  controller.text = '${v - 1}';
-                  onChanged(v - 1);
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.all(3),
+  Widget _nulosBlancoFila(int tipo, AppProvider provider) {
+    final esNulos = tipo == 0;
+    final color = esNulos ? AppColors.error : AppColors.gray;
+    final valor = esNulos ? provider.votosNulos : provider.votosBlanco;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: AppColors.border),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => _editarNulosBlanco(esNulos),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
-                    color: AppColors.muted,
-                    borderRadius: BorderRadius.circular(5)),
-                child: const Icon(Icons.remove, size: 14),
-              ),
-            ),
-            const SizedBox(width: 4),
-            SizedBox(
-              width: 36,
-              child: TextField(
-                controller: controller,
-                textAlign: TextAlign.center,
-                keyboardType: TextInputType.number,
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, fontSize: 14),
-                decoration: const InputDecoration(
-                  contentPadding: EdgeInsets.zero,
-                  isDense: true,
-                  border: InputBorder.none,
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                onChanged: (txt) {
-                  final v = int.tryParse(txt) ?? 0;
-                  onChanged(v);
-                },
+                child: Icon(
+                    esNulos
+                        ? Icons.cancel_outlined
+                        : Icons.check_circle_outline,
+                    color: color,
+                    size: 22),
               ),
-            ),
-            const SizedBox(width: 4),
-            GestureDetector(
-              onTap: () {
-                final v = int.tryParse(controller.text) ?? 0;
-                controller.text = '${v + 1}';
-                onChanged(v + 1);
-              },
-              child: Container(
-                padding: const EdgeInsets.all(3),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(esNulos ? 'Votos Nulos' : 'Votos en Blanco',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 14)),
+                    const SizedBox(height: 2),
+                    Text('Toque para modificar',
+                        style: AppTextStyles.bodySmall),
+                  ],
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
-                    color: AppColors.muted,
-                    borderRadius: BorderRadius.circular(5)),
-                child: const Icon(Icons.add, size: 14),
+                  color: valor > 0
+                      ? color.withValues(alpha: 0.1)
+                      : AppColors.muted,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text('$valor',
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: valor > 0 ? color : AppColors.lightGray)),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  Future<void> _editarNulosBlanco(bool esNulos) async {
+    final provider = context.read<AppProvider>();
+    final messenger = ScaffoldMessenger.of(context);
+    final color = esNulos ? AppColors.error : AppColors.gray;
+    final ctrl = TextEditingController(
+        text: '${esNulos ? provider.votosNulos : provider.votosBlanco}');
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        void cambiar(int delta) {
+          final v = int.tryParse(ctrl.text) ?? 0;
+          final nv = v + delta;
+          if (nv >= 0) ctrl.text = '$nv';
+        }
+
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+              20, 16, 20, 24 + MediaQuery.of(ctx).viewInsets.bottom),
+          child: StatefulBuilder(
+            builder: (ctx, setSheetState) {
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                          esNulos
+                              ? Icons.cancel_outlined
+                              : Icons.check_circle_outline,
+                          color: color,
+                          size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                          esNulos ? 'Votos Nulos' : 'Votos en Blanco',
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text('Ingrese el total de la mesa',
+                      style: AppTextStyles.bodySmall),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _quantityBtn(Icons.remove, () {
+                          cambiar(-1);
+                          setSheetState(() {});
+                        }),
+                        const SizedBox(width: 12),
+                        SizedBox(
+                          width: 90,
+                          child: TextField(
+                            controller: ctrl,
+                            textAlign: TextAlign.center,
+                            keyboardType: TextInputType.number,
+                            style: const TextStyle(
+                                fontSize: 26, fontWeight: FontWeight.bold),
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                            ),
+                            onChanged: (_) => setSheetState(() {}),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        _quantityBtn(Icons.add, () {
+                          cambiar(1);
+                          setSheetState(() {});
+                        }),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final valor = int.tryParse(ctrl.text) ?? 0;
+                        if (valor < 0) return;
+                        if (esNulos) {
+                          await provider.actualizarNulos(valor);
+                        } else {
+                          await provider.actualizarBlanco(valor);
+                        }
+                        if (ctx.mounted) Navigator.pop(ctx);
+                        messenger.showSnackBar(SnackBar(
+                          content: Text(esNulos
+                              ? 'Votos nulos actualizados'
+                              : 'Votos en blanco actualizados'),
+                          duration: const Duration(seconds: 1),
+                        ));
+                      },
+                      icon: const Icon(Icons.save, size: 20),
+                      label: const Text('Guardar'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: color,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
+    ctrl.dispose();
   }
 
   Widget _buildModoSelector() {

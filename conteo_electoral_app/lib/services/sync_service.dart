@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'stomp_service.dart';
 import '../database/database_helper.dart';
@@ -193,7 +194,10 @@ class SyncService {
     final uri = Uri.parse('$_baseUrl/sync/pull?eleccionId=$eleccionId&since=${Uri.encodeComponent(since)}');
     final response = await http.get(uri, headers: _headers(token));
 
-    if (response.statusCode != 200) return 0;
+    if (response.statusCode != 200) {
+      debugPrint('sync/pull HTTP ${response.statusCode}: ${response.body.substring(0, response.body.length.clamp(0, 200))}');
+      return 0;
+    }
 
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     final cambios = data['operations'] as List<dynamic>? ?? data['cambios'] as List<dynamic>? ?? [];
@@ -219,6 +223,7 @@ class SyncService {
     if (!anyFailed) {
       await _db.setLastPullTimestamp(DateTime.now());
     }
+    debugPrint('sync/pull: aplicados $applied/${cambios.length}${anyFailed ? ' (parcial)' : ''}');
     return applied;
   }
 

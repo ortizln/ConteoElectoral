@@ -27,7 +27,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _autoLoad() async {
     final provider = context.read<AppProvider>();
-    if (provider.eleccionActual == null) {
+    final hasPending =
+        provider.pendingSyncCount + provider.failedSyncCount > 0;
+    if (provider.eleccionActual == null ||
+        (!hasPending && provider.isOnline)) {
       await provider.descargarDatos();
     }
     if (mounted) _checkUpdateDialog();
@@ -124,11 +127,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.download_outlined),
-                tooltip: 'Descargar datos',
-                onPressed: _descargarDatos,
-              ),
               if (provider.failedSyncCount + provider.pendingSyncCount > 0)
                 IconButton(
                   icon:
@@ -355,9 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         trailing: Icon(
                                             Icons.chevron_right,
                                             color: AppColors.lightGray),
-                                        onTap: m.cerrada
-                                            ? null
-                                            : () => _openVotacion(m),
+                                        onTap: () => _openVotacion(m),
                                       ),
                                     )),
                               ],
@@ -627,15 +623,15 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.pushNamed(context, '/pendientes');
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.settings_outlined),
-            title: const Text('Configuración'),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/configuracion');
-            },
-          ),
           if (provider.usuario?.rol == 'ADMIN') ...[
+            ListTile(
+              leading: const Icon(Icons.settings_outlined),
+              title: const Text('Configuración'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/configuracion');
+              },
+            ),
             const Divider(),
             Padding(
               padding: EdgeInsets.only(left: 16, top: 8, bottom: 4),

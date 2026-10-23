@@ -170,49 +170,60 @@ class DatabaseHelper {
 
     await db.execute('INSERT OR IGNORE INTO sync_meta (id, last_sync_at, last_pull_at, server_cursor) VALUES (1, NULL, NULL, 0)');
 
-    await db.execute('CREATE INDEX idx_votos_mesa ON votos(mesaId)');
-    await db.execute('CREATE INDEX idx_votos_sinc ON votos(sincronizado)');
-    await db.execute('CREATE INDEX idx_sync_queue_status ON sync_queue(status)');
-    await db.execute('CREATE INDEX idx_sync_queue_entity ON sync_queue(entity_type, entity_id)');
-    await db.execute('CREATE UNIQUE INDEX idx_sync_queue_opid ON sync_queue(operation_id)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_votos_mesa ON votos(mesaId)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_votos_sinc ON votos(sincronizado)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_sync_queue_status ON sync_queue(status)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_sync_queue_entity ON sync_queue(entity_type, entity_id)');
+    await db.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_sync_queue_opid ON sync_queue(operation_id)');
+  }
+
+  Future<bool> _hasColumn(Database db, String table, String column) async {
+    final info = await db.rawQuery("PRAGMA table_info('$table')");
+    return info.any((c) => c['name'] == column);
+  }
+
+  Future<void> _addColumnIfMissing(Database db, String table, String column, String definition) async {
+    if (!await _hasColumn(db, table, column)) {
+      await db.execute('ALTER TABLE $table ADD COLUMN $column $definition');
+    }
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      await db.execute('ALTER TABLE mesas ADD COLUMN institucionId INTEGER DEFAULT 0');
+      await _addColumnIfMissing(db, 'mesas', 'institucionId', 'INTEGER DEFAULT 0');
       await db.execute('UPDATE mesas SET institucionId = recintoId');
-      await db.execute('ALTER TABLE mesas ADD COLUMN institucionNombre TEXT');
-      await db.execute('ALTER TABLE elecciones ADD COLUMN fechaInicio TEXT');
+      await _addColumnIfMissing(db, 'mesas', 'institucionNombre', 'TEXT');
+      await _addColumnIfMissing(db, 'elecciones', 'fechaInicio', 'TEXT');
       await db.execute('UPDATE elecciones SET fechaInicio = fecha_inicio');
-      await db.execute('ALTER TABLE elecciones ADD COLUMN fechaFin TEXT');
+      await _addColumnIfMissing(db, 'elecciones', 'fechaFin', 'TEXT');
       await db.execute('UPDATE elecciones SET fechaFin = fecha_fin');
     }
     if (oldVersion < 3) {
-      await db.execute('ALTER TABLE cargos ADD COLUMN tipoVotacion TEXT');
-      await db.execute('ALTER TABLE cargos ADD COLUMN tipoCircunscripcionId INTEGER');
-      await db.execute('ALTER TABLE cargos ADD COLUMN tipoCircunscripcionCodigo TEXT');
-      await db.execute('ALTER TABLE cargos ADD COLUMN tipoCircunscripcionNombre TEXT');
-      await db.execute('ALTER TABLE cargos ADD COLUMN cantidadDignidades INTEGER DEFAULT 1');
-      await db.execute('ALTER TABLE cargos ADD COLUMN maxCandidatosLista INTEGER');
-      await db.execute('ALTER TABLE cargos ADD COLUMN activo INTEGER DEFAULT 1');
+      await _addColumnIfMissing(db, 'cargos', 'tipoVotacion', 'TEXT');
+      await _addColumnIfMissing(db, 'cargos', 'tipoCircunscripcionId', 'INTEGER');
+      await _addColumnIfMissing(db, 'cargos', 'tipoCircunscripcionCodigo', 'TEXT');
+      await _addColumnIfMissing(db, 'cargos', 'tipoCircunscripcionNombre', 'TEXT');
+      await _addColumnIfMissing(db, 'cargos', 'cantidadDignidades', 'INTEGER DEFAULT 1');
+      await _addColumnIfMissing(db, 'cargos', 'maxCandidatosLista', 'INTEGER');
+      await _addColumnIfMissing(db, 'cargos', 'activo', 'INTEGER DEFAULT 1');
 
-      await db.execute('ALTER TABLE candidatos ADD COLUMN partidoSigla TEXT');
-      await db.execute('ALTER TABLE candidatos ADD COLUMN listaId INTEGER');
-      await db.execute('ALTER TABLE candidatos ADD COLUMN listaNombre TEXT');
-      await db.execute('ALTER TABLE candidatos ADD COLUMN numeroLista INTEGER');
-      await db.execute('ALTER TABLE candidatos ADD COLUMN ordenEnLista INTEGER');
-      await db.execute('ALTER TABLE candidatos ADD COLUMN tipo TEXT');
-      await db.execute('ALTER TABLE candidatos ADD COLUMN principal INTEGER DEFAULT 1');
-      await db.execute('ALTER TABLE candidatos ADD COLUMN activo INTEGER DEFAULT 1');
+      await _addColumnIfMissing(db, 'candidatos', 'partidoSigla', 'TEXT');
+      await _addColumnIfMissing(db, 'candidatos', 'listaId', 'INTEGER');
+      await _addColumnIfMissing(db, 'candidatos', 'listaNombre', 'TEXT');
+      await _addColumnIfMissing(db, 'candidatos', 'numeroLista', 'INTEGER');
+      await _addColumnIfMissing(db, 'candidatos', 'ordenEnLista', 'INTEGER');
+      await _addColumnIfMissing(db, 'candidatos', 'tipo', 'TEXT');
+      await _addColumnIfMissing(db, 'candidatos', 'principal', 'INTEGER DEFAULT 1');
+      await _addColumnIfMissing(db, 'candidatos', 'activo', 'INTEGER DEFAULT 1');
 
-      await db.execute('ALTER TABLE mesas ADD COLUMN votosNulos INTEGER DEFAULT 0');
-      await db.execute('ALTER TABLE mesas ADD COLUMN votosBlanco INTEGER DEFAULT 0');
+      await _addColumnIfMissing(db, 'mesas', 'votosNulos', 'INTEGER DEFAULT 0');
+      await _addColumnIfMissing(db, 'mesas', 'votosBlanco', 'INTEGER DEFAULT 0');
 
-      await db.execute('ALTER TABLE votos ADD COLUMN opcionPapeletaId INTEGER');
+      await _addColumnIfMissing(db, 'votos', 'opcionPapeletaId', 'INTEGER');
     }
     if (oldVersion < 4) {
       await db.execute('''
-        CREATE TABLE sync_queue (
+        CREATE TABLE IF NOT EXISTS sync_queue (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           entity_type TEXT NOT NULL,
           entity_id INTEGER NOT NULL,
@@ -226,18 +237,18 @@ class DatabaseHelper {
         )
       ''');
       await db.execute('''
-        CREATE TABLE sync_meta (
+        CREATE TABLE IF NOT EXISTS sync_meta (
           id INTEGER PRIMARY KEY,
           last_sync_at TEXT,
           last_pull_at TEXT
         )
       ''');
       await db.execute('INSERT OR IGNORE INTO sync_meta (id, last_sync_at, last_pull_at) VALUES (1, NULL, NULL)');
-      await db.execute('CREATE INDEX idx_sync_queue_status ON sync_queue(status)');
-      await db.execute('CREATE INDEX idx_sync_queue_entity ON sync_queue(entity_type, entity_id)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_sync_queue_status ON sync_queue(status)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_sync_queue_entity ON sync_queue(entity_type, entity_id)');
     }
     if (oldVersion < 5) {
-      await db.execute('ALTER TABLE votos ADD COLUMN listaId INTEGER');
+      await _addColumnIfMissing(db, 'votos', 'listaId', 'INTEGER');
     }
     if (oldVersion < 6) {
       final cols = await db.rawQuery("PRAGMA table_info('votos')");
@@ -247,34 +258,38 @@ class DatabaseHelper {
       }
     }
     if (oldVersion < 7) {
-      await db.transaction((txn) async {
-        await txn.execute('''
-          CREATE TABLE votos_new (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            candidatoId INTEGER,
-            mesaId INTEGER NOT NULL,
-            cantidadVotos INTEGER NOT NULL,
-            eleccionesId INTEGER NOT NULL,
-            opcionPapeletaId INTEGER,
-            listaId INTEGER,
-            sincronizado INTEGER NOT NULL DEFAULT 0,
-            fechaRegistro TEXT NOT NULL DEFAULT ''
-          )
-        ''');
-        await txn.execute('''
-          INSERT INTO votos_new (id, candidatoId, mesaId, cantidadVotos, eleccionesId, opcionPapeletaId, listaId, sincronizado, fechaRegistro)
-          SELECT id, candidatoId, mesaId, cantidadVotos, eleccionesId, opcionPapeletaId, listaId, sincronizado, COALESCE(fechaRegistro, '')
-          FROM votos
-        ''');
-        await txn.execute('DROP TABLE votos');
-        await txn.execute('ALTER TABLE votos_new RENAME TO votos');
-      });
+      final cols = await db.rawQuery("PRAGMA table_info('votos')");
+      final hasFechaRegistro = cols.any((c) => c['name'] == 'fechaRegistro');
+      if (!hasFechaRegistro) {
+        await db.transaction((txn) async {
+          await txn.execute('''
+            CREATE TABLE votos_new (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              candidatoId INTEGER,
+              mesaId INTEGER NOT NULL,
+              cantidadVotos INTEGER NOT NULL,
+              eleccionesId INTEGER NOT NULL,
+              opcionPapeletaId INTEGER,
+              listaId INTEGER,
+              sincronizado INTEGER NOT NULL DEFAULT 0,
+              fechaRegistro TEXT NOT NULL DEFAULT ''
+            )
+          ''');
+          await txn.execute('''
+            INSERT INTO votos_new (id, candidatoId, mesaId, cantidadVotos, eleccionesId, opcionPapeletaId, listaId, sincronizado, fechaRegistro)
+            SELECT id, candidatoId, mesaId, cantidadVotos, eleccionesId, opcionPapeletaId, listaId, sincronizado, COALESCE(fechaRegistro, '')
+            FROM votos
+          ''');
+          await txn.execute('DROP TABLE votos');
+          await txn.execute('ALTER TABLE votos_new RENAME TO votos');
+        });
+      }
     }
     if (oldVersion < 8) {
-      await db.execute('ALTER TABLE sync_queue ADD COLUMN operation_id TEXT');
-      await db.execute('ALTER TABLE sync_queue ADD COLUMN last_attempt_at TEXT');
-      await db.execute('ALTER TABLE sync_queue ADD COLUMN ack_at TEXT');
-      await db.execute('ALTER TABLE sync_meta ADD COLUMN server_cursor INTEGER DEFAULT 0');
+      await _addColumnIfMissing(db, 'sync_queue', 'operation_id', 'TEXT');
+      await _addColumnIfMissing(db, 'sync_queue', 'last_attempt_at', 'TEXT');
+      await _addColumnIfMissing(db, 'sync_queue', 'ack_at', 'TEXT');
+      await _addColumnIfMissing(db, 'sync_meta', 'server_cursor', 'INTEGER DEFAULT 0');
       await db.execute("UPDATE sync_meta SET server_cursor = 0 WHERE server_cursor IS NULL");
       await db.execute("UPDATE sync_queue SET operation_id = lower(hex(randomblob(16))) WHERE operation_id IS NULL");
       await db.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_sync_queue_opid ON sync_queue(operation_id)');
