@@ -11,6 +11,10 @@ class SyncService {
   StompService? _stomp;
   static const int maxRetries = 5;
 
+  /// Se invoca cuando el servidor responde 401/403 (token expirado/inválido):
+  /// el provider debe cerrar sesión para que el usuario vuelva a ingresar.
+  void Function()? onUnauthorized;
+
   SyncService(this._baseUrl);
 
   void setStomp(StompService stomp) { _stomp = stomp; }
@@ -83,12 +87,13 @@ class SyncService {
     }
   }
 
+  // B5: incluir FAILED para no duplicar ops al re-encolar una entidad con error
   Future<int?> _findPendingEntity(String entityType, int entityId, String operation) async {
     final db = await _db.database;
     final maps = await db.query(
       'sync_queue',
       columns: ['id'],
-      where: "entity_type = ? AND entity_id = ? AND operation = ? AND status = 'PENDING'",
+      where: "entity_type = ? AND entity_id = ? AND operation = ? AND status IN ('PENDING', 'FAILED')",
       whereArgs: [entityType, entityId, operation],
       limit: 1,
     );
@@ -100,7 +105,7 @@ class SyncService {
     final maps = await db.query(
       'sync_queue',
       columns: ['id'],
-      where: "entity_type = ? AND entity_id = ? AND status = 'PENDING'",
+      where: "entity_type = ? AND entity_id = ? AND status IN ('PENDING', 'FAILED')",
       whereArgs: [entityType, entityId],
       limit: 1,
     );
@@ -148,6 +153,14 @@ class SyncService {
         body: jsonEncode({'operations': batch}),
       );
 
+      // Token vencido: no consumir reintentos; notificar para cerrar sesión
+      // (las ops quedan PENDING para sincronizar tras el re-login)
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        debugPrint('sync/push HTTP ${response.statusCode}: sesión expirada');
+        onUnauthorized?.call();
+        return 0;
+      }
+
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         final results = body['results'] as List<dynamic>? ?? [];
@@ -160,8 +173,18 @@ class SyncService {
           if (idx >= 0 && idx < ids.length) {
             if (ok) {
               await _db.markSyncDone(ids[idx]);
+              // B6: al recibir ACK, marcar el voto local como sincronizado
+              // (permite que la limpieza posterior lo refresque desde el servidor)
+              final opBatch = batch[idx];
+              if (opBatch['entity'] == 'voto' &&
+                  (opBatch['action'] == 'CREATE' || opBatch['action'] == 'UPDATE')) {
+                await _db.marcarVotoSincronizadoFromPayload(
+                    opBatch['data'] as Map<String, dynamic>);
+              }
               acked++;
             } else {
+              // B1: markSyncFailed incrementa retry_count → tras maxRetries
+              // el error permanente queda FAILED visible en vez de loop infinito
               await _db.markSyncFailed(ids[idx], err ?? 'Error desconocido');
             }
           }
@@ -193,11 +216,18 @@ class SyncService {
     final response = await http.get(uri, headers: _headers(token));
 
     if (response.statusCode != 200) {
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        debugPrint('sync/pull HTTP ${response.statusCode}: sesión expirada');
+        onUnauthorized?.call();
+        return 0;
+      }
       debugPrint('sync/pull HTTP ${response.statusCode}: ${response.body.substring(0, response.body.length.clamp(0, 200))}');
       return 0;
     }
 
     final data = jsonDecode(response.body) as Map<String, dynamic>;
+    // B3: usar el reloj del servidor como cursor (evita clock-skew del dispositivo)
+    final serverTsRaw = data['serverTimestamp'] as String?;
     final cambios = data['operations'] as List<dynamic>? ?? data['cambios'] as List<dynamic>? ?? [];
     if (cambios.isEmpty) return 0;
 
@@ -219,7 +249,14 @@ class SyncService {
 
     // Solo avanzar cursor si todos los cambios se aplicaron exitosamente
     if (!anyFailed) {
-      await _db.setLastPullTimestamp(DateTime.now());
+      DateTime nextCursor = DateTime.now();
+      if (serverTsRaw != null) {
+        // El backend envía LocalDateTime sin zona (JVM en UTC): tratarlo como UTC
+        final hasZone = serverTsRaw.contains(RegExp(r'[zZ]$|[+-]\d\d:?\d\d$'));
+        final parsed = DateTime.tryParse(hasZone ? serverTsRaw : '${serverTsRaw}Z');
+        if (parsed != null) nextCursor = parsed.toUtc();
+      }
+      await _db.setLastPullTimestamp(nextCursor);
     }
     debugPrint('sync/pull: aplicados $applied/${cambios.length}${anyFailed ? ' (parcial)' : ''}');
     return applied;
@@ -258,9 +295,12 @@ class SyncService {
 
   Future<int> retryFailedOps({bool force = false}) async {
     final db = await _db.database;
+    // B1: el reintento automático NO resetea retry_count (acumula hasta maxRetries
+    // y el error permanente queda FAILED visible). El reintento manual (force del
+    // usuario o reconexión) sí lo resetea para dar 5 intentos nuevos.
     final String sql = force
         ? "UPDATE sync_queue SET status = 'PENDING', last_error = NULL, retry_count = 0 WHERE status = 'FAILED'"
-        : "UPDATE sync_queue SET status = 'PENDING', last_error = NULL, retry_count = 0 WHERE status = 'FAILED' AND retry_count < $maxRetries";
+        : "UPDATE sync_queue SET status = 'PENDING', last_error = NULL WHERE status = 'FAILED' AND retry_count < $maxRetries";
     return await db.rawUpdate(sql);
   }
 

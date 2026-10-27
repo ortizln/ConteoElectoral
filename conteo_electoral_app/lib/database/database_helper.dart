@@ -588,9 +588,20 @@ class DatabaseHelper {
     );
   }
 
+  // Votos creados localmente usan IDs en un rango alto para no colisionar con
+  // los IDs del servidor (globales y pequeños). Evita que un INSERT OR IGNORE
+  // de datos remotos pise un voto local pendiente con el mismo id (B10).
+  static const int _rangoIdLocal = 2000000000;
+
   Future<int> guardarVoto(Voto voto) async {
     final db = await database;
+    final maxLocal = await db.rawQuery(
+      'SELECT COALESCE(MAX(id), ?) AS maxId FROM votos WHERE id >= ?',
+      [_rangoIdLocal, _rangoIdLocal],
+    );
+    final nextId = (maxLocal.first['maxId'] as int) + 1;
     return await db.insert('votos', {
+      'id': nextId,
       'candidatoId': voto.candidatoId,
       'mesaId': voto.mesaId,
       'cantidadVotos': voto.cantidadVotos,
@@ -617,6 +628,9 @@ class DatabaseHelper {
       limit: 1,
     );
     if (existente.isNotEmpty) {
+      final localId = existente.first['id'] as int;
+      // B2: no pisar votos con operaciones locales aún no sincronizadas
+      if (await _tieneOpsVotoPendientes(localId, voto.listaId)) return;
       await db.update(
         'votos',
         {
@@ -625,9 +639,19 @@ class DatabaseHelper {
           'fechaRegistro': voto.fechaRegistro.toIso8601String(),
         },
         where: 'id = ?',
-        whereArgs: [existente.first['id']],
+        whereArgs: [localId],
       );
       return;
+    }
+    // B2: si hay una fila local pendiente ocupando exactamente ese id, no pisarla
+    if (voto.id != null) {
+      final porId = await db.query(
+        'votos',
+        where: 'id = ? AND sincronizado = 0',
+        whereArgs: [voto.id],
+        limit: 1,
+      );
+      if (porId.isNotEmpty) return;
     }
     await db.insert(
       'votos',
@@ -644,6 +668,25 @@ class DatabaseHelper {
       },
       conflictAlgorithm: ConflictAlgorithm.ignore,
     );
+  }
+
+  // B2: ¿existen operaciones PENDING/FAILED en la cola para este voto local?
+  Future<bool> _tieneOpsVotoPendientes(int localId, int? listaId) async {
+    final db = await database;
+    final args = <Object?>[localId];
+    var cond = 'entity_id = ?';
+    if (listaId != null) {
+      cond += ' OR entity_id = ?';
+      args.add(-listaId);
+    }
+    final maps = await db.query(
+      'sync_queue',
+      columns: ['id'],
+      where: "entity_type = 'voto' AND status IN ('PENDING', 'FAILED') AND ($cond)",
+      whereArgs: args,
+      limit: 1,
+    );
+    return maps.isNotEmpty;
   }
 
   Future<void> actualizarVoto(int id, Voto voto) async {
@@ -756,6 +799,32 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  // B6: marca el voto local como sincronizado usando la clave natural del payload
+  // (mesaId + candidatoId, o mesaId + listaId para votos de lista), ya que el id
+  // local puede no coincidir con el id del servidor.
+  Future<void> marcarVotoSincronizadoFromPayload(Map<String, dynamic> payload) async {
+    final db = await database;
+    final mesaId = (payload['mesaId'] as num?)?.toInt();
+    final candidatoId = (payload['candidatoId'] as num?)?.toInt();
+    final listaId = (payload['listaId'] as num?)?.toInt();
+    if (mesaId == null) return;
+    if (candidatoId != null) {
+      await db.update(
+        'votos',
+        {'sincronizado': 1},
+        where: 'mesaId = ? AND candidatoId = ?',
+        whereArgs: [mesaId, candidatoId],
+      );
+    } else if (listaId != null) {
+      await db.update(
+        'votos',
+        {'sincronizado': 1},
+        where: 'mesaId = ? AND listaId = ? AND candidatoId IS NULL',
+        whereArgs: [mesaId, listaId],
+      );
+    }
   }
 
   Future<void> guardarVotosSincronizados(List<Voto> votos) async {
@@ -910,11 +979,11 @@ class DatabaseHelper {
 
   Future<void> markSyncFailed(int id, String error) async {
     final db = await database;
-    await db.update(
-      'sync_queue',
-      {'status': 'FAILED', 'last_error': error, 'last_attempt_at': DateTime.now().toIso8601String()},
-      where: 'id = ?',
-      whereArgs: [id],
+    // B1: incrementar retry_count para que los errores permanentes lleguen a
+    // maxRetries y queden FAILED visibles, en vez de reintentar para siempre
+    await db.rawUpdate(
+      "UPDATE sync_queue SET status = 'FAILED', last_error = ?, retry_count = retry_count + 1, last_attempt_at = ? WHERE id = ?",
+      [error, DateTime.now().toIso8601String(), id],
     );
   }
 

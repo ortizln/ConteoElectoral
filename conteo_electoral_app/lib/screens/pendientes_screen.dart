@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
@@ -32,8 +31,9 @@ class _PendientesScreenState extends State<PendientesScreen> {
     }
   }
 
+  // El entity_type se guarda en minúsculas ('voto', 'mesa'): comparar sin case
   String _entityLabel(String type) {
-    switch (type) {
+    switch (type.toUpperCase()) {
       case 'VOTO': return 'Voto';
       case 'MESA': return 'Mesa';
       default: return type;
@@ -41,19 +41,23 @@ class _PendientesScreenState extends State<PendientesScreen> {
   }
 
   IconData _entityIcon(String type) {
-    switch (type) {
+    switch (type.toUpperCase()) {
       case 'VOTO': return Icons.how_to_vote_outlined;
       case 'MESA': return Icons.table_restaurant;
       default: return Icons.sync;
     }
   }
 
-  String _payloadPreview(Map<String, dynamic>? payload) {
-    if (payload == null) return '—';
-    if (payload.containsKey('id')) {
-      return '#${payload['id']}';
+  String _opLabel(String operation) {
+    switch (operation.toUpperCase()) {
+      case 'CREATE': return 'Crear';
+      case 'UPDATE': return 'Actualizar';
+      case 'CLOSE':
+      case 'CERRAR': return 'Cerrar mesa';
+      case 'NULOS': return 'Nulos';
+      case 'BLANCO': return 'Blanco';
+      default: return operation;
     }
-    return '...';
   }
 
   @override
@@ -115,13 +119,6 @@ class _PendientesScreenState extends State<PendientesScreen> {
                       final retryCount = op['retry_count'] as int? ?? 0;
                       final lastError = op['last_error'] as String?;
                       final createdAt = op['created_at'] as String? ?? '';
-                      final payloadStr = op['payload'] as String?;
-                      Map<String, dynamic>? payload;
-                      if (payloadStr != null) {
-                        try {
-                          payload = jsonDecode(payloadStr) as Map<String, dynamic>;
-                        } catch (_) {}
-                      }
 
                       final isFailed = status == 'FAILED';
                       final date = createdAt.length >= 19
@@ -186,7 +183,7 @@ class _PendientesScreenState extends State<PendientesScreen> {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      '${operation == 'CREATE' ? 'Crear' : operation == 'UPDATE' ? 'Actualizar' : operation == 'CLOSE' ? 'Cerrar' : operation} ${entityType == 'VOTO' ? 'voto' : 'mesa'}',
+                                      '${_opLabel(operation)} ${_entityLabel(entityType).toLowerCase()}',
                                       style: TextStyle(
                                           fontSize: 12, color: AppColors.gray),
                                     ),
@@ -228,7 +225,7 @@ class _PendientesScreenState extends State<PendientesScreen> {
                                       builder: (ctx) => AlertDialog(
                                         title: const Text('Eliminar'),
                                         content: Text(
-                                            '¿Eliminar operación $entityType $entityId?'),
+                                            '¿Eliminar operación ${_entityLabel(entityType)} $entityId?'),
                                         actions: [
                                           TextButton(
                                               onPressed: () =>

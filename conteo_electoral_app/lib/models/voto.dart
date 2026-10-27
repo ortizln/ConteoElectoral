@@ -22,18 +22,31 @@ class Voto {
   }) : fechaRegistro = fechaRegistro ?? DateTime.now();
 
   factory Voto.fromJson(Map<String, dynamic> json) {
+    // B9: tolerar campos nulos del servidor para que un registro remoto malo
+    // no trabe el cursor de pull completo
+    final mesaId = (json['mesaId'] as num?)?.toInt();
+    final cantidad = (json['cantidadVotos'] as num?)?.toInt();
+    if (mesaId == null || cantidad == null) {
+      throw FormatException('Voto remoto inválido: mesaId/cantidadVotos nulos');
+    }
+    DateTime fecha;
+    try {
+      fecha = json['fechaRegistro'] != null
+          ? DateTime.parse(json['fechaRegistro'].toString())
+          : DateTime.now();
+    } catch (_) {
+      fecha = DateTime.now();
+    }
     return Voto(
-      id: json['id'],
-      candidatoId: json['candidatoId'],
-      mesaId: json['mesaId'],
-      cantidadVotos: json['cantidadVotos'],
-      eleccionesId: json['eleccionesId'],
-      opcionPapeletaId: json['opcionPapeletaId'],
-      listaId: json['listaId'],
+      id: (json['id'] as num?)?.toInt(),
+      candidatoId: (json['candidatoId'] as num?)?.toInt(),
+      mesaId: mesaId,
+      cantidadVotos: cantidad,
+      eleccionesId: (json['eleccionesId'] as num?)?.toInt() ?? 0,
+      opcionPapeletaId: (json['opcionPapeletaId'] as num?)?.toInt(),
+      listaId: (json['listaId'] as num?)?.toInt(),
       sincronizado: json['sincronizado'] ?? false,
-      fechaRegistro: json['fechaRegistro'] != null
-          ? DateTime.parse(json['fechaRegistro'])
-          : DateTime.now(),
+      fechaRegistro: fecha,
     );
   }
 

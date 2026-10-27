@@ -5,6 +5,14 @@ import '../config/app_config.dart';
 import '../config/server_url.dart';
 import '../models/models.dart';
 
+/// Token vencido/inválido (401/403): el caller debe forzar re-login
+class UnauthorizedException implements Exception {
+  final String message;
+  UnauthorizedException([this.message = 'Sesión expirada']);
+  @override
+  String toString() => message;
+}
+
 class ApiService {
   static const String _serverUrlKey = 'server_url';
   String _baseUrl = AppEnvironment.current.baseUrl;
@@ -439,7 +447,12 @@ class ApiService {
         final List<dynamic> data = jsonDecode(response.body);
         return data.map((e) => Eleccion.fromJson(e)).toList();
       }
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        throw UnauthorizedException();
+      }
       return [];
+    } on UnauthorizedException {
+      rethrow;
     } catch (e) {
       return [];
     }

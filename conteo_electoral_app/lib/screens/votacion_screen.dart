@@ -195,11 +195,22 @@ class _VotacionScreenState extends State<VotacionScreen> {
   }
 
   Future<void> _sincronizar() async {
-    await context.read<AppProvider>().sincronizarVotos();
-    if (mounted) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Sincronizado')));
+    final provider = context.read<AppProvider>();
+    final antes = provider.pendingSyncCount + provider.failedSyncCount;
+    await provider.sincronizarVotos();
+    if (!mounted) return;
+    final restantes = provider.pendingSyncCount + provider.failedSyncCount;
+    // B13: mensaje según el resultado real, no siempre "Sincronizado"
+    final String msg;
+    if (!provider.isOnline) {
+      msg = 'Sin conexión: los cambios quedaron en cola';
+    } else if (restantes == 0) {
+      msg = 'Sincronizado ✓';
+    } else {
+      msg = 'Quedan $restantes operación(es) pendientes ($antes antes)';
     }
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override

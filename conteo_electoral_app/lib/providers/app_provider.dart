@@ -29,6 +29,7 @@ class AppProvider extends ChangeNotifier {
   int _pendingSyncCount = 0;
   int _failedSyncCount = 0;
   bool _isSyncing = false;
+  bool _syncQueued = false;
 
   String _currentVersion = '';
   String? _latestVersion;
@@ -78,16 +79,21 @@ class AppProvider extends ChangeNotifier {
   Future<void> init() async {
     await _loadServerUrl();
     _sync = SyncService(_api.baseUrl);
+    _sync.onUnauthorized = _onSessionExpired;
     await _sync.init();
     _usuario = await _db.getUsuarioSession();
     if (_usuario != null) {
       await _cargarEleccionActual();
     }
     await _refreshSyncCounts();
-    _checkConnectivity();
+    await _checkConnectivity();
     _initStomp();
     _loadCurrentVersion();
     _checkForUpdate();
+    // B7: empujar la cola pendiente al iniciar la app (no esperar a votar)
+    if (_usuario != null && _isOnline) {
+      unawaited(sincronizarVotos());
+    }
   }
 
   void _initStomp() {
@@ -194,7 +200,8 @@ class AppProvider extends ChangeNotifier {
       _isOnline = result != ConnectivityResult.none;
       notifyListeners();
       if (_isOnline && wasOffline) {
-        sincronizarVotos();
+        // Reconexión: revivir ops FAILED (p. ej. por un corte de red) y sincronizar
+        unawaited(retryFailedSync());
       }
     });
   }
@@ -222,6 +229,8 @@ class AppProvider extends ChangeNotifier {
       if (response != null) {
         _usuario = response.toUsuario();
         await _db.guardarSession(_usuario!, response.token);
+        // Token fresco: reconectar STOMP (el anterior pudo caducar y agotar reintentos)
+        _stomp.connect(ServerUrl.stripApiSuffix(_serverUrl), token: response.token);
         _isLoading = false;
         notifyListeners();
         return true;
@@ -248,6 +257,25 @@ class AppProvider extends ChangeNotifier {
     _candidatos = [];
     _votosMesa = [];
     notifyListeners();
+  }
+
+  // Guarda para no ejecutar dos veces el logout (push y pull pueden recibir
+  // 401 casi al mismo tiempo)
+  bool _handlingSessionExpired = false;
+
+  // Token expirado detectado por el sync (push/pull): cerrar sesión para que
+  // el usuario vea la pantalla de login y sepa que debe ingresar nuevamente.
+  // Los votos locales y la cola de sync se conservan.
+  Future<void> _onSessionExpired() async {
+    if (_handlingSessionExpired || _usuario == null) return;
+    _handlingSessionExpired = true;
+    try {
+      _error = 'Sesión expirada. Inicie sesión nuevamente.';
+      notifyListeners();
+      await logout();
+    } finally {
+      _handlingSessionExpired = false;
+    }
   }
 
   Future<bool> descargarDatos() async {
@@ -307,7 +335,17 @@ class AppProvider extends ChangeNotifier {
       
       _isLoading = false;
       notifyListeners();
+      // B7: tras descargar datos, empujar la cola local pendiente
+      unawaited(sincronizarVotos());
       return true;
+    } on UnauthorizedException {
+      // B15: token vencido → limpiar sesión para que aparezca la pantalla de login
+      // (los datos locales y la cola de sync se conservan)
+      _isLoading = false;
+      _error = 'Sesión expirada. Inicie sesión nuevamente.';
+      notifyListeners();
+      await logout();
+      return false;
     } catch (e) {
       _isLoading = false;
       _error = 'Error al descargar datos: $e';
@@ -324,7 +362,13 @@ class AppProvider extends ChangeNotifier {
       if (_usuario != null) {
         final mesas = await _db.getMesasByUsuario(_usuario!.id);
         if (mesas.isNotEmpty) {
-          await seleccionarMesa(mesas.first);
+          // Preferir una mesa abierta: si la primera está cerrada, al iniciar
+          // la app caía directo a la pantalla "Mesa Cerrada"
+          Mesa? abierta;
+          for (final m in mesas) {
+            if (!m.cerrada) { abierta = m; break; }
+          }
+          await seleccionarMesa(abierta ?? mesas.first);
         }
       }
     }
@@ -428,6 +472,7 @@ class AppProvider extends ChangeNotifier {
   }
 
   Future<void> _recargarVotos() async {
+    if (_mesaActual == null) return;
     _votosMesa = await _db.getVotosByMesa(_mesaActual!.id);
     _totalVotos = _votosMesa.fold(0, (sum, v) => sum + v.cantidadVotos);
     final mesa = await _db.getMesa(_mesaActual!.id);
@@ -446,7 +491,12 @@ class AppProvider extends ChangeNotifier {
   }
 
   Future<void> sincronizarVotos() async {
-    if (!_isOnline || _isSyncing) return;
+    if (!_isOnline) return;
+    // B11: no descartar el trigger si ya hay un sync en curso; repetir al terminar
+    if (_isSyncing) {
+      _syncQueued = true;
+      return;
+    }
 
     _isSyncing = true;
     notifyListeners();
@@ -466,6 +516,11 @@ class AppProvider extends ChangeNotifier {
 
     final hasPending = _pendingSyncCount + _failedSyncCount > 0;
     _scheduleRetryIfNeeded(hasPending);
+
+    if (_syncQueued) {
+      _syncQueued = false;
+      Timer(const Duration(milliseconds: 300), () => sincronizarVotos());
+    }
   }
 
   void _scheduleRetryIfNeeded(bool hasPending) {
@@ -482,14 +537,16 @@ class AppProvider extends ChangeNotifier {
     _votosNulos = valor < 0 ? 0 : valor;
     await _db.actualizarNulosBlanco(_mesaActual!.id, votosNulos: _votosNulos, votosBlanco: _votosBlanco);
     notifyListeners();
-    _nulosDebounce?.cancel();
     final mesa = _mesaActual!;
     final nulos = _votosNulos;
-    _nulosDebounce = Timer(const Duration(milliseconds: 500), () async {
-      await _sync.enqueueNulos(mesa.id, mesa.eleccionesId, nulos);
-      await _refreshSyncCounts();
-      notifyListeners();
-      if (_isOnline) await sincronizarVotos();
+    // B4: encolar inmediatamente en la outbox local (si la app se cierra en los
+    // 500ms del debounce, el cambio no se pierde); el debounce solo limita la red
+    await _sync.enqueueNulos(mesa.id, mesa.eleccionesId, nulos);
+    await _refreshSyncCounts();
+    notifyListeners();
+    _nulosDebounce?.cancel();
+    _nulosDebounce = Timer(const Duration(milliseconds: 500), () {
+      if (_isOnline) unawaited(sincronizarVotos());
     });
   }
 
@@ -498,14 +555,15 @@ class AppProvider extends ChangeNotifier {
     _votosBlanco = valor < 0 ? 0 : valor;
     await _db.actualizarNulosBlanco(_mesaActual!.id, votosNulos: _votosNulos, votosBlanco: _votosBlanco);
     notifyListeners();
-    _blancoDebounce?.cancel();
     final mesa = _mesaActual!;
     final blanco = _votosBlanco;
-    _blancoDebounce = Timer(const Duration(milliseconds: 500), () async {
-      await _sync.enqueueBlanco(mesa.id, mesa.eleccionesId, blanco);
-      await _refreshSyncCounts();
-      notifyListeners();
-      if (_isOnline) await sincronizarVotos();
+    // B4: encolado inmediato en la outbox local; debounce solo para la red
+    await _sync.enqueueBlanco(mesa.id, mesa.eleccionesId, blanco);
+    await _refreshSyncCounts();
+    notifyListeners();
+    _blancoDebounce?.cancel();
+    _blancoDebounce = Timer(const Duration(milliseconds: 500), () {
+      if (_isOnline) unawaited(sincronizarVotos());
     });
   }
 
@@ -515,14 +573,21 @@ class AppProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    await _sync.enqueueCerrarMesa(_mesaActual!.id, _mesaActual!.eleccionesId);
-    await _db.cerrarMesaLocal(_mesaActual!.id);
+    // B12: garantizar el orden NULOS/BLANCO → CERRAR en la cola (se procesan
+    // por created_at ASC); cancelar debounces y re-afirmar los valores finales
+    _nulosDebounce?.cancel();
+    _blancoDebounce?.cancel();
+    final mesa = _mesaActual!;
+    await _sync.enqueueNulos(mesa.id, mesa.eleccionesId, _votosNulos);
+    await _sync.enqueueBlanco(mesa.id, mesa.eleccionesId, _votosBlanco);
+    await _sync.enqueueCerrarMesa(mesa.id, mesa.eleccionesId);
+    await _db.cerrarMesaLocal(mesa.id);
 
     if (_isOnline) {
       await sincronizarVotos();
     }
 
-    _mesaActual = await _db.getMesa(_mesaActual!.id);
+    _mesaActual = await _db.getMesa(mesa.id);
     await _refreshSyncCounts();
     _isLoading = false;
     notifyListeners();
@@ -545,6 +610,7 @@ class AppProvider extends ChangeNotifier {
       whereArgs: [id],
     );
     await _refreshSyncCounts();
+    notifyListeners(); // B13: refrescar contadores del banner en la UI
     if (_isOnline) await sincronizarVotos();
   }
 
@@ -552,6 +618,7 @@ class AppProvider extends ChangeNotifier {
     final db = await _db.database;
     await db.delete('sync_queue', where: 'id = ?', whereArgs: [id]);
     await _refreshSyncCounts();
+    notifyListeners(); // B13: refrescar contadores del banner en la UI
   }
 
   Future<void> _refreshSyncCounts() async {
