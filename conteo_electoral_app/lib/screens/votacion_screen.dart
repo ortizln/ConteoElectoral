@@ -197,7 +197,9 @@ class _VotacionScreenState extends State<VotacionScreen> {
   Future<void> _sincronizar() async {
     final provider = context.read<AppProvider>();
     final antes = provider.pendingSyncCount + provider.failedSyncCount;
-    await provider.sincronizarVotos();
+    // Sync manual del usuario: forzar reintento de ops FAILED (les da 5
+    // intentos nuevos) — sin esto, un error permanente quedaba trabado
+    await provider.sincronizarVotos(forceRetry: true);
     if (!mounted) return;
     final restantes = provider.pendingSyncCount + provider.failedSyncCount;
     // B13: mensaje según el resultado real, no siempre "Sincronizado"

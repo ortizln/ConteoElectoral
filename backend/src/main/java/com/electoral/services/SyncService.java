@@ -314,7 +314,9 @@ public class SyncService {
                 Integer prevNulos = mesa.getVotosNulos();
                 mesa.setVotosNulos(votosNulos);
                 mesaRepository.save(mesa);
-                mesaService.sincronizarDesgloseNulosBlancos(mesaId, "NULOS", votosNulos);
+                // El tipo en mesa_nulos_blancos es el enum NULO/BLANCO (check constraint
+                // chk_mesa_nulos_tipo): usar el nombre del enum, no "NULOS"
+                mesaService.sincronizarDesgloseNulosBlancos(mesaId, MesaNuloBlanco.Tipo.NULO.name(), votosNulos);
                 auditoriaService.registrarAccion(usuarioId, Auditoria.TipoAccion.UPDATE,
                         "mesa_sync", mesaId,
                         Map.of("votosNulos", prevNulos != null ? prevNulos : 0),
@@ -329,7 +331,7 @@ public class SyncService {
                 Integer prevBlanco = mesa.getVotosBlanco();
                 mesa.setVotosBlanco(votosBlanco);
                 mesaRepository.save(mesa);
-                mesaService.sincronizarDesgloseNulosBlancos(mesaId, "BLANCO", votosBlanco);
+                mesaService.sincronizarDesgloseNulosBlancos(mesaId, MesaNuloBlanco.Tipo.BLANCO.name(), votosBlanco);
                 auditoriaService.registrarAccion(usuarioId, Auditoria.TipoAccion.UPDATE,
                         "mesa_sync", mesaId,
                         Map.of("votosBlanco", prevBlanco != null ? prevBlanco : 0),

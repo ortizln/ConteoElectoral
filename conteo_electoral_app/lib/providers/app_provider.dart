@@ -490,7 +490,7 @@ class AppProvider extends ChangeNotifier {
     return count;
   }
 
-  Future<void> sincronizarVotos() async {
+  Future<void> sincronizarVotos({bool forceRetry = false}) async {
     if (!_isOnline) return;
     // B11: no descartar el trigger si ya hay un sync en curso; repetir al terminar
     if (_isSyncing) {
@@ -502,7 +502,10 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _sync.retryFailedOps();
+      // forceRetry: el usuario pidió sincronizar explícitamente → dar 5 intentos
+      // nuevos a las ops FAILED (una op con error permanente acumula retry_count
+      // y quedaría trabada para siempre sin este reset)
+      await _sync.retryFailedOps(force: forceRetry);
       await _sync.processPush();
       if (_eleccionActual != null) {
         await _sync.pullChanges(_eleccionActual!.id);
