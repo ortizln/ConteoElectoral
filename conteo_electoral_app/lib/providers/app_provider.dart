@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
+import 'dart:convert';
+import 'package:flutter/widgets.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -11,7 +12,7 @@ import '../database/database_helper.dart';
 import '../config/server_url.dart';
 import '../config/app_config.dart';
 
-class AppProvider extends ChangeNotifier {
+class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
   final DatabaseHelper _db = DatabaseHelper.instance;
   final ApiService _api = ApiService();
   late SyncService _sync;
@@ -77,13 +78,21 @@ class AppProvider extends ChangeNotifier {
   int get votosBlanco => _votosBlanco;
 
   Future<void> init() async {
+    WidgetsBinding.instance.addObserver(this);
     await _loadServerUrl();
     _sync = SyncService(_api.baseUrl);
     _sync.onUnauthorized = _onSessionExpired;
     await _sync.init();
     _usuario = await _db.getUsuarioSession();
     if (_usuario != null) {
-      await _cargarEleccionActual();
+      // Si el token local ya venció, ir directo al login (chequeo local,
+      // sin esperar a que falle una llamada al servidor)
+      final token = await _db.getToken();
+      if (_tokenLocalVencido(token)) {
+        await _onSessionExpired();
+      } else {
+        await _cargarEleccionActual();
+      }
     }
     await _refreshSyncCounts();
     await _checkConnectivity();
@@ -96,11 +105,51 @@ class AppProvider extends ChangeNotifier {
     }
   }
 
-  void _initStomp() {
-    final wsBaseUrl = ServerUrl.stripApiSuffix(_serverUrl);
-    _db.getToken().then((token) {
-      _stomp.connect(wsBaseUrl, eleccionId: _eleccionActual?.id, token: token);
-    });
+  // Al volver la app a primer plano, validar el token local: si venció mientras
+  // estaba en background, cerrar sesión e ir al login
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(verificarSesion());
+    }
+  }
+
+  /// Cierra la sesión si el token local ya venció (chequeo local, sin red).
+  /// Se llama al iniciar la app y al volver a primer plano.
+  Future<void> verificarSesion() async {
+    if (_usuario == null) return;
+    if (_tokenLocalVencido(await _db.getToken())) {
+      await _onSessionExpired();
+    }
+  }
+
+  /// Decodifica el payload del JWT (sin verificar firma) y compara `exp` con
+  /// el reloj actual. Margen de 10s para no usar un token a punto de vencer.
+  bool _tokenLocalVencido(String? token) {
+    if (token == null || token.isEmpty) return true;
+    try {
+      final parts = token.split('.');
+      if (parts.length != 3) return true;
+      final payload = jsonDecode(
+          utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))));
+      final exp = payload['exp'];
+      if (exp is! num) return true;
+      final vence =
+          DateTime.fromMillisecondsSinceEpoch(exp.toInt() * 1000, isUtc: true);
+      return DateTime.now().toUtc().isAfter(
+          vence.subtract(const Duration(seconds: 10)));
+    } catch (_) {
+      // Si no se puede decodificar, dejar que el servidor decida (401)
+      return false;
+    }
+  }
+
+  void _initStomp() {    final wsBaseUrl = ServerUrl.stripApiSuffix(_serverUrl);
+    if (_usuario != null) {
+      _db.getToken().then((token) {
+        _stomp.connect(wsBaseUrl, eleccionId: _eleccionActual?.id, token: token);
+      });
+    }
     _sync.setStomp(_stomp);
     _stompSyncSub = _stomp.onSyncEvent.listen((_) {
       sincronizarVotos();
@@ -208,6 +257,7 @@ class AppProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _retryTimer?.cancel();
     _nulosDebounce?.cancel();
     _blancoDebounce?.cancel();
