@@ -117,9 +117,12 @@
                 <td><span class="row-num">{{ i + 1 }}</span></td>
                 <td>
                   <div class="candidato-cell">
-                    <div class="candidato-avatar" [style.background]="l.colorPartido">
+                    <div class="candidato-avatar" *ngIf="!l.tieneLogo || !logoListaThumb(l.id)" [style.background]="l.colorPartido">
                       {{ l.numeroLista || '?' }}
                     </div>
+                    <img *ngIf="l.tieneLogo && logoListaThumb(l.id)" [src]="logoListaThumb(l.id)" alt="Logo"
+                         class="candidato-avatar"
+                         style="object-fit:contain; background:#fff; border:1px solid rgba(0,0,0,0.1);">
                     <div>
                       <div class="candidato-nombre">{{ l.nombre }}</div>
                       <div class="candidato-lista-detalle" *ngIf="l.numeroLista">Lista #{{ l.numeroLista }}</div>
@@ -146,9 +149,12 @@
                 <td><span class="row-num">{{ i + 1 }}</span></td>
                 <td>
                   <div class="candidato-cell">
-                    <div class="candidato-avatar" [style.background]="c.colorPartido">
+                    <div class="candidato-avatar" *ngIf="!c.tieneFoto || !fotoCandidatoThumb(c.id)" [style.background]="c.colorPartido">
                       {{ c.nombre[0] }}{{ c.apellido[0] }}
                     </div>
+                    <img *ngIf="c.tieneFoto && fotoCandidatoThumb(c.id)" [src]="fotoCandidatoThumb(c.id)" alt="Foto"
+                         class="candidato-avatar"
+                         style="object-fit:cover; border:1px solid rgba(0,0,0,0.1);">
                     <div>
                       <div class="candidato-nombre">{{ c.nombre }} {{ c.apellido }}</div>
                     </div>

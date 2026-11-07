@@ -36,6 +36,13 @@ public class Candidato {
     @Column(name = "foto_url", length = 500)
     private String fotoUrl;
 
+    // Foto/logo del candidato (imagen subida desde el admin)
+    @Column(name = "foto", columnDefinition = "bytea")
+    private byte[] foto;
+
+    @Column(name = "foto_content_type", length = 50)
+    private String fotoContentType;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "elecciones_id")
     private Eleccion elecciones;

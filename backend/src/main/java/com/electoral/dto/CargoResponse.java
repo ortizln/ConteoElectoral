@@ -15,6 +15,7 @@ public class CargoResponse {
     private String descripcion;
     private Long eleccionesId;
     private String tipoVotacion;
+    private String territorio;
     private Long tipoCircunscripcionId;
     private String tipoCircunscripcionCodigo;
     private String tipoCircunscripcionNombre;

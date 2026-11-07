@@ -179,6 +179,11 @@ export class ApiService {
     return this.http.get<Candidato[]>(`${this.API_URL}/candidatos/eleccion/${eleccionId}`);
   }
 
+  /** Candidatos visibles para una mesa (filtro por territorio del cargo) */
+  getCandidatosByMesa(mesaId: number): Observable<Candidato[]> {
+    return this.http.get<Candidato[]>(`${this.API_URL}/candidatos/mesa/${mesaId}`);
+  }
+
   createCandidato(data: Partial<Candidato>): Observable<Candidato> {
     return this.http.post<Candidato>(`${this.API_URL}/candidatos`, data);
   }
@@ -257,6 +262,35 @@ export class ApiService {
 
   getActaFotosPorEleccion(eleccionId: number): Observable<MesaActaFotosDeMesa[]> {
     return this.http.get<MesaActaFotosDeMesa[]>(`${this.API_URL}/mesas/acta-fotos?eleccionId=${eleccionId}`);
+  }
+
+  // Logo de lista electoral / foto de candidato
+  subirLogoLista(listaId: number, file: File): Observable<void> {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post<void>(`${this.API_URL}/listas/${listaId}/logo`, fd);
+  }
+
+  getLogoListaBlob(listaId: number): Observable<Blob> {
+    return this.http.get(`${this.API_URL}/listas/${listaId}/logo`, { responseType: 'blob' });
+  }
+
+  eliminarLogoLista(listaId: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/listas/${listaId}/logo`);
+  }
+
+  subirFotoCandidato(candidatoId: number, file: File): Observable<void> {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post<void>(`${this.API_URL}/candidatos/${candidatoId}/foto`, fd);
+  }
+
+  getFotoCandidatoBlob(candidatoId: number): Observable<Blob> {
+    return this.http.get(`${this.API_URL}/candidatos/${candidatoId}/foto`, { responseType: 'blob' });
+  }
+
+  eliminarFotoCandidato(candidatoId: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/candidatos/${candidatoId}/foto`);
   }
 
   reabrirMesa(id: number): Observable<void> {

@@ -22,6 +22,7 @@ export class ListasElectoralesComponent implements OnInit {
 
   showForm = false;
   editando = false;
+  editandoId: number | null = null;
   formData: any = {
     eleccionId: null, cargoId: null, partidoId: null,
     circunscripcionTipo: 'NACIONAL', circunscripcionId: null,
@@ -29,6 +30,21 @@ export class ListasElectoralesComponent implements OnInit {
   };
 
   filtroCandidato = '';
+
+  // Miniaturas de logo en caché (blob)
+  private logoThumbCache = new Map<number, string>();
+  logoThumb(id: number): string {
+    let url = this.logoThumbCache.get(id);
+    if (url === undefined) {
+      this.logoThumbCache.set(id, '');
+      this.api.getLogoListaBlob(id).subscribe({
+        next: (blob) => this.logoThumbCache.set(id, URL.createObjectURL(blob)),
+        error: () => this.logoThumbCache.set(id, '')
+      });
+      return '';
+    }
+    return url;
+  }
 
   constructor(private api: ApiService) {}
 
@@ -71,8 +87,11 @@ export class ListasElectoralesComponent implements OnInit {
   }
 
   openForm(lista?: any) {
+    this.logoPreview = '';
+    this.logoUploading = false;
     if (lista) {
       this.editando = true;
+      this.editandoId = lista.id;
       this.formData = {
         eleccionId: this.selectedEleccion?.id,
         cargoId: lista.cargoId,
@@ -82,8 +101,14 @@ export class ListasElectoralesComponent implements OnInit {
         numeroLista: lista.numeroLista,
         nombre: lista.nombre
       };
+      if (lista.tieneLogo) {
+        this.api.getLogoListaBlob(lista.id).subscribe({
+          next: (blob) => { this.logoPreview = URL.createObjectURL(blob); }
+        });
+      }
     } else {
       this.editando = false;
+      this.editandoId = null;
       this.formData = {
         eleccionId: this.selectedEleccion?.id,
         cargoId: null, partidoId: null,
@@ -92,6 +117,53 @@ export class ListasElectoralesComponent implements OnInit {
       };
     }
     this.showForm = true;
+  }
+
+  cerrarForm() {
+    this.showForm = false;
+    if (this.logoPreview.startsWith('blob:')) URL.revokeObjectURL(this.logoPreview);
+    this.logoPreview = '';
+  }
+
+  // Logo de la lista (se sube de inmediato al elegir el archivo)
+  logoPreview = '';
+  logoUploading = false;
+
+  onLogoSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] || null;
+    if (!file || !this.editandoId) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('La imagen no puede superar los 5 MB');
+      input.value = '';
+      return;
+    }
+    this.logoUploading = true;
+    this.api.subirLogoLista(this.editandoId, file).subscribe({
+      next: () => {
+        this.logoUploading = false;
+        if (this.logoPreview.startsWith('blob:')) URL.revokeObjectURL(this.logoPreview);
+        this.logoPreview = URL.createObjectURL(file);
+        this.loadListas();
+      },
+      error: (err) => {
+        this.logoUploading = false;
+        alert(err.error?.message || 'Error al subir el logo');
+      }
+    });
+    input.value = '';
+  }
+
+  eliminarLogo() {
+    if (!this.editandoId) return;
+    this.api.eliminarLogoLista(this.editandoId).subscribe({
+      next: () => {
+        if (this.logoPreview.startsWith('blob:')) URL.revokeObjectURL(this.logoPreview);
+        this.logoPreview = '';
+        this.loadListas();
+      },
+      error: () => alert('Error al eliminar el logo')
+    });
   }
 
   guardarLista() {

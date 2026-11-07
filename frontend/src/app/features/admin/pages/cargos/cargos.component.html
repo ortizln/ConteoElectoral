@@ -165,6 +165,16 @@
             </select>
           </div>
           <div class="mb-3">
+            <label>Territorio (nivel geográfico del cargo):</label>
+            <select class="form-select" [(ngModel)]="form.territorio">
+              <option value="NACIONAL">Nacional (todas las mesas)</option>
+              <option value="PROVINCIA">Provincia (ej. Prefecto)</option>
+              <option value="CANTON">Cantón (ej. Alcalde / Concejal)</option>
+              <option value="PARROQUIA">Parroquia (ej. Concejal parroquial)</option>
+            </select>
+            <small class="text-muted">Determina qué candidatos ve cada mesa según su ubicación.</small>
+          </div>
+          <div class="mb-3">
             <label>Circunscripción:</label>
             <select class="form-select" [(ngModel)]="form.tipoCircunscripcionId">
               <option [ngValue]="null">Seleccione...</option>

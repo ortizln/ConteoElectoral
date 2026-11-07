@@ -23,6 +23,7 @@ public class CandidatoResponse {
     private String listaNombre;
     private Integer numeroLista;
     private String fotoUrl;
+    private Boolean tieneFoto;
     private Long eleccionesId;
     private Long provinciaId;
     private String provinciaNombre;

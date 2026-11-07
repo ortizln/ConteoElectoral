@@ -30,6 +30,16 @@ public class CandidatoController {
         return ResponseEntity.ok(candidatoService.getCandidatosOrderByCargo(eleccionesId));
     }
 
+    /**
+     * Candidatos visibles para una mesa: segun el territorio del cargo
+     * (NACIONAL / PROVINCIA / CANTON / PARROQUIA) se filtran los candidatos
+     * que le corresponden a la parroquia/canton/provincia de la mesa.
+     */
+    @GetMapping("/mesa/{mesaId}")
+    public ResponseEntity<List<CandidatoResponse>> getCandidatosByMesa(@PathVariable Long mesaId) {
+        return ResponseEntity.ok(candidatoService.getCandidatosByMesa(mesaId));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<CandidatoResponse> getCandidatoById(@PathVariable Long id) {
         return ResponseEntity.ok(candidatoService.getCandidatoById(id));

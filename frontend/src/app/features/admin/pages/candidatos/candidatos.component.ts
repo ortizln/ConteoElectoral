@@ -125,6 +125,8 @@ export class CandidatosComponent implements OnInit {
     this.editMode = false;
     this.form = { nombre: '', apellido: '', partidoId: null, cargoId: this.cargos[0]?.id, eleccionesId: this.form.eleccionesId };
     this.errorMessage = '';
+    this.fotoPreview = '';
+    this.fotoUploading = false;
     this.showModal = true;
   }
 
@@ -133,10 +135,66 @@ export class CandidatosComponent implements OnInit {
     this.selectedId = c.id;
     this.form = { nombre: c.nombre, apellido: c.apellido, partidoId: c.partidoId, cargoId: c.cargoId, eleccionesId: c.eleccionesId };
     this.errorMessage = '';
+    this.fotoPreview = '';
+    this.fotoUploading = false;
     this.showModal = true;
+    if (c.tieneFoto) {
+      this.api.getFotoCandidatoBlob(c.id).subscribe({
+        next: (blob) => { this.fotoPreview = URL.createObjectURL(blob); }
+      });
+    }
   }
 
-  closeModal(): void { this.showModal = false; this.selectedId = null; this.errorMessage = ''; }
+  closeModal(): void {
+    this.showModal = false;
+    this.selectedId = null;
+    this.errorMessage = '';
+    this.fotoUploading = false;
+    if (this.fotoPreview.startsWith('blob:')) URL.revokeObjectURL(this.fotoPreview);
+    this.fotoPreview = '';
+  }
+
+  // Foto del candidato (se sube de inmediato al elegir el archivo)
+  fotoUploading = false;
+  fotoPreview = '';
+
+  onFotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] || null;
+    if (!file || !this.selectedId) return;
+    if (file.size > 5 * 1024 * 1024) {
+      this.errorMessage = 'La imagen no puede superar los 5 MB';
+      input.value = '';
+      return;
+    }
+    this.fotoUploading = true;
+    this.errorMessage = '';
+    this.api.subirFotoCandidato(this.selectedId, file).subscribe({
+      next: () => {
+        this.fotoUploading = false;
+        if (this.fotoPreview.startsWith('blob:')) URL.revokeObjectURL(this.fotoPreview);
+        this.fotoPreview = URL.createObjectURL(file);
+        this.load(this.form.eleccionesId);
+      },
+      error: (err) => {
+        this.fotoUploading = false;
+        this.errorMessage = err.error?.message || 'Error al subir la imagen';
+      }
+    });
+    input.value = '';
+  }
+
+  eliminarFoto(): void {
+    if (!this.selectedId) return;
+    this.api.eliminarFotoCandidato(this.selectedId).subscribe({
+      next: () => {
+        if (this.fotoPreview.startsWith('blob:')) URL.revokeObjectURL(this.fotoPreview);
+        this.fotoPreview = '';
+        this.load(this.form.eleccionesId);
+      },
+      error: () => { this.errorMessage = 'Error al eliminar la imagen'; }
+    });
+  }
 
   save(): void {
     this.errorMessage = '';
@@ -157,6 +215,21 @@ export class CandidatosComponent implements OnInit {
     if (confirm('Esta seguro de eliminar este candidato?')) {
       this.api.deleteCandidato(id).subscribe(() => this.load(this.form.eleccionesId));
     }
+  }
+
+  // Miniaturas de foto en caché (blob)
+  private fotoThumbCache = new Map<number, string>();
+  fotoThumb(id: number): string {
+    let url = this.fotoThumbCache.get(id);
+    if (url === undefined) {
+      this.fotoThumbCache.set(id, '');
+      this.api.getFotoCandidatoBlob(id).subscribe({
+        next: (blob) => this.fotoThumbCache.set(id, URL.createObjectURL(blob)),
+        error: () => this.fotoThumbCache.set(id, '')
+      });
+      return '';
+    }
+    return url;
   }
 
   descargarTemplate(): void {

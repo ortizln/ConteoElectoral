@@ -59,6 +59,7 @@ public class CargoService {
                 .descripcion(request.getDescripcion())
                 .elecciones(eleccion)
                 .tipoVotacion(request.getTipoVotacion() != null ? TipoVotacion.valueOf(request.getTipoVotacion()) : null)
+                .territorio(parseTerritorio(request.getTerritorio()))
                 .tipoCircunscripcion(tc)
                 .cantidadDignidades(request.getCantidadDignidades() != null ? request.getCantidadDignidades() : 1)
                 .maxCandidatosLista(request.getMaxCandidatosLista())
@@ -90,6 +91,9 @@ public class CargoService {
         cargo.setDescripcion(request.getDescripcion());
         if (request.getTipoVotacion() != null) {
             cargo.setTipoVotacion(TipoVotacion.valueOf(request.getTipoVotacion()));
+        }
+        if (request.getTerritorio() != null) {
+            cargo.setTerritorio(parseTerritorio(request.getTerritorio()));
         }
         if (request.getTipoCircunscripcionId() != null) {
             TipoCircunscripcion tc = tipoCircunscripcionRepository.findById(request.getTipoCircunscripcionId())
@@ -129,6 +133,15 @@ public class CargoService {
         cargoRepository.deleteById(id);
     }
 
+    private TipoTerritorio parseTerritorio(String valor) {
+        if (valor == null || valor.isBlank()) return TipoTerritorio.NACIONAL;
+        try {
+            return TipoTerritorio.valueOf(valor.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return TipoTerritorio.NACIONAL;
+        }
+    }
+
     private CargoResponse mapToResponse(Cargo cargo) {
         return CargoResponse.builder()
                 .id(cargo.getId())
@@ -136,6 +149,7 @@ public class CargoService {
                 .descripcion(cargo.getDescripcion())
                 .eleccionesId(cargo.getElecciones().getId())
                 .tipoVotacion(cargo.getTipoVotacion() != null ? cargo.getTipoVotacion().name() : null)
+                .territorio(cargo.getTerritorio() != null ? cargo.getTerritorio().name() : TipoTerritorio.NACIONAL.name())
                 .tipoCircunscripcionId(cargo.getTipoCircunscripcion() != null ? cargo.getTipoCircunscripcion().getId() : null)
                 .tipoCircunscripcionCodigo(cargo.getTipoCircunscripcion() != null ? cargo.getTipoCircunscripcion().getCodigo() : null)
                 .tipoCircunscripcionNombre(cargo.getTipoCircunscripcion() != null ? cargo.getTipoCircunscripcion().getNombre() : null)

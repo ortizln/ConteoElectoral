@@ -49,6 +49,7 @@ export interface Cargo {
   descripcion: string;
   eleccionesId: number;
   tipoVotacion?: string;
+  territorio?: string;
   tipoCircunscripcionId?: number;
   tipoCircunscripcionCodigo?: string;
   tipoCircunscripcionNombre?: string;
@@ -71,6 +72,7 @@ export interface Candidato {
   listaNombre?: string;
   numeroLista?: number;
   fotoUrl: string | null;
+  tieneFoto?: boolean;
   eleccionesId?: number;
   ordenEnLista?: number;
   tipo?: string;
@@ -489,6 +491,7 @@ export interface ListaElectoral {
   numeroLista?: number;
   circunscripcionId?: number;
   activa?: boolean;
+  tieneLogo?: boolean;
   candidatos?: Candidato[];
 }
 

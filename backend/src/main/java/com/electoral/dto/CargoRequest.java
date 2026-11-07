@@ -21,6 +21,7 @@ public class CargoRequest {
     private Long eleccionesId;
 
     private String tipoVotacion;
+    private String territorio;
     private Long tipoCircunscripcionId;
     private Integer cantidadDignidades;
     private Integer maxCandidatosLista;

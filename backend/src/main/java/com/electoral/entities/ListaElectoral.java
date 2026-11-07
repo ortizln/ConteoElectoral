@@ -45,6 +45,13 @@ public class ListaElectoral {
     @Builder.Default
     private String estado = "ACTIVA";
 
+    // Logo/imagen de la lista electoral
+    @Column(name = "logo", columnDefinition = "bytea")
+    private byte[] logo;
+
+    @Column(name = "logo_content_type", length = 50)
+    private String logoContentType;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

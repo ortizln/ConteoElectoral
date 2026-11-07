@@ -19,7 +19,7 @@ export class CargosComponent implements OnInit {
   editMode = false;
   selectedId: number | null = null;
   tiposCircunscripcion: any[] = [];
-  form: any = { nombre: '', descripcion: '', eleccionesId: null, tipoVotacion: 'LISTA', tipoCircunscripcionId: null, cantidadDignidades: 1, maxCandidatosLista: null };
+  form: any = { nombre: '', descripcion: '', eleccionesId: null, tipoVotacion: 'LISTA', territorio: 'NACIONAL', tipoCircunscripcionId: null, cantidadDignidades: 1, maxCandidatosLista: null };
   sortColumn: string = '';
   sortDirection: string = 'asc';
   searchText: string = '';
@@ -118,7 +118,7 @@ export class CargosComponent implements OnInit {
 
   openModal(): void {
     this.editMode = false;
-    this.form = { nombre: '', descripcion: '', eleccionesId: this.elecciones[0]?.id, tipoVotacion: 'LISTA', tipoCircunscripcionId: null, cantidadDignidades: 1, maxCandidatosLista: null };
+    this.form = { nombre: '', descripcion: '', eleccionesId: this.elecciones[0]?.id, tipoVotacion: 'LISTA', territorio: 'NACIONAL', tipoCircunscripcionId: null, cantidadDignidades: 1, maxCandidatosLista: null };
     this.errorMessage = '';
     this.showModal = true;
   }
@@ -126,7 +126,7 @@ export class CargosComponent implements OnInit {
   edit(cargo: Cargo): void {
     this.editMode = true;
     this.selectedId = cargo.id;
-    this.form = { nombre: cargo.nombre, descripcion: cargo.descripcion, eleccionesId: cargo.eleccionesId || this.form.eleccionesId, tipoVotacion: cargo.tipoVotacion || 'LISTA', tipoCircunscripcionId: cargo.tipoCircunscripcionId, cantidadDignidades: cargo.cantidadDignidades || 1, maxCandidatosLista: cargo.maxCandidatosLista };
+    this.form = { nombre: cargo.nombre, descripcion: cargo.descripcion, eleccionesId: cargo.eleccionesId || this.form.eleccionesId, tipoVotacion: cargo.tipoVotacion || 'LISTA', territorio: cargo.territorio || 'NACIONAL', tipoCircunscripcionId: cargo.tipoCircunscripcionId, cantidadDignidades: cargo.cantidadDignidades || 1, maxCandidatosLista: cargo.maxCandidatosLista };
     this.errorMessage = '';
     this.showModal = true;
   }

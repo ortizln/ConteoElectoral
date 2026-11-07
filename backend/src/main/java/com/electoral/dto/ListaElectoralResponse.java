@@ -22,4 +22,5 @@ public class ListaElectoralResponse {
     private String circunscripcionTipo;
     private Long circunscripcionId;
     private String estado;
+    private Boolean tieneLogo;
 }

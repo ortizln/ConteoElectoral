@@ -35,6 +35,7 @@
     <thead>
       <tr>
         <th>#</th>
+        <th>Foto</th>
         <th class="sortable" (click)="sort('nombre')">Nombre {{ sortColumn === 'nombre' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('apellido')">Apellido {{ sortColumn === 'apellido' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('partidoNombre')">Partido {{ sortColumn === 'partidoNombre' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
@@ -45,6 +46,13 @@
     <tbody>
       <tr *ngFor="let c of candidatosPaginados; index as i">
         <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+        <td>
+          <img *ngIf="c.tieneFoto && fotoThumb(c.id)" [src]="fotoThumb(c.id)" alt="Foto"
+               style="width:36px; height:36px; object-fit:cover; border-radius:50%;">
+          <span *ngIf="!c.tieneFoto || !fotoThumb(c.id)" class="text-muted" title="Sin foto">
+            <i class="bi bi-person"></i>
+          </span>
+        </td>
         <td>{{ c.nombre }}</td>
         <td>{{ c.apellido }}</td>
         <td>{{ c.partidoNombre }}</td>
@@ -63,7 +71,7 @@
         </td>
       </tr>
       <tr *ngIf="candidatosFiltrados.length === 0">
-        <td colspan="6" class="text-center py-3">No se encontraron registros</td>
+        <td colspan="7" class="text-center py-3">No se encontraron registros</td>
       </tr>
     </tbody>
   </table>
@@ -167,6 +175,26 @@
               <option [ngValue]="null">Seleccione...</option>
               <option *ngFor="let c of cargos" [value]="c.id">{{ c.nombre }}</option>
             </select>
+          </div>
+          <div class="mb-3" *ngIf="editMode && selectedId">
+            <label>Foto del candidato (JPG/PNG, máx. 5 MB):</label>
+            <div class="d-flex align-items-center gap-3">
+              <img *ngIf="fotoPreview" [src]="fotoPreview" alt="Foto"
+                   style="width:72px; height:72px; object-fit:cover; border-radius:50%; border:2px solid #dee2e6;">
+              <div *ngIf="!fotoPreview" class="d-flex align-items-center justify-content-center text-muted"
+                   style="width:72px; height:72px; border-radius:50%; border:2px dashed #dee2e6;">
+                <i class="bi bi-person fs-4"></i>
+              </div>
+              <div>
+                <input type="file" accept="image/*" class="form-control form-control-sm"
+                       (change)="onFotoSelected($event)" [disabled]="fotoUploading">
+                <button *ngIf="fotoPreview" class="btn btn-link btn-sm text-danger p-0 mt-1"
+                        (click)="eliminarFoto()">Quitar imagen</button>
+              </div>
+            </div>
+            <div *ngIf="fotoUploading" class="small text-muted mt-1">
+              <span class="spinner-border spinner-border-sm"></span> Subiendo imagen...
+            </div>
           </div>
         </div>
         <div class="modal-footer">

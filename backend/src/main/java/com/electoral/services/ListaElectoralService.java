@@ -128,6 +128,7 @@ public class ListaElectoralService {
                         .ordenEnLista(c.getOrdenEnLista())
                         .tipo(c.getTipo())
                         .fotoUrl(c.getFotoUrl())
+                        .tieneFoto(c.getFoto() != null && c.getFoto().length > 0)
                         .build()).collect(Collectors.toList()))
                 .build();
     }
@@ -146,6 +147,7 @@ public class ListaElectoralService {
                 .circunscripcionTipo(l.getCircunscripcionTipo())
                 .circunscripcionId(l.getCircunscripcionId())
                 .estado(l.getEstado())
+                .tieneLogo(l.getLogo() != null && l.getLogo().length > 0)
                 .build();
     }
 }

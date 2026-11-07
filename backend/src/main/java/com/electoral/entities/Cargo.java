@@ -29,6 +29,16 @@ public class Cargo {
     @Column(name = "tipo_votacion", length = 20)
     private TipoVotacion tipoVotacion;
 
+    /**
+     * Nivel geografico en el que se vota este cargo:
+     * NACIONAL, PROVINCIA, CANTON o PARROQUIA.
+     * Determina que candidatos ve el miembro de mesa segun su mesa asignada.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "territorio", length = 20)
+    @Builder.Default
+    private TipoTerritorio territorio = TipoTerritorio.NACIONAL;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tipo_circunscripcion_id")
     private TipoCircunscripcion tipoCircunscripcion;

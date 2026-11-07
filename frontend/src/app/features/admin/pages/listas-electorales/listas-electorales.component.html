@@ -27,9 +27,13 @@
             class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
             [class.active]="listaDetalle?.id === l.id"
             (click)="verDetalle(l.id)">
-            <div>
-              <strong>Lista {{ l.numeroLista }}</strong>
-              <small class="d-block text-muted">{{ l.nombre }}</small>
+            <div class="d-flex align-items-center gap-2">
+              <img *ngIf="l.tieneLogo && logoThumb(l.id)" [src]="logoThumb(l.id)" alt="Logo"
+                   style="width:32px; height:32px; object-fit:contain; border-radius:6px; background:#fff; border:1px solid #dee2e6;">
+              <div>
+                <strong>Lista {{ l.numeroLista }}</strong>
+                <small class="d-block text-muted">{{ l.nombre }}</small>
+              </div>
             </div>
             <span class="badge bg-secondary">{{ getPartidoSigla(l.partidoId) || 'IND' }}</span>
           </button>
@@ -143,6 +147,26 @@
             <option value="RURAL">Rural</option>
             <option value="PARROQUIAL">Parroquial</option>
           </select>
+        </div>
+        <div class="mb-3" *ngIf="editando && editandoId">
+          <label class="form-label">Logo de la lista (JPG/PNG, máx. 5 MB)</label>
+          <div class="d-flex align-items-center gap-3">
+            <img *ngIf="logoPreview" [src]="logoPreview" alt="Logo"
+                 style="width:64px; height:64px; object-fit:contain; border-radius:8px; border:1px solid #dee2e6; background:#fff;">
+            <div *ngIf="!logoPreview" class="d-flex align-items-center justify-content-center text-muted"
+                 style="width:64px; height:64px; border-radius:8px; border:2px dashed #dee2e6;">
+              <i class="bi bi-flag fs-4"></i>
+            </div>
+            <div>
+              <input type="file" accept="image/*" class="form-control form-control-sm"
+                     (change)="onLogoSelected($event)" [disabled]="logoUploading">
+              <button *ngIf="logoPreview" class="btn btn-link btn-sm text-danger p-0 mt-1"
+                      (click)="eliminarLogo()">Quitar logo</button>
+            </div>
+          </div>
+          <div *ngIf="logoUploading" class="small text-muted mt-1">
+            <span class="spinner-border spinner-border-sm"></span> Subiendo logo...
+          </div>
         </div>
       </div>
       <div class="modal-footer">

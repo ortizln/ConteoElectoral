@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -89,7 +89,8 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     private api: ApiService,
     private authService: AuthService,
     private router: Router,
-    private wsService: WebSocketService
+    private wsService: WebSocketService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -162,6 +163,15 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     this.cargoNuloId = null;
     this.cargarNulosBlancosPorCargo(mesa);
     this.loadVotos();
+    // Filtro de territorio: solo candidatos que le corresponden a esta mesa
+    this.api.getCandidatosByMesa(mesa.id).subscribe({
+      next: (data: Candidato[]) => {
+        this.candidatos = data;
+        this.candidatosAux = data;
+        this.aplicarFiltro();
+      },
+      error: () => {}
+    });
   }
 
   private cargarNulosBlancosPorCargo(mesa: Mesa): void {
@@ -213,10 +223,39 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Miniaturas de foto de candidato / logo de lista (caché blob)
+  private fotoThumbCache = new Map<number, string>();
+  private logoThumbCache = new Map<number, string>();
+
+  fotoCandidatoThumb(id: number): string {
+    let url = this.fotoThumbCache.get(id);
+    if (url === undefined) {
+      this.fotoThumbCache.set(id, '');
+      this.api.getFotoCandidatoBlob(id).subscribe({
+        next: (blob) => { this.fotoThumbCache.set(id, URL.createObjectURL(blob)); this.cdr.detectChanges(); },
+        error: () => this.fotoThumbCache.set(id, '')
+      });
+      return '';
+    }
+    return url;
+  }
+
+  logoListaThumb(id: number): string {
+    let url = this.logoThumbCache.get(id);
+    if (url === undefined) {
+      this.logoThumbCache.set(id, '');
+      this.api.getLogoListaBlob(id).subscribe({
+        next: (blob) => { this.logoThumbCache.set(id, URL.createObjectURL(blob)); this.cdr.detectChanges(); },
+        error: () => this.logoThumbCache.set(id, '')
+      });
+      return '';
+    }
+    return url;
+  }
+
   aplicarFiltro(): void {
     const cargo = this.cargos.find(c => c.id === this.filtroCargoId);
     this.mostrarListas = cargo?.tipoVotacion === 'LISTA';
-
     if (this.mostrarListas) {
       this.candidatoSeleccionado = null;
       let filtradas = [...this.listas];
