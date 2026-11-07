@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path_provider/path_provider.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
 import '../services/sync_service.dart';
@@ -540,6 +542,65 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     return count;
   }
 
+  // ===== Fotos del acta (respaldo obligatorio al cerrar la mesa) =====
+
+  /// Guarda localmente la foto del acta capturada (copia a un directorio
+  /// persistente — el temporal de image_picker puede limpiarse) e intenta
+  /// subirla de inmediato si hay conexión. Si no hay red queda pendiente y
+  /// se sube en el próximo sync (al reconectar, al reintentar, etc.).
+  Future<bool> guardarFotoActa(int mesaId, String filePath) async {
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final actasDir = Directory('${dir.path}/actas');
+      if (!await actasDir.exists()) await actasDir.create(recursive: true);
+      final destino =
+          '${actasDir.path}/mesa_${mesaId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      await File(filePath).copy(destino);
+      await _db.addActaFoto(mesaId, destino, 'image/jpeg');
+      if (_isOnline) await subirFotosActaPendientes();
+      return true;
+    } catch (e) {
+      print('Error guardando foto del acta: $e');
+      return false;
+    }
+  }
+
+  Future<bool> tieneFotoActa(int mesaId) => _db.tieneActaFoto(mesaId);
+
+  /// Sube todas las fotos del acta pendientes. Cada foto se reintenta en
+  /// cada sync hasta que el servidor la confirme (200).
+  Future<void> subirFotosActaPendientes() async {
+    if (!_isOnline) return;
+    final token = await _db.getToken();
+    if (token == null || _tokenLocalVencido(token)) return;
+    final pendientes = await _db.getActaFotosPendientes();
+    for (final row in pendientes) {
+      final id = row['id'] as int;
+      final filePath = row['filePath'] as String;
+      if (!await File(filePath).exists()) {
+        await _db.setActaFotoError(id, 'Archivo local no encontrado');
+        continue;
+      }
+      try {
+        final ok = await _api.subirActaFoto(
+          row['mesaId'] as int,
+          filePath,
+          token: token,
+        );
+        if (ok) {
+          await _db.marcarActaFotoSubida(id);
+        } else {
+          await _db.setActaFotoError(id, 'Error al subir (se reintentará)');
+        }
+      } on UnauthorizedException {
+        await _onSessionExpired();
+        return;
+      } catch (_) {
+        await _db.setActaFotoError(id, 'Error de red (se reintentará)');
+      }
+    }
+  }
+
   Future<void> sincronizarVotos({bool forceRetry = false}) async {
     if (!_isOnline) return;
     // B11: no descartar el trigger si ya hay un sync en curso; repetir al terminar
@@ -560,6 +621,8 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
       if (_eleccionActual != null) {
         await _sync.pullChanges(_eleccionActual!.id);
       }
+      // Fotos del acta pendientes (capturadas offline o con fallo de red)
+      await subirFotosActaPendientes();
       await _recargarVotos();
     } catch (_) {}
 

@@ -266,9 +266,47 @@
     </div>
   </div>
 
+  <!-- Foto del Acta Modal (obligatoria antes de cerrar) -->
+  <div class="modal-backdrop show" *ngIf="showFotoActaModal"></div>
+  <div class="modal show" *ngIf="showFotoActaModal" style="display:block;">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5><i class="bi bi-camera-fill"></i> Foto del acta (obligatoria)</h5>
+          <button type="button" class="btn-close" (click)="cerrarFotoActaModal()"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted">Antes de cerrar debe cargar una foto del acta física como respaldo del conteo.</p>
+          <div *ngIf="fotoActaExistenteUrl && !fotoActaPreview" class="mb-3">
+            <p class="small mb-1"><i class="bi bi-check-circle-fill text-success"></i> Ya existe una foto cargada para esta mesa.</p>
+            <img [src]="fotoActaExistenteUrl" alt="Foto del acta"
+                 style="max-height: 200px; width: auto; border-radius: 8px; border: 1px solid #dee2e6;">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-bold">Seleccionar o tomar foto:</label>
+            <input type="file" accept="image/*" capture="environment" class="form-control"
+                   (change)="onFotoActaSelected($event)">
+          </div>
+          <div *ngIf="fotoActaPreview" class="mb-3 text-center">
+            <img [src]="fotoActaPreview" alt="Vista previa"
+                 style="max-height: 240px; width: auto; border-radius: 8px; border: 1px solid #dee2e6;">
+          </div>
+          <div *ngIf="fotoActaError" class="text-danger small">{{ fotoActaError }}</div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="cerrarFotoActaModal()" [disabled]="fotoActaSubiendo">Cancelar</button>
+          <button class="btn btn-danger" (click)="confirmarCerrarConFoto()"
+                  [disabled]="fotoActaSubiendo || (!fotoActaFile && !fotoActaExistenteUrl)">
+            <i class="bi bi-lock-fill"></i>
+            {{ fotoActaSubiendo ? 'Subiendo foto...' : 'Cerrar Acta' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Votos Registrados: bottom-sheet (solo mobile) -->
-  <div class="drawer-backdrop" *ngIf="showVotosPanel && mesaActual" (click)="showVotosPanel = false"></div>
-  <div class="votos-drawer" *ngIf="showVotosPanel && mesaActual" role="dialog" aria-label="Votos registrados">
+  <div class="drawer-backdrop" *ngIf="showVotosPanel && mesaActual" (click)="showVotosPanel = false"></div>  <div class="votos-drawer" *ngIf="showVotosPanel && mesaActual" role="dialog" aria-label="Votos registrados">
     <div class="drawer-handle"></div>
     <div class="drawer-header">
       <h3><i class="bi bi-clipboard-data"></i> Votos Registrados</h3>

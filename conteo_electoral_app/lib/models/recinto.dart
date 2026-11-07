@@ -14,6 +14,9 @@ class Recinto {
   final String? zonaNombre;
   final int eleccionesId;
   final int totalMesas;
+  final double? latitud;
+  final double? longitud;
+  final int? electoresRegistrados;
 
   Recinto({
     required this.id,
@@ -31,6 +34,9 @@ class Recinto {
     this.zonaNombre,
     required this.eleccionesId,
     required this.totalMesas,
+    this.latitud,
+    this.longitud,
+    this.electoresRegistrados,
   });
 
   factory Recinto.fromJson(Map<String, dynamic> json) {
@@ -50,6 +56,9 @@ class Recinto {
       zonaNombre: json['zonaNombre'],
       eleccionesId: json['eleccionesId'],
       totalMesas: json['totalMesas'] ?? 0,
+      latitud: (json['latitud'] as num?)?.toDouble(),
+      longitud: (json['longitud'] as num?)?.toDouble(),
+      electoresRegistrados: json['electoresRegistrados'],
     );
   }
 

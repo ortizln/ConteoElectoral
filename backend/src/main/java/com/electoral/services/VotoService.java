@@ -368,6 +368,45 @@ public class VotoService {
                         .build())
                 .collect(Collectors.toList());
 
+        // Votos por recinto (institución educativa) — drill-down por recinto
+        List<ResultadoRecinto> resultadosRecinto = mesaIds.isEmpty() ? List.of()
+                : votoRepository.sumVotosByInstitucionDashboard(eleccionId, mesaIds)
+                .stream().map(r -> ResultadoRecinto.builder()
+                        .recintoId(((Number) r[0]).longValue())
+                        .recintoNombre((String) r[1])
+                        .totalVotos(((Number) r[2]).longValue())
+                        .porcentaje(totalVotos > 0 ? Math.round(((Number) r[2]).longValue() * 10000.0 / totalVotos) / 100.0 : 0)
+                        .build())
+                .collect(Collectors.toList());
+
+        // Votos por mesa — drill-down por mesa (candidatos + nulos/blancos)
+        List<ResultadoMesa> resultadosMesa = new ArrayList<>();
+        if (!mesaIds.isEmpty()) {
+            Map<Long, Long> votosPorMesaMap = votoRepository.sumVotosGroupByMesa(eleccionId, mesaIds).stream()
+                    .collect(Collectors.toMap(r -> ((Number) r[0]).longValue(), r -> ((Number) r[1]).longValue()));
+            for (Mesa m : mesas) {
+                Long votosCandidatos = votosPorMesaMap.getOrDefault(m.getId(), 0L);
+                Long nulos = m.getVotosNulos() != null ? m.getVotosNulos().longValue() : 0L;
+                Long blanco = m.getVotosBlanco() != null ? m.getVotosBlanco().longValue() : 0L;
+                Long total = votosCandidatos + nulos + blanco;
+                resultadosMesa.add(ResultadoMesa.builder()
+                        .mesaId(m.getId())
+                        .mesaNumero(m.getNumero())
+                        .sexo(m.getSexo() != null ? m.getSexo().name() : null)
+                        .institucionNombre(m.getInstitucion() != null ? m.getInstitucion().getNombre() : null)
+                        .parroquiaNombre(m.getInstitucion() != null && m.getInstitucion().getParroquia() != null
+                                ? m.getInstitucion().getParroquia().getNombre() : null)
+                        .cerrada(m.getCerrada())
+                        .votosCandidatos(votosCandidatos)
+                        .votosNulos(nulos)
+                        .votosBlanco(blanco)
+                        .totalVotos(total)
+                        .porcentaje(totalVotos > 0 ? Math.round(total * 10000.0 / totalVotos) / 100.0 : 0)
+                        .build());
+            }
+            resultadosMesa.sort((a, b) -> Long.compare(b.getTotalVotos(), a.getTotalVotos()));
+        }
+
         List<ResultadoLista> resultadosListas = new ArrayList<>();
         if (!mesaIds.isEmpty()) {
             List<Object[]> votosPorLista = votoRepository.sumVotosGroupByListaAndMesaIds(eleccionId, mesaIds);
@@ -410,6 +449,8 @@ public class VotoService {
                 .resultados(resultados)
                 .resultadosProvincia(resultadosProvincia)
                 .resultadosParroquia(resultadosParroquia)
+                .resultadosRecinto(resultadosRecinto)
+                .resultadosMesa(resultadosMesa)
                 .resultadosListas(resultadosListas)
                 .build();
     }

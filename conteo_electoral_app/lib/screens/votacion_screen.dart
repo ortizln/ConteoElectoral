@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
@@ -166,6 +167,40 @@ class _VotacionScreenState extends State<VotacionScreen> {
   }
 
   Future<void> _cerrar() async {
+    final provider = context.read<AppProvider>();
+    final mesa = provider.mesaActual;
+    if (mesa == null) return;
+
+    // Foto del acta obligatoria antes de cerrar (respaldo)
+    final tieneFoto = await provider.tieneFotoActa(mesa.id);
+    if (!mounted) return;
+    if (tieneFoto) {
+      // Ya hay foto de esta mesa (intento previo o cierre anterior): permitir
+      // tomar una nueva o reutilizar la existente
+      final tomarOtra = await showConfirmDialog(
+        context,
+        title: 'Foto del acta',
+        message:
+            'Ya existe una foto del acta de esta mesa.\n\n¿Desea tomar una foto nueva?\n(Cancelar para usar la existente)',
+        confirmText: 'Tomar foto',
+        cancelText: 'Usar existente',
+      );
+      if (!mounted) return;
+      if (tomarOtra && !await _tomarFotoActa(mesa.id)) return;
+    } else {
+      final pedirFoto = await showConfirmDialog(
+        context,
+        title: 'Foto del acta requerida',
+        message:
+            'Para cerrar el acta debe tomar una foto del documento como respaldo.',
+        confirmText: 'Tomar foto',
+      );
+      if (!mounted) return;
+      if (!pedirFoto) return;
+      if (!await _tomarFotoActa(mesa.id)) return;
+    }
+    if (!mounted) return;
+
     final confirm = await showConfirmDialog(
       context,
       title: 'Cerrar Acta',
@@ -174,16 +209,15 @@ class _VotacionScreenState extends State<VotacionScreen> {
       confirmColor: AppColors.error,
     );
     if (confirm && mounted) {
-      final provider = context.read<AppProvider>();
       await provider.cerrarActa();
       if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text('Acta cerrada')));
-        final mesa = provider.mesaActual;
-        if (mesa != null) {
+        final mesaCerrada = provider.mesaActual;
+        if (mesaCerrada != null) {
           await showResumenMesaDialog(
             context,
-            mesa: mesa,
+            mesa: mesaCerrada,
             votos: provider.votosMesa,
             candidatos: provider.candidatos,
             nulos: provider.votosNulos,
@@ -191,6 +225,43 @@ class _VotacionScreenState extends State<VotacionScreen> {
           );
         }
       }
+    }
+  }
+
+  /// Abre la cámara, captura la foto del acta y la guarda localmente
+  /// (se sube al servidor de inmediato si hay red; si no, queda pendiente
+  /// y se sube en el próximo sync). Retorna false si el usuario cancela.
+  Future<bool> _tomarFotoActa(int mesaId) async {
+    try {
+      final picker = ImagePicker();
+      final photo = await picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1920,
+        imageQuality: 75,
+      );
+      if (!mounted) return false;
+      if (photo == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Debe tomar la foto del acta para cerrar'),
+        ));
+        return false;
+      }
+      final provider = context.read<AppProvider>();
+      final ok = await provider.guardarFotoActa(mesaId, photo.path);
+      if (!mounted) return ok;
+      if (!ok) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('No se pudo guardar la foto del acta'),
+        ));
+      }
+      return ok;
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Error al tomar la foto: $e'),
+        ));
+      }
+      return false;
     }
   }
 

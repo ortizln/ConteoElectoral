@@ -26,7 +26,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 8,
+      version: 10,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -99,7 +99,10 @@ class DatabaseHelper {
         direccion TEXT,
         institucionId INTEGER NOT NULL,
         eleccionesId INTEGER NOT NULL,
-        totalMesas INTEGER DEFAULT 0
+        totalMesas INTEGER DEFAULT 0,
+        latitud REAL,
+        longitud REAL,
+        electoresRegistrados INTEGER
       )
     ''');
 
@@ -138,6 +141,18 @@ class DatabaseHelper {
         usuarioJson TEXT NOT NULL,
         token TEXT,
         fecha TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE acta_fotos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        mesaId INTEGER NOT NULL,
+        filePath TEXT NOT NULL,
+        contentType TEXT,
+        uploaded INTEGER NOT NULL DEFAULT 0,
+        createdAt TEXT NOT NULL,
+        lastError TEXT
       )
     ''');
 
@@ -293,6 +308,26 @@ class DatabaseHelper {
       await db.execute("UPDATE sync_meta SET server_cursor = 0 WHERE server_cursor IS NULL");
       await db.execute("UPDATE sync_queue SET operation_id = lower(hex(randomblob(16))) WHERE operation_id IS NULL");
       await db.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_sync_queue_opid ON sync_queue(operation_id)');
+    }
+    if (oldVersion < 9) {
+      // Recinto: geolocalización + padrón de electores
+      await _addColumnIfMissing(db, 'recintos', 'latitud', 'REAL');
+      await _addColumnIfMissing(db, 'recintos', 'longitud', 'REAL');
+      await _addColumnIfMissing(db, 'recintos', 'electoresRegistrados', 'INTEGER');
+    }
+    if (oldVersion < 10) {
+      // Fotos del acta (respaldo obligatorio al cerrar la mesa)
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS acta_fotos (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          mesaId INTEGER NOT NULL,
+          filePath TEXT NOT NULL,
+          contentType TEXT,
+          uploaded INTEGER NOT NULL DEFAULT 0,
+          createdAt TEXT NOT NULL,
+          lastError TEXT
+        )
+      ''');
     }
   }
 
@@ -483,12 +518,27 @@ class DatabaseHelper {
           'direccion': recinto.direccion,
           'institucionId': recinto.institucionId,
           'eleccionesId': recinto.eleccionesId,
+          'latitud': recinto.latitud,
+          'longitud': recinto.longitud,
+          'electoresRegistrados': recinto.electoresRegistrados,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     }
     await batch.commit();
   }
+
+  Recinto _mapRecinto(Map<String, dynamic> m) => Recinto(
+        id: m['id'] as int,
+        nombre: m['nombre'] as String,
+        direccion: m['direccion'] as String? ?? '',
+        institucionId: m['institucionId'] as int,
+        eleccionesId: m['eleccionesId'] as int,
+        totalMesas: m['totalMesas'] as int? ?? 0,
+        latitud: (m['latitud'] as num?)?.toDouble(),
+        longitud: (m['longitud'] as num?)?.toDouble(),
+        electoresRegistrados: m['electoresRegistrados'] as int?,
+      );
 
   Future<List<Recinto>> getRecintos(int eleccionesId) async {
     final db = await database;
@@ -497,28 +547,62 @@ class DatabaseHelper {
       where: 'eleccionesId = ?',
       whereArgs: [eleccionesId],
     );
-    return maps.map((m) => Recinto(
-      id: m['id'] as int,
-      nombre: m['nombre'] as String,
-      direccion: m['direccion'] as String? ?? '',
-      institucionId: m['institucionId'] as int,
-      eleccionesId: m['eleccionesId'] as int,
-      totalMesas: m['totalMesas'] as int? ?? 0,
-    )).toList();
+    return maps.map(_mapRecinto).toList();
   }
 
   Future<Recinto?> getRecinto(int id) async {
     final db = await database;
     final maps = await db.query('recintos', where: 'id = ?', whereArgs: [id]);
     if (maps.isEmpty) return null;
-    final m = maps.first;
-    return Recinto(
-      id: m['id'] as int,
-      nombre: m['nombre'] as String,
-      direccion: m['direccion'] as String? ?? '',
-      institucionId: m['institucionId'] as int,
-      eleccionesId: m['eleccionesId'] as int,
-      totalMesas: m['totalMesas'] as int? ?? 0,
+    return _mapRecinto(maps.first);
+  }
+
+  // ===== Fotos del acta (respaldo al cerrar la mesa) =====
+
+  Future<int> addActaFoto(int mesaId, String filePath, String contentType) async {
+    final db = await database;
+    return await db.insert('acta_fotos', {
+      'mesaId': mesaId,
+      'filePath': filePath,
+      'contentType': contentType,
+      'uploaded': 0,
+      'createdAt': DateTime.now().toIso8601String(),
+    });
+  }
+
+  Future<bool> tieneActaFoto(int mesaId) async {
+    final db = await database;
+    final rows = await db.query(
+      'acta_fotos',
+      where: 'mesaId = ?',
+      whereArgs: [mesaId],
+      limit: 1,
+    );
+    return rows.isNotEmpty;
+  }
+
+  Future<List<Map<String, dynamic>>> getActaFotosPendientes() async {
+    final db = await database;
+    return await db.query('acta_fotos', where: 'uploaded = 0', orderBy: 'id ASC');
+  }
+
+  Future<void> marcarActaFotoSubida(int id) async {
+    final db = await database;
+    await db.update(
+      'acta_fotos',
+      {'uploaded': 1, 'lastError': null},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> setActaFotoError(int id, String error) async {
+    final db = await database;
+    await db.update(
+      'acta_fotos',
+      {'lastError': error},
+      where: 'id = ?',
+      whereArgs: [id],
     );
   }
 

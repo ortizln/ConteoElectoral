@@ -116,6 +116,9 @@ export interface InstitucionEducativa {
   direccion?: string;
   codigo?: string;
   tipo?: string;
+  latitud?: number | null;
+  longitud?: number | null;
+  electoresRegistrados?: number | null;
 }
 
 export interface Mesa {
@@ -130,6 +133,27 @@ export interface Mesa {
   votosBlanco: number;
   usuarioId: number | null;
   usuarioNombre: string | null;
+}
+
+export interface MesaActaFoto {
+  id: number;
+  mesaId: number;
+  contentType?: string;
+  nombreArchivo?: string;
+  subidoPor?: number;
+  subidoPorNombre?: string;
+  createdAt?: string;
+  tamanoBytes?: number;
+}
+
+export interface MesaActaFotosDeMesa {
+  mesaId: number;
+  mesaNumero: string;
+  sexo?: string;
+  institucionNombre?: string;
+  parroquiaNombre?: string;
+  cerrada?: boolean;
+  fotos: MesaActaFoto[];
 }
 
 export interface MesaNuloBlancoPorCargo {
@@ -176,7 +200,30 @@ export interface DashboardData {
   resultados: ResultadoCandidato[];
   resultadosProvincia?: ResultadoGeo[];
   resultadosParroquia?: ResultadoGeo[];
+  resultadosRecinto?: ResultadoRecinto[];
+  resultadosMesa?: ResultadoMesa[];
   resultadosListas?: ResultadoLista[];
+}
+
+export interface ResultadoRecinto {
+  recintoId: number;
+  recintoNombre: string;
+  totalVotos: number;
+  porcentaje: number;
+}
+
+export interface ResultadoMesa {
+  mesaId: number;
+  mesaNumero: string;
+  sexo?: string;
+  institucionNombre?: string;
+  parroquiaNombre?: string;
+  cerrada?: boolean;
+  votosCandidatos: number;
+  votosNulos: number;
+  votosBlanco: number;
+  totalVotos: number;
+  porcentaje: number;
 }
 
 export interface CarouselImage {

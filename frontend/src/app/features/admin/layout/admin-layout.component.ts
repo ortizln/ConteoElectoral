@@ -50,6 +50,7 @@ export class AdminLayoutComponent {
     { path: '/admin/escrutinio', icon: 'bi-search', label: 'Escrutinio', roles: ['ADMIN'] },
     { path: '/admin/dashboard-geografico', icon: 'bi-pin-map', label: 'Dashboard Geográfico', roles: ['ADMIN'] },
     { path: '/admin/reportes', icon: 'bi-graph-up', label: 'Reportes', roles: ['ADMIN'] },
+    { path: '/actas', icon: 'bi-camera-fill', label: 'Actas', roles: ['ADMIN', 'SUPERVISOR'] },
     { path: '/admin/usuarios', icon: 'bi-people', label: 'Usuarios', roles: ['ADMIN'] },
     { path: '/admin/roles', icon: 'bi-shield-lock', label: 'Roles y Permisos', roles: ['ADMIN'] },
     { path: '/admin/reglas-negocio', icon: 'bi-journal-text', label: 'Reglas de Negocio', roles: ['ADMIN'] },

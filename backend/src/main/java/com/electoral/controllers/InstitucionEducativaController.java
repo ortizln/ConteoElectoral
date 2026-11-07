@@ -25,76 +25,60 @@ public class InstitucionEducativaController {
     private final ExcelExportService excelExportService;
     private final PdfExportService pdfExportService;
 
+    private InstitucionEducativaResponse toResponse(InstitucionEducativa i) {
+        return InstitucionEducativaResponse.builder()
+                .id(i.getId())
+                .nombre(i.getNombre())
+                .parroquiaId(i.getParroquia() != null ? i.getParroquia().getId() : null)
+                .parroquiaNombre(i.getParroquia() != null ? i.getParroquia().getNombre() : null)
+                .direccion(i.getDireccion())
+                .codigo(i.getCodigo())
+                .tipo(i.getTipo())
+                .latitud(i.getLatitud())
+                .longitud(i.getLongitud())
+                .electoresRegistrados(i.getElectoresRegistrados())
+                .build();
+    }
+
+    private InstitucionEducativa fromRequest(InstitucionEducativaRequest request) {
+        return InstitucionEducativa.builder()
+                .nombre(request.getNombre())
+                .parroquia(Parroquia.builder().id(request.getParroquiaId()).build())
+                .direccion(request.getDireccion())
+                .codigo(request.getCodigo())
+                .tipo(request.getTipo())
+                .latitud(request.getLatitud())
+                .longitud(request.getLongitud())
+                .electoresRegistrados(request.getElectoresRegistrados())
+                .build();
+    }
+
     @GetMapping
     public ResponseEntity<List<InstitucionEducativaResponse>> findAll() {
-        List<InstitucionEducativa> instituciones = institucionService.findAll();
-        List<InstitucionEducativaResponse> response = instituciones.stream()
-                .map(i -> InstitucionEducativaResponse.builder()
-                        .id(i.getId())
-                        .nombre(i.getNombre())
-                        .parroquiaId(i.getParroquia().getId())
-                        .parroquiaNombre(i.getParroquia().getNombre())
-                        .direccion(i.getDireccion())
-                        .codigo(i.getCodigo())
-                        .tipo(i.getTipo())
-                        .build())
+        List<InstitucionEducativaResponse> response = institucionService.findAll().stream()
+                .map(this::toResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/parroquia/{parroquiaId}")
     public ResponseEntity<List<InstitucionEducativaResponse>> findByParroquiaId(@PathVariable Long parroquiaId) {
-        List<InstitucionEducativa> instituciones = institucionService.findByParroquiaId(parroquiaId);
-        List<InstitucionEducativaResponse> response = instituciones.stream()
-                .map(i -> InstitucionEducativaResponse.builder()
-                        .id(i.getId())
-                        .nombre(i.getNombre())
-                        .parroquiaId(i.getParroquia().getId())
-                        .parroquiaNombre(i.getParroquia().getNombre())
-                        .direccion(i.getDireccion())
-                        .codigo(i.getCodigo())
-                        .tipo(i.getTipo())
-                        .build())
+        List<InstitucionEducativaResponse> response = institucionService.findByParroquiaId(parroquiaId).stream()
+                .map(this::toResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<InstitucionEducativaResponse> findById(@PathVariable Long id) {
-        InstitucionEducativa institucion = institucionService.findById(id);
-        InstitucionEducativaResponse response = InstitucionEducativaResponse.builder()
-                .id(institucion.getId())
-                .nombre(institucion.getNombre())
-                .parroquiaId(institucion.getParroquia().getId())
-                .parroquiaNombre(institucion.getParroquia().getNombre())
-                .direccion(institucion.getDireccion())
-                .codigo(institucion.getCodigo())
-                .tipo(institucion.getTipo())
-                .build();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(toResponse(institucionService.findById(id)));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<InstitucionEducativaResponse> save(@Valid @RequestBody InstitucionEducativaRequest request) {
-        InstitucionEducativa institucion = InstitucionEducativa.builder()
-                .nombre(request.getNombre())
-                .parroquia(Parroquia.builder().id(request.getParroquiaId()).build())
-                .direccion(request.getDireccion())
-                .codigo(request.getCodigo())
-                .tipo(request.getTipo())
-                .build();
-        InstitucionEducativa saved = institucionService.save(institucion);
-        InstitucionEducativaResponse response = InstitucionEducativaResponse.builder()
-                .id(saved.getId())
-                .nombre(saved.getNombre())
-                .parroquiaId(saved.getParroquia().getId())
-                .parroquiaNombre(saved.getParroquia().getNombre())
-                .direccion(saved.getDireccion())
-                .codigo(saved.getCodigo())
-                .tipo(saved.getTipo())
-                .build();
-        return ResponseEntity.ok(response);
+        InstitucionEducativa saved = institucionService.save(fromRequest(request));
+        return ResponseEntity.ok(toResponse(saved));
     }
 
     @PutMapping("/{id}")
@@ -105,17 +89,11 @@ public class InstitucionEducativaController {
         institucion.setDireccion(request.getDireccion());
         institucion.setCodigo(request.getCodigo());
         institucion.setTipo(request.getTipo());
+        institucion.setLatitud(request.getLatitud());
+        institucion.setLongitud(request.getLongitud());
+        institucion.setElectoresRegistrados(request.getElectoresRegistrados());
         InstitucionEducativa updated = institucionService.update(id, institucion);
-        InstitucionEducativaResponse response = InstitucionEducativaResponse.builder()
-                .id(updated.getId())
-                .nombre(updated.getNombre())
-                .parroquiaId(updated.getParroquia().getId())
-                .parroquiaNombre(updated.getParroquia().getNombre())
-                .direccion(updated.getDireccion())
-                .codigo(updated.getCodigo())
-                .tipo(updated.getTipo())
-                .build();
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(toResponse(updated));
     }
 
     @DeleteMapping("/{id}")
@@ -128,10 +106,13 @@ public class InstitucionEducativaController {
     @GetMapping("/exportar-excel")
     public ResponseEntity<byte[]> exportarExcel() {
         List<InstitucionEducativa> instituciones = institucionService.findAll();
-        String[] headers = {"ID", "Nombre", "Parroquia", "Direccion", "Codigo", "Tipo"};
+        String[] headers = {"ID", "Nombre", "Parroquia", "Direccion", "Codigo", "Tipo", "Latitud", "Longitud", "Electores"};
         List<String[]> data = instituciones.stream()
                 .map(i -> new String[]{String.valueOf(i.getId()), i.getNombre(), i.getParroquia().getNombre(),
-                        i.getDireccion(), i.getCodigo(), i.getTipo()})
+                        i.getDireccion(), i.getCodigo(), i.getTipo(),
+                        i.getLatitud() != null ? String.valueOf(i.getLatitud()) : "",
+                        i.getLongitud() != null ? String.valueOf(i.getLongitud()) : "",
+                        i.getElectoresRegistrados() != null ? String.valueOf(i.getElectoresRegistrados()) : ""})
                 .collect(Collectors.toList());
         byte[] excel = excelExportService.exportExcel("Instituciones", headers, data);
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -143,12 +124,15 @@ public class InstitucionEducativaController {
     @GetMapping("/exportar-pdf")
     public ResponseEntity<byte[]> exportarPdf() {
         List<InstitucionEducativa> instituciones = institucionService.findAll();
-        String[] headers = {"ID", "Nombre", "Parroquia", "Direccion", "Codigo", "Tipo"};
+        String[] headers = {"ID", "Nombre", "Parroquia", "Direccion", "Codigo", "Tipo", "Latitud", "Longitud", "Electores"};
         List<String[]> data = instituciones.stream()
                 .map(i -> new String[]{String.valueOf(i.getId()), i.getNombre(), i.getParroquia().getNombre(),
-                        i.getDireccion(), i.getCodigo(), i.getTipo()})
+                        i.getDireccion(), i.getCodigo(), i.getTipo(),
+                        i.getLatitud() != null ? String.valueOf(i.getLatitud()) : "",
+                        i.getLongitud() != null ? String.valueOf(i.getLongitud()) : "",
+                        i.getElectoresRegistrados() != null ? String.valueOf(i.getElectoresRegistrados()) : ""})
                 .collect(Collectors.toList());
-        byte[] pdf = pdfExportService.exportTablePdf("Instituciones Educativas", headers, data, new float[]{1, 3, 2, 3, 1, 1});
+        byte[] pdf = pdfExportService.exportTablePdf("Instituciones Educativas", headers, data, new float[]{1, 3, 2, 3, 1, 1, 1, 1, 1});
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_PDF);
         httpHeaders.setContentDispositionFormData("attachment", "instituciones.pdf");

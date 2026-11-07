@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApkVersionItem, Eleccion, Partido, Cargo, Candidato, Mesa, MesaNuloBlancoPorCargo, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse, ReglaNegocio, Circunscripcion, ResultadoDHondt, Reconteo, Impugnacion, Observacion, Resolucion, EscrutinioResumen, GeoResumen, DatoGeografico, ReporteResumen, ReporteCandidato, ReportePartido, ReporteLista } from '../models';
+import { ApkVersionItem, Eleccion, Partido, Cargo, Candidato, Mesa, MesaActaFoto, MesaActaFotosDeMesa, MesaNuloBlancoPorCargo, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse, ReglaNegocio, Circunscripcion, ResultadoDHondt, Reconteo, Impugnacion, Observacion, Resolucion, EscrutinioResumen, GeoResumen, DatoGeografico, ReporteResumen, ReporteCandidato, ReportePartido, ReporteLista } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -238,6 +238,25 @@ export class ApiService {
 
   cerrarMesa(id: number): Observable<void> {
     return this.http.post<void>(`${this.API_URL}/mesas/${id}/cerrar`, {});
+  }
+
+  // Fotos del acta (respaldo obligatorio al cerrar la mesa)
+  subirActaFoto(mesaId: number, file: File): Observable<MesaActaFoto> {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post<MesaActaFoto>(`${this.API_URL}/mesas/${mesaId}/acta-fotos`, fd);
+  }
+
+  getActaFotos(mesaId: number): Observable<MesaActaFoto[]> {
+    return this.http.get<MesaActaFoto[]>(`${this.API_URL}/mesas/${mesaId}/acta-fotos`);
+  }
+
+  getActaFotoBlob(mesaId: number, fotoId: number): Observable<Blob> {
+    return this.http.get(`${this.API_URL}/mesas/${mesaId}/acta-fotos/${fotoId}`, { responseType: 'blob' });
+  }
+
+  getActaFotosPorEleccion(eleccionId: number): Observable<MesaActaFotosDeMesa[]> {
+    return this.http.get<MesaActaFotosDeMesa[]>(`${this.API_URL}/mesas/acta-fotos?eleccionId=${eleccionId}`);
   }
 
   reabrirMesa(id: number): Observable<void> {

@@ -26,6 +26,18 @@ export const routes: Routes = [
     ]
   },
   { 
+    path: 'actas', 
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'SUPERVISOR'] },
+    loadComponent: () => import('./features/admin/layout/admin-layout.component').then(m => m.AdminLayoutComponent),
+    children: [
+      { 
+        path: '', 
+        loadComponent: () => import('./features/admin/pages/actas/actas.component').then(m => m.ActasComponent) 
+      }
+    ]
+  },
+  { 
     path: 'mesa', 
     canActivate: [authGuard, roleGuard],
     data: { roles: ['MIEMBRO_MESA', 'ADMIN'] },

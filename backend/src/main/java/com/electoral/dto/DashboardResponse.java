@@ -22,6 +22,7 @@ public class DashboardResponse {
     private Double porcentajeMesasCerradas;
     private List<ResultadoCandidato> resultados;
     private List<ResultadoRecinto> resultadosRecinto;
+    private List<ResultadoMesa> resultadosMesa;
     private List<ResultadoGeo> resultadosProvincia;
     private List<ResultadoGeo> resultadosParroquia;
     private List<ResultadoLista> resultadosListas;

@@ -37,6 +37,10 @@ public class RecintoController {
                 r.put("institucionNombre", inst.getNombre());
                 r.put("eleccionesId", eleccionesId);
                 r.put("totalMesas", 0);
+                // Recinto: geolocalización + padrón de electores
+                r.put("latitud", inst.getLatitud());
+                r.put("longitud", inst.getLongitud());
+                r.put("electoresRegistrados", inst.getElectoresRegistrados());
 
                 if (inst.getParroquia() != null) {
                     r.put("parroquiaId", inst.getParroquia().getId());

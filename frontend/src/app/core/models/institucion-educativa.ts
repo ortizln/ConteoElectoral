@@ -6,4 +6,7 @@ export interface InstitucionEducativa {
   direccion?: string;
   codigo?: string;
   tipo?: string;
+  latitud?: number | null;
+  longitud?: number | null;
+  electoresRegistrados?: number | null;
 }

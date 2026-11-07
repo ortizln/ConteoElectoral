@@ -896,6 +896,33 @@ class ApiService {
     }
   }
 
+  /// Sube la foto del acta (respaldo obligatorio al cerrar la mesa).
+  /// Lanza [UnauthorizedException] si el token venció (401/403).
+  Future<bool> subirActaFoto(int mesaId, String filePath, {String? token}) async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/mesas/$mesaId/acta-fotos'),
+      );
+      if (token != null) request.headers['Authorization'] = 'Bearer $token';
+      request.files.add(await http.MultipartFile.fromPath('file', filePath));
+      final streamed =
+          await request.send().timeout(const Duration(seconds: 90));
+      final response = await http.Response.fromStream(streamed);
+      if (response.statusCode == 200) return true;
+      if (response.statusCode == 401 || response.statusCode == 403) {
+        throw UnauthorizedException();
+      }
+      print('Subida foto acta falló: ${response.statusCode} ${response.body}');
+      return false;
+    } on UnauthorizedException {
+      rethrow;
+    } catch (e) {
+      print('Subida foto acta error: $e');
+      return false;
+    }
+  }
+
   // Reglas de Negocio
   Future<List<ReglaNegocio>> getReglasNegocio(
       {String? modulo, String? tipo, bool? activa}) async {

@@ -31,6 +31,15 @@ public class InstitucionEducativa {
     @Column(length = 50)
     private String tipo;
 
+    // Recinto: geolocalización (null si no se ha registrado)
+    private Double latitud;
+
+    private Double longitud;
+
+    // Recinto: número de personas registradas para votar (padrón)
+    @Column(name = "electores_registrados")
+    private Integer electoresRegistrados;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

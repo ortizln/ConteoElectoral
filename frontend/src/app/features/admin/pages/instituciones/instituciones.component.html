@@ -39,6 +39,8 @@
         <th class="sortable" (click)="sort('parroquiaNombre')">Parroquia {{ sortColumn === 'parroquiaNombre' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('codigo')">Código {{ sortColumn === 'codigo' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('tipo')">Tipo {{ sortColumn === 'tipo' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
+        <th class="sortable" (click)="sort('electoresRegistrados')">Electores {{ sortColumn === 'electoresRegistrados' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
+        <th>Geo</th>
         <th></th>
       </tr>
     </thead>
@@ -49,6 +51,13 @@
         <td>{{ i.parroquiaNombre }}</td>
         <td>{{ i.codigo || 'N/A' }}</td>
         <td>{{ i.tipo || 'N/A' }}</td>
+        <td>{{ i.electoresRegistrados != null ? (i.electoresRegistrados | number) : '—' }}</td>
+        <td>
+          <span *ngIf="i.latitud != null && i.longitud != null" title="{{ i.latitud }}, {{ i.longitud }}">
+            <i class="bi bi-geo-alt-fill text-success"></i>
+          </span>
+          <span *ngIf="i.latitud == null || i.longitud == null" class="text-muted" title="Sin geolocalización">—</span>
+        </td>
         <td>
           <div class="dropdown">
             <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
@@ -63,7 +72,7 @@
         </td>
       </tr>
       <tr *ngIf="institucionesFiltradas.length === 0">
-        <td colspan="6" class="text-center py-3">No se encontraron registros</td>
+        <td colspan="8" class="text-center py-3">No se encontraron registros</td>
       </tr>
     </tbody>
   </table>
@@ -174,6 +183,29 @@
               <span class="info-tooltip" title="Tipo de institución educativa (ej: ESCUELA, COLEGIO, INSTITUTO)"><i class="bi bi-info-circle"></i></span>
             </label>
             <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.tipo" (input)="toUpper(form, 'tipo')" />
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label>
+                Latitud:
+                <span class="info-tooltip" title="Geolocalización del recinto (ej: -0.2201). Dejar vacío si no se conoce."><i class="bi bi-info-circle"></i></span>
+              </label>
+              <input type="number" step="any" class="form-control" autocomplete="off" placeholder="-0.2201" [(ngModel)]="form.latitud" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label>
+                Longitud:
+                <span class="info-tooltip" title="Geolocalización del recinto (ej: -78.5167). Dejar vacío si no se conoce."><i class="bi bi-info-circle"></i></span>
+              </label>
+              <input type="number" step="any" class="form-control" autocomplete="off" placeholder="-78.5167" [(ngModel)]="form.longitud" />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label>
+              Electores registrados:
+              <span class="info-tooltip" title="Número de personas registradas para votar en este recinto (padrón)"><i class="bi bi-info-circle"></i></span>
+            </label>
+            <input type="number" min="0" class="form-control" autocomplete="off" placeholder="Ej: 1250" [(ngModel)]="form.electoresRegistrados" />
           </div>
         </div>
         <div class="modal-footer">

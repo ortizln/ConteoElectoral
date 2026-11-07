@@ -36,6 +36,7 @@ public class MesaService {
     private final VotoRepository votoRepository;
     private final MesaNuloBlancoRepository mesaNuloBlancoRepository;
     private final CargoRepository cargoRepository;
+    private final MesaActaFotoRepository mesaActaFotoRepository;
 
     @Transactional(readOnly = true)
     public List<MesaResponse> getMesasByEleccion(Long eleccionesId) {
@@ -350,7 +351,15 @@ public class MesaService {
         if (mesa.getCerrada()) {
             throw new IllegalStateException("La mesa ya está cerrada");
         }
-        
+
+        // Obligatorio: respaldo fotográfico del acta antes de cerrar (vía REST/web).
+        // La app móvil captura la foto antes de encolar el cierre y la sube al
+        // reconectar, por lo que el cierre offline (sync/push) no se bloquea aquí.
+        if (!mesaActaFotoRepository.existsByMesaId(id)) {
+            throw new com.electoral.exception.ValidacionException(
+                    "Debe subir la foto del acta antes de cerrar la mesa");
+        }
+
         mesa.setCerrada(true);
         MesaResponse response = mapToResponse(mesaRepository.save(mesa));
         notifyMesaEstado(mesa.getElecciones().getId(), id, true);

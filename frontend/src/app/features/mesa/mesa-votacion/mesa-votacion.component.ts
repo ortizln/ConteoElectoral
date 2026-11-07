@@ -69,6 +69,14 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   deleteError = '';
   deleteCargando = false;
 
+  // Foto del acta (obligatoria antes de cerrar)
+  showFotoActaModal = false;
+  fotoActaFile: File | null = null;
+  fotoActaPreview: string | null = null;
+  fotoActaExistenteUrl: string | null = null;
+  fotoActaSubiendo = false;
+  fotoActaError = '';
+
   // Votos registrados drawer (mobile)
   showVotosPanel = false;
 
@@ -507,10 +515,75 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   }
 
   cerrarMesa(): void {
+    if (!this.mesaActual || this.mesaActual.cerrada) return;
+    // Obligatorio: foto del acta antes de cerrar (modal con subida)
+    this.fotoActaFile = null;
+    this.fotoActaPreview = null;
+    this.fotoActaError = '';
+    this.fotoActaExistenteUrl = null;
+    this.showFotoActaModal = true;
+    this.api.getActaFotos(this.mesaActual.id).subscribe({
+      next: (fotos) => {
+        if (fotos.length > 0 && this.mesaActual) {
+          this.api.getActaFotoBlob(this.mesaActual.id, fotos[0].id).subscribe({
+            next: (blob) => { this.fotoActaExistenteUrl = URL.createObjectURL(blob); },
+            error: () => {}
+          });
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  onFotoActaSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] || null;
+    this.fotoActaFile = file;
+    this.fotoActaError = '';
+    if (this.fotoActaPreview) URL.revokeObjectURL(this.fotoActaPreview);
+    this.fotoActaPreview = file ? URL.createObjectURL(file) : null;
+  }
+
+  cerrarFotoActaModal(): void {
+    if (this.fotoActaSubiendo) return;
+    this.showFotoActaModal = false;
+    if (this.fotoActaPreview) { URL.revokeObjectURL(this.fotoActaPreview); this.fotoActaPreview = null; }
+    this.fotoActaFile = null;
+    this.fotoActaError = '';
+  }
+
+  confirmarCerrarConFoto(): void {
     if (!this.mesaActual) return;
+    const mesaId = this.mesaActual.id;
+    if (this.fotoActaFile) {
+      this.fotoActaSubiendo = true;
+      this.fotoActaError = '';
+      this.api.subirActaFoto(mesaId, this.fotoActaFile).subscribe({
+        next: () => { this.fotoActaSubiendo = false; this.cerrarMesaBackend(mesaId); },
+        error: (err) => {
+          this.fotoActaSubiendo = false;
+          this.fotoActaError = err.error?.message || 'Error al subir la foto del acta';
+        }
+      });
+    } else if (this.fotoActaExistenteUrl) {
+      // Ya hay foto previa de esta mesa: se usa como respaldo
+      this.cerrarMesaBackend(mesaId);
+    } else {
+      this.fotoActaError = 'Debe seleccionar la foto del acta';
+    }
+  }
+
+  private cerrarMesaBackend(mesaId: number): void {
     if (!confirm('¿Está seguro de cerrar el acta? Una vez cerrada no podrá modificar los votos.')) return;
-    this.api.cerrarMesa(this.mesaActual.id).subscribe(() => {
-      this.mesaActual!.cerrada = true;
+    this.api.cerrarMesa(mesaId).subscribe({
+      next: () => {
+        if (this.mesaActual && this.mesaActual.id === mesaId) this.mesaActual.cerrada = true;
+        this.cerrarFotoActaModal();
+      },
+      error: (err) => {
+        // p.ej. 400 "Debe subir la foto del acta antes de cerrar la mesa"
+        this.fotoActaError = err.error?.message || 'Error al cerrar la mesa';
+      }
     });
   }
 

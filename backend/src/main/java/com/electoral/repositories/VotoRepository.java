@@ -69,6 +69,12 @@ public interface VotoRepository extends JpaRepository<Voto, Long> {
     @Query("SELECT p.id, p.nombre, SUM(v.cantidadVotos) FROM Voto v JOIN v.mesa m JOIN m.institucion i JOIN i.parroquia p WHERE v.elecciones.id = :eleccionId AND v.mesa.id IN :mesaIds GROUP BY p.id, p.nombre ORDER BY SUM(v.cantidadVotos) DESC")
     List<Object[]> sumVotosByParroquiaDashboard(@Param("eleccionId") Long eleccionId, @Param("mesaIds") List<Long> mesaIds);
 
+    @Query("SELECT i.id, i.nombre, SUM(v.cantidadVotos) FROM Voto v JOIN v.mesa m JOIN m.institucion i WHERE v.elecciones.id = :eleccionId AND v.mesa.id IN :mesaIds GROUP BY i.id, i.nombre ORDER BY SUM(v.cantidadVotos) DESC")
+    List<Object[]> sumVotosByInstitucionDashboard(@Param("eleccionId") Long eleccionId, @Param("mesaIds") List<Long> mesaIds);
+
+    @Query("SELECT v.mesa.id, SUM(v.cantidadVotos) FROM Voto v WHERE v.elecciones.id = :eleccionId AND v.mesa.id IN :mesaIds GROUP BY v.mesa.id")
+    List<Object[]> sumVotosGroupByMesa(@Param("eleccionId") Long eleccionId, @Param("mesaIds") List<Long> mesaIds);
+
     @Query("SELECT COALESCE(SUM(v.cantidadVotos), 0) FROM Voto v WHERE v.mesa.id = :mesaId AND v.elecciones.id = :eleccionId")
     Long sumVotosByMesaAndEleccion(@Param("mesaId") Long mesaId, @Param("eleccionId") Long eleccionId);
 

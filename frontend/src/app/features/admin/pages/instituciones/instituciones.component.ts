@@ -18,7 +18,7 @@ export class InstitucionesComponent implements OnInit {
   showModal = false;
   editMode = false;
   selectedId: number | null = null;
-  form: any = { nombre: '', parroquiaId: null, direccion: '', codigo: '', tipo: '' };
+  form: any = { nombre: '', parroquiaId: null, direccion: '', codigo: '', tipo: '', latitud: null, longitud: null, electoresRegistrados: null };
   filterParroquiaId: number | null = null;
   sortColumn: string = '';
   sortDirection: string = 'asc';
@@ -128,7 +128,7 @@ export class InstitucionesComponent implements OnInit {
 
   openModal(): void {
     this.editMode = false;
-    this.form = { nombre: '', parroquiaId: this.parroquias[0]?.id || null, direccion: '', codigo: '', tipo: '' };
+    this.form = { nombre: '', parroquiaId: this.parroquias[0]?.id || null, direccion: '', codigo: '', tipo: '', latitud: null, longitud: null, electoresRegistrados: null };
     this.errorMessage = '';
     this.showModal = true;
   }
@@ -136,7 +136,7 @@ export class InstitucionesComponent implements OnInit {
   edit(i: InstitucionEducativa): void {
     this.editMode = true;
     this.selectedId = i.id;
-    this.form = { nombre: i.nombre, parroquiaId: i.parroquiaId, direccion: i.direccion || '', codigo: i.codigo || '', tipo: i.tipo || '' };
+    this.form = { nombre: i.nombre, parroquiaId: i.parroquiaId, direccion: i.direccion || '', codigo: i.codigo || '', tipo: i.tipo || '', latitud: i.latitud ?? null, longitud: i.longitud ?? null, electoresRegistrados: i.electoresRegistrados ?? null };
     this.errorMessage = '';
     this.showModal = true;
   }
@@ -145,13 +145,27 @@ export class InstitucionesComponent implements OnInit {
 
   save(): void {
     this.errorMessage = '';
+    // Normalizar campos numéricos (inputs vacíos → null)
+    const form = { ...this.form };
+    form.latitud = form.latitud === '' || form.latitud == null ? null : Number(form.latitud);
+    form.longitud = form.longitud === '' || form.longitud == null ? null : Number(form.longitud);
+    form.electoresRegistrados = form.electoresRegistrados === '' || form.electoresRegistrados == null ? null : Math.trunc(Number(form.electoresRegistrados));
+    if ((form.latitud != null && (isNaN(form.latitud) || form.latitud < -90 || form.latitud > 90)) ||
+        (form.longitud != null && (isNaN(form.longitud) || form.longitud < -180 || form.longitud > 180))) {
+      this.errorMessage = 'Latitud debe estar entre -90 y 90, longitud entre -180 y 180.';
+      return;
+    }
+    if (form.electoresRegistrados != null && (isNaN(form.electoresRegistrados) || form.electoresRegistrados < 0)) {
+      this.errorMessage = 'Electores registrados debe ser un número mayor o igual a 0.';
+      return;
+    }
     if (this.editMode && this.selectedId) {
-      this.api.updateInstitucion(this.selectedId, this.form).subscribe({
+      this.api.updateInstitucion(this.selectedId, form).subscribe({
         next: () => { this.load(); this.closeModal(); },
         error: (err) => { this.errorMessage = err.error?.message || 'Error al guardar. Intente de nuevo.'; }
       });
     } else {
-      this.api.createInstitucion(this.form).subscribe({
+      this.api.createInstitucion(form).subscribe({
         next: () => { this.load(); this.closeModal(); },
         error: (err) => { this.errorMessage = err.error?.message || 'Error al guardar. Intente de nuevo.'; }
       });

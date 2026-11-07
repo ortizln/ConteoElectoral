@@ -6,7 +6,7 @@ import { Chart, registerables } from 'chart.js';
 import { ApiService } from '../../core/services/api.service';
 import { WebSocketService } from '../../core/services/websocket.service';
 import { AuthService } from '../../core/services/auth.service';
-import { DashboardData, Eleccion, Cargo, Partido, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, Mesa, ResultadoCandidato, ResultadoLista, CandidatoDetalleResponse, GeoGroup, MesaCerradaResponse } from '../../core/models';
+import { DashboardData, Eleccion, Cargo, Partido, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, Mesa, ResultadoCandidato, ResultadoLista, ResultadoRecinto, ResultadoMesa, MesaActaFoto, CandidatoDetalleResponse, GeoGroup, MesaCerradaResponse } from '../../core/models';
 import { GeoGroupTableComponent } from './geo-group-table.component';
 import { Subscription } from 'rxjs';
 import { catchError, of } from 'rxjs';
@@ -35,6 +35,16 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   resultadosOrdenados: ResultadoCandidato[] = [];
   showListaResults = false;
   resultadosListas: ResultadoLista[] = [];
+
+  // Drill-down por recinto / mesa
+  resultadosRecinto: ResultadoRecinto[] = [];
+  resultadosMesa: ResultadoMesa[] = [];
+  showDrillRecinto = false;
+  showDrillMesa = false;
+  drillMesaSeleccionada: ResultadoMesa | null = null;
+  drillMesaFotos: MesaActaFoto[] = [];
+  drillMesaFotosLoading = false;
+  drillMesaFotoVisor: string | null = null;
 
   resultadosPorPartido: { partido: string; votos: number; porcentaje: number }[] = [];
   resultadosListasChart: { lista: string; numero: number; partido: string; votos: number; porcentaje: number }[] = [];
@@ -164,6 +174,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         this.selectedEleccionId = elecciones[0].id;
         this.eleccionNombre = elecciones[0].nombre;
         this.loadZonas();
+        this.api.getInstituciones().subscribe((data: InstitucionEducativa[]) => {
+          this.instituciones = data;
+        });
         this.loadMesas();
         this.loadDashboard();
         this.subscribeToUpdates();
@@ -190,6 +203,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   private procesarResultados(data: DashboardData): void {
     this.showListaResults = (data.resultadosListas?.length || 0) > 0;
     this.resultadosListas = data.resultadosListas || [];
+    this.resultadosRecinto = data.resultadosRecinto || [];
+    this.resultadosMesa = data.resultadosMesa || [];
 
     const resultados: ResultadoCandidato[] = [...(data.resultados || [])];
     const totalVotosNulos = data.totalVotosNulos || 0;
@@ -352,6 +367,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.api.getInstitucionesByParroquia(this.filtroParroquiaId).subscribe((data: InstitucionEducativa[]) => {
         this.instituciones = data;
       });
+    } else {
+      // Sin parroquia: todas las instituciones (permite drill-down directo por recinto)
+      this.api.getInstituciones().subscribe((data: InstitucionEducativa[]) => {
+        this.instituciones = data;
+      });
     }
     this.aplicarFiltros();
   }
@@ -379,9 +399,105 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   loadMesas(): void {
     if (!this.selectedEleccionId) return;
-    this.api.getMesasByCurrentUser(this.selectedEleccionId).subscribe((data: Mesa[]) => {
+    // Todas las mesas de la elección (drill-down del supervisor)
+    this.api.getMesasByEleccion(this.selectedEleccionId).subscribe((data: Mesa[]) => {
       this.mesas = data;
     });
+  }
+
+  // ===== Drill-down: recinto / mesa =====
+
+  /** Chip con el alcance activo (recinto o mesa seleccionado) */
+  get alcanceActivo(): string {
+    if (this.filtroMesaId) {
+      const m = this.resultadosMesa.find(x => x.mesaId === this.filtroMesaId);
+      return `Mesa ${m?.mesaNumero ?? this.filtroMesaId}`;
+    }
+    if (this.filtroInstitucionId) {
+      const r = this.resultadosRecinto.find(x => x.recintoId === this.filtroInstitucionId);
+      return `Recinto ${r?.recintoNombre ?? this.filtroInstitucionId}`;
+    }
+    return '';
+  }
+
+  /** Seleccionar un recinto en la tabla → drill-down a sus mesas */
+  seleccionarRecinto(r: ResultadoRecinto): void {
+    if (!this.selectedEleccionId) return;
+    this.filtroMesaId = null;
+    this.filtroInstitucionId = r.recintoId;
+    this.filtroParroquiaId = null;
+    this.filtroCantonId = null;
+    this.filtroProvinciaId = null;
+    this.filtroZonaId = null;
+    // Cargar instituciones del filtro para que el select refleje la selección
+    this.api.getInstituciones().subscribe((data: InstitucionEducativa[]) => {
+      this.instituciones = data;
+      this.aplicarFiltros();
+    });
+  }
+
+  /** Seleccionar una mesa en la tabla → ver candidatos + fotos del acta */
+  seleccionarMesa(m: ResultadoMesa): void {
+    if (!this.selectedEleccionId) return;
+    this.filtroMesaId = m.mesaId;
+    this.drillMesaSeleccionada = m;
+    this.showDrillMesa = true;
+    this.drillMesaFotos = [];
+    this.drillMesaFotosLoading = true;
+    this.aplicarFiltros();
+    this.api.getActaFotos(m.mesaId).subscribe({
+      next: (fotos) => {
+        this.drillMesaFotos = fotos;
+        this.drillMesaFotosLoading = false;
+      },
+      error: () => { this.drillMesaFotosLoading = false; }
+    });
+  }
+
+  cerrarDrillMesa(): void {
+    this.showDrillMesa = false;
+    this.drillMesaSeleccionada = null;
+    this.drillMesaFotos = [];
+    this.limpiarAlcance();
+  }
+
+  verFotoActa(foto: MesaActaFoto): void {
+    this.api.getActaFotoBlob(foto.mesaId, foto.id).subscribe({
+      next: (blob) => {
+        this.drillMesaFotoVisor = URL.createObjectURL(blob);
+      }
+    });
+  }
+
+  /** URL en caché de la miniatura de una foto del acta */
+  private fotoThumbCache = new Map<number, string>();
+  fotoThumbUrl(foto: MesaActaFoto): string {
+    let url = this.fotoThumbCache.get(foto.id);
+    if (url === undefined) {
+      this.fotoThumbCache.set(foto.id, '');
+      this.api.getActaFotoBlob(foto.mesaId, foto.id).subscribe({
+        next: (blob) => {
+          this.fotoThumbCache.set(foto.id, URL.createObjectURL(blob));
+          try { this.cdr.detectChanges(); } catch (_) {}
+        },
+        error: () => { this.fotoThumbCache.set(foto.id, ''); }
+      });
+      return '';
+    }
+    return url;
+  }
+
+  cerrarFotoVisor(): void {
+    if (this.drillMesaFotoVisor) {
+      URL.revokeObjectURL(this.drillMesaFotoVisor);
+      this.drillMesaFotoVisor = null;
+    }
+  }
+
+  limpiarAlcance(): void {
+    this.filtroMesaId = null;
+    this.filtroInstitucionId = null;
+    this.aplicarFiltros();
   }
 
   aplicarFiltros(): void {

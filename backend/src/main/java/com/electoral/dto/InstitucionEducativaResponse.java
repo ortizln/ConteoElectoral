@@ -14,4 +14,7 @@ public class InstitucionEducativaResponse {
     private String direccion;
     private String codigo;
     private String tipo;
+    private Double latitud;
+    private Double longitud;
+    private Integer electoresRegistrados;
 }

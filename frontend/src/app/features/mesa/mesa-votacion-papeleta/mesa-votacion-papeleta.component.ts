@@ -34,6 +34,14 @@ export class MesaVotacionPapeletaComponent implements OnInit, OnDestroy {
   cerrada = false;
   private wsSub!: Subscription;
 
+  // Foto del acta (obligatoria antes de cerrar)
+  showFotoActaModal = false;
+  fotoActaFile: File | null = null;
+  fotoActaPreview: string | null = null;
+  fotoActaExistenteUrl: string | null = null;
+  fotoActaSubiendo = false;
+  fotoActaError = '';
+
   constructor(
     private api: ApiService,
     private auth: AuthService,
@@ -157,12 +165,74 @@ export class MesaVotacionPapeletaComponent implements OnInit, OnDestroy {
 
   cerrarMesa() {
     if (!this.mesaActual || this.cerrada) return;
-    if (confirm('¿Cerrar mesa? No podrá modificar los votos después.')) {
-      this.api.cerrarMesa(this.mesaActual.id).subscribe(() => {
-        this.cerrada = true;
-        if (this.mesaActual) this.mesaActual.cerrada = true;
+    // Obligatorio: foto del acta antes de cerrar (modal con subida)
+    this.fotoActaFile = null;
+    this.fotoActaPreview = null;
+    this.fotoActaError = '';
+    this.fotoActaExistenteUrl = null;
+    this.showFotoActaModal = true;
+    this.api.getActaFotos(this.mesaActual.id).subscribe({
+      next: (fotos) => {
+        if (fotos.length > 0 && this.mesaActual) {
+          this.api.getActaFotoBlob(this.mesaActual.id, fotos[0].id).subscribe({
+            next: (blob) => { this.fotoActaExistenteUrl = URL.createObjectURL(blob); },
+            error: () => {}
+          });
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  onFotoActaSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] || null;
+    this.fotoActaFile = file;
+    this.fotoActaError = '';
+    if (this.fotoActaPreview) URL.revokeObjectURL(this.fotoActaPreview);
+    this.fotoActaPreview = file ? URL.createObjectURL(file) : null;
+  }
+
+  cerrarFotoActaModal() {
+    if (this.fotoActaSubiendo) return;
+    this.showFotoActaModal = false;
+    if (this.fotoActaPreview) { URL.revokeObjectURL(this.fotoActaPreview); this.fotoActaPreview = null; }
+    this.fotoActaFile = null;
+    this.fotoActaError = '';
+  }
+
+  confirmarCerrarConFoto() {
+    if (!this.mesaActual) return;
+    const mesaId = this.mesaActual.id;
+    if (this.fotoActaFile) {
+      this.fotoActaSubiendo = true;
+      this.fotoActaError = '';
+      this.api.subirActaFoto(mesaId, this.fotoActaFile).subscribe({
+        next: () => { this.fotoActaSubiendo = false; this.cerrarMesaBackend(mesaId); },
+        error: (err) => {
+          this.fotoActaSubiendo = false;
+          this.fotoActaError = err.error?.message || 'Error al subir la foto del acta';
+        }
       });
+    } else if (this.fotoActaExistenteUrl) {
+      this.cerrarMesaBackend(mesaId);
+    } else {
+      this.fotoActaError = 'Debe seleccionar la foto del acta';
     }
+  }
+
+  private cerrarMesaBackend(mesaId: number) {
+    if (!confirm('¿Cerrar mesa? No podrá modificar los votos después.')) return;
+    this.api.cerrarMesa(mesaId).subscribe({
+      next: () => {
+        this.cerrada = true;
+        if (this.mesaActual && this.mesaActual.id === mesaId) this.mesaActual.cerrada = true;
+        this.cerrarFotoActaModal();
+      },
+      error: (err) => {
+        this.fotoActaError = err.error?.message || 'Error al cerrar la mesa';
+      }
+    });
   }
 
   logout() {

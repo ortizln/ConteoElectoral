@@ -87,6 +87,10 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/reportes/reportes.component').then(m => m.ReportesComponent) 
       },
       { 
+        path: 'actas', 
+        loadComponent: () => import('./pages/actas/actas.component').then(m => m.ActasComponent) 
+      },
+      { 
         path: 'usuarios', 
         loadComponent: () => import('./pages/usuarios/usuarios.component').then(m => m.UsuariosComponent) 
       },
