@@ -4,6 +4,7 @@ class Cargo {
   final String descripcion;
   final int eleccionesId;
   final String? tipoVotacion;
+  final String? territorio;
   final int? tipoCircunscripcionId;
   final String? tipoCircunscripcionCodigo;
   final String? tipoCircunscripcionNombre;
@@ -17,6 +18,7 @@ class Cargo {
     required this.descripcion,
     required this.eleccionesId,
     this.tipoVotacion,
+    this.territorio,
     this.tipoCircunscripcionId,
     this.tipoCircunscripcionCodigo,
     this.tipoCircunscripcionNombre,
@@ -32,6 +34,7 @@ class Cargo {
       descripcion: json['descripcion'] ?? '',
       eleccionesId: json['eleccionesId'],
       tipoVotacion: json['tipoVotacion'],
+      territorio: json['territorio'] ?? 'NACIONAL',
       tipoCircunscripcionId: json['tipoCircunscripcionId'],
       tipoCircunscripcionCodigo: json['tipoCircunscripcionCodigo'],
       tipoCircunscripcionNombre: json['tipoCircunscripcionNombre'],
@@ -48,6 +51,7 @@ class Cargo {
       'descripcion': descripcion,
       'eleccionesId': eleccionesId,
       'tipoVotacion': tipoVotacion,
+      'territorio': territorio,
       'tipoCircunscripcionId': tipoCircunscripcionId,
       'tipoCircunscripcionCodigo': tipoCircunscripcionCodigo,
       'tipoCircunscripcionNombre': tipoCircunscripcionNombre,

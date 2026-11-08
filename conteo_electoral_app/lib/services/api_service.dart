@@ -512,6 +512,26 @@ class ApiService {
     }
   }
 
+  /// Candidatos visibles para una mesa según el territorio del cargo
+  /// (NACIONAL / PROVINCIA / CANTON / PARROQUIA).
+  Future<List<Candidato>> getCandidatosByMesa(int mesaId,
+      {String? token}) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/candidatos/mesa/$mesaId'),
+        headers: _headers(token: token),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((e) => Candidato.fromJson(e)).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   Future<List<Recinto>> getRecintosByEleccion(int eleccionesId,
       {String? token}) async {
     try {

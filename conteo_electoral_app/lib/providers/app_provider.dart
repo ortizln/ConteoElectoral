@@ -72,6 +72,39 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
   bool get checkingUpdate => _checkingUpdate;
 
   List<Candidato> get candidatos => _candidatos;
+
+  /// Candidatos visibles en la mesa actual: filtra por el territorio del cargo
+  /// (NACIONAL / PROVINCIA / CANTON / PARROQUIA) contra el recinto de la mesa.
+  /// - Cargo NACIONAL: siempre visible.
+  /// - Sin territorio asignado en el candidato o sin recinto conocido: visible
+  ///   (compatibilidad con datos cargados antes de esta funcionalidad).
+  List<Candidato> get candidatosVisibles {
+    final recinto = _recintoActual;
+    if (recinto == null) return _candidatos;
+    return _candidatos.where((c) => _aplicaParaTerritorio(c, recinto)).toList();
+  }
+
+  bool _aplicaParaTerritorio(Candidato c, Recinto recinto) {
+    Cargo? cargo;
+    for (final cg in _cargos) {
+      if (cg.id == c.cargoId) { cargo = cg; break; }
+    }
+    final territorio = cargo?.territorio ?? 'NACIONAL';
+    switch (territorio) {
+      case 'PROVINCIA':
+        if (c.provinciaId == null) return true;
+        return recinto.provinciaId != null && c.provinciaId == recinto.provinciaId;
+      case 'CANTON':
+        if (c.cantonId == null) return true;
+        return recinto.cantonId != null && c.cantonId == recinto.cantonId;
+      case 'PARROQUIA':
+        if (c.parroquiaId == null) return true;
+        return recinto.parroquiaId != null && c.parroquiaId == recinto.parroquiaId;
+      default:
+        return true;
+    }
+  }
+
   List<Partido> get partidos => _partidos;
   List<Cargo> get cargos => _cargos;
   List<Voto> get votosMesa => _votosMesa;
@@ -428,7 +461,8 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> seleccionarMesa(Mesa mesa) async {
     _mesaActual = mesa;
-    _recintoActual = null;
+    // Recinto de la mesa: necesario para filtrar candidatos por territorio
+    _recintoActual = await _db.getRecinto(mesa.institucionId);
     _votosMesa = await _db.getVotosByMesa(mesa.id);
     _totalVotos = _votosMesa.fold(0, (sum, v) => sum + v.cantidadVotos);
     _votosNulos = mesa.votosNulos ?? 0;

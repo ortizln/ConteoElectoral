@@ -176,6 +176,49 @@
               <option *ngFor="let c of cargos" [value]="c.id">{{ c.nombre }}</option>
             </select>
           </div>
+
+          <!-- Territorio del candidato (según el territorio asignado al cargo) -->
+          <div class="mb-3" *ngIf="territorioCargo === 'PROVINCIA' || territorioCargo === 'CANTON' || territorioCargo === 'PARROQUIA'">
+            <label class="fw-semibold">
+              Territorio —
+              <span *ngIf="territorioCargo === 'PROVINCIA'">Provincia (ej. Prefecto)</span>
+              <span *ngIf="territorioCargo === 'CANTON'">Cantón (ej. Alcalde / Concejal)</span>
+              <span *ngIf="territorioCargo === 'PARROQUIA'">Parroquia</span>:
+            </label>
+            <div class="row g-2">
+              <div class="col-12" *ngIf="territorioCargo === 'PROVINCIA'">
+                <select class="form-select" [(ngModel)]="form.provinciaId">
+                  <option [ngValue]="null">Seleccione provincia...</option>
+                  <option *ngFor="let p of provincias" [value]="p.id">{{ p.nombre }}</option>
+                </select>
+              </div>
+              <ng-container *ngIf="territorioCargo === 'CANTON' || territorioCargo === 'PARROQUIA'">
+                <div class="col-6">
+                  <select class="form-select" [(ngModel)]="form.provinciaId" (ngModelChange)="onProvinciaChange()">
+                    <option [ngValue]="null">Provincia...</option>
+                    <option *ngFor="let p of provincias" [value]="p.id">{{ p.nombre }}</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <select class="form-select" [(ngModel)]="form.cantonId" (ngModelChange)="onCantonChange()"
+                          [disabled]="!form.provinciaId">
+                    <option [ngValue]="null">Cantón...</option>
+                    <option *ngFor="let c of cantones" [value]="c.id">{{ c.nombre }}</option>
+                  </select>
+                </div>
+              </ng-container>
+              <div class="col-12" *ngIf="territorioCargo === 'PARROQUIA'">
+                <select class="form-select" [(ngModel)]="form.parroquiaId" [disabled]="!form.cantonId">
+                  <option [ngValue]="null">Parroquia...</option>
+                  <option *ngFor="let p of parroquias" [value]="p.id">{{ p.nombre }}</option>
+                </select>
+              </div>
+            </div>
+            <small class="text-muted">Solo se mostrará este candidato en las mesas de este territorio.</small>
+          </div>
+          <div class="mb-3" *ngIf="territorioCargo === 'NACIONAL'">
+            <small class="text-muted"><i class="bi bi-globe"></i> Cargo nacional: este candidato se verá en todas las mesas.</small>
+          </div>
           <div class="mb-3" *ngIf="editMode && selectedId">
             <label>Foto del candidato (JPG/PNG, máx. 5 MB):</label>
             <div class="d-flex align-items-center gap-3">

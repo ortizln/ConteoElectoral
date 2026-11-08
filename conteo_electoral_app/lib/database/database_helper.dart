@@ -26,7 +26,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 10,
+      version: 11,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -61,6 +61,7 @@ class DatabaseHelper {
         descripcion TEXT,
         eleccionesId INTEGER NOT NULL,
         tipoVotacion TEXT,
+        territorio TEXT DEFAULT 'NACIONAL',
         tipoCircunscripcionId INTEGER,
         tipoCircunscripcionCodigo TEXT,
         tipoCircunscripcionNombre TEXT,
@@ -84,7 +85,11 @@ class DatabaseHelper {
         listaNombre TEXT,
         numeroLista INTEGER,
         fotoUrl TEXT,
+        tieneFoto INTEGER,
         eleccionesId INTEGER,
+        provinciaId INTEGER,
+        cantonId INTEGER,
+        parroquiaId INTEGER,
         ordenEnLista INTEGER,
         tipo TEXT,
         principal INTEGER DEFAULT 1,
@@ -329,6 +334,15 @@ class DatabaseHelper {
         )
       ''');
     }
+    if (oldVersion < 11) {
+      // Territorio del cargo + geografía del candidato (filtro por mesa)
+      await _addColumnIfMissing(db, 'cargos', 'territorio', "TEXT DEFAULT 'NACIONAL'");
+      await db.execute("UPDATE cargos SET territorio = 'NACIONAL' WHERE territorio IS NULL");
+      await _addColumnIfMissing(db, 'candidatos', 'tieneFoto', 'INTEGER');
+      await _addColumnIfMissing(db, 'candidatos', 'provinciaId', 'INTEGER');
+      await _addColumnIfMissing(db, 'candidatos', 'cantonId', 'INTEGER');
+      await _addColumnIfMissing(db, 'candidatos', 'parroquiaId', 'INTEGER');
+    }
   }
 
   Future<void> guardarElecciones(List<Eleccion> elecciones) async {
@@ -411,6 +425,7 @@ class DatabaseHelper {
           'descripcion': cargo.descripcion,
           'eleccionesId': cargo.eleccionesId,
           'tipoVotacion': cargo.tipoVotacion,
+          'territorio': cargo.territorio ?? 'NACIONAL',
           'tipoCircunscripcionId': cargo.tipoCircunscripcionId,
           'tipoCircunscripcionCodigo': cargo.tipoCircunscripcionCodigo,
           'tipoCircunscripcionNombre': cargo.tipoCircunscripcionNombre,
@@ -437,6 +452,7 @@ class DatabaseHelper {
       descripcion: m['descripcion'] as String? ?? '',
       eleccionesId: m['eleccionesId'] as int,
       tipoVotacion: m['tipoVotacion'] as String?,
+      territorio: m['territorio'] as String? ?? 'NACIONAL',
       tipoCircunscripcionId: m['tipoCircunscripcionId'] as int?,
       tipoCircunscripcionCodigo: m['tipoCircunscripcionCodigo'] as String?,
       tipoCircunscripcionNombre: m['tipoCircunscripcionNombre'] as String?,
@@ -465,7 +481,11 @@ class DatabaseHelper {
           'listaNombre': candidato.listaNombre,
           'numeroLista': candidato.numeroLista,
           'fotoUrl': candidato.fotoUrl,
+          'tieneFoto': candidato.tieneFoto == null ? null : (candidato.tieneFoto! ? 1 : 0),
           'eleccionesId': candidato.eleccionesId,
+          'provinciaId': candidato.provinciaId,
+          'cantonId': candidato.cantonId,
+          'parroquiaId': candidato.parroquiaId,
           'ordenEnLista': candidato.ordenEnLista,
           'tipo': candidato.tipo,
           'principal': candidato.principal == null ? null : (candidato.principal! ? 1 : 0),
@@ -498,7 +518,11 @@ class DatabaseHelper {
       listaNombre: m['listaNombre'] as String?,
       numeroLista: m['numeroLista'] as int?,
       fotoUrl: m['fotoUrl'] as String?,
+      tieneFoto: m['tieneFoto'] == null ? null : (m['tieneFoto'] as int) == 1,
       eleccionesId: m['eleccionesId'] as int?,
+      provinciaId: m['provinciaId'] as int?,
+      cantonId: m['cantonId'] as int?,
+      parroquiaId: m['parroquiaId'] as int?,
       ordenEnLista: m['ordenEnLista'] as int?,
       tipo: m['tipo'] as String?,
       principal: m['principal'] == null ? null : (m['principal'] as int) == 1,

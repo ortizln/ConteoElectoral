@@ -74,6 +74,12 @@ export interface Candidato {
   fotoUrl: string | null;
   tieneFoto?: boolean;
   eleccionesId?: number;
+  provinciaId?: number | null;
+  provinciaNombre?: string | null;
+  cantonId?: number | null;
+  cantonNombre?: string | null;
+  parroquiaId?: number | null;
+  parroquiaNombre?: string | null;
   ordenEnLista?: number;
   tipo?: string;
   principal?: boolean;

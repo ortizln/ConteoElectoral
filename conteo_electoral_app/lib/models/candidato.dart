@@ -11,7 +11,11 @@ class Candidato {
   final String? listaNombre;
   final int? numeroLista;
   final String? fotoUrl;
+  final bool? tieneFoto;
   final int? eleccionesId;
+  final int? provinciaId;
+  final int? cantonId;
+  final int? parroquiaId;
   final int? ordenEnLista;
   final String? tipo;
   final bool? principal;
@@ -30,7 +34,11 @@ class Candidato {
     this.listaNombre,
     this.numeroLista,
     this.fotoUrl,
+    this.tieneFoto,
     this.eleccionesId,
+    this.provinciaId,
+    this.cantonId,
+    this.parroquiaId,
     this.ordenEnLista,
     this.tipo,
     this.principal,
@@ -51,7 +59,11 @@ class Candidato {
       listaNombre: json['listaNombre'],
       numeroLista: json['numeroLista'],
       fotoUrl: json['fotoUrl'],
+      tieneFoto: json['tieneFoto'],
       eleccionesId: json['eleccionesId'],
+      provinciaId: json['provinciaId'],
+      cantonId: json['cantonId'],
+      parroquiaId: json['parroquiaId'],
       ordenEnLista: json['ordenEnLista'],
       tipo: json['tipo'],
       principal: json['principal'],
@@ -73,7 +85,11 @@ class Candidato {
       'listaNombre': listaNombre,
       'numeroLista': numeroLista,
       'fotoUrl': fotoUrl,
+      'tieneFoto': tieneFoto,
       'eleccionesId': eleccionesId,
+      'provinciaId': provinciaId,
+      'cantonId': cantonId,
+      'parroquiaId': parroquiaId,
       'ordenEnLista': ordenEnLista,
       'tipo': tipo,
       'principal': principal,

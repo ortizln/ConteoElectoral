@@ -49,7 +49,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
 
   List<Candidato> get _candidatosFiltrados {
     final provider = context.read<AppProvider>();
-    var list = List<Candidato>.from(provider.candidatos);
+    var list = List<Candidato>.from(provider.candidatosVisibles);
 
     if (_busqueda.isNotEmpty) {
       final q = _busqueda.toLowerCase();
@@ -88,12 +88,12 @@ class _VotacionScreenState extends State<VotacionScreen> {
 
   List<String> get _partidosUnicos {
     final p = context.read<AppProvider>();
-    return p.candidatos.map((c) => c.partidoNombre).toSet().toList()..sort();
+    return p.candidatosVisibles.map((c) => c.partidoNombre).toSet().toList()..sort();
   }
 
   Map<int, List<Candidato>> get _agrupadosPorLista {
     final provider = context.read<AppProvider>();
-    var filtered = provider.candidatos.where((c) => c.activo != false);
+    var filtered = provider.candidatosVisibles.where((c) => c.activo != false);
     // Only show candidates for list-type cargos in list mode
     filtered = filtered.where((c) {
       if (c.cargoId == null) return false;

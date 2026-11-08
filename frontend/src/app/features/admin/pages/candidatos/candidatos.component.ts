@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
 import { ApiService } from '../../../../core/services/api.service';
-import { Eleccion, Candidato, Partido, Cargo } from '../../../../core/models';
+import { Eleccion, Candidato, Partido, Cargo, Provincia, Canton, Parroquia } from '../../../../core/models';
 
 @Component({
   selector: 'app-candidatos',
@@ -20,7 +20,12 @@ export class CandidatosComponent implements OnInit {
   showModal = false;
   editMode = false;
   selectedId: number | null = null;
-  form: any = { nombre: '', apellido: '', partidoId: null, cargoId: null, eleccionesId: null };
+  form: any = { nombre: '', apellido: '', partidoId: null, cargoId: null, eleccionesId: null, provinciaId: null, cantonId: null, parroquiaId: null };
+
+  // Geografía para asignar el territorio del candidato
+  provincias: Provincia[] = [];
+  cantones: Canton[] = [];
+  parroquias: Parroquia[] = [];
   sortColumn: string = '';
   sortDirection: string = 'asc';
   searchText: string = '';
@@ -53,6 +58,31 @@ export class CandidatosComponent implements OnInit {
         this.load(e[0].id);
       }
     });
+    this.api.getProvincias().subscribe((d: Provincia[]) => this.provincias = d);
+  }
+
+  /** Territorio del cargo seleccionado en el form (para mostrar los selects que aplican) */
+  get territorioCargo(): string {
+    const cargo = this.cargos.find(c => c.id === this.form.cargoId);
+    return cargo?.territorio || 'NACIONAL';
+  }
+
+  onProvinciaChange(): void {
+    this.form.cantonId = null;
+    this.form.parroquiaId = null;
+    this.cantones = [];
+    this.parroquias = [];
+    if (this.form.provinciaId) {
+      this.api.getCantonesByProvincia(this.form.provinciaId).subscribe((d: Canton[]) => this.cantones = d);
+    }
+  }
+
+  onCantonChange(): void {
+    this.form.parroquiaId = null;
+    this.parroquias = [];
+    if (this.form.cantonId) {
+      this.api.getParroquiasByCanton(this.form.cantonId).subscribe((d: Parroquia[]) => this.parroquias = d);
+    }
   }
 
   load(eleccionId: number): void {
@@ -123,21 +153,35 @@ export class CandidatosComponent implements OnInit {
 
   openModal(): void {
     this.editMode = false;
-    this.form = { nombre: '', apellido: '', partidoId: null, cargoId: this.cargos[0]?.id, eleccionesId: this.form.eleccionesId };
+    this.form = { nombre: '', apellido: '', partidoId: null, cargoId: this.cargos[0]?.id, eleccionesId: this.form.eleccionesId, provinciaId: null, cantonId: null, parroquiaId: null };
     this.errorMessage = '';
     this.fotoPreview = '';
     this.fotoUploading = false;
+    this.cantones = [];
+    this.parroquias = [];
     this.showModal = true;
   }
 
   edit(c: Candidato): void {
     this.editMode = true;
     this.selectedId = c.id;
-    this.form = { nombre: c.nombre, apellido: c.apellido, partidoId: c.partidoId, cargoId: c.cargoId, eleccionesId: c.eleccionesId };
+    this.form = {
+      nombre: c.nombre, apellido: c.apellido, partidoId: c.partidoId, cargoId: c.cargoId, eleccionesId: c.eleccionesId,
+      provinciaId: c.provinciaId ?? null, cantonId: c.cantonId ?? null, parroquiaId: c.parroquiaId ?? null
+    };
     this.errorMessage = '';
     this.fotoPreview = '';
     this.fotoUploading = false;
     this.showModal = true;
+    // Cargar la cascada geográfica según los valores existentes
+    this.cantones = [];
+    this.parroquias = [];
+    if (this.form.provinciaId) {
+      this.api.getCantonesByProvincia(this.form.provinciaId).subscribe((d: Canton[]) => this.cantones = d);
+    }
+    if (this.form.cantonId) {
+      this.api.getParroquiasByCanton(this.form.cantonId).subscribe((d: Parroquia[]) => this.parroquias = d);
+    }
     if (c.tieneFoto) {
       this.api.getFotoCandidatoBlob(c.id).subscribe({
         next: (blob) => { this.fotoPreview = URL.createObjectURL(blob); }
