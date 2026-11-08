@@ -46,7 +46,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/carousel/**").permitAll()
                     .requestMatchers("/api/apk-versions/**").permitAll()
                     .requestMatchers("/api/configuracion/logo").permitAll()
-                    .requestMatchers("/api/configuracion/apk").permitAll()
+                    .requestMatchers("/api/configuracion/apk", "/api/configuracion/apk/version").permitAll()
                     .requestMatchers("/api/configuracion/manual").permitAll()
                     .requestMatchers("/api/download/**").permitAll()
                     .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", "/webjars/**").permitAll()

@@ -25,6 +25,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   private intervalId: any;
   private readonly API_URL = environment.apiUrl;
   apkDownloadUrl = `${environment.apiUrl}/configuracion/apk`;
+  apkVersion = '';
 
   constructor(
     private authService: AuthService,
@@ -34,6 +35,15 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadImages();
+    this.loadApkVersion();
+  }
+
+  /** Versión del APK disponible para descarga desde el login */
+  loadApkVersion(): void {
+    this.api.getApkVersion().subscribe({
+      next: (res) => { this.apkVersion = res?.version || ''; },
+      error: () => { this.apkVersion = ''; }
+    });
   }
 
   ngOnDestroy(): void {

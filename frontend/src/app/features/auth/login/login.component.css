@@ -215,6 +215,11 @@
 }
 .apk-card-text { flex: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
 .apk-card-title { font-size: 14px; font-weight: 600; color: var(--alantek-text); }
+.apk-version-badge {
+  display: inline-block; margin-left: 6px; padding: 1px 8px;
+  background: var(--alantek-accent, #d97732); color: #fff;
+  font-size: 11px; font-weight: 700; border-radius: 10px; vertical-align: middle;
+}
 .apk-card-sub { font-size: 12px; color: var(--alantek-text-muted); }
 .apk-card-arrow {
   width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
