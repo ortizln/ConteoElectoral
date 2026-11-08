@@ -23,5 +23,6 @@ public class ListaElectoralDetalleResponse {
     private String circunscripcionTipo;
     private Long circunscripcionId;
     private String estado;
+    private Boolean tieneLogo;
     private List<CandidatoResponse> candidatos;
 }

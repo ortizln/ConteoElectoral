@@ -122,6 +122,7 @@ public class ListaElectoralService {
                 .circunscripcionTipo(lista.getCircunscripcionTipo())
                 .circunscripcionId(lista.getCircunscripcionId())
                 .estado(lista.getEstado())
+                .tieneLogo(lista.getLogo() != null && lista.getLogo().length > 0)
                 .candidatos(candidatos.stream().map(c -> CandidatoResponse.builder()
                         .id(c.getId()).nombre(c.getNombre()).apellido(c.getApellido())
                         .nombreCompleto(c.getNombreCompleto())
