@@ -106,7 +106,15 @@
     </button>
   </div>
 
-  <div *ngIf="dashboard" class="stats-grid">
+  <div *ngIf="dashboard" class="stats-section-header">
+    <h3><i class="bi bi-clipboard-data"></i> Resumen General</h3>
+    <button class="btn-card-action" (click)="toggleMinimize('stats')"
+      [title]="statsMinimized ? 'Expandir' : 'Ocultar'">
+      <i [class]="statsMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i>
+    </button>
+  </div>
+
+  <div *ngIf="dashboard" class="stats-grid" [class.hidden]="statsMinimized">
     <div class="stat-card stat-votos">
       <div class="stat-icon"><i class="bi bi-check2-square"></i></div>
       <div class="stat-info">
@@ -266,7 +274,7 @@
     <div class="table-header">
       <h3><i class="bi bi-clipboard-data"></i> Resultados</h3>
       <div class="card-buttons">
-        <span class="table-count">{{ resultados.length }} candidatos</span>
+        <span class="table-count">{{ tabCountLabel }}</span>
         <button class="btn-card-action" (click)="toggleMinimize('resultados')"
           [title]="resultadosMinimized ? 'Expandir' : 'Minimizar'"><i
             [class]="resultadosMinimized ? 'bi bi-plus' : 'bi bi-dash'"></i></button>
@@ -276,7 +284,35 @@
     </div>
     <div class="table-wrapper" [class.hidden]="resultadosMinimized">
 
-      <div *ngIf="resultados.length > 0" class="resultados-section">
+      <!-- Pestañas de resultados -->
+      <ul class="nav nav-tabs tabs-nav">
+        <li class="nav-item" (click)="tabResultados = 'candidatos'">
+          <a class="nav-link" [class.active]="tabResultados === 'candidatos'">
+            <i class="bi bi-person"></i> Candidatos
+            <span class="tab-count">{{ resultados.length }}</span>
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="showListaResults" (click)="tabResultados = 'listas'">
+          <a class="nav-link" [class.active]="tabResultados === 'listas'">
+            <i class="bi bi-clipboard-data"></i> Listas
+            <span class="tab-count">{{ resultadosListas.length }}</span>
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="resultadosRecinto.length > 0" (click)="tabResultados = 'recintos'">
+          <a class="nav-link" [class.active]="tabResultados === 'recintos'">
+            <i class="bi bi-building"></i> Recintos
+            <span class="tab-count">{{ resultadosRecinto.length }}</span>
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="resultadosMesa.length > 0" (click)="tabResultados = 'mesas'">
+          <a class="nav-link" [class.active]="tabResultados === 'mesas'">
+            <i class="bi bi-grid-3x3-gap"></i> Mesas
+            <span class="tab-count">{{ resultadosMesa.length }}</span>
+          </a>
+        </li>
+      </ul>
+
+      <div *ngIf="tabResultados === 'candidatos' && resultados.length > 0" class="resultados-section">
         <h4 class="section-title"><i class="bi bi-person"></i> Candidatos Individuales</h4>
         <table class="table-moderno">
           <thead>
@@ -309,6 +345,16 @@
                     </ng-container>
                     <ng-template #rankNumber>{{ getRankLabel(r, i) }}</ng-template>
                   </span>
+                  <span class="candidato-avatar" *ngIf="r.candidatoId > 0 && fotoCandidatoThumb(r.candidatoId)">
+                    <img [src]="fotoCandidatoThumb(r.candidatoId)" alt="Foto">
+                  </span>
+                  <span class="candidato-avatar avatar-placeholder" *ngIf="r.candidatoId > 0 && !fotoCandidatoThumb(r.candidatoId)">
+                    <i class="bi bi-person"></i>
+                  </span>
+                  <span class="candidato-avatar avatar-placeholder" *ngIf="r.candidatoId <= 0"
+                    [class.avatar-nulos]="r.candidatoId === 0" [class.avatar-blanco]="r.candidatoId === -1">
+                    <i class="bi" [ngClass]="r.candidatoId === 0 ? 'bi-x-circle' : 'bi-square'"></i>
+                  </span>
                   <span class="candidato-name">{{ r.nombreCompleto }}</span>
                 </div>
               </td>
@@ -326,7 +372,7 @@
         </table>
       </div>
 
-      <div *ngIf="showListaResults && resultadosListas.length > 0" class="resultados-section">
+      <div *ngIf="tabResultados === 'listas' && showListaResults && resultadosListas.length > 0" class="resultados-section">
         <h4 class="section-title"><i class="bi bi-clipboard-data"></i> Resultados por Lista</h4>
         <table class="table-moderno">
           <thead>
@@ -343,7 +389,17 @@
           <tbody>
             <tr *ngFor="let l of resultadosListas; let i = index">
               <td>{{ i + 1 }}</td>
-              <td><strong>{{ l.listaNombre }}</strong></td>
+              <td>
+                <div class="candidato-info-cell">
+                  <span class="candidato-avatar logo-avatar" *ngIf="l.listaId && logoListaThumb(l.listaId)">
+                    <img [src]="logoListaThumb(l.listaId)" alt="Logo">
+                  </span>
+                  <span class="candidato-avatar logo-avatar avatar-placeholder" *ngIf="!l.listaId || !logoListaThumb(l.listaId)">
+                    <i class="bi bi-flag"></i>
+                  </span>
+                  <strong>{{ l.listaNombre }}</strong>
+                </div>
+              </td>
               <td>{{ l.numeroLista }}</td>
               <td><span class="partido-badge">{{ l.partidoNombre || '—' }}</span></td>
               <td>{{ l.cargoNombre || '—' }}</td>
@@ -357,89 +413,78 @@
         </table>
       </div>
 
-      <div *ngIf="resultados.length === 0 && (!showListaResults || resultadosListas.length === 0)"
+      <div *ngIf="tabResultados === 'candidatos' && resultados.length === 0"
         class="empty-msg text-center py-4">
         No hay resultados disponibles
       </div>
-    </div>
-  </div>
 
-  <!-- Drill-down: Resultados por Recinto -->
-  <div class="table-card" *ngIf="resultadosRecinto.length > 0">
-    <div class="table-header">
-      <h3><i class="bi bi-building"></i> Resultados por Recinto</h3>
-      <div class="card-buttons">
-        <span class="table-count">{{ resultadosRecinto.length }} recintos</span>
+      <!-- Pestaña: Recintos (clic → resumen en modal) -->
+      <div *ngIf="tabResultados === 'recintos' && resultadosRecinto.length > 0" class="resultados-section">
+        <h4 class="section-title"><i class="bi bi-building"></i> Resultados por Recinto</h4>
+        <p class="text-muted small mb-2">Haz clic en un recinto para ver su resumen en un modal.</p>
+        <table class="table-moderno">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Recinto</th>
+              <th class="text-right">Votos</th>
+              <th class="text-right">%</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of resultadosRecinto; let i = index" (click)="abrirResumenRecinto(r)"
+              style="cursor:pointer;" title="Ver resumen del recinto">
+              <td>{{ i + 1 }}</td>
+              <td><strong>{{ r.recintoNombre }}</strong></td>
+              <td class="text-right"><strong>{{ r.totalVotos | number }}</strong></td>
+              <td class="text-right"><span class="porcentaje-badge">{{ r.porcentaje | number:'1.1-1' }}%</span></td>
+              <td class="text-right"><i class="bi bi-chevron-right text-muted"></i></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-    </div>
-    <div class="table-wrapper">
-      <table class="table-moderno">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Recinto</th>
-            <th class="text-right">Votos</th>
-            <th class="text-right">%</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let r of resultadosRecinto; let i = index" (click)="seleccionarRecinto(r)"
-            style="cursor:pointer;" title="Ver mesas de este recinto">
-            <td>{{ i + 1 }}</td>
-            <td><strong>{{ r.recintoNombre }}</strong></td>
-            <td class="text-right"><strong>{{ r.totalVotos | number }}</strong></td>
-            <td class="text-right"><span class="porcentaje-badge">{{ r.porcentaje | number:'1.1-1' }}%</span></td>
-            <td class="text-right"><i class="bi bi-chevron-right text-muted"></i></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
 
-  <!-- Drill-down: Resultados por Mesa -->
-  <div class="table-card" *ngIf="resultadosMesa.length > 0">
-    <div class="table-header">
-      <h3><i class="bi bi-grid-3x3-gap"></i> Resultados por Mesa</h3>
-      <div class="card-buttons">
-        <span class="table-count">{{ resultadosMesa.length }} mesas</span>
+      <!-- Pestaña: Mesas (clic → candidatos + fotos del acta) -->
+      <div *ngIf="tabResultados === 'mesas' && resultadosMesa.length > 0" class="resultados-section">
+        <h4 class="section-title"><i class="bi bi-grid-3x3-gap"></i> Resultados por Mesa</h4>
+        <p class="text-muted small mb-2">Haz clic en una mesa para ver sus candidatos y el acta.</p>
+        <table class="table-moderno">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Mesa</th>
+              <th>Recinto</th>
+              <th>Estado</th>
+              <th class="text-right">Candidatos</th>
+              <th class="text-right">Nulos</th>
+              <th class="text-right">Blancos</th>
+              <th class="text-right">Total</th>
+              <th class="text-right">%</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of resultadosMesa; let i = index" (click)="seleccionarMesa(m)"
+              style="cursor:pointer;" title="Ver candidatos y acta de esta mesa">
+              <td>{{ i + 1 }}</td>
+              <td><strong>Mesa {{ m.mesaNumero }}</strong> <small class="text-muted">{{ m.sexo || '' }}</small></td>
+              <td>{{ m.institucionNombre || '—' }}</td>
+              <td>
+                <span *ngIf="m.cerrada" class="badge bg-success">Cerrada</span>
+                <span *ngIf="!m.cerrada" class="badge bg-warning text-dark">Abierta</span>
+              </td>
+              <td class="text-right">{{ m.votosCandidatos | number }}</td>
+              <td class="text-right">{{ m.votosNulos | number }}</td>
+              <td class="text-right">{{ m.votosBlanco | number }}</td>
+              <td class="text-right"><strong>{{ m.totalVotos | number }}</strong></td>
+              <td class="text-right"><span class="porcentaje-badge">{{ m.porcentaje | number:'1.1-1' }}%</span></td>
+              <td class="text-right"><i class="bi bi-chevron-right text-muted"></i></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-    </div>
-    <div class="table-wrapper">
-      <table class="table-moderno">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Mesa</th>
-            <th>Recinto</th>
-            <th>Estado</th>
-            <th class="text-right">Candidatos</th>
-            <th class="text-right">Nulos</th>
-            <th class="text-right">Blancos</th>
-            <th class="text-right">Total</th>
-            <th class="text-right">%</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let m of resultadosMesa; let i = index" (click)="seleccionarMesa(m)"
-            style="cursor:pointer;" title="Ver candidatos y acta de esta mesa">
-            <td>{{ i + 1 }}</td>
-            <td><strong>Mesa {{ m.mesaNumero }}</strong> <small class="text-muted">{{ m.sexo || '' }}</small></td>
-            <td>{{ m.institucionNombre || '—' }}</td>
-            <td>
-              <span *ngIf="m.cerrada" class="badge bg-success">Cerrada</span>
-              <span *ngIf="!m.cerrada" class="badge bg-warning text-dark">Abierta</span>
-            </td>
-            <td class="text-right">{{ m.votosCandidatos | number }}</td>
-            <td class="text-right">{{ m.votosNulos | number }}</td>
-            <td class="text-right">{{ m.votosBlanco | number }}</td>
-            <td class="text-right"><strong>{{ m.totalVotos | number }}</strong></td>
-            <td class="text-right"><span class="porcentaje-badge">{{ m.porcentaje | number:'1.1-1' }}%</span></td>
-            <td class="text-right"><i class="bi bi-chevron-right text-muted"></i></td>
-          </tr>
-        </tbody>
-      </table>
+
     </div>
   </div>
 
@@ -493,7 +538,21 @@
             </thead>
             <tbody>
               <tr *ngFor="let r of resultadosOrdenados">
-                <td><strong>{{ r.nombreCompleto }}</strong></td>
+                <td>
+                  <div class="candidato-info-cell">
+                    <span class="candidato-avatar" *ngIf="r.candidatoId > 0 && fotoCandidatoThumb(r.candidatoId)">
+                      <img [src]="fotoCandidatoThumb(r.candidatoId)" alt="Foto">
+                    </span>
+                    <span class="candidato-avatar avatar-placeholder" *ngIf="r.candidatoId > 0 && !fotoCandidatoThumb(r.candidatoId)">
+                      <i class="bi bi-person"></i>
+                    </span>
+                    <span class="candidato-avatar avatar-placeholder" *ngIf="r.candidatoId <= 0"
+                      [class.avatar-nulos]="r.candidatoId === 0" [class.avatar-blanco]="r.candidatoId === -1">
+                      <i class="bi" [ngClass]="r.candidatoId === 0 ? 'bi-x-circle' : 'bi-square'"></i>
+                    </span>
+                    <strong>{{ r.nombreCompleto }}</strong>
+                  </div>
+                </td>
                 <td><span class="partido-badge">{{ r.partidoNombre }}</span></td>
                 <td>{{ r.cargoNombre }}</td>
                 <td class="text-right"><strong>{{ r.totalVotos | number }}</strong></td>
@@ -522,6 +581,130 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" (click)="cerrarDrillMesa()">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resumen de recinto (modal) -->
+  <div class="modal-backdrop show" *ngIf="showRecintoResumen"></div>
+  <div class="modal show" *ngIf="showRecintoResumen" style="display:block;">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 *ngIf="recintoResumen"><i class="bi bi-building"></i> {{ recintoResumen.recintoNombre }}</h5>
+          <button type="button" class="btn-close" (click)="cerrarResumenRecinto()"></button>
+        </div>
+        <div class="modal-body">
+          <div *ngIf="recintoResumenLoading" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+
+          <div *ngIf="!recintoResumenLoading && recintoResumenData">
+            <!-- KPIs del recinto -->
+            <div class="resumen-kpi-grid">
+              <div class="resumen-kpi">
+                <span class="resumen-kpi-label">Total Votos</span>
+                <span class="resumen-kpi-value">{{ recintoResumenData.totalVotos | number }}</span>
+              </div>
+              <div class="resumen-kpi kpi-nulos">
+                <span class="resumen-kpi-label">Nulos</span>
+                <span class="resumen-kpi-value">{{ recintoResumenData.totalVotosNulos | number }}</span>
+              </div>
+              <div class="resumen-kpi kpi-blanco">
+                <span class="resumen-kpi-label">Blancos</span>
+                <span class="resumen-kpi-value">{{ recintoResumenData.totalVotosBlanco | number }}</span>
+              </div>
+              <div class="resumen-kpi kpi-mesas">
+                <span class="resumen-kpi-label">Mesas cerradas</span>
+                <span class="resumen-kpi-value">{{ recintoResumenData.mesasCerradas }}/{{ recintoResumenData.totalMesas }}</span>
+              </div>
+            </div>
+
+            <!-- Top candidatos del recinto -->
+            <h6 class="section-title mt-4"><i class="bi bi-person"></i> Top candidatos</h6>
+            <table class="table-moderno">
+              <thead>
+                <tr>
+                  <th>Candidato</th>
+                  <th>Partido</th>
+                  <th class="text-right">Votos</th>
+                  <th class="text-right">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let c of recintoTopCandidatos">
+                  <td>
+                    <div class="candidato-info-cell">
+                      <span class="candidato-avatar" *ngIf="c.candidatoId > 0 && fotoCandidatoThumb(c.candidatoId)">
+                        <img [src]="fotoCandidatoThumb(c.candidatoId)" alt="Foto">
+                      </span>
+                      <span class="candidato-avatar avatar-placeholder" *ngIf="c.candidatoId > 0 && !fotoCandidatoThumb(c.candidatoId)">
+                        <i class="bi bi-person"></i>
+                      </span>
+                      <span>{{ c.nombreCompleto }}</span>
+                    </div>
+                  </td>
+                  <td><span class="partido-badge">{{ c.partidoNombre }}</span></td>
+                  <td class="text-right"><strong>{{ c.totalVotos | number }}</strong></td>
+                  <td class="text-right"><span class="porcentaje-badge">{{ c.porcentaje | number:'1.1-1' }}%</span></td>
+                </tr>
+                <tr *ngIf="recintoTopCandidatos.length === 0">
+                  <td colspan="4" class="text-center empty-msg">Sin votos registrados en este recinto</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Mesas del recinto -->
+            <h6 class="section-title mt-4">
+              <i class="bi bi-grid-3x3-gap"></i> Mesas ({{ (recintoResumenData.resultadosMesa || []).length }})
+            </h6>
+            <table class="table-moderno">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Mesa</th>
+                  <th>Estado</th>
+                  <th class="text-right">Nulos</th>
+                  <th class="text-right">Blancos</th>
+                  <th class="text-right">Total</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let m of recintoResumenData.resultadosMesa || []; let i = index"
+                  (click)="cerrarResumenRecinto(); seleccionarMesa(m)"
+                  style="cursor:pointer;" title="Ver detalle de la mesa">
+                  <td>{{ i + 1 }}</td>
+                  <td><strong>Mesa {{ m.mesaNumero }}</strong></td>
+                  <td>
+                    <span *ngIf="m.cerrada" class="badge bg-success">Cerrada</span>
+                    <span *ngIf="!m.cerrada" class="badge bg-warning text-dark">Abierta</span>
+                  </td>
+                  <td class="text-right">{{ m.votosNulos | number }}</td>
+                  <td class="text-right">{{ m.votosBlanco | number }}</td>
+                  <td class="text-right"><strong>{{ m.totalVotos | number }}</strong></td>
+                  <td class="text-right"><i class="bi bi-chevron-right text-muted"></i></td>
+                </tr>
+                <tr *ngIf="(recintoResumenData.resultadosMesa || []).length === 0">
+                  <td colspan="7" class="text-center empty-msg">Sin mesas con votos en este recinto</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div *ngIf="!recintoResumenLoading && !recintoResumenData" class="text-center py-4 text-muted">
+            <i class="bi bi-exclamation-triangle text-warning"></i>
+            No se pudo cargar el resumen del recinto.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="cerrarResumenRecinto()">Cerrar</button>
+          <button class="btn btn-primary" *ngIf="recintoResumenData" (click)="aplicarRecintoDesdeResumen()">
+            <i class="bi bi-funnel-fill"></i> Ver detalle (drill-down)
+          </button>
         </div>
       </div>
     </div>

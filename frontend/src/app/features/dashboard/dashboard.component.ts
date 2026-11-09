@@ -6,7 +6,7 @@ import { Chart, registerables } from 'chart.js';
 import { ApiService } from '../../core/services/api.service';
 import { WebSocketService } from '../../core/services/websocket.service';
 import { AuthService } from '../../core/services/auth.service';
-import { DashboardData, Eleccion, Cargo, Partido, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, Mesa, ResultadoCandidato, ResultadoLista, ResultadoRecinto, ResultadoMesa, MesaActaFoto, CandidatoDetalleResponse, GeoGroup, MesaCerradaResponse } from '../../core/models';
+import { DashboardData, Eleccion, Cargo, Partido, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, Mesa, ResultadoCandidato, ResultadoLista, ResultadoRecinto, ResultadoMesa, MesaActaFoto, CandidatoDetalleResponse, GeoGroup, MesaCerradaResponse, Candidato } from '../../core/models';
 import { GeoGroupTableComponent } from './geo-group-table.component';
 import { Subscription } from 'rxjs';
 import { catchError, of } from 'rxjs';
@@ -46,6 +46,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   drillMesaFotosLoading = false;
   drillMesaFotoVisor: string | null = null;
 
+  // Pestañas de resultados
+  tabResultados: 'candidatos' | 'listas' | 'recintos' | 'mesas' = 'candidatos';
+
+  // Modal de resumen por recinto
+  showRecintoResumen = false;
+  recintoResumen: ResultadoRecinto | null = null;
+  recintoResumenData: DashboardData | null = null;
+  recintoResumenLoading = false;
+
   resultadosPorPartido: { partido: string; votos: number; porcentaje: number }[] = [];
   resultadosListasChart: { lista: string; numero: number; partido: string; votos: number; porcentaje: number }[] = [];
 
@@ -74,6 +83,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ultimaActualizacion = '';
   filtrosMinimized = true;
+  statsMinimized = false;
 
   // Card toggle states
   barChartMinimized = false;
@@ -136,6 +146,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     else if (card === 'partyChart') this.partyChartMinimized = !this.partyChartMinimized;
     else if (card === 'listChart') this.listChartMinimized = !this.listChartMinimized;
     else if (card === 'resultados') this.resultadosMinimized = !this.resultadosMinimized;
+    else if (card === 'stats') this.statsMinimized = !this.statsMinimized;
   }
 
   toggleFullscreen(card: string): void {
@@ -173,6 +184,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       if (elecciones.length > 0) {
         this.selectedEleccionId = elecciones[0].id;
         this.eleccionNombre = elecciones[0].nombre;
+        this.cargarMetaFotos(elecciones[0].id);
         this.loadZonas();
         this.api.getInstituciones().subscribe((data: InstitucionEducativa[]) => {
           this.instituciones = data;
@@ -231,6 +243,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       });
     }
     this.resultados = resultados;
+
+    // Si la pestaña activa ya no tiene datos, volver a candidatos
+    if (this.tabResultados === 'listas' && !this.showListaResults) this.tabResultados = 'candidatos';
+    if (this.tabResultados === 'recintos' && this.resultadosRecinto.length === 0) this.tabResultados = 'candidatos';
+    if (this.tabResultados === 'mesas' && this.resultadosMesa.length === 0) this.tabResultados = 'candidatos';
   }
 
   private subscribeToMesaEstado(): void {
@@ -305,6 +322,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.selectedEleccionId = Number((event.target as HTMLSelectElement).value);
     const eleccion = this.elecciones.find(e => e.id === this.selectedEleccionId);
     this.eleccionNombre = eleccion?.nombre || '';
+    this.cargarMetaFotos(this.selectedEleccionId);
     this.loadDashboard();
     this.subscribeToUpdates();
   }
@@ -491,6 +509,123 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.drillMesaFotoVisor) {
       URL.revokeObjectURL(this.drillMesaFotoVisor);
       this.drillMesaFotoVisor = null;
+    }
+  }
+
+  // ===== Fotos de candidato / logos de lista (caché blob) =====
+  private candFotoCache = new Map<number, string>();
+  private listaLogoCache = new Map<number, string>();
+  // Mapas "tiene foto/logo" por id: evitan peticiones 404 (null = aún no cargado)
+  private candTieneFoto: Map<number, boolean> | null = null;
+  private listTieneLogo: Map<number, boolean> | null = null;
+
+  /** Carga una vez por elección si cada candidato tiene foto y cada lista tiene logo */
+  cargarMetaFotos(eleccionId: number): void {
+    this.candTieneFoto = null;
+    this.listTieneLogo = null;
+    this.api.getCandidatosByEleccion(eleccionId).subscribe({
+      next: (candidatos: Candidato[]) => {
+        const m = new Map<number, boolean>();
+        candidatos.forEach(c => m.set(c.id, !!c.tieneFoto));
+        this.candTieneFoto = m;
+        try { this.cdr.detectChanges(); } catch (_) {}
+      },
+      error: () => { this.candTieneFoto = new Map(); }
+    });
+    this.api.getListasByEleccion(eleccionId).subscribe({
+      next: (listas: any[]) => {
+        const m = new Map<number, boolean>();
+        listas.forEach((l: any) => m.set(l.id, !!l.tieneLogo));
+        this.listTieneLogo = m;
+        try { this.cdr.detectChanges(); } catch (_) {}
+      },
+      error: () => { this.listTieneLogo = new Map(); }
+    });
+  }
+
+  fotoCandidatoThumb(id: number): string {
+    if (!this.candTieneFoto?.get(id)) return '';
+    let url = this.candFotoCache.get(id);
+    if (url === undefined) {
+      this.candFotoCache.set(id, '');
+      this.api.getFotoCandidatoBlob(id).subscribe({
+        next: (blob) => {
+          this.candFotoCache.set(id, URL.createObjectURL(blob));
+          try { this.cdr.detectChanges(); } catch (_) {}
+        },
+        error: () => this.candFotoCache.set(id, '')
+      });
+      return '';
+    }
+    return url;
+  }
+
+  logoListaThumb(id: number): string {
+    if (!this.listTieneLogo?.get(id)) return '';
+    let url = this.listaLogoCache.get(id);
+    if (url === undefined) {
+      this.listaLogoCache.set(id, '');
+      this.api.getLogoListaBlob(id).subscribe({
+        next: (blob) => {
+          this.listaLogoCache.set(id, URL.createObjectURL(blob));
+          try { this.cdr.detectChanges(); } catch (_) {}
+        },
+        error: () => this.listaLogoCache.set(id, '')
+      });
+      return '';
+    }
+    return url;
+  }
+
+  // ===== Modal de resumen por recinto =====
+
+  /** Abrir modal con el resumen del recinto (KPIs + top candidatos + mesas) */
+  abrirResumenRecinto(r: ResultadoRecinto): void {
+    if (!this.selectedEleccionId) return;
+    this.recintoResumen = r;
+    this.recintoResumenData = null;
+    this.recintoResumenLoading = true;
+    this.showRecintoResumen = true;
+    this.api.getDashboardConFiltros(
+      this.selectedEleccionId,
+      undefined, undefined, undefined, undefined, undefined, undefined,
+      r.recintoId
+    ).subscribe({
+      next: (data: DashboardData) => {
+        this.recintoResumenData = data;
+        this.recintoResumenLoading = false;
+      },
+      error: () => { this.recintoResumenLoading = false; }
+    });
+  }
+
+  cerrarResumenRecinto(): void {
+    this.showRecintoResumen = false;
+    this.recintoResumen = null;
+    this.recintoResumenData = null;
+  }
+
+  /** Del modal: aplicar drill-down al recinto (chip de alcance) */
+  aplicarRecintoDesdeResumen(): void {
+    const r = this.recintoResumen;
+    this.cerrarResumenRecinto();
+    if (r) this.seleccionarRecinto(r);
+  }
+
+  /** Top candidatos del recinto (modal de resumen) */
+  get recintoTopCandidatos(): ResultadoCandidato[] {
+    return [...(this.recintoResumenData?.resultados || [])]
+      .sort((a, b) => b.totalVotos - a.totalVotos)
+      .slice(0, 5);
+  }
+
+  /** Etiqueta del contador según la pestaña activa */
+  get tabCountLabel(): string {
+    switch (this.tabResultados) {
+      case 'listas': return `${this.resultadosListas.length} listas`;
+      case 'recintos': return `${this.resultadosRecinto.length} recintos`;
+      case 'mesas': return `${this.resultadosMesa.length} mesas`;
+      default: return `${this.resultados.length} candidatos`;
     }
   }
 

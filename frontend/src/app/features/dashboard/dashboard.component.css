@@ -34,6 +34,9 @@
 .form-select:disabled { background: var(--alantek-background); cursor: not-allowed; opacity: 0.6; }
 
 .stats-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 16px; }
+.stats-grid.hidden { display: none; }
+.stats-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.stats-section-header h3 { margin: 0; font-size: 16px; color: var(--alantek-text); display: flex; align-items: center; gap: 8px; }
 
 .stat-card { background: var(--alantek-surface); border-radius: 10px; padding: 12px 14px; box-shadow: var(--alantek-shadow-sm); border: 1px solid var(--alantek-border); display: flex; flex-direction: column; gap: 2px; position: relative; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
 .stat-card:hover { transform: translateY(-2px); box-shadow: var(--alantek-shadow-lg); }
@@ -121,6 +124,24 @@
 .candidato-rank { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: var(--alantek-background); border-radius: 8px; font-size: 12px; font-weight: 700; color: var(--alantek-text-muted); flex-shrink: 0; }
 .candidato-name { font-weight: 600; color: var(--alantek-text); }
 
+/* Avatares: foto de candidato / logo de lista */
+.candidato-avatar { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--alantek-background); border: 1px solid var(--alantek-border); }
+.candidato-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.candidato-avatar.avatar-placeholder { color: var(--alantek-text-muted); font-size: 16px; }
+.candidato-avatar.avatar-nulos { background: var(--alantek-danger-bg); color: var(--alantek-danger); border-color: var(--alantek-danger); }
+.candidato-avatar.avatar-blanco { background: var(--alantek-background); color: var(--alantek-text-muted); border-color: var(--alantek-border-strong); }
+.candidato-avatar.logo-avatar { border-radius: 8px; }
+.candidato-avatar.logo-avatar img { object-fit: contain; padding: 2px; }
+
+/* Pestañas de resultados */
+.tabs-nav { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 2px solid var(--alantek-border); flex-wrap: wrap; padding: 0; list-style: none; }
+.tabs-nav .nav-item { cursor: pointer; }
+.tabs-nav .nav-link { padding: 8px 16px; font-size: 13px; font-weight: 600; color: var(--alantek-text-muted); border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 6px; text-decoration: none; }
+.tabs-nav .nav-link.active { color: var(--alantek-primary); border-bottom-color: var(--alantek-primary); }
+.tabs-nav .nav-link:hover { color: var(--alantek-primary-strong); }
+.tab-count { background: var(--alantek-background); border: 1px solid var(--alantek-border); border-radius: 10px; font-size: 11px; font-weight: 700; padding: 0 7px; color: var(--alantek-text-muted); }
+.tabs-nav .nav-link.active .tab-count { background: var(--alantek-info-bg); border-color: transparent; color: var(--alantek-primary); }
+
 .partido-badge { display: inline-block; padding: 3px 12px; background: var(--alantek-info-bg); color: var(--alantek-primary); border-radius: 6px; font-size: 13px; font-weight: 500; }
 .porcentaje-badge { display: inline-block; padding: 3px 10px; background: var(--alantek-success-bg); color: var(--alantek-success); border-radius: 6px; font-size: 13px; font-weight: 600; }
 
@@ -165,6 +186,15 @@
 .detalle-tabla-wrapper .table { margin-top: 0; }
 .detalle-tabla-wrapper .table th { position: sticky; top: 0; z-index: 1; }
 
+/* Modal de resumen por recinto */
+.resumen-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 8px; }
+.resumen-kpi { background: var(--alantek-background); border: 1px solid var(--alantek-border); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.resumen-kpi-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: var(--alantek-text-muted); }
+.resumen-kpi-value { font-size: 20px; font-weight: 800; color: var(--alantek-text); line-height: 1.1; }
+.resumen-kpi.kpi-nulos .resumen-kpi-value { color: var(--alantek-danger); }
+.resumen-kpi.kpi-blanco .resumen-kpi-value { color: var(--alantek-text-secondary); }
+.resumen-kpi.kpi-mesas .resumen-kpi-value { color: var(--alantek-success); }
+
 @media (max-width: 1100px) {
   .stats-grid { grid-template-columns: repeat(3, 1fr); }
   .charts-grid { grid-template-columns: 1fr; }
@@ -173,6 +203,7 @@
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .dashboard-header { flex-direction: column; gap: 12px; }
   .filtros-grid { grid-template-columns: 1fr 1fr; }
+  .resumen-kpi-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr; }
@@ -278,3 +309,20 @@
 .progress-value { font-size: 12px; font-weight: 600; color: var(--alantek-text-muted); }
 [data-theme="dark"] .progress-label { color: var(--alantek-text) !important; }
 [data-theme="dark"] .progress-value { color: var(--alantek-text-muted) !important; }
+
+/* Dark mode: estadísticas colapsables, pestañas, avatares y resumen de recinto */
+[data-theme="dark"] .stats-section-header h3 { color: var(--alantek-text) !important; }
+[data-theme="dark"] .tabs-nav { border-bottom-color: var(--alantek-border) !important; }
+[data-theme="dark"] .tabs-nav .nav-link { color: var(--alantek-text-muted) !important; }
+[data-theme="dark"] .tabs-nav .nav-link.active { color: var(--alantek-primary) !important; border-bottom-color: var(--alantek-primary) !important; }
+[data-theme="dark"] .tabs-nav .nav-link:hover { color: var(--alantek-primary-strong) !important; }
+[data-theme="dark"] .tab-count { background: var(--alantek-border) !important; border-color: var(--alantek-border-strong) !important; color: var(--alantek-text-muted) !important; }
+[data-theme="dark"] .tabs-nav .nav-link.active .tab-count { background: var(--alantek-info-bg) !important; border-color: transparent !important; color: var(--alantek-primary) !important; }
+[data-theme="dark"] .candidato-avatar { background: var(--alantek-border) !important; border-color: var(--alantek-border-strong) !important; }
+[data-theme="dark"] .candidato-avatar.avatar-placeholder { color: var(--alantek-text-muted) !important; }
+[data-theme="dark"] .candidato-avatar.avatar-nulos { background: var(--alantek-danger-bg) !important; color: var(--alantek-danger) !important; border-color: var(--alantek-danger) !important; }
+[data-theme="dark"] .resumen-kpi { background: var(--alantek-background) !important; border-color: var(--alantek-border) !important; }
+[data-theme="dark"] .resumen-kpi-value { color: var(--alantek-text) !important; }
+[data-theme="dark"] .resumen-kpi.kpi-nulos .resumen-kpi-value { color: var(--alantek-danger) !important; }
+[data-theme="dark"] .resumen-kpi.kpi-blanco .resumen-kpi-value { color: var(--alantek-text-secondary) !important; }
+[data-theme="dark"] .resumen-kpi.kpi-mesas .resumen-kpi-value { color: var(--alantek-success) !important; }
