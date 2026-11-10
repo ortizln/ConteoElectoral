@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
+import com.electoral.util.AuditMap;
 import com.electoral.util.SecurityUtil;
 import com.electoral.repositories.TipoEleccionRepository;
 
@@ -82,7 +83,7 @@ public class EleccionService {
             "Eleccion",
             saved.getId(),
             null,
-            Map.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion())
+            AuditMap.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion())
         );
         return mapToResponse(saved);
     }
@@ -96,7 +97,7 @@ public class EleccionService {
             throw new DuplicateEntityException("Ya existe una elección con el nombre '" + request.getNombre() + "'");
         }
         log.info("Actualizando {} con ID: {}", "Eleccion", id);
-        Map<String, Object> datosAnteriores = Map.of("nombre", eleccion.getNombre(), "descripcion", eleccion.getDescripcion());
+        Map<String, Object> datosAnteriores = AuditMap.of("nombre", eleccion.getNombre(), "descripcion", eleccion.getDescripcion());
         eleccion.setNombre(request.getNombre());
         eleccion.setDescripcion(request.getDescripcion());
         eleccion.setFechaInicio(request.getFechaInicio());
@@ -115,7 +116,7 @@ public class EleccionService {
             "Eleccion",
             id,
             datosAnteriores,
-            Map.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion())
+            AuditMap.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion())
         );
         return mapToResponse(saved);
     }

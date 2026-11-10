@@ -26,6 +26,14 @@ export class CandidatosComponent implements OnInit {
   provincias: Provincia[] = [];
   cantones: Canton[] = [];
   parroquias: Parroquia[] = [];
+  cantonesAll: Canton[] = [];   // todos los cantones (se cargan una vez)
+  parroquiasAll: Parroquia[] = []; // todas las parroquias (se cargan una vez)
+
+  // Filtros por nombre y por provincia en cada nivel territorial
+  filtroProvinciaTexto = '';      // busca provincia por nombre
+  filtroProvinciaCanton: number | null = null;  // provincia que acota la lista de cantones
+  filtroCantonTexto = '';         // busca cantón por nombre
+  filtroParroquiaTexto = '';      // busca parroquia por nombre
   sortColumn: string = '';
   sortDirection: string = 'asc';
   searchText: string = '';
@@ -59,6 +67,8 @@ export class CandidatosComponent implements OnInit {
       }
     });
     this.api.getProvincias().subscribe((d: Provincia[]) => this.provincias = d);
+    this.api.getCantones().subscribe((d: Canton[]) => this.cantonesAll = d);
+    this.api.getParroquias().subscribe((d: Parroquia[]) => this.parroquiasAll = d);
   }
 
   /** Territorio del cargo seleccionado en el form (para mostrar los selects que aplican) */
@@ -67,22 +77,87 @@ export class CandidatosComponent implements OnInit {
     return cargo?.territorio || 'NACIONAL';
   }
 
-  onProvinciaChange(): void {
-    this.form.cantonId = null;
-    this.form.parroquiaId = null;
-    this.cantones = [];
-    this.parroquias = [];
-    if (this.form.provinciaId) {
-      this.api.getCantonesByProvincia(this.form.provinciaId).subscribe((d: Canton[]) => this.cantones = d);
+  // ===== Filtros por nivel territorial =====
+
+  /** Provincias filtradas por texto de búsqueda */
+  get provinciasFiltradas(): Provincia[] {
+    const t = this.filtroProvinciaTexto.trim().toLowerCase();
+    if (!t) return this.provincias;
+    return this.provincias.filter(p => p.nombre.toLowerCase().includes(t));
+  }
+
+  /** Cantones: todos, acotados por la provincia filtro y/o el texto de búsqueda */
+  get cantonesFiltrados(): Canton[] {
+    let lista = this.cantonesAll;
+    if (this.filtroProvinciaCanton) {
+      lista = lista.filter(c => c.provinciaId === this.filtroProvinciaCanton);
+    }
+    const t = this.filtroCantonTexto.trim().toLowerCase();
+    if (t) lista = lista.filter(c => c.nombre.toLowerCase().includes(t));
+    return lista;
+  }
+
+  /** Parroquias: del cantón seleccionado (si hay) y/o por texto de búsqueda */
+  get parroquiasFiltradas(): Parroquia[] {
+    let lista = this.parroquiasAll;
+    if (this.form.cantonId) {
+      lista = lista.filter(p => p.cantonId === this.form.cantonId);
+    }
+    const t = this.filtroParroquiaTexto.trim().toLowerCase();
+    if (t) lista = lista.filter(p => p.nombre.toLowerCase().includes(t));
+    return lista;
+  }
+
+  /** Cambió el filtro de provincia: si el cantón elegido ya no corresponde, limpiarlo */
+  onFiltroProvinciaChange(): void {
+    if (this.filtroProvinciaCanton && this.form.cantonId) {
+      const c = this.cantonesAll.find(x => x.id === this.form.cantonId);
+      if (c && c.provinciaId !== this.filtroProvinciaCanton) {
+        this.form.cantonId = null;
+        this.form.parroquiaId = null;
+      }
     }
   }
 
+  /** Selección de cantón: arrastra la provincia y limpia la parroquia */
   onCantonChange(): void {
+    const canton = this.cantonesAll.find(c => c.id === this.form.cantonId);
+    this.form.provinciaId = canton ? canton.provinciaId : null;
     this.form.parroquiaId = null;
-    this.parroquias = [];
-    if (this.form.cantonId) {
-      this.api.getParroquiasByCanton(this.form.cantonId).subscribe((d: Parroquia[]) => this.parroquias = d);
-    }
+  }
+
+  /** Selección de parroquia: arrastra cantón y provincia */
+  onParroquiaChange(): void {
+    const parr = this.parroquiasAll.find(p => p.id === this.form.parroquiaId);
+    if (!parr) return;
+    this.form.cantonId = parr.cantonId;
+    const canton = this.cantonesAll.find(c => c.id === parr.cantonId);
+    this.form.provinciaId = canton ? canton.provinciaId : null;
+  }
+
+  /** Cambió el cargo: limpia el territorio asignado y los filtros */
+  onCargoChange(): void {
+    this.form.provinciaId = null;
+    this.form.cantonId = null;
+    this.form.parroquiaId = null;
+    this.filtroProvinciaCanton = null;
+    this.filtroProvinciaTexto = '';
+    this.filtroCantonTexto = '';
+    this.filtroParroquiaTexto = '';
+  }
+
+  /** Limpia todos los filtros territoriales (al abrir el modal) */
+  private resetFiltrosTerritorio(): void {
+    this.filtroProvinciaCanton = null;
+    this.filtroProvinciaTexto = '';
+    this.filtroCantonTexto = '';
+    this.filtroParroquiaTexto = '';
+  }
+
+  /** Nombre visible del cantón en el select (con provincia si no hay filtro de provincia) */
+  nombreCanton(c: Canton): string {
+    if (this.filtroProvinciaCanton || !c.provinciaNombre) return c.nombre;
+    return `${c.nombre} — ${c.provinciaNombre}`;
   }
 
   load(eleccionId: number): void {
@@ -159,6 +234,7 @@ export class CandidatosComponent implements OnInit {
     this.fotoUploading = false;
     this.cantones = [];
     this.parroquias = [];
+    this.resetFiltrosTerritorio();
     this.showModal = true;
   }
 
@@ -172,15 +248,14 @@ export class CandidatosComponent implements OnInit {
     this.errorMessage = '';
     this.fotoPreview = '';
     this.fotoUploading = false;
+    this.resetFiltrosTerritorio();
     this.showModal = true;
-    // Cargar la cascada geográfica según los valores existentes
-    this.cantones = [];
-    this.parroquias = [];
-    if (this.form.provinciaId) {
-      this.api.getCantonesByProvincia(this.form.provinciaId).subscribe((d: Canton[]) => this.cantones = d);
-    }
+    // Preseleccionar el filtro de provincia con la provincia del cantón asignado
     if (this.form.cantonId) {
-      this.api.getParroquiasByCanton(this.form.cantonId).subscribe((d: Parroquia[]) => this.parroquias = d);
+      const canton = this.cantonesAll.find(x => x.id === this.form.cantonId);
+      if (canton) this.filtroProvinciaCanton = canton.provinciaId;
+    } else if (this.form.provinciaId) {
+      this.filtroProvinciaCanton = this.form.provinciaId;
     }
     if (c.tieneFoto) {
       this.api.getFotoCandidatoBlob(c.id).subscribe({
@@ -242,6 +317,20 @@ export class CandidatosComponent implements OnInit {
 
   save(): void {
     this.errorMessage = '';
+    // Validar que el territorio requerido por el cargo esté asignado
+    const terr = this.territorioCargo;
+    if (terr === 'PROVINCIA' && !this.form.provinciaId) {
+      this.errorMessage = 'Seleccione la provincia para este cargo.';
+      return;
+    }
+    if (terr === 'CANTON' && !this.form.cantonId) {
+      this.errorMessage = 'Seleccione el cantón para este cargo.';
+      return;
+    }
+    if (terr === 'PARROQUIA' && !this.form.parroquiaId) {
+      this.errorMessage = 'Seleccione la parroquia para este cargo.';
+      return;
+    }
     if (this.editMode && this.selectedId) {
       this.api.updateCandidato(this.selectedId, this.form).subscribe({
         next: () => { this.load(this.form.eleccionesId); this.closeModal(); },

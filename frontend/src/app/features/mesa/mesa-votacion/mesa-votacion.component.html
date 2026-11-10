@@ -56,7 +56,7 @@
               [class.cerrada]="m.cerrada"
               (click)="seleccionarMesa(m)">
         <span class="mesa-numero">Mesa #{{ m.numero }}</span>
-        <span class="mesa-sexo"><i class="bi" [ngClass]="m.sexo === 'HOMBRES' ? 'bi-gender-male' : m.sexo === 'MUJERES' ? 'bi-gender-female' : 'bi-gender-ambiguous'"></i> {{ m.sexo }}</span>
+        <span class="mesa-sexo"><i class="bi" [ngClass]="m.sexo === 'MASCULINO' ? 'bi-gender-male' : m.sexo === 'FEMENINO' ? 'bi-gender-female' : 'bi-gender-ambiguous'"></i> {{ m.sexo }}</span>
         <span class="mesa-institucion">{{ m.institucionNombre }}</span>
         <span class="mesa-estado-tag" [class.tag-cerrada]="m.cerrada" [class.tag-abierta]="!m.cerrada">
           {{ m.cerrada ? 'Cerrada' : 'Activa' }}

@@ -51,7 +51,7 @@
         <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
         <td>{{ m.numero }}</td>
         <td>{{ m.institucionNombre }}</td>
-        <td><span class="badge" [class]="m.sexo === 'MIXTA' ? 'bg-info' : m.sexo === 'HOMBRES' ? 'bg-primary' : 'bg-warning'">{{ m.sexo }}</span></td>
+        <td><span class="badge" [class]="m.sexo === 'MIXTA' ? 'bg-info' : m.sexo === 'MASCULINO' ? 'bg-primary' : 'bg-warning'">{{ m.sexo }}</span></td>
         <td>
           <span [class]="m.cerrada ? 'badge bg-danger' : 'badge bg-success'">
             {{ m.cerrada ? 'CERRADA' : 'ABIERTA' }}
@@ -118,7 +118,30 @@
             </select>
           </div>
 
-          <div class="mb-3">
+          <!-- Creación: rango de números de mesa -->
+          <div class="mb-3" *ngIf="!editMode">
+            <label>Rango de números de mesa:</label>
+            <div class="row g-2">
+              <div class="col-5">
+                <input type="number" min="1" class="form-control" autocomplete="off"
+                       placeholder="Desde" [(ngModel)]="rangoDesde" />
+              </div>
+              <div class="col-2 d-flex align-items-center justify-content-center text-muted">
+                a
+              </div>
+              <div class="col-5">
+                <input type="number" min="1" class="form-control" autocomplete="off"
+                       placeholder="Hasta" [(ngModel)]="rangoHasta" />
+              </div>
+            </div>
+            <small class="text-muted" *ngIf="mesasARango > 0">
+              Se crearán <strong>{{ mesasARango }}</strong> mesa(s): {{ rangoDesde }}<ng-container *ngIf="mesasARango === 2">, {{ rangoHasta }}</ng-container><ng-container *ngIf="mesasARango > 2">, ..., {{ rangoHasta }}</ng-container>
+            </small>
+            <small class="text-muted" *ngIf="mesasARango === 0">Ejemplo: de 1 a 8 crea las mesas 1, 2, 3, 4, 5, 6, 7 y 8.</small>
+          </div>
+
+          <!-- Edición: número único -->
+          <div class="mb-3" *ngIf="editMode">
             <label>Número:</label>
             <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.numero" (input)="toUpper(form, 'numero')" />
           </div>
@@ -174,14 +197,17 @@
             <label>Sexo:</label>
             <select class="form-select" [(ngModel)]="form.sexo">
               <option value="MIXTA">Mixta</option>
-              <option value="HOMBRES">Hombres</option>
-              <option value="MUJERES">Mujeres</option>
+              <option value="MASCULINO">Masculino</option>
+              <option value="FEMENINO">Femenino</option>
             </select>
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
-          <button class="btn btn-primary" (click)="save()">Guardar</button>
+          <button class="btn btn-secondary" (click)="closeModal()" [disabled]="creandoRango">Cancelar</button>
+          <button class="btn btn-primary" (click)="save()" [disabled]="creandoRango">
+            <span *ngIf="creandoRango" class="spinner-border spinner-border-sm me-1"></span>
+            {{ creandoRango ? 'Creando...' : (editMode ? 'Guardar' : (mesasARango > 1 ? 'Crear ' + mesasARango + ' mesas' : 'Guardar')) }}
+          </button>
         </div>
       </div>
     </div>

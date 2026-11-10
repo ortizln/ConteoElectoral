@@ -166,14 +166,14 @@
             <label>Partido:</label>
             <select class="form-select" [(ngModel)]="form.partidoId">
               <option [ngValue]="null">Seleccione...</option>
-              <option *ngFor="let p of partidos" [value]="p.id">{{ p.nombre }}</option>
+              <option *ngFor="let p of partidos" [ngValue]="p.id">{{ p.nombre }}</option>
             </select>
           </div>
           <div class="mb-3">
             <label>Cargo:</label>
-            <select class="form-select" [(ngModel)]="form.cargoId">
+            <select class="form-select" [(ngModel)]="form.cargoId" (ngModelChange)="onCargoChange()">
               <option [ngValue]="null">Seleccione...</option>
-              <option *ngFor="let c of cargos" [value]="c.id">{{ c.nombre }}</option>
+              <option *ngFor="let c of cargos" [ngValue]="c.id">{{ c.nombre }}</option>
             </select>
           </div>
 
@@ -185,35 +185,76 @@
               <span *ngIf="territorioCargo === 'CANTON'">Cantón (ej. Alcalde / Concejal)</span>
               <span *ngIf="territorioCargo === 'PARROQUIA'">Parroquia</span>:
             </label>
-            <div class="row g-2">
-              <div class="col-12" *ngIf="territorioCargo === 'PROVINCIA'">
-                <select class="form-select" [(ngModel)]="form.provinciaId">
-                  <option [ngValue]="null">Seleccione provincia...</option>
-                  <option *ngFor="let p of provincias" [value]="p.id">{{ p.nombre }}</option>
+
+            <!-- PROVINCIA: buscador por nombre + lista de provincias -->
+            <div *ngIf="territorioCargo === 'PROVINCIA'">
+              <div class="input-group input-group-sm mb-2">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" placeholder="Buscar provincia por nombre..."
+                       [(ngModel)]="filtroProvinciaTexto" autocomplete="off">
+              </div>
+              <select class="form-select" [(ngModel)]="form.provinciaId">
+                <option [ngValue]="null">Seleccione provincia... ({{ provinciasFiltradas.length }})</option>
+                <option *ngFor="let p of provinciasFiltradas" [ngValue]="p.id">{{ p.nombre }}</option>
+              </select>
+              <small class="text-muted" *ngIf="provinciasFiltradas.length === 0">No hay provincias que coincidan con la búsqueda.</small>
+            </div>
+
+            <!-- CANTON: filtro de provincia que acota + buscador por nombre + lista de cantones -->
+            <div *ngIf="territorioCargo === 'CANTON'">
+              <div class="row g-2 mb-2">
+                <div class="col-5">
+                  <select class="form-select form-select-sm" [(ngModel)]="filtroProvinciaCanton" (ngModelChange)="onFiltroProvinciaChange()">
+                    <option [ngValue]="null">Todas las provincias</option>
+                    <option *ngFor="let p of provincias" [ngValue]="p.id">{{ p.nombre }}</option>
+                  </select>
+                </div>
+                <div class="col-7">
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Buscar cantón por nombre..."
+                           [(ngModel)]="filtroCantonTexto" autocomplete="off">
+                  </div>
+                </div>
+              </div>
+              <select class="form-select" [(ngModel)]="form.cantonId" (ngModelChange)="onCantonChange()">
+                <option [ngValue]="null">Seleccione cantón... ({{ cantonesFiltrados.length }})</option>
+                <option *ngFor="let c of cantonesFiltrados" [ngValue]="c.id">{{ nombreCanton(c) }}</option>
+              </select>
+              <small class="text-muted" *ngIf="cantonesFiltrados.length === 0">No hay cantones que coincidan con los filtros.</small>
+            </div>
+
+            <!-- PARROQUIA: filtro de provincia + filtro/búsqueda de parroquia -->
+            <div *ngIf="territorioCargo === 'PARROQUIA'" class="row g-2">
+              <div class="col-5">
+                <select class="form-select form-select-sm" [(ngModel)]="filtroProvinciaCanton" (ngModelChange)="onFiltroProvinciaChange()">
+                  <option [ngValue]="null">Provincia...</option>
+                  <option *ngFor="let p of provincias" [ngValue]="p.id">{{ p.nombre }}</option>
                 </select>
               </div>
-              <ng-container *ngIf="territorioCargo === 'CANTON' || territorioCargo === 'PARROQUIA'">
-                <div class="col-6">
-                  <select class="form-select" [(ngModel)]="form.provinciaId" (ngModelChange)="onProvinciaChange()">
-                    <option [ngValue]="null">Provincia...</option>
-                    <option *ngFor="let p of provincias" [value]="p.id">{{ p.nombre }}</option>
-                  </select>
+              <div class="col-7">
+                <select class="form-select form-select-sm" [(ngModel)]="form.cantonId" (ngModelChange)="onCantonChange()"
+                        [disabled]="!filtroProvinciaCanton">
+                  <option [ngValue]="null">Cantón...</option>
+                  <option *ngFor="let c of cantonesFiltrados" [ngValue]="c.id">{{ c.nombre }}</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text"><i class="bi bi-search"></i></span>
+                  <input type="text" class="form-control" placeholder="Buscar parroquia por nombre..."
+                         [(ngModel)]="filtroParroquiaTexto" autocomplete="off">
                 </div>
-                <div class="col-6">
-                  <select class="form-select" [(ngModel)]="form.cantonId" (ngModelChange)="onCantonChange()"
-                          [disabled]="!form.provinciaId">
-                    <option [ngValue]="null">Cantón...</option>
-                    <option *ngFor="let c of cantones" [value]="c.id">{{ c.nombre }}</option>
-                  </select>
-                </div>
-              </ng-container>
-              <div class="col-12" *ngIf="territorioCargo === 'PARROQUIA'">
-                <select class="form-select" [(ngModel)]="form.parroquiaId" [disabled]="!form.cantonId">
-                  <option [ngValue]="null">Parroquia...</option>
-                  <option *ngFor="let p of parroquias" [value]="p.id">{{ p.nombre }}</option>
+              </div>
+              <div class="col-12">
+                <select class="form-select" [(ngModel)]="form.parroquiaId" (ngModelChange)="onParroquiaChange()"
+                        [disabled]="!form.cantonId">
+                  <option [ngValue]="null">Seleccione parroquia... ({{ parroquiasFiltradas.length }})</option>
+                  <option *ngFor="let p of parroquiasFiltradas" [ngValue]="p.id">{{ p.nombre }}</option>
                 </select>
               </div>
             </div>
+
             <small class="text-muted">Solo se mostrará este candidato en las mesas de este territorio.</small>
           </div>
           <div class="mb-3" *ngIf="territorioCargo === 'NACIONAL'">

@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
+import com.electoral.util.AuditMap;
 import com.electoral.util.SecurityUtil;
 import com.electoral.repositories.TipoCircunscripcionRepository;
 
@@ -72,7 +73,7 @@ public class CargoService {
             "Cargo",
             saved.getId(),
             null,
-            Map.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion())
+            AuditMap.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion())
         );
         return mapToResponse(saved);
     }
@@ -86,7 +87,7 @@ public class CargoService {
             throw new DuplicateEntityException("Ya existe un cargo con el nombre '" + request.getNombre() + "' en esta elección");
         }
         log.info("Actualizando {} con ID: {}", "Cargo", id);
-        Map<String, Object> datosAnteriores = Map.of("nombre", cargo.getNombre(), "descripcion", cargo.getDescripcion());
+        Map<String, Object> datosAnteriores = AuditMap.of("nombre", cargo.getNombre(), "descripcion", cargo.getDescripcion());
         cargo.setNombre(request.getNombre());
         cargo.setDescripcion(request.getDescripcion());
         if (request.getTipoVotacion() != null) {
@@ -111,7 +112,7 @@ public class CargoService {
             "Cargo",
             id,
             datosAnteriores,
-            Map.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion())
+            AuditMap.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion())
         );
         return mapToResponse(saved);
     }

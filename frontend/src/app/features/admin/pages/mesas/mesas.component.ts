@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../../core/services/api.service';
 import { Eleccion, InstitucionEducativa, Mesa, Zona, Provincia, Canton, Parroquia } from '../../../../core/models';
 
@@ -19,6 +20,10 @@ export class MesasComponent implements OnInit {
   editMode = false;
   selectedId: number | null = null;
   form: any = { numero: '', sexo: 'MIXTA', institucionId: null, eleccionesId: null };
+  // Rango de mesas a crear (solo creación): de `rangoDesde` a `rangoHasta` inclusive
+  rangoDesde: number | null = null;
+  rangoHasta: number | null = null;
+  creandoRango = false;
   filterInstitucionId: number | null = null;
   sortColumn: string = '';
   sortDirection: string = 'asc';
@@ -157,6 +162,9 @@ export class MesasComponent implements OnInit {
   openModal(): void {
     this.editMode = false;
     this.form = { numero: '', sexo: 'MIXTA', institucionId: null, eleccionesId: this.form.eleccionesId };
+    this.rangoDesde = null;
+    this.rangoHasta = null;
+    this.creandoRango = false;
     this.errorMessage = '';
     this.resetModalFilters();
     this.showModal = true;
@@ -166,9 +174,18 @@ export class MesasComponent implements OnInit {
     this.editMode = true;
     this.selectedId = m.id;
     this.form = { numero: m.numero, sexo: m.sexo, institucionId: m.institucionId, eleccionesId: m.eleccionesId };
+    this.rangoDesde = null;
+    this.rangoHasta = null;
     this.errorMessage = '';
     this.resetModalFilters();
     this.showModal = true;
+  }
+
+  /** Cantidad de mesas que se crearán con el rango actual */
+  get mesasARango(): number {
+    if (this.rangoDesde == null || this.rangoHasta == null) return 0;
+    if (this.rangoHasta < this.rangoDesde) return 0;
+    return this.rangoHasta - this.rangoDesde + 1;
   }
 
   resetModalFilters(): void {
@@ -221,23 +238,70 @@ export class MesasComponent implements OnInit {
 
   closeModal(): void { this.showModal = false; this.selectedId = null; this.errorMessage = ''; }
 
-  save(): void {
+  async save(): Promise<void> {
     this.errorMessage = '';
     if (!this.form.eleccionesId) {
       this.errorMessage = 'Debe seleccionar una elección';
       return;
     }
+
+    // Edición: una sola mesa
     if (this.editMode && this.selectedId) {
       this.api.updateMesa(this.selectedId, this.form).subscribe({
         next: () => { this.load(this.form.eleccionesId); this.closeModal(); },
         error: (err) => { this.errorMessage = err.error?.message || 'Error al guardar. Intente de nuevo.'; }
       });
-    } else {
-      this.api.createMesa(this.form).subscribe({
-        next: () => { this.load(this.form.eleccionesId); this.closeModal(); },
-        error: (err) => { this.errorMessage = err.error?.message || 'Error al guardar. Intente de nuevo.'; }
-      });
+      return;
     }
+
+    // Creación: rango de mesas (ej. de 1 a 8 crea 1,2,3...8)
+    if (!this.form.institucionId) {
+      this.errorMessage = 'Debe seleccionar una institución';
+      return;
+    }
+    const desde = Number(this.rangoDesde);
+    const hasta = Number(this.rangoHasta);
+    if (!Number.isInteger(desde) || !Number.isInteger(hasta) || desde < 1 || hasta < 1) {
+      this.errorMessage = 'Ingrese un rango de números válido (desde y hasta deben ser números enteros mayores a 0)';
+      return;
+    }
+    if (hasta < desde) {
+      this.errorMessage = 'El número "hasta" debe ser mayor o igual al número "desde"';
+      return;
+    }
+    if (hasta - desde + 1 > 100) {
+      this.errorMessage = 'El rango no puede superar 100 mesas por creación';
+      return;
+    }
+
+    this.creandoRango = true;
+    let creadas = 0;
+    const duplicadas: string[] = [];
+    const otrosErrores: string[] = [];
+
+    for (let n = desde; n <= hasta; n++) {
+      try {
+        await firstValueFrom(this.api.createMesa({ ...this.form, numero: String(n) }));
+        creadas++;
+      } catch (err: any) {
+        const msg = err?.error?.message || 'Error desconocido';
+        if (msg.toLowerCase().includes('ya existe')) duplicadas.push(String(n));
+        else otrosErrores.push(`${n}: ${msg}`);
+      }
+    }
+
+    this.creandoRango = false;
+    this.load(this.form.eleccionesId);
+
+    if (otrosErrores.length > 0) {
+      this.errorMessage = `Se crearon ${creadas} mesa(s). Errores: ${otrosErrores.join('; ')}`;
+      return;
+    }
+    if (duplicadas.length > 0) {
+      this.errorMessage = `Se crearon ${creadas} mesa(s). Ya existían y se omitieron las mesas: ${duplicadas.join(', ')}`;
+      return;
+    }
+    this.closeModal();
   }
 
   cerrar(id: number): void { if (confirm('Cerrar esta mesa?')) this.api.cerrarMesa(id).subscribe(() => this.load(this.form.eleccionesId)); }

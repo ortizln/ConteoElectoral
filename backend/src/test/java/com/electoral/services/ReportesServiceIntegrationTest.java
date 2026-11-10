@@ -83,7 +83,7 @@ class ReportesServiceIntegrationTest {
                 .votosNulos(2).votosBlanco(1)
                 .build());
         mesa2 = mesaRepository.save(Mesa.builder()
-                .numero("002").sexo(Mesa.SexoMesa.MUJERES)
+                .numero("002").sexo(Mesa.SexoMesa.FEMENINO)
                 .institucion(inst).elecciones(eleccion).cerrada(false)
                 .votosNulos(1).votosBlanco(0)
                 .build());

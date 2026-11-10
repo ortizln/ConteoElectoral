@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import com.electoral.entities.Auditoria;
+import com.electoral.util.AuditMap;
 import com.electoral.util.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,7 +56,7 @@ public class InstitucionEducativaService {
             "InstitucionEducativa",
             saved.getId(),
             null,
-            Map.of("nombre", saved.getNombre(), "direccion", saved.getDireccion(), "codigo", saved.getCodigo(), "tipo", saved.getTipo())
+            AuditMap.of("nombre", saved.getNombre(), "direccion", saved.getDireccion(), "codigo", saved.getCodigo(), "tipo", saved.getTipo())
         );
         return saved;
     }
@@ -74,7 +75,7 @@ public class InstitucionEducativaService {
             throw new DuplicateEntityException("Ya existe una institución educativa con el código '" + institucion.getCodigo() + "'");
         }
         log.info("Actualizando {} con ID: {}", "InstitucionEducativa", id);
-        Map<String, Object> datosAnteriores = Map.of("nombre", existing.getNombre(), "direccion", existing.getDireccion(), "codigo", existing.getCodigo(), "tipo", existing.getTipo());
+        Map<String, Object> datosAnteriores = AuditMap.of("nombre", existing.getNombre(), "direccion", existing.getDireccion(), "codigo", existing.getCodigo(), "tipo", existing.getTipo());
         existing.setNombre(institucion.getNombre());
         existing.setDireccion(institucion.getDireccion());
         existing.setParroquia(institucion.getParroquia());
@@ -86,7 +87,7 @@ public class InstitucionEducativaService {
             "InstitucionEducativa",
             id,
             datosAnteriores,
-            Map.of("nombre", existing.getNombre(), "direccion", existing.getDireccion(), "codigo", existing.getCodigo(), "tipo", existing.getTipo())
+            AuditMap.of("nombre", existing.getNombre(), "direccion", existing.getDireccion(), "codigo", existing.getCodigo(), "tipo", existing.getTipo())
         );
         return institucionRepository.save(existing);
     }

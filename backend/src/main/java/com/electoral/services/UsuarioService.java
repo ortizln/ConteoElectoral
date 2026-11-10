@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import java.util.HashMap;
 import java.util.Map;
+import com.electoral.util.AuditMap;
 import com.electoral.util.SecurityUtil;
 
 @Slf4j
@@ -85,7 +86,7 @@ public class UsuarioService {
             throw new DuplicateEntityException("El email '" + request.getEmail() + "' ya existe");
         }
         log.info("Actualizando {} con ID: {}", "Usuario", id);
-        Map<String, Object> datosAnteriores = Map.of("nombre", usuario.getNombre(), "apellido", usuario.getApellido(), "email", usuario.getEmail());
+        Map<String, Object> datosAnteriores = AuditMap.of("nombre", usuario.getNombre(), "apellido", usuario.getApellido(), "email", usuario.getEmail());
         usuario.setNombre(request.getNombre());
         usuario.setApellido(request.getApellido());
         usuario.setEmail(request.getEmail());
@@ -108,7 +109,7 @@ public class UsuarioService {
             "Usuario",
             id,
             datosAnteriores,
-            Map.of("nombre", saved.getNombre(), "apellido", saved.getApellido(), "email", saved.getEmail())
+            AuditMap.of("nombre", saved.getNombre(), "apellido", saved.getApellido(), "email", saved.getEmail())
         );
         return mapToResponse(saved);
     }

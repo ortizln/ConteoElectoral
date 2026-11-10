@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import com.electoral.entities.Auditoria;
+import com.electoral.util.AuditMap;
 import com.electoral.util.SecurityUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,7 +51,7 @@ public class CantonService {
             "Canton",
             saved.getId(),
             null,
-            Map.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion())
+            AuditMap.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion())
         );
         return saved;
     }
@@ -64,7 +65,7 @@ public class CantonService {
             throw new DuplicateEntityException("Ya existe un cantón con el nombre '" + canton.getNombre() + "' en esta provincia");
         }
         log.info("Actualizando {} con ID: {}", "Canton", id);
-        Map<String, Object> datosAnteriores = Map.of("nombre", existing.getNombre(), "descripcion", existing.getDescripcion());
+        Map<String, Object> datosAnteriores = AuditMap.of("nombre", existing.getNombre(), "descripcion", existing.getDescripcion());
         existing.setNombre(canton.getNombre());
         existing.setDescripcion(canton.getDescripcion());
         existing.setProvincia(canton.getProvincia());
@@ -74,7 +75,7 @@ public class CantonService {
             "Canton",
             id,
             datosAnteriores,
-            Map.of("nombre", existing.getNombre(), "descripcion", existing.getDescripcion())
+            AuditMap.of("nombre", existing.getNombre(), "descripcion", existing.getDescripcion())
         );
         return cantonRepository.save(existing);
     }

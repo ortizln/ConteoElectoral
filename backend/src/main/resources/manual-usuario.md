@@ -164,7 +164,7 @@ Configuración de las mesas de votación físicas.
 
 **Campos:**
 - **Número:** Identificador único de la mesa
-- **Sexo:** HOMBRES, MUJERES o MIXTA
+- **Sexo:** MASCULINO, FEMENINO o MIXTA
 - **Institución:** Recinto electoral donde se ubica
 - **Elección:** Proceso electoral asociado
 - **Usuario:** Miembro de mesa asignado
