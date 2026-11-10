@@ -26,7 +26,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 11,
+      version: 12,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -107,7 +107,10 @@ class DatabaseHelper {
         totalMesas INTEGER DEFAULT 0,
         latitud REAL,
         longitud REAL,
-        electoresRegistrados INTEGER
+        electoresRegistrados INTEGER,
+        provinciaId INTEGER,
+        cantonId INTEGER,
+        parroquiaId INTEGER
       )
     ''');
 
@@ -343,6 +346,13 @@ class DatabaseHelper {
       await _addColumnIfMissing(db, 'candidatos', 'cantonId', 'INTEGER');
       await _addColumnIfMissing(db, 'candidatos', 'parroquiaId', 'INTEGER');
     }
+    if (oldVersion < 12) {
+      // Territorio del recinto: sin estos ids el filtro de candidatos por
+      // mesa excluia a todos los candidatos con territorio (cantonId null)
+      await _addColumnIfMissing(db, 'recintos', 'provinciaId', 'INTEGER');
+      await _addColumnIfMissing(db, 'recintos', 'cantonId', 'INTEGER');
+      await _addColumnIfMissing(db, 'recintos', 'parroquiaId', 'INTEGER');
+    }
   }
 
   Future<void> guardarElecciones(List<Eleccion> elecciones) async {
@@ -545,6 +555,9 @@ class DatabaseHelper {
           'latitud': recinto.latitud,
           'longitud': recinto.longitud,
           'electoresRegistrados': recinto.electoresRegistrados,
+          'provinciaId': recinto.provinciaId,
+          'cantonId': recinto.cantonId,
+          'parroquiaId': recinto.parroquiaId,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -562,6 +575,9 @@ class DatabaseHelper {
         latitud: (m['latitud'] as num?)?.toDouble(),
         longitud: (m['longitud'] as num?)?.toDouble(),
         electoresRegistrados: m['electoresRegistrados'] as int?,
+        provinciaId: m['provinciaId'] as int?,
+        cantonId: m['cantonId'] as int?,
+        parroquiaId: m['parroquiaId'] as int?,
       );
 
   Future<List<Recinto>> getRecintos(int eleccionesId) async {
