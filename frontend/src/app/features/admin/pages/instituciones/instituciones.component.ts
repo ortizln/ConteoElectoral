@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
 import { ApiService } from '../../../../core/services/api.service';
 import { InstitucionEducativa, Parroquia } from '../../../../core/models';
+import { FiltrosPanelComponent } from '../../../shared/components/filtros-panel/filtros-panel.component';
 
 @Component({
   selector: 'app-instituciones',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FiltrosPanelComponent],
   templateUrl: './instituciones.component.html',
   styleUrl: './instituciones.component.css'
 })

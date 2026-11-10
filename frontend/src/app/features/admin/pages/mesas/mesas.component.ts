@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../../core/services/api.service';
 import { Eleccion, InstitucionEducativa, Mesa, Zona, Provincia, Canton, Parroquia } from '../../../../core/models';
+import { FiltrosPanelComponent } from '../../../shared/components/filtros-panel/filtros-panel.component';
 
 @Component({
   selector: 'app-mesas',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FiltrosPanelComponent],
   templateUrl: './mesas.component.html',
   styleUrl: './mesas.component.css'
 })

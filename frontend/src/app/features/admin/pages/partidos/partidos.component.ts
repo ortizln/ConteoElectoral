@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
 import { ApiService } from '../../../../core/services/api.service';
 import { Eleccion, Partido } from '../../../../core/models';
+import { FiltrosPanelComponent } from '../../../shared/components/filtros-panel/filtros-panel.component';
 
 @Component({
   selector: 'app-partidos',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FiltrosPanelComponent],
   templateUrl: './partidos.component.html',
   styleUrl: './partidos.component.css'
 })

@@ -135,6 +135,12 @@ export interface Mesa {
   sexo: string;
   institucionId: number;
   institucionNombre: string;
+  parroquiaId?: number | null;
+  parroquiaNombre?: string | null;
+  cantonId?: number | null;
+  cantonNombre?: string | null;
+  provinciaId?: number | null;
+  provinciaNombre?: string | null;
   eleccionesId: number;
   cerrada: boolean;
   votosNulos: number;

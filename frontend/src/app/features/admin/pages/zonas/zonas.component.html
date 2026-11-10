@@ -17,12 +17,12 @@
     </div>
   </div>
 
-  <div class="filters-bar mb-4">
+  <app-filtros-panel titulo="Filtros de búsqueda" clave="zonas">
     <div class="filter-item">
       <label>Buscar:</label>
       <input type="text" class="form-control" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
     </div>
-  </div>
+  </app-filtros-panel>
 
   <table class="table table-striped">
     <thead>

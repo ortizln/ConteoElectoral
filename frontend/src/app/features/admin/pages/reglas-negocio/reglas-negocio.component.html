@@ -6,7 +6,7 @@
     </button>
   </div>
 
-  <div class="filters-bar">
+  <app-filtros-panel titulo="Filtros de búsqueda" clave="reglas-negocio">
     <select class="form-select" [(ngModel)]="filtroModulo" (change)="applyFilters()">
       <option value="">Todos los módulos</option>
       <option *ngFor="let m of modulos" [value]="m.codigo">{{ m.nombre }}</option>
@@ -20,7 +20,7 @@
       <option value="true">Activas</option>
       <option value="false">Inactivas</option>
     </select>
-  </div>
+  </app-filtros-panel>
 
   <div class="table-container">
     <table class="table">

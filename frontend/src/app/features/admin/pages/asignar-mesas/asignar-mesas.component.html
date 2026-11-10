@@ -3,26 +3,57 @@
     <h2>Asignar Mesas a Miembros</h2>
   </div>
   
-  <div class="filters-bar mb-4">
+  <app-filtros-panel titulo="Filtros de mesas" clave="asignar-mesas" [activos]="filtrosActivos">
     <div class="filter-item">
-      <label>Elección:</label>
-      <select class="form-select" (change)="onEleccionChange()" [(ngModel)]="eleccionId">
+      <label class="form-label">Elección:</label>
+      <select class="form-select form-select-sm" (change)="onEleccionChange()" [(ngModel)]="eleccionId">
         <option [ngValue]="null">Seleccione una elección...</option>
         <option *ngFor="let e of elecciones" [value]="e.id">{{ e.nombre }}</option>
       </select>
     </div>
     <div class="filter-item">
-      <label>Miembro de Mesa:</label>
-      <select class="form-select" (change)="onUsuarioChange()" [(ngModel)]="usuarioId">
+      <label class="form-label">Miembro de Mesa:</label>
+      <select class="form-select form-select-sm" (change)="onUsuarioChange()" [(ngModel)]="usuarioId">
         <option [ngValue]="null">Seleccione un miembro...</option>
-        <option *ngFor="let m of miembros" [value]="m.id">{{ m.nombre }} {{ m.apellido }}</option>
+        <option *ngFor="let m of miembros" [ngValue]="m.id">{{ m.nombre }} {{ m.apellido }}</option>
       </select>
     </div>
-  </div>
+    <div class="filter-item">
+      <label class="form-label">Provincia:</label>
+      <select class="form-select form-select-sm" [(ngModel)]="filtroProvinciaId" (change)="onFiltroProvinciaChange()">
+        <option [ngValue]="null">Todas las provincias</option>
+        <option *ngFor="let p of provincias" [ngValue]="p.id">{{ p.nombre }}</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label class="form-label">Cantón:</label>
+      <select class="form-select form-select-sm" [(ngModel)]="filtroCantonId" (change)="onFiltroCantonChange()">
+        <option [ngValue]="null">Todos los cantones</option>
+        <option *ngFor="let c of cantonesFiltrados" [ngValue]="c.id">{{ c.nombre }}</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label class="form-label">Parroquia:</label>
+      <select class="form-select form-select-sm" [(ngModel)]="filtroParroquiaId">
+        <option [ngValue]="null">Todas las parroquias</option>
+        <option *ngFor="let p of parroquiasFiltradas" [ngValue]="p.id">{{ p.nombre }}</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label class="form-label">Buscar por nombre:</label>
+      <input type="text" class="form-control form-control-sm" placeholder="Institución o nº de mesa"
+             [(ngModel)]="filtroTexto" autocomplete="off" />
+    </div>
+    <div class="filter-item filter-item-acciones" *ngIf="hayFiltrosActivos">
+      <button class="btn btn-sm btn-outline-secondary" (click)="limpiarFiltros()" type="button">
+        <i class="bi bi-x-circle"></i> Limpiar filtros
+      </button>
+    </div>
+  </app-filtros-panel>
 
   <div class="row" *ngIf="getMiembroSeleccionado()">
     <div class="col-12">
-      <div class="alert alert-info">
+      <div class="alert alert-info py-2">
         <strong>Miembro:</strong> {{ getMiembroSeleccionado()?.nombre }} {{ getMiembroSeleccionado()?.apellido }}
         <span class="badge bg-primary">{{ getMiembroSeleccionado()?.username }}</span>
       </div>
@@ -32,28 +63,33 @@
   <div class="row">
     <div class="col-md-6">
       <div class="card">
-        <div class="card-header">
-          <h5>Mesas Disponibles</h5>
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Mesas Disponibles</h5>
+          <span class="badge bg-secondary">{{ disponiblesFiltradas.length }}</span>
         </div>
         <div class="card-body" style="max-height: 400px; overflow-y: auto;">
-          <table class="table table-hover">
+          <table class="table table-sm table-hover">
             <thead>
               <tr>
                 <th>Mesa</th>
                 <th>Institución</th>
+                <th>Sexo</th>
                 <th>Acción</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let m of mesasDisponibles">
+              <tr *ngFor="let m of disponiblesFiltradas">
                 <td>{{ m.numero }}</td>
                 <td>{{ m.institucionNombre }}</td>
+                <td>
+                  <span class="badge" [class]="m.sexo === 'MIXTA' ? 'bg-info' : m.sexo === 'MASCULINO' ? 'bg-primary' : 'bg-warning'">{{ m.sexo }}</span>
+                </td>
                 <td>
                   <button class="btn btn-sm btn-primary" (click)="asignarMesa(m)">Asignar</button>
                 </td>
               </tr>
-              <tr *ngIf="mesasDisponibles.length === 0">
-                <td colspan="3" class="text-center text-muted">No hay mesas disponibles</td>
+              <tr *ngIf="disponiblesFiltradas.length === 0">
+                <td colspan="4" class="text-center text-muted">No hay mesas disponibles</td>
               </tr>
             </tbody>
           </table>
@@ -63,28 +99,33 @@
 
     <div class="col-md-6">
       <div class="card">
-        <div class="card-header">
-          <h5>Mesas Asignadas</h5>
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">Mesas Asignadas</h5>
+          <span class="badge bg-secondary">{{ asignadasFiltradas.length }}</span>
         </div>
         <div class="card-body" style="max-height: 400px; overflow-y: auto;">
-          <table class="table table-hover">
+          <table class="table table-sm table-hover">
             <thead>
               <tr>
                 <th>Mesa</th>
                 <th>Institución</th>
+                <th>Sexo</th>
                 <th>Acción</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let m of mesasAsignadas">
+              <tr *ngFor="let m of asignadasFiltradas">
                 <td>{{ m.numero }}</td>
                 <td>{{ m.institucionNombre }}</td>
+                <td>
+                  <span class="badge" [class]="m.sexo === 'MIXTA' ? 'bg-info' : m.sexo === 'MASCULINO' ? 'bg-primary' : 'bg-warning'">{{ m.sexo }}</span>
+                </td>
                 <td>
                   <button class="btn btn-sm btn-danger" (click)="desasignarMesa(m)">Quitar</button>
                 </td>
               </tr>
-              <tr *ngIf="mesasAsignadas.length === 0">
-                <td colspan="3" class="text-center text-muted">No hay mesas asignadas</td>
+              <tr *ngIf="asignadasFiltradas.length === 0">
+                <td colspan="4" class="text-center text-muted">No hay mesas asignadas</td>
               </tr>
             </tbody>
           </table>

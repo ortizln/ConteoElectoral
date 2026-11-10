@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
 import { ApiService } from '../../../../core/services/api.service';
 import { Provincia, Zona } from '../../../../core/models';
+import { FiltrosPanelComponent } from '../../../shared/components/filtros-panel/filtros-panel.component';
 
 @Component({
   selector: 'app-provincias',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FiltrosPanelComponent],
   templateUrl: './provincias.component.html',
   styleUrl: './provincias.component.css'
 })

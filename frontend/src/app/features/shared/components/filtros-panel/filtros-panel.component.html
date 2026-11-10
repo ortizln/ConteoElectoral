@@ -1,0 +1,17 @@
+<div class="filtros-panel" [class.abierto]="abierto">
+  <button type="button" class="filtros-panel-cabecera" (click)="toggle()"
+          [attr.aria-expanded]="abierto" title="Mostrar u ocultar filtros">
+    <span class="filtros-panel-titulo">
+      <i class="bi bi-funnel"></i> {{ titulo }}
+    </span>
+    <span class="filtros-panel-derecha">
+      <span class="badge bg-primary" *ngIf="activos > 0">{{ activos }}</span>
+      <i class="bi filtros-panel-flecha" [ngClass]="abierto ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+    </span>
+  </button>
+  <div class="filtros-panel-cuerpo">
+    <div class="filtros-panel-contenido">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,75 @@
+.filtros-panel {
+  background: var(--alantek-surface);
+  border: 1px solid var(--alantek-border);
+  border-radius: 12px;
+  margin-bottom: 24px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.filtros-panel-cabecera {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--alantek-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: background 0.15s, color 0.15s;
+}
+
+.filtros-panel-cabecera:hover {
+  background: var(--alantek-background);
+  color: var(--alantek-text);
+}
+
+.filtros-panel-titulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filtros-panel-derecha {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filtros-panel-flecha {
+  font-size: 14px;
+  transition: transform 0.2s;
+}
+
+/* Animación de expansión (grid 0fr -> 1fr) */
+.filtros-panel-cuerpo {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows 0.2s ease, visibility 0.2s;
+}
+
+.filtros-panel.abierto .filtros-panel-cuerpo {
+  grid-template-rows: 1fr;
+  visibility: visible;
+}
+
+.filtros-panel-contenido {
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 0 16px;
+  transition: padding 0.2s;
+}
+
+.filtros-panel.abierto .filtros-panel-contenido {
+  padding: 6px 16px 16px;
+}

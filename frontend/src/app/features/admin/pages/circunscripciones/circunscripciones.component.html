@@ -6,11 +6,11 @@
     </button>
   </div>
 
-  <div class="filters-bar">
+  <app-filtros-panel titulo="Filtros de búsqueda" clave="circunscripciones">
     <select class="form-select" [(ngModel)]="selectedEleccionId" (change)="loadCircunscripciones()">
       <option *ngFor="let e of elecciones" [value]="e.id">{{ e.nombre }}</option>
     </select>
-  </div>
+  </app-filtros-panel>
 
   <div class="table-container">
     <table class="table">

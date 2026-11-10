@@ -15,6 +15,12 @@ public class MesaResponse {
     private String sexo;
     private Long institucionId;
     private String institucionNombre;
+    private Long parroquiaId;
+    private String parroquiaNombre;
+    private Long cantonId;
+    private String cantonNombre;
+    private Long provinciaId;
+    private String provinciaNombre;
     private Long eleccionesId;
     private Boolean cerrada;
     private Integer votosNulos;

@@ -3,13 +3,14 @@
 .page-header h2 { color: var(--alantek-text); margin: 0; font-size: 24px; font-weight: 600; }
 .btn-with-icon { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; }
 .btn-icon { font-size: 18px; font-weight: 700; }
-.filters-bar { display: flex; gap: 16px; margin-bottom: 20px; padding: 16px; background: var(--alantek-surface); border-radius: 12px; }
-.filter-item { flex: 0 0 300px; }
-.filter-item label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 500; color: var(--alantek-text-secondary); }
+.filters-bar { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; padding: 16px; background: var(--alantek-surface); border-radius: 12px; }
+.filter-item { flex: 0 0 210px; }
+.filter-item label, .form-label { display: block; margin-bottom: 4px; font-size: 12px; font-weight: 500; color: var(--alantek-text-secondary); }
+.filter-item-acciones { flex: 0 0 auto; display: flex; align-items: flex-end; }
 .mb-4 { margin-bottom: 24px; }
 .table { width: 100%; border-collapse: collapse; margin-top: 20px; background: var(--alantek-surface); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.table th { padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--alantek-border); background: var(--alantek-background); font-weight: 600; font-size: 13px; text-transform: uppercase; color: var(--alantek-text-muted); }
-.table td { padding: 12px 16px; border-bottom: 1px solid var(--alantek-border); }
+.table th { padding: 8px 10px; text-align: left; border-bottom: 2px solid var(--alantek-border); background: var(--alantek-background); font-weight: 600; font-size: 12px; text-transform: uppercase; color: var(--alantek-text-muted); }
+.table td { padding: 8px 10px; border-bottom: 1px solid var(--alantek-border); font-size: 13px; }
 .table-striped tbody tr:nth-child(odd) { background: var(--alantek-background); }
 .table-striped tbody tr:hover { background: var(--alantek-background); }
 .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.2s; }
@@ -21,6 +22,7 @@
 .btn-danger { background: var(--alantek-danger); color: white; }
 .btn-danger:hover { background: var(--alantek-danger); }
 .badge { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+.table .badge { padding: 3px 8px; font-size: 11px; }
 .bg-info { background: var(--alantek-info) !important; color: white !important; }
 .bg-primary { background: var(--alantek-primary) !important; color: white !important; }
 .bg-warning { background: var(--alantek-warning) !important; color: white !important; }
@@ -28,6 +30,7 @@
 .bg-danger { background: var(--alantek-danger) !important; color: white !important; }
 .bg-secondary { background: var(--alantek-text-muted) !important; color: white !important; }
 .form-select, .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--alantek-border-strong); border-radius: 8px; font-size: 14px; transition: all 0.2s; }
+.form-select-sm, .form-control-sm { padding: 6px 10px; font-size: 13px; border-radius: 6px; }
 .form-select:focus, .form-control:focus { outline: none; border-color: var(--alantek-primary); box-shadow: 0 0 0 3px rgba(217,119,50,0.1); }
 .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
 .modal-dialog { background: var(--alantek-surface); border-radius: 16px; max-width: 500px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }

@@ -17,7 +17,7 @@
     </div>
   </div>
 
-  <div class="filters-bar mb-4">
+  <app-filtros-panel titulo="Filtros de búsqueda" clave="parroquias">
     <div class="filter-item">
       <label>Provincia:</label>
       <select class="form-select" [(ngModel)]="filterProvinciaId" (change)="onProvinciaChange()">
@@ -36,7 +36,7 @@
       <label>Buscar:</label>
       <input type="text" class="form-control" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
     </div>
-  </div>
+  </app-filtros-panel>
 
   <table class="table table-striped">
     <thead>

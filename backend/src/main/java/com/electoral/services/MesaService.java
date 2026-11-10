@@ -444,12 +444,24 @@ public class MesaService {
             mesaUsuarios.get(0).getUsuario().getNombre() + " " + mesaUsuarios.get(0).getUsuario().getApellido();
         Long usuarioId = mesaUsuarios.isEmpty() ? null : mesaUsuarios.get(0).getUsuario().getId();
 
+        // Territorio de la mesa: institucion -> parroquia -> canton -> provincia (nullable)
+        InstitucionEducativa inst = mesa.getInstitucion();
+        Parroquia parroquia = inst != null ? inst.getParroquia() : null;
+        Canton canton = parroquia != null ? parroquia.getCanton() : null;
+        Provincia provincia = canton != null ? canton.getProvincia() : null;
+
         return MesaResponse.builder()
                 .id(mesa.getId())
                 .numero(mesa.getNumero())
                 .sexo(mesa.getSexo().name())
-                .institucionId(mesa.getInstitucion().getId())
-                .institucionNombre(mesa.getInstitucion().getNombre())
+                .institucionId(inst != null ? inst.getId() : null)
+                .institucionNombre(inst != null ? inst.getNombre() : null)
+                .parroquiaId(parroquia != null ? parroquia.getId() : null)
+                .parroquiaNombre(parroquia != null ? parroquia.getNombre() : null)
+                .cantonId(canton != null ? canton.getId() : null)
+                .cantonNombre(canton != null ? canton.getNombre() : null)
+                .provinciaId(provincia != null ? provincia.getId() : null)
+                .provinciaNombre(provincia != null ? provincia.getNombre() : null)
                 .eleccionesId(mesa.getElecciones().getId())
                 .cerrada(mesa.getCerrada())
                 .votosNulos(mesa.getVotosNulos())
