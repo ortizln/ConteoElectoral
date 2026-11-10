@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
@@ -530,6 +531,20 @@ class ApiService {
     } catch (e) {
       return [];
     }
+  }
+
+  /// Foto binaria de un candidato (GET /candidatos/{id}/foto).
+  /// Retorna null si no tiene foto (404). Lanza excepción en cualquier otro
+  /// caso (red caída, 500) para que el caller no cachee un negativo falso.
+  Future<Uint8List?> getFotoCandidatoBytes(int candidatoId,
+      {String? token}) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/candidatos/$candidatoId/foto'),
+      headers: _headers(token: token),
+    );
+    if (response.statusCode == 200) return response.bodyBytes;
+    if (response.statusCode == 404) return null;
+    throw Exception('HTTP ${response.statusCode} al descargar foto');
   }
 
   Future<List<Recinto>> getRecintosByEleccion(int eleccionesId,

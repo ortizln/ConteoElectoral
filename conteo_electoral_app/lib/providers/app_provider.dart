@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -106,6 +107,61 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   List<Partido> get partidos => _partidos;
+
+  // ===== Fotos de candidatos (caché memoria + disco) =====
+  final Map<int, Uint8List?> _fotosCandidato = {};
+
+  /// Foto de un candidato en bytes. Orden: caché memoria → disco → servidor.
+  /// Retorna null si no tiene foto (o sin conexión y aún no está en caché).
+  /// Los fallos de red no se cachean como negativos para reintentar después.
+  Future<Uint8List?> getFotoCandidato(int candidatoId,
+      {bool forzar = false}) async {
+    if (!forzar && _fotosCandidato.containsKey(candidatoId)) {
+      return _fotosCandidato[candidatoId];
+    }
+
+    // 1) Disco: funciona sin conexión tras la primera descarga
+    if (!forzar) {
+      try {
+        final file = await _archivoFotoCandidato(candidatoId);
+        if (await file.exists()) {
+          final bytes = await file.readAsBytes();
+          _fotosCandidato[candidatoId] = bytes;
+          return bytes;
+        }
+      } catch (_) {/* sin caché local */}
+    }
+
+    // 2) Servidor (requiere conexión)
+    if (!_isOnline) return null;
+    try {
+      final token = await _db.getToken();
+      final bytes = await _api.getFotoCandidatoBytes(candidatoId, token: token);
+      _fotosCandidato[candidatoId] = bytes; // null = 404, no tiene foto
+      if (bytes != null) {
+        try {
+          final file = await _archivoFotoCandidato(candidatoId);
+          await file.parent.create(recursive: true);
+          await file.writeAsBytes(bytes, flush: true);
+        } catch (_) {/* mejor esfuerzo: queda solo en memoria */}
+      }
+      return bytes;
+    } catch (_) {
+      // Error de red u otro: no cachear, se reintentará en el próximo uso
+      return null;
+    }
+  }
+
+  Future<File> _archivoFotoCandidato(int candidatoId) async {
+    final dir = await getApplicationDocumentsDirectory();
+    return File('${dir.path}/fotos_candidatos/$candidatoId.jpg');
+  }
+
+  /// Bytes de foto ya en caché memoria (sin descargar). Null si no está
+  /// cacheada o el candidato no tiene foto.
+  Uint8List? fotoCandidatoCacheada(int candidatoId) =>
+      _fotosCandidato[candidatoId];
+
   List<Cargo> get cargos => _cargos;
   List<Voto> get votosMesa => _votosMesa;
   int get totalVotos => _totalVotos;

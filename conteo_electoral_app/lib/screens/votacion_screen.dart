@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -402,7 +403,9 @@ class _VotacionScreenState extends State<VotacionScreen> {
                 Text('Mesa ${provider.mesaActual?.numero ?? ''}',
                     style: const TextStyle(fontSize: 16)),
                 if (provider.mesaActual?.institucionNombre != null)
-                  Text(provider.mesaActual!.institucionNombre!,
+                  Text(
+                      '${provider.mesaActual!.institucionNombre!}'
+                      '${(provider.mesaActual?.sexo ?? '').isNotEmpty ? ' · ${provider.mesaActual!.sexo}' : ''}',
                       style:
                           TextStyle(fontSize: 11, color: AppColors.gray)),
               ],
@@ -452,55 +455,38 @@ class _VotacionScreenState extends State<VotacionScreen> {
                     // Individual / Lista mode selector
                     _buildModoSelector(),
                     const SizedBox(height: 6),
-                    // Party filter chips + view toggle
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          _filterChip('Todos', '',
-                              _filtroPartido.isEmpty,
-                              () {
-                            setState(() => _filtroPartido = '');
-                          }),
-                          const SizedBox(width: 6),
-                          ..._partidosUnicos.take(5).map((p) => Padding(
-                                padding: const EdgeInsets.only(right: 6),
-                                child: _filterChip(
-                                    p,
-                                    p,
-                                    _filtroPartido == p,
-                                    () => setState(() {
-                                          _filtroPartido =
-                                              _filtroPartido == p ? '' : p;
-                                        })),
-                              )),
-                          const SizedBox(width: 8),
-                          // View toggle
-                          _buildViewToggle(),
-                        ],
-                      ),
-                    ),
-                    if (_partidosUnicos.length > 5) ...[
-                      const SizedBox(height: 6),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            ..._partidosUnicos.skip(5).map((p) => Padding(
-                                  padding: const EdgeInsets.only(right: 6),
-                                  child: _filterChip(
-                                      p,
-                                      p,
-                                      _filtroPartido == p,
-                                      () => setState(() {
-                                            _filtroPartido =
-                                                _filtroPartido == p ? '' : p;
-                                          })),
-                                )),
-                          ],
+                    // Filtro de partido (select) + vista de candidatos/listas
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            initialValue: _partidosUnicos.contains(_filtroPartido)
+                                ? _filtroPartido
+                                : '',
+                            isDense: true,
+                            decoration: const InputDecoration(
+                              labelText: 'Partido',
+                              contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                            ),
+                            items: [
+                              const DropdownMenuItem(
+                                  value: '',
+                                  child: Text('Todos los partidos')),
+                              ..._partidosUnicos.map((p) => DropdownMenuItem(
+                                    value: p,
+                                    child:
+                                        Text(p, overflow: TextOverflow.ellipsis),
+                                  )),
+                            ],
+                            onChanged: (v) =>
+                                setState(() => _filtroPartido = v ?? ''),
+                          ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        _buildViewToggle(),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -542,13 +528,38 @@ class _VotacionScreenState extends State<VotacionScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Mesa ${provider.mesaActual?.numero ?? ''}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15,
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                'Mesa ${provider.mesaActual?.numero ?? ''}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              if ((provider.mesaActual?.sexo ?? '')
+                                  .isNotEmpty) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    provider.mesaActual!.sexo,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                           if (provider.mesaActual?.institucionNombre != null)
                             Text(
@@ -839,6 +850,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
                                           Container(
                                             width: 44,
                                             height: 44,
+                                            clipBehavior: Clip.antiAlias,
                                             decoration: BoxDecoration(
                                               color: isSelected
                                                   ? AppColors.primary
@@ -847,18 +859,41 @@ class _VotacionScreenState extends State<VotacionScreen> {
                                               borderRadius:
                                                   BorderRadius.circular(12),
                                             ),
-                                            child: Center(
-                                              child: isSelected
-                                                  ? const Icon(Icons.check,
-                                                      color: Colors.white,
-                                                      size: 22)
-                                                  : Text(c.nombreCompleto[0],
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: partyColor,
-                                                          fontSize: 18)),
-                                            ),
+                                            child: isSelected
+                                                ? const Center(
+                                                    child: Icon(Icons.check,
+                                                        color: Colors.white,
+                                                        size: 22))
+                                                : (c.tieneFoto == true
+                                                    ? _FotoCandidato(
+                                                        candidatoId: c.id,
+                                                        fallback: Center(
+                                                          child: Text(
+                                                              c.nombreCompleto[
+                                                                  0],
+                                                              style: TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold,
+                                                                  color:
+                                                                      partyColor,
+                                                                  fontSize:
+                                                                      18)),
+                                                        ),
+                                                      )
+                                                    : Center(
+                                                        child: Text(
+                                                            c.nombreCompleto[
+                                                                0],
+                                                            style: TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color:
+                                                                    partyColor,
+                                                                fontSize:
+                                                                    18)),
+                                                      )),
                                           ),
                                           const SizedBox(width: 12),
                                           Expanded(
@@ -1372,5 +1407,58 @@ class _VotacionScreenState extends State<VotacionScreen> {
         shape: BoxShape.circle,
       ),
     );
+  }
+}
+
+/// Foto del candidato (caché del provider: memoria + disco).
+/// Muestra el fallback (inicial con color del partido) mientras carga o si
+/// no hay foto disponible.
+class _FotoCandidato extends StatefulWidget {
+  const _FotoCandidato({required this.candidatoId, required this.fallback});
+
+  final int candidatoId;
+  final Widget fallback;
+
+  @override
+  State<_FotoCandidato> createState() => _FotoCandidatoState();
+}
+
+class _FotoCandidatoState extends State<_FotoCandidato> {
+  Uint8List? _bytes;
+
+  @override
+  void initState() {
+    super.initState();
+    final cacheado = context
+        .read<AppProvider>()
+        .fotoCandidatoCacheada(widget.candidatoId);
+    if (cacheado != null) {
+      _bytes = cacheado;
+    } else {
+      _cargar();
+    }
+  }
+
+  Future<void> _cargar() async {
+    final bytes =
+        await context.read<AppProvider>().getFotoCandidato(widget.candidatoId);
+    if (!mounted) return;
+    setState(() => _bytes = bytes);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bytes = _bytes;
+    if (bytes != null) {
+      return Image.memory(
+        bytes,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        gaplessPlayback: true,
+      );
+    }
+    // Aún no carga (o no tiene foto): inicial de respaldo
+    return widget.fallback;
   }
 }
