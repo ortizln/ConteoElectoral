@@ -208,9 +208,12 @@ export class InstitucionesComponent implements OnInit {
   }
 
   descargarTemplate(): void {
-    const data: any[][] = [['nombre', 'parroquia'], ['INSTITUCION EJEMPLO', 'PARROQUIA EJEMPLO']];
+    const data: any[][] = [
+      ['nombre', 'parroquia', 'junfem', 'junmas', 'juninif', 'junfinf', 'juninim', 'junfinm'],
+      ['INSTITUCION EJEMPLO', 'PARROQUIA EJEMPLO', 8, 7, 1, 8, 9, 15]
+    ];
     const ws = XLSX.utils.aoa_to_sheet(data);
-    ws['!cols'] = [{ wch: 30 }, { wch: 30 }];
+    ws['!cols'] = [{ wch: 30 }, { wch: 30 }, { wch: 9 }, { wch: 9 }, { wch: 9 }, { wch: 9 }, { wch: 9 }, { wch: 9 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Instituciones');
     XLSX.writeFile(wb, 'plantilla_instituciones.xlsx');
@@ -243,9 +246,37 @@ export class InstitucionesComponent implements OnInit {
       const workbook = XLSX.read(data, { type: 'array' });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const json: any[] = XLSX.utils.sheet_to_json(sheet);
-      this.importPreview = json.map((row, i) => ({ index: i + 2, nombre: row['nombre'] || '', parroquia: row['parroquia'] || '' }));
+      this.importPreview = json.map((raw, i) => {
+        const row = this.normalizeRow(raw);
+        return {
+          index: i + 2,
+          nombre: row['nombre'] || '',
+          parroquia: row['parroquia'] || '',
+          junfem: row['junfem'] ?? '',
+          junmas: row['junmas'] ?? '',
+          juninif: row['juninif'] ?? '',
+          junfinf: row['junfinf'] ?? '',
+          juninim: row['juninim'] ?? '',
+          junfinm: row['junfinm'] ?? ''
+        };
+      });
     };
     reader.readAsArrayBuffer(this.importFile);
+  }
+
+  /** Normaliza encabezados de fila a minúsculas (acepta JUNFEM, Junfem, junfem...). */
+  private normalizeRow(row: any): any {
+    const out: any = {};
+    for (const k of Object.keys(row)) out[k.trim().toLowerCase()] = row[k];
+    return out;
+  }
+
+  /** Celda de juntas: vacío → null, número >= 0 → entero; inválido → NaN. */
+  private parseJuntasCell(v: any): number | null {
+    if (v == null || v === '') return null;
+    const n = Number(v);
+    if (!Number.isFinite(n) || n < 0) return NaN;
+    return Math.trunc(n);
   }
 
   importar(): void {
@@ -255,11 +286,28 @@ export class InstitucionesComponent implements OnInit {
     this.importErrors = [];
     let completed = 0;
     let errors = 0;
+    const etiquetas: Record<string, string> = {
+      junfem: 'JUNFEM', junmas: 'JUNMAS', juninif: 'JUNINIF',
+      junfinf: 'JUNFINF', juninim: 'JUNINIM', junfinm: 'JUNFINM'
+    };
     this.importPreview.forEach(item => {
       if (!item.nombre) { errors++; this.importErrors.push(`Fila ${item.index}: nombre requerido`); completed++; return; }
       const parroquia = this.parroquias.find(p => p.nombre === item.parroquia);
       if (!item.parroquia || !parroquia) { errors++; this.importErrors.push(`Fila ${item.index}: parroquia "${item.parroquia}" no encontrada`); completed++; return; }
-      this.api.createInstitucion({ nombre: item.nombre, parroquiaId: parroquia.id }).subscribe({
+      // Campos de juntas (opcionales, INTEGER >= 0)
+      const juntas: any = {};
+      for (const k of Object.keys(etiquetas)) {
+        const v = this.parseJuntasCell(item[k]);
+        if (Number.isNaN(v)) { errors++; this.importErrors.push(`Fila ${item.index}: ${etiquetas[k]} debe ser un número mayor o igual a 0`); completed++; return; }
+        juntas[k] = v;
+      }
+      if (juntas.juninif != null && juntas.junfinf != null && juntas.juninif > juntas.junfinf) {
+        errors++; this.importErrors.push(`Fila ${item.index}: JUNINIF no puede ser mayor que JUNFINF`); completed++; return;
+      }
+      if (juntas.juninim != null && juntas.junfinm != null && juntas.juninim > juntas.junfinm) {
+        errors++; this.importErrors.push(`Fila ${item.index}: JUNINIM no puede ser mayor que JUNFINM`); completed++; return;
+      }
+      this.api.createInstitucion({ nombre: item.nombre, parroquiaId: parroquia.id, ...juntas }).subscribe({
         next: () => { completed++; if (completed === this.importPreview!.length) this.finishImport(errors); },
         error: (err) => { errors++; this.importErrors.push(`Fila ${item.index}: ${err.error?.message || 'Error'}`); completed++; if (completed === this.importPreview!.length) this.finishImport(errors); }
       });
