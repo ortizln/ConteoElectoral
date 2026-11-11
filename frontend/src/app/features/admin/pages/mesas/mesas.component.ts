@@ -26,6 +26,7 @@ export class MesasComponent implements OnInit {
   rangoHasta: number | null = null;
   creandoRango = false;
   filterInstitucionId: number | null = null;
+  filterInstitucionTexto: string = '';
   sortColumn: string = '';
   sortDirection: string = 'asc';
   searchText: string = '';
@@ -94,6 +95,69 @@ export class MesasComponent implements OnInit {
   filtrarPorInstitucion(): void {
     if (this.form.eleccionesId) this.load(this.form.eleccionesId);
     this.currentPage = 1;
+  }
+
+  /** Resuelve el texto del datalist a un id de institución (exacta o única subcadena). */
+  private resolverEnLista(texto: string, lista: InstitucionEducativa[]): InstitucionEducativa | null {
+    const t = texto.trim().toLowerCase();
+    if (!t) return null;
+    const exacta = lista.find(i => (i.nombre || '').toLowerCase() === t);
+    if (exacta) return exacta;
+    const contiene = lista.filter(i => (i.nombre || '').toLowerCase().includes(t));
+    return contiene.length === 1 ? contiene[0] : null;
+  }
+
+  private resolverInstitucionPorTexto(texto: string): InstitucionEducativa | null {
+    return this.resolverEnLista(texto, this.instituciones);
+  }
+
+  onInstitucionFiltroInput(ev: Event): void {
+    const texto = ((ev.target as HTMLInputElement).value || '').trim();
+    this.filterInstitucionTexto = texto;
+    if (!texto) {
+      if (this.filterInstitucionId !== null) {
+        this.filterInstitucionId = null;
+        this.filtrarPorInstitucion();
+      }
+      return;
+    }
+    const elegida = this.resolverInstitucionPorTexto(texto);
+    if (elegida && elegida.id !== this.filterInstitucionId) {
+      this.filterInstitucionId = elegida.id;
+      this.filtrarPorInstitucion();
+    }
+  }
+
+  onInstitucionFiltroBlur(): void {
+    if (this.filterInstitucionId == null) {
+      this.filterInstitucionTexto = '';
+      return;
+    }
+    const inst = this.instituciones.find(x => x.id === this.filterInstitucionId);
+    this.filterInstitucionTexto = inst?.nombre || '';
+  }
+
+  /** Datlist del modal: resuelve el texto a form.institucionId. */
+  onInstitucionModalInput(ev: Event): void {
+    const texto = ((ev.target as HTMLInputElement).value || '').trim();
+    this.buscarInstitucionText = texto;
+    if (!texto) {
+      this.form.institucionId = null;
+      return;
+    }
+    // Resolver contra la lista visible (respeta filtros territoriales del modal)
+    const elegida = this.resolverEnLista(texto, this.filteredInstituciones);
+    this.form.institucionId = elegida ? elegida.id : null;
+  }
+
+  /** Al salir, el texto queda en el nombre de la institución seleccionada (o vacío). */
+  onInstitucionModalBlur(): void {
+    if (this.form.institucionId == null) {
+      this.buscarInstitucionText = '';
+      return;
+    }
+    const inst = this.instituciones.find(x => x.id === this.form.institucionId);
+    this.buscarInstitucionText = inst?.nombre || '';
   }
 
   sort(column: string): void {
@@ -179,6 +243,9 @@ export class MesasComponent implements OnInit {
     this.rangoHasta = null;
     this.errorMessage = '';
     this.resetModalFilters();
+    // Mostrar el nombre de la institución actual en el datalist
+    const inst = this.instituciones.find(x => x.id === m.institucionId);
+    this.buscarInstitucionText = inst?.nombre || '';
     this.showModal = true;
   }
 
@@ -205,6 +272,7 @@ export class MesasComponent implements OnInit {
     this.filterCantonId = null;
     this.filterParroquiaId = null;
     this.form.institucionId = null;
+    this.buscarInstitucionText = '';
     this.provinciasDisponibles = [];
     this.cantonesDisponibles = [];
     this.parroquiasDisponibles = [];
@@ -217,6 +285,7 @@ export class MesasComponent implements OnInit {
     this.filterCantonId = null;
     this.filterParroquiaId = null;
     this.form.institucionId = null;
+    this.buscarInstitucionText = '';
     this.cantonesDisponibles = [];
     this.parroquiasDisponibles = [];
     if (this.filterProvinciaId) {
@@ -227,6 +296,7 @@ export class MesasComponent implements OnInit {
   onModalCantonChange(): void {
     this.filterParroquiaId = null;
     this.form.institucionId = null;
+    this.buscarInstitucionText = '';
     this.parroquiasDisponibles = [];
     if (this.filterCantonId) {
       this.api.getParroquiasByCanton(this.filterCantonId).subscribe((d: Parroquia[]) => this.parroquiasDisponibles = d);
@@ -235,6 +305,7 @@ export class MesasComponent implements OnInit {
 
   onModalParroquiaChange(): void {
     this.form.institucionId = null;
+    this.buscarInstitucionText = '';
   }
 
   closeModal(): void { this.showModal = false; this.selectedId = null; this.errorMessage = ''; }

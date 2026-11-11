@@ -77,6 +77,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   filtroCargoId: number | null = null;
   filtroPartidoId: number | null = null;
   filtroMesaId: number | null = null;
+  filtroMesaTexto: string = '';
 
   mesas: Mesa[] = [];
   userRole: string = '';
@@ -442,6 +443,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   seleccionarRecinto(r: ResultadoRecinto): void {
     if (!this.selectedEleccionId) return;
     this.filtroMesaId = null;
+    this.filtroMesaTexto = '';
     this.filtroInstitucionId = r.recintoId;
     this.filtroParroquiaId = null;
     this.filtroCantonId = null;
@@ -458,6 +460,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   seleccionarMesa(m: ResultadoMesa): void {
     if (!this.selectedEleccionId) return;
     this.filtroMesaId = m.mesaId;
+    const mesa = this.mesas.find(x => x.id === m.mesaId);
+    this.filtroMesaTexto = mesa ? this.etiquetaMesa(mesa) : `Mesa ${m.mesaNumero}`;
     this.drillMesaSeleccionada = m;
     this.showDrillMesa = true;
     this.drillMesaFotos = [];
@@ -631,6 +635,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   limpiarAlcance(): void {
     this.filtroMesaId = null;
+    this.filtroMesaTexto = '';
     this.filtroInstitucionId = null;
     this.aplicarFiltros();
   }
@@ -656,8 +661,53 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  onMesaChange(): void {
-    this.aplicarFiltros();
+  /** Etiqueta del datalist de mesas: "Mesa {numero} - {institución}" */
+  etiquetaMesa(m: Mesa): string {
+    return `Mesa ${m.numero} - ${m.institucionNombre || ''}`.replace(/ -$/, '');
+  }
+
+  /**
+   * Resuelve el texto escrito en el datalist a una mesa.
+   * Prioridad: coincidencia exacta de la etiqueta → número de mesa →
+   * única coincidencia por subcadena (si hay varias, no resuelve).
+   */
+  private resolverMesaPorTexto(texto: string): Mesa | null {
+    const t = texto.trim().toLowerCase();
+    if (!t) return null;
+    const exacta = this.mesas.find(m => this.etiquetaMesa(m).toLowerCase() === t);
+    if (exacta) return exacta;
+    const porNumero = this.mesas.find(m => String(m.numero).toLowerCase() === t);
+    if (porNumero) return porNumero;
+    const contiene = this.mesas.filter(m => this.etiquetaMesa(m).toLowerCase().includes(t));
+    return contiene.length === 1 ? contiene[0] : null;
+  }
+
+  /** Aplica el filtro solo cuando el texto resuelve a una mesa (o se vacía). */
+  onMesaTextoInput(ev: Event): void {
+    const texto = ((ev.target as HTMLInputElement).value || '').trim();
+    this.filtroMesaTexto = texto;
+    if (!texto) {
+      if (this.filtroMesaId !== null) {
+        this.filtroMesaId = null;
+        this.aplicarFiltros();
+      }
+      return;
+    }
+    const elegida = this.resolverMesaPorTexto(texto);
+    if (elegida && elegida.id !== this.filtroMesaId) {
+      this.filtroMesaId = elegida.id;
+      this.aplicarFiltros();
+    }
+  }
+
+  /** Al salir del campo, el texto refleja el filtro realmente aplicado. */
+  onMesaTextoBlur(): void {
+    if (this.filtroMesaId == null) {
+      this.filtroMesaTexto = '';
+      return;
+    }
+    const m = this.mesas.find(x => x.id === this.filtroMesaId);
+    this.filtroMesaTexto = m ? this.etiquetaMesa(m) : '';
   }
 
   limpiarFiltros(): void {
@@ -669,6 +719,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.filtroCargoId = null;
     this.filtroPartidoId = null;
     this.filtroMesaId = null;
+    this.filtroMesaTexto = '';
     this.provincias = [];
     this.cantones = [];
     this.parroquias = [];

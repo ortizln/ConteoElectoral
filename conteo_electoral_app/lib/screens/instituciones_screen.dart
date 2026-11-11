@@ -46,7 +46,16 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
     final nombreCtrl = TextEditingController(text: item?.nombre ?? '');
     final codCtrl = TextEditingController(text: item?.codigo ?? '');
     int? parroquiaId = item?.parroquiaId ?? _parroquias.firstOrNull?.id;
+    // Campos de juntas (números de mesa desde/hasta)
+    final junfemCtrl = TextEditingController(text: item?.junfem?.toString() ?? '');
+    final junmasCtrl = TextEditingController(text: item?.junmas?.toString() ?? '');
+    final juninifCtrl = TextEditingController(text: item?.juninif?.toString() ?? '');
+    final junfinfCtrl = TextEditingController(text: item?.junfinf?.toString() ?? '');
+    final juninimCtrl = TextEditingController(text: item?.juninim?.toString() ?? '');
+    final junfinmCtrl = TextEditingController(text: item?.junfinm?.toString() ?? '');
     final formKey = GlobalKey<FormState>();
+
+    int? parseOrNull(String v) => v.trim().isEmpty ? null : int.tryParse(v.trim());
 
     final saved = await showModalBottomSheet<bool>(
       context: context,
@@ -97,6 +106,103 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                       decoration: const InputDecoration(
                           labelText: 'Código',
                           prefixIcon: Icon(Icons.tag_outlined))),
+                  const SizedBox(height: 20),
+                  Text('Juntas (mesas)',
+                      style: AppTextStyles.bodySmall
+                          .copyWith(fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 12),
+                  Row(children: [
+                    Expanded(
+                      child: TextFormField(
+                          controller: junfemCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                              labelText: 'JUNFEM',
+                              helperText: 'Juntas femeninas',
+                              isDense: true),
+                          onChanged: (_) => setLocalState(() {})),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                          controller: junmasCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                              labelText: 'JUNMAS',
+                              helperText: 'Juntas masculinas',
+                              isDense: true),
+                          onChanged: (_) => setLocalState(() {})),
+                    ),
+                  ]),
+                  const SizedBox(height: 12),
+                  Row(children: [
+                    Expanded(
+                      child: TextFormField(
+                          controller: juninifCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                              labelText: 'JUNINIF',
+                              helperText: 'Inicio j. femeninas',
+                              isDense: true)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                          controller: junfinfCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                              labelText: 'JUNFINF',
+                              helperText: 'Fin j. femeninas',
+                              isDense: true)),
+                    ),
+                  ]),
+                  const SizedBox(height: 12),
+                  Row(children: [
+                    Expanded(
+                      child: TextFormField(
+                          controller: juninimCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                              labelText: 'JUNINIM',
+                              helperText: 'Inicio j. masculinas',
+                              isDense: true)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: TextFormField(
+                          controller: junfinmCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                              labelText: 'JUNFINM',
+                              helperText: 'Fin j. masculinas',
+                              isDense: true)),
+                    ),
+                  ]),
+                  const SizedBox(height: 12),
+                  // NUMJUN calculado: JUNFEM + JUNMAS
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.accent.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                          color: AppColors.accent.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.numbers, size: 18),
+                        const SizedBox(width: 8),
+                        Text('NUMJUN (total): ',
+                            style: AppTextStyles.bodySmall),
+                        Text(
+                          '${(int.tryParse(junfemCtrl.text.trim()) ?? 0) + (int.tryParse(junmasCtrl.text.trim()) ?? 0)}',
+                          style: AppTextStyles.bodySmall
+                              .copyWith(fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   Row(children: [
                     Expanded(
@@ -111,12 +217,53 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                                   parroquiaId == null) {
                                 return;
                               }
+                              // Validar juntas: números >= 0 e inicio <= fin
+                              final junfem = parseOrNull(junfemCtrl.text);
+                              final junmas = parseOrNull(junmasCtrl.text);
+                              final juninif = parseOrNull(juninifCtrl.text);
+                              final junfinf = parseOrNull(junfinfCtrl.text);
+                              final juninim = parseOrNull(juninimCtrl.text);
+                              final junfinm = parseOrNull(junfinmCtrl.text);
+                              final invalidos = [junfem, junmas, juninif, junfinf, juninim, junfinm]
+                                  .where((v) => v != null && v < 0)
+                                  .isNotEmpty;
+                              if (invalidos) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Los campos de juntas deben ser >= 0')));
+                                return;
+                              }
+                              if (juninif != null &&
+                                  junfinf != null &&
+                                  juninif > junfinf) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'JUNINIF no puede ser mayor que JUNFINF')));
+                                return;
+                              }
+                              if (juninim != null &&
+                                  junfinm != null &&
+                                  juninim > junfinm) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'JUNINIM no puede ser mayor que JUNFINM')));
+                                return;
+                              }
                               final api = context.read<AppProvider>().api;
                               final i = InstitucionEducativa(
                                   id: item?.id ?? 0,
                                   nombre: nombreCtrl.text,
                                   parroquiaId: parroquiaId!,
-                                  codigo: codCtrl.text);
+                                  codigo: codCtrl.text,
+                                  junfem: junfem,
+                                  junmas: junmas,
+                                  juninif: juninif,
+                                  junfinf: junfinf,
+                                  juninim: juninim,
+                                  junfinm: junfinm);
                               if (item == null) {
                                 await api.createInstitucion(i);
                               } else {
@@ -179,7 +326,8 @@ class _InstitucionesScreenState extends State<InstitucionesScreen> {
                         itemBuilder: (_, i) => CrudListTile(
                           title: _filtered[i].nombre,
                           subtitle:
-                              'Parroquia: ${_filtered[i].parroquiaNombre ?? "N/A"}',
+                              'Parroquia: ${_filtered[i].parroquiaNombre ?? "N/A"}'
+                              '${_filtered[i].numjun != null ? ' · Juntas: ${_filtered[i].numjun}' : ''}',
                           icon: Icons.school_outlined,
                           iconColor: AppColors.accent,
                           onEdit: () => _showForm(item: _filtered[i]),

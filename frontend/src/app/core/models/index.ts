@@ -127,6 +127,14 @@ export interface InstitucionEducativa {
   latitud?: number | null;
   longitud?: number | null;
   electoresRegistrados?: number | null;
+  // ===== Juntas (mesas) =====
+  junfem?: number | null;
+  junmas?: number | null;
+  juninif?: number | null;
+  junfinf?: number | null;
+  juninim?: number | null;
+  junfinm?: number | null;
+  numjun?: number | null;
 }
 
 export interface Mesa {

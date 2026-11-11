@@ -24,10 +24,14 @@
     </div>
     <div class="filter-item">
       <label>Institución:</label>
-      <select class="form-select" [(ngModel)]="filterInstitucionId" (change)="filtrarPorInstitucion()">
-        <option [ngValue]="null">Todas</option>
-        <option *ngFor="let i of instituciones" [ngValue]="i.id">{{ i.nombre }}</option>
-      </select>
+      <input type="text" class="form-control" list="datalistInstitucionesFiltro" autocomplete="off"
+        placeholder="Escriba nombre de institución..."
+        [(ngModel)]="filterInstitucionTexto"
+        (input)="onInstitucionFiltroInput($event)"
+        (blur)="onInstitucionFiltroBlur()" />
+      <datalist id="datalistInstitucionesFiltro">
+        <option *ngFor="let i of instituciones" [value]="i.nombre"></option>
+      </datalist>
     </div>
     <div class="filter-item">
       <label>Buscar:</label>
@@ -178,19 +182,19 @@
           </div>
 
           <div class="mb-3">
-            <label>Buscar institución:</label>
-            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="buscarInstitucionText" placeholder="Escriba nombre para filtrar..." (input)="form.institucionId = null" />
-            <small class="text-muted">{{ instituciones.length }} instituciones cargadas</small>
-          </div>
-
-          <div class="mb-3">
             <label>Institución:</label>
-            <select class="form-select" [(ngModel)]="form.institucionId">
-              <option [ngValue]="null">Seleccione una institución...</option>
-              <option *ngFor="let i of filteredInstituciones" [ngValue]="i.id">{{ i.nombre }}</option>
-            </select>
-            <small *ngIf="filteredInstituciones.length === 0 && institucionesCargadas" class="text-muted">No se encontraron instituciones con los filtros aplicados</small>
+            <input type="text" class="form-control" list="datalistInstitucionesModal" autocomplete="off"
+              placeholder="Escriba para filtrar y seleccionar..."
+              [(ngModel)]="buscarInstitucionText"
+              (input)="onInstitucionModalInput($event)"
+              (blur)="onInstitucionModalBlur()" />
+            <datalist id="datalistInstitucionesModal">
+              <option *ngFor="let i of filteredInstituciones" [value]="i.nombre"></option>
+            </datalist>
+            <small *ngIf="form.institucionId" class="text-success"><i class="bi bi-check-circle-fill"></i> Institución seleccionada</small>
+            <small *ngIf="!form.institucionId && institucionesCargadas" class="text-muted">Escriba y seleccione una institución de la lista</small>
             <small *ngIf="!institucionesCargadas" class="text-muted">Cargando instituciones...</small>
+            <small class="text-muted d-block">{{ instituciones.length }} instituciones cargadas</small>
           </div>
 
           <div class="mb-3">

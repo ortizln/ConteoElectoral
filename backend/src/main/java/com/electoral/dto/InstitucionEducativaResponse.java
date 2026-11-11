@@ -17,4 +17,12 @@ public class InstitucionEducativaResponse {
     private Double latitud;
     private Double longitud;
     private Integer electoresRegistrados;
+    // ===== Juntas (mesas) =====
+    private Integer junfem;
+    private Integer junmas;
+    private Integer juninif;
+    private Integer junfinf;
+    private Integer juninim;
+    private Integer junfinm;
+    private Integer numjun;
 }

@@ -40,6 +40,23 @@ public class InstitucionEducativa {
     @Column(name = "electores_registrados")
     private Integer electoresRegistrados;
 
+    // ===== Juntas (mesas) de la institución =====
+    // Cantidad de juntas femeninas / masculinas
+    private Integer junfem;
+    private Integer junmas;
+    // Rango de números de mesa femeninas (desde / hasta)
+    @Column(name = "juninif")
+    private Integer juninif;
+    @Column(name = "junfinf")
+    private Integer junfinf;
+    // Rango de números de mesa masculinas (desde / hasta)
+    @Column(name = "juninim")
+    private Integer juninim;
+    @Column(name = "junfinm")
+    private Integer junfinm;
+    // Total de juntas = junfem + junmas (calculado en backend al guardar)
+    private Integer numjun;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

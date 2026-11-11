@@ -89,10 +89,14 @@
       </div>
       <div class="filtro-group" *ngIf="mesas.length > 0">
         <label>Mesa</label>
-        <select class="form-select" [(ngModel)]="filtroMesaId" (change)="onMesaChange()">
-          <option [ngValue]="null">Todas</option>
-          <option *ngFor="let m of mesas" [value]="m.id">Mesa {{ m.numero }} - {{ m.institucionNombre }}</option>
-        </select>
+        <input type="text" class="form-control" list="datalistMesasDashboard" autocomplete="off"
+          placeholder="Escriba nº de mesa o institución..."
+          [(ngModel)]="filtroMesaTexto"
+          (input)="onMesaTextoInput($event)"
+          (blur)="onMesaTextoBlur()" />
+        <datalist id="datalistMesasDashboard">
+          <option *ngFor="let m of mesas" [value]="etiquetaMesa(m)"></option>
+        </datalist>
       </div>
     </div>
   </div>

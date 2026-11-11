@@ -37,6 +37,13 @@ public class InstitucionEducativaController {
                 .latitud(i.getLatitud())
                 .longitud(i.getLongitud())
                 .electoresRegistrados(i.getElectoresRegistrados())
+                .junfem(i.getJunfem())
+                .junmas(i.getJunmas())
+                .juninif(i.getJuninif())
+                .junfinf(i.getJunfinf())
+                .juninim(i.getJuninim())
+                .junfinm(i.getJunfinm())
+                .numjun(i.getNumjun())
                 .build();
     }
 
@@ -50,7 +57,20 @@ public class InstitucionEducativaController {
                 .latitud(request.getLatitud())
                 .longitud(request.getLongitud())
                 .electoresRegistrados(request.getElectoresRegistrados())
+                .junfem(request.getJunfem())
+                .junmas(request.getJunmas())
+                .juninif(request.getJuninif())
+                .junfinf(request.getJunfinf())
+                .juninim(request.getJuninim())
+                .junfinm(request.getJunfinm())
+                .numjun(calcularNumJun(request.getJunfem(), request.getJunmas()))
                 .build();
+    }
+
+    /** NUMJUN = JUNFEM + JUNMAS (null si ambos no están definidos). */
+    private Integer calcularNumJun(Integer junfem, Integer junmas) {
+        if (junfem == null && junmas == null) return null;
+        return (junfem != null ? junfem : 0) + (junmas != null ? junmas : 0);
     }
 
     @GetMapping
@@ -86,12 +106,20 @@ public class InstitucionEducativaController {
     public ResponseEntity<InstitucionEducativaResponse> update(@PathVariable Long id, @Valid @RequestBody InstitucionEducativaRequest request) {
         InstitucionEducativa institucion = institucionService.findById(id);
         institucion.setNombre(request.getNombre());
+        institucion.setParroquia(Parroquia.builder().id(request.getParroquiaId()).build());
         institucion.setDireccion(request.getDireccion());
         institucion.setCodigo(request.getCodigo());
         institucion.setTipo(request.getTipo());
         institucion.setLatitud(request.getLatitud());
         institucion.setLongitud(request.getLongitud());
         institucion.setElectoresRegistrados(request.getElectoresRegistrados());
+        institucion.setJunfem(request.getJunfem());
+        institucion.setJunmas(request.getJunmas());
+        institucion.setJuninif(request.getJuninif());
+        institucion.setJunfinf(request.getJunfinf());
+        institucion.setJuninim(request.getJuninim());
+        institucion.setJunfinm(request.getJunfinm());
+        institucion.setNumjun(calcularNumJun(request.getJunfem(), request.getJunmas()));
         InstitucionEducativa updated = institucionService.update(id, institucion);
         return ResponseEntity.ok(toResponse(updated));
     }

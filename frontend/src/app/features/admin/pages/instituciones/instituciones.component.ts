@@ -19,7 +19,7 @@ export class InstitucionesComponent implements OnInit {
   showModal = false;
   editMode = false;
   selectedId: number | null = null;
-  form: any = { nombre: '', parroquiaId: null, direccion: '', codigo: '', tipo: '', latitud: null, longitud: null, electoresRegistrados: null };
+  form: any = { nombre: '', parroquiaId: null, direccion: '', codigo: '', tipo: '', latitud: null, longitud: null, electoresRegistrados: null, junfem: null, junmas: null, juninif: null, junfinf: null, juninim: null, junfinm: null };
   filterParroquiaId: number | null = null;
   sortColumn: string = '';
   sortDirection: string = 'asc';
@@ -129,7 +129,7 @@ export class InstitucionesComponent implements OnInit {
 
   openModal(): void {
     this.editMode = false;
-    this.form = { nombre: '', parroquiaId: this.parroquias[0]?.id || null, direccion: '', codigo: '', tipo: '', latitud: null, longitud: null, electoresRegistrados: null };
+    this.form = { nombre: '', parroquiaId: this.parroquias[0]?.id || null, direccion: '', codigo: '', tipo: '', latitud: null, longitud: null, electoresRegistrados: null, junfem: null, junmas: null, juninif: null, junfinf: null, juninim: null, junfinm: null };
     this.errorMessage = '';
     this.showModal = true;
   }
@@ -137,9 +137,17 @@ export class InstitucionesComponent implements OnInit {
   edit(i: InstitucionEducativa): void {
     this.editMode = true;
     this.selectedId = i.id;
-    this.form = { nombre: i.nombre, parroquiaId: i.parroquiaId, direccion: i.direccion || '', codigo: i.codigo || '', tipo: i.tipo || '', latitud: i.latitud ?? null, longitud: i.longitud ?? null, electoresRegistrados: i.electoresRegistrados ?? null };
+    this.form = { nombre: i.nombre, parroquiaId: i.parroquiaId, direccion: i.direccion || '', codigo: i.codigo || '', tipo: i.tipo || '', latitud: i.latitud ?? null, longitud: i.longitud ?? null, electoresRegistrados: i.electoresRegistrados ?? null, junfem: i.junfem ?? null, junmas: i.junmas ?? null, juninif: i.juninif ?? null, junfinf: i.junfinf ?? null, juninim: i.juninim ?? null, junfinm: i.junfinm ?? null };
     this.errorMessage = '';
     this.showModal = true;
+  }
+
+  /** NUMJUN calculado en el formulario (JUNFEM + JUNMAS). */
+  get numjunFormulario(): number | null {
+    const f = this.form?.junfem != null && this.form.junfem !== '' ? Number(this.form.junfem) : null;
+    const m = this.form?.junmas != null && this.form.junmas !== '' ? Number(this.form.junmas) : null;
+    if (f == null && m == null) return null;
+    return (f ?? 0) + (m ?? 0);
   }
 
   closeModal(): void { this.showModal = false; this.selectedId = null; this.errorMessage = ''; }
@@ -151,6 +159,26 @@ export class InstitucionesComponent implements OnInit {
     form.latitud = form.latitud === '' || form.latitud == null ? null : Number(form.latitud);
     form.longitud = form.longitud === '' || form.longitud == null ? null : Number(form.longitud);
     form.electoresRegistrados = form.electoresRegistrados === '' || form.electoresRegistrados == null ? null : Math.trunc(Number(form.electoresRegistrados));
+    // Campos de juntas (INTEGER, >= 0)
+    const juntas: ('junfem' | 'junmas' | 'juninif' | 'junfinf' | 'juninim' | 'junfinm')[] =
+      ['junfem', 'junmas', 'juninif', 'junfinf', 'juninim', 'junfinm'];
+    for (const k of juntas) {
+      form[k] = form[k] === '' || form[k] == null ? null : Math.trunc(Number(form[k]));
+      if (form[k] != null && (isNaN(form[k]) || form[k] < 0)) {
+        this.errorMessage = 'Los campos de juntas deben ser números mayores o iguales a 0.';
+        return;
+      }
+    }
+    if (form.juninif != null && form.junfinf != null && form.juninif > form.junfinf) {
+      this.errorMessage = 'JUNINIF (inicio juntas femeninas) no puede ser mayor que JUNFINF (fin).';
+      return;
+    }
+    if (form.juninim != null && form.junfinm != null && form.juninim > form.junfinm) {
+      this.errorMessage = 'JUNINIM (inicio juntas masculinas) no puede ser mayor que JUNFINM (fin).';
+      return;
+    }
+    // NUMJUN calculado por el backend (JUNFEM + JUNMAS)
+    form.numjun = form.junfem == null && form.junmas == null ? null : (form.junfem ?? 0) + (form.junmas ?? 0);
     if ((form.latitud != null && (isNaN(form.latitud) || form.latitud < -90 || form.latitud > 90)) ||
         (form.longitud != null && (isNaN(form.longitud) || form.longitud < -180 || form.longitud > 180))) {
       this.errorMessage = 'Latitud debe estar entre -90 y 90, longitud entre -180 y 180.';
