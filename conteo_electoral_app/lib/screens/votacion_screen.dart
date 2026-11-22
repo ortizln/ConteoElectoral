@@ -989,7 +989,16 @@ class _VotacionScreenState extends State<VotacionScreen> {
                                                                 FontWeight.w600,
                                                             fontSize: 14)),
                                                     const SizedBox(height: 2),
-                                                    Text(partidoNombre,
+                                                    Text(
+                                                        [
+                                                          candidatosLista.first
+                                                              .cargoNombre,
+                                                          partidoNombre,
+                                                        ]
+                                                            .where((s) =>
+                                                                s != null &&
+                                                                s.isNotEmpty)
+                                                            .join(' · '),
                                                         style: AppTextStyles
                                                             .bodySmall),
                                                   ],

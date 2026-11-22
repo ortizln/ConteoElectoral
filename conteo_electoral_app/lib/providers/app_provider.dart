@@ -728,6 +728,27 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
+  /// Refresca cargos y candidatos (incluida la asignación a listas) desde el
+  /// servidor. El Admin puede crear listas mientras la APK está abierta.
+  Future<void> _recargarCatalogos() async {
+    if (!_isOnline || _eleccionActual == null) return;
+    try {
+      final token = await _db.getToken();
+      if (token == null || _tokenLocalVencido(token)) return;
+      final cargos =
+          await _api.getCargosByEleccion(_eleccionActual!.id, token: token);
+      final candidatos = await _api
+          .getCandidatosByEleccion(_eleccionActual!.id, token: token);
+      if (cargos.isEmpty && candidatos.isEmpty) return;
+      await _db.guardarCargos(cargos);
+      await _db.guardarCandidatos(candidatos);
+      _cargos = cargos;
+      _candidatos = candidatos;
+    } on UnauthorizedException {
+      await _onSessionExpired();
+    } catch (_) {}
+  }
+
   Future<void> sincronizarVotos({bool forceRetry = false}) async {
     if (!_isOnline) return;
     // B11: no descartar el trigger si ya hay un sync en curso; repetir al terminar
@@ -748,6 +769,9 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
       if (_eleccionActual != null) {
         await _sync.pullChanges(_eleccionActual!.id);
       }
+      // Catálogos: el Admin puede crear listas y asignar candidatos mientras
+      // la APK está abierta. Sin este refresco solo se veían al relogin.
+      await _recargarCatalogos();
       // Fotos del acta pendientes (capturadas offline o con fallo de red)
       await subirFotosActaPendientes();
       await _recargarVotos();
