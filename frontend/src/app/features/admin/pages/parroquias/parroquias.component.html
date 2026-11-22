@@ -45,6 +45,7 @@
         <th class="sortable" (click)="sort('nombre')">Nombre {{ sortColumn === 'nombre' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('cantonNombre')">Cantón {{ sortColumn === 'cantonNombre' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('descripcion')">Descripción {{ sortColumn === 'descripcion' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
+        <th class="sortable" (click)="sort('tipoParroquia')">Tipo {{ sortColumn === 'tipoParroquia' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th></th>
       </tr>
     </thead>
@@ -54,6 +55,13 @@
         <td>{{ p.nombre }}</td>
         <td>{{ p.cantonNombre }}</td>
         <td>{{ p.descripcion || 'N/A' }}</td>
+        <td>
+          <span class="badge" [class.bg-success]="p.tipoParroquia === 'URBANA'"
+                [class.bg-warning]="p.tipoParroquia === 'RURAL'"
+                [class.bg-secondary]="!p.tipoParroquia">
+            {{ p.tipoParroquia || 'PENDIENTE' }}
+          </span>
+        </td>
         <td>
           <div class="dropdown">
             <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
@@ -68,7 +76,7 @@
         </td>
       </tr>
       <tr *ngIf="parroquiasFiltradas.length === 0">
-        <td colspan="5" class="text-center py-3">No se encontraron registros</td>
+        <td colspan="6" class="text-center py-3">No se encontraron registros</td>
       </tr>
     </tbody>
   </table>
@@ -103,7 +111,7 @@
           <button class="btn-close" (click)="closeImportModal()">×</button>
         </div>
         <div class="modal-body">
-          <p class="text-muted mb-3">Selecciona un archivo Excel (.xlsx) con las columnas: <strong>nombre</strong>, <strong>canton</strong>.</p>
+          <p class="text-muted mb-3">Selecciona un archivo Excel (.xlsx) con las columnas: <strong>nombre</strong>, <strong>canton</strong>, <strong>tipoParroquia</strong> (URBANA o RURAL).</p>
           <div class="upload-section mb-3">
             <input type="file" autocomplete="off" (change)="onImportFileSelected($event)" accept=".xlsx,.xls" id="importFileInput" />
             <label for="importFileInput" class="file-label">
@@ -115,10 +123,11 @@
             <p><strong>Vista previa ({{ importPreview.length }} filas):</strong></p>
             <div class="preview-table-wrapper">
               <table class="table table-sm">
-                <thead><tr><th>#</th><th>nombre</th><th>canton</th></tr></thead>
+                <thead><tr><th>#</th><th>nombre</th><th>canton</th><th>tipoParroquia</th></tr></thead>
                 <tbody>
                   <tr *ngFor="let row of importPreview">
                     <td>{{ row.index }}</td><td>{{ row.nombre }}</td><td>{{ row.canton }}</td>
+                    <td [class.text-danger]="!row.tipoParroquia">{{ row.tipoParroquia || 'INVÁLIDO' }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -161,6 +170,13 @@
               <option [ngValue]="null">Seleccione...</option>
               <option *ngFor="let c of cantones" [value]="c.id">{{ c.nombre }}</option>
             </select>
+          </div>
+          <div class="mb-3">
+            <label>Tipo de parroquia <span class="text-danger">*</span>:</label>
+            <select class="form-select" [(ngModel)]="form.tipoParroquia" required>
+              <option *ngFor="let t of tiposParroquia" [value]="t">{{ t === 'URBANA' ? 'Urbana' : 'Rural' }}</option>
+            </select>
+            <small class="text-muted">Clasificación oficial CNE. Determina qué contiendas de concejales se muestran en las mesas de esta parroquia.</small>
           </div>
           <div class="mb-3">
             <label>Descripción:</label>

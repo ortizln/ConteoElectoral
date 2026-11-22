@@ -1,5 +1,6 @@
 package com.electoral.dto;
 
+import com.electoral.entities.TipoParroquia;
 import lombok.*;
 
 @Data
@@ -12,4 +13,6 @@ public class ParroquiaResponse {
     private Long cantonId;
     private String cantonNombre;
     private String descripcion;
+    /** null = "Pendiente de clasificación" (datos legados sin fuente verificada). */
+    private TipoParroquia tipoParroquia;
 }

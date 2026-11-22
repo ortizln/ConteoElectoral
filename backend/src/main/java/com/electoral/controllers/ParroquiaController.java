@@ -35,6 +35,7 @@ public class ParroquiaController {
                         .cantonId(p.getCanton().getId())
                         .cantonNombre(p.getCanton().getNombre())
                         .descripcion(p.getDescripcion())
+                        .tipoParroquia(p.getTipoParroquia())
                         .build())
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
@@ -50,6 +51,7 @@ public class ParroquiaController {
                         .cantonId(p.getCanton().getId())
                         .cantonNombre(p.getCanton().getNombre())
                         .descripcion(p.getDescripcion())
+                        .tipoParroquia(p.getTipoParroquia())
                         .build())
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
@@ -64,6 +66,7 @@ public class ParroquiaController {
                 .cantonId(parroquia.getCanton().getId())
                 .cantonNombre(parroquia.getCanton().getNombre())
                 .descripcion(parroquia.getDescripcion())
+                .tipoParroquia(parroquia.getTipoParroquia())
                 .build();
         return ResponseEntity.ok(response);
     }
@@ -75,6 +78,7 @@ public class ParroquiaController {
                 .nombre(request.getNombre())
                 .canton(Canton.builder().id(request.getCantonId()).build())
                 .descripcion(request.getDescripcion())
+                .tipoParroquia(request.getTipoParroquia())
                 .build();
         Parroquia saved = parroquiaService.save(parroquia);
         ParroquiaResponse response = ParroquiaResponse.builder()
@@ -83,6 +87,7 @@ public class ParroquiaController {
                 .cantonId(saved.getCanton().getId())
                 .cantonNombre(saved.getCanton().getNombre())
                 .descripcion(saved.getDescripcion())
+                .tipoParroquia(saved.getTipoParroquia())
                 .build();
         return ResponseEntity.ok(response);
     }
@@ -93,6 +98,9 @@ public class ParroquiaController {
         Parroquia parroquia = parroquiaService.findById(id);
         parroquia.setNombre(request.getNombre());
         parroquia.setDescripcion(request.getDescripcion());
+        // El canton proveniente del request se respeta (antes se ignoraba en el PUT).
+        parroquia.setCanton(Canton.builder().id(request.getCantonId()).build());
+        parroquia.setTipoParroquia(request.getTipoParroquia());
         Parroquia updated = parroquiaService.update(id, parroquia);
         ParroquiaResponse response = ParroquiaResponse.builder()
                 .id(updated.getId())
@@ -100,6 +108,7 @@ public class ParroquiaController {
                 .cantonId(updated.getCanton().getId())
                 .cantonNombre(updated.getCanton().getNombre())
                 .descripcion(updated.getDescripcion())
+                .tipoParroquia(updated.getTipoParroquia())
                 .build();
         return ResponseEntity.ok(response);
     }
@@ -114,9 +123,10 @@ public class ParroquiaController {
     @GetMapping("/exportar-excel")
     public ResponseEntity<byte[]> exportarExcel() {
         List<Parroquia> parroquias = parroquiaService.findAll();
-        String[] headers = {"ID", "Nombre", "Canton", "Descripcion"};
+        String[] headers = {"ID", "Nombre", "Canton", "Descripcion", "Tipo"};
         List<String[]> data = parroquias.stream()
-                .map(p -> new String[]{String.valueOf(p.getId()), p.getNombre(), p.getCanton().getNombre(), p.getDescripcion()})
+                .map(p -> new String[]{String.valueOf(p.getId()), p.getNombre(), p.getCanton().getNombre(),
+                        p.getDescripcion(), p.getTipoParroquia() != null ? p.getTipoParroquia().name() : "PENDIENTE"})
                 .collect(Collectors.toList());
         byte[] excel = excelExportService.exportExcel("Parroquias", headers, data);
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -128,11 +138,12 @@ public class ParroquiaController {
     @GetMapping("/exportar-pdf")
     public ResponseEntity<byte[]> exportarPdf() {
         List<Parroquia> parroquias = parroquiaService.findAll();
-        String[] headers = {"ID", "Nombre", "Canton", "Descripcion"};
+        String[] headers = {"ID", "Nombre", "Canton", "Descripcion", "Tipo"};
         List<String[]> data = parroquias.stream()
-                .map(p -> new String[]{String.valueOf(p.getId()), p.getNombre(), p.getCanton().getNombre(), p.getDescripcion()})
+                .map(p -> new String[]{String.valueOf(p.getId()), p.getNombre(), p.getCanton().getNombre(),
+                        p.getDescripcion(), p.getTipoParroquia() != null ? p.getTipoParroquia().name() : "PENDIENTE"})
                 .collect(Collectors.toList());
-        byte[] pdf = pdfExportService.exportTablePdf("Parroquias", headers, data, new float[]{1, 3, 3, 3});
+        byte[] pdf = pdfExportService.exportTablePdf("Parroquias", headers, data, new float[]{1, 3, 3, 2});
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_PDF);
         httpHeaders.setContentDispositionFormData("attachment", "parroquias.pdf");

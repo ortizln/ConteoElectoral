@@ -34,6 +34,7 @@ public class VotoService {
     private final AuditoriaService auditoriaService;
     private final SimpMessagingTemplate messagingTemplate;
     private final ListaElectoralRepository listaElectoralRepository;
+    private final ElegibilidadTerritorialService elegibilidadTerritorialService;
 
     @Transactional(readOnly = true)
     public List<VotoResponse> getVotosByMesa(Long mesaId) {
@@ -76,6 +77,7 @@ public class VotoService {
                     .orElseThrow(() -> new RecursoNoEncontradoException(
                             "Lista no encontrada con ID: " + request.getListaId()));
             if (lista.getCargo() != null && lista.getCargo().getTipoVotacion() == TipoVotacion.LISTA) {
+                elegibilidadTerritorialService.exigirCargoElegible(lista.getCargo(), mesa);
                 Voto voto = upsertVotoByLista(lista, mesa, eleccion, request.getCantidadVotos(), usuarioId);
                 savedVotos.add(voto);
             } else {
@@ -85,6 +87,7 @@ public class VotoService {
                             "No hay candidatos en la lista ID: " + request.getListaId());
                 }
                 for (Candidato candidato : candidatosLista) {
+                    elegibilidadTerritorialService.exigirCandidatoElegible(candidato, mesa);
                     Voto voto = upsertVoto(candidato, mesa, eleccion, request.getCantidadVotos(), usuarioId, request.getListaId());
                     savedVotos.add(voto);
                 }
@@ -93,6 +96,7 @@ public class VotoService {
             Candidato candidato = candidatoRepository.findById(request.getCandidatoId())
                     .orElseThrow(() -> new RecursoNoEncontradoException(
                             "Candidato no encontrado con ID: " + request.getCandidatoId()));
+            elegibilidadTerritorialService.exigirCandidatoElegible(candidato, mesa);
             Voto voto = upsertVoto(candidato, mesa, eleccion, request.getCantidadVotos(), usuarioId, null);
             savedVotos.add(voto);
         } else {
@@ -161,7 +165,13 @@ public class VotoService {
 
         voto.setCantidadVotos(request.getCantidadVotos());
         if (request.getListaId() != null) {
+            ListaElectoral lista = listaElectoralRepository.findById(request.getListaId())
+                    .orElseThrow(() -> new RecursoNoEncontradoException(
+                            "Lista no encontrada con ID: " + request.getListaId()));
+            elegibilidadTerritorialService.exigirCargoElegible(lista.getCargo(), voto.getMesa());
             voto.setListaId(request.getListaId());
+        } else if (voto.getCandidato() != null) {
+            elegibilidadTerritorialService.exigirCandidatoElegible(voto.getCandidato(), voto.getMesa());
         }
         Voto updatedVoto = votoRepository.save(voto);
 

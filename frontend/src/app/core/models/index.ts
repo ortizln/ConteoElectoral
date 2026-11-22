@@ -114,6 +114,8 @@ export interface Parroquia {
   cantonId: number;
   cantonNombre?: string;
   descripcion?: string;
+  /** null = pendiente de clasificación (datos legados sin fuente verificada). */
+  tipoParroquia?: 'URBANA' | 'RURAL' | null;
 }
 
 export interface InstitucionEducativa {

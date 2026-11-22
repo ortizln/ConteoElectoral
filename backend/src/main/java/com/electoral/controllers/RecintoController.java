@@ -45,6 +45,9 @@ public class RecintoController {
                 if (inst.getParroquia() != null) {
                     r.put("parroquiaId", inst.getParroquia().getId());
                     r.put("parroquiaNombre", inst.getParroquia().getNombre());
+                    // Clasificacion territorial resuelta desde la BD: el cliente no la inventa.
+                    r.put("tipoParroquia", inst.getParroquia().getTipoParroquia() != null
+                            ? inst.getParroquia().getTipoParroquia().name() : null);
                     if (inst.getParroquia().getCanton() != null) {
                         r.put("cantonId", inst.getParroquia().getCanton().getId());
                         r.put("cantonNombre", inst.getParroquia().getCanton().getNombre());

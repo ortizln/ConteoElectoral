@@ -34,6 +34,8 @@ class CandidatoServiceTest {
     @Mock private ListaElectoralRepository listaElectoralRepository;
     @Mock private RuleEngine ruleEngine;
     @Mock private ReglaNegocioService reglaNegocioService;
+    @Mock private com.electoral.repositories.MesaRepository mesaRepository;
+    @Mock private ElegibilidadTerritorialService elegibilidadTerritorialService;
 
     @InjectMocks
     private CandidatoService candidatoService;
@@ -47,7 +49,8 @@ class CandidatoServiceTest {
     @BeforeEach
     void setUp() {
         eleccion = Eleccion.builder().id(1L).nombre("Eleccion 2025").build();
-        cargo = Cargo.builder().id(1L).nombre("Alcalde").build();
+        // El servicio consulta cargo.getTipoVotacion().name(); el fixture original no lo inicializaba.
+        cargo = Cargo.builder().id(1L).nombre("Alcalde").tipoVotacion(TipoVotacion.INDIVIDUAL).build();
         partido = Partido.builder().id(1L).nombre("Partido A").sigla("PA").build();
 
         request = CandidatoRequest.builder()

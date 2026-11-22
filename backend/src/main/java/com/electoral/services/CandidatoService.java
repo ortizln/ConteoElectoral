@@ -33,6 +33,7 @@ public class CandidatoService {
     private final RuleEngine ruleEngine;
     private final ReglaNegocioService reglaNegocioService;
     private final com.electoral.repositories.MesaRepository mesaRepository;
+    private final ElegibilidadTerritorialService elegibilidadTerritorialService;
 
     @Transactional(readOnly = true)
     public List<CandidatoResponse> getCandidatosByEleccion(Long eleccionesId) {
@@ -42,49 +43,21 @@ public class CandidatoService {
     }
 
     /**
-     * Candidatos visibles para una mesa segun el territorio del cargo:
-     * - Cargo NACIONAL: siempre visible.
-     * - PROVINCIA/CANTON/PARROQUIA: el candidato debe tener asignado el
-     *   territorio que coincide con el de la mesa (parroquia de la institucion).
-     * - Candidatos sin territorio asignado: visibles (compatibilidad con
-     *   datos cargados antes de esta funcionalidad).
+     * Candidatos visibles para una mesa. Toda la logica territorial (incluida la regla
+     * urbana/rural de concejales) vive en ElegibilidadTerritorialService, de modo que la
+     * misma regla se aplica al consultar y al registrar votos.
+     * Candidatos sin territorio asignado siguen visibles por compatibilidad con datos antiguos.
      */
     @Transactional(readOnly = true)
     public List<CandidatoResponse> getCandidatosByMesa(Long mesaId) {
         Mesa mesa = mesaRepository.findById(mesaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + mesaId));
-        Long eleccionId = mesa.getElecciones().getId();
-        Long parroquiaMesa = mesa.getInstitucion() != null && mesa.getInstitucion().getParroquia() != null
-                ? mesa.getInstitucion().getParroquia().getId() : null;
-        Long cantonMesa = parroquiaMesa != null && mesa.getInstitucion().getParroquia().getCanton() != null
-                ? mesa.getInstitucion().getParroquia().getCanton().getId() : null;
-        Long provinciaMesa = cantonMesa != null && mesa.getInstitucion().getParroquia().getCanton().getProvincia() != null
-                ? mesa.getInstitucion().getParroquia().getCanton().getProvincia().getId() : null;
-
-        return candidatoRepository.findByEleccionesId(eleccionId).stream()
-                .filter(c -> aplicaParaTerritorio(c, parroquiaMesa, cantonMesa, provinciaMesa))
+        List<Candidato> candidatos = candidatoRepository.findByEleccionesId(mesa.getElecciones().getId());
+        elegibilidadTerritorialService.exigirClasificacionSiAplica(mesa, candidatos);
+        return candidatos.stream()
+                .filter(c -> elegibilidadTerritorialService.esCandidatoElegible(c, mesa))
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
-    }
-
-    private boolean aplicaParaTerritorio(Candidato candidato, Long parroquiaMesa, Long cantonMesa, Long provinciaMesa) {
-        Cargo cargo = candidato.getCargo();
-        if (cargo == null || cargo.getTerritorio() == null || cargo.getTerritorio() == TipoTerritorio.NACIONAL) {
-            return true;
-        }
-        switch (cargo.getTerritorio()) {
-            case PROVINCIA:
-                return candidato.getProvincia() == null
-                        || (provinciaMesa != null && provinciaMesa.equals(candidato.getProvincia().getId()));
-            case CANTON:
-                return candidato.getCanton() == null
-                        || (cantonMesa != null && cantonMesa.equals(candidato.getCanton().getId()));
-            case PARROQUIA:
-                return candidato.getParroquia() == null
-                        || (parroquiaMesa != null && parroquiaMesa.equals(candidato.getParroquia().getId()));
-            default:
-                return true;
-        }
     }
 
     @Transactional(readOnly = true)

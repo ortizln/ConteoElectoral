@@ -6,6 +6,8 @@ class Recinto {
   final String? institucionNombre;
   final int? parroquiaId;
   final String? parroquiaNombre;
+  /// URBANA / RURAL (null = pendiente de clasificacion).
+  final String? tipoParroquia;
   final int? cantonId;
   final String? cantonNombre;
   final int? provinciaId;
@@ -26,6 +28,7 @@ class Recinto {
     this.institucionNombre,
     this.parroquiaId,
     this.parroquiaNombre,
+    this.tipoParroquia,
     this.cantonId,
     this.cantonNombre,
     this.provinciaId,
@@ -48,6 +51,7 @@ class Recinto {
       institucionNombre: json['institucionNombre'],
       parroquiaId: json['parroquiaId'],
       parroquiaNombre: json['parroquiaNombre'],
+      tipoParroquia: json['tipoParroquia'],
       cantonId: json['cantonId'],
       cantonNombre: json['cantonNombre'],
       provinciaId: json['provinciaId'],
@@ -68,6 +72,7 @@ class Recinto {
       'nombre': nombre,
       'direccion': direccion,
       'institucionId': institucionId,
+      'tipoParroquia': tipoParroquia,
       'eleccionesId': eleccionesId,
     };
   }

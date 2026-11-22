@@ -26,6 +26,11 @@ public class Parroquia {
     @Column(length = 500)
     private String descripcion;
 
+    /** Clasificacion territorial URBANA/RURAL. Null = pendiente de clasificacion administrativa. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_parroquia", length = 10)
+    private TipoParroquia tipoParroquia;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

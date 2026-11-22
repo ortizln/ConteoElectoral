@@ -24,11 +24,13 @@ public class SyncService {
     private final VotoRepository votoRepository;
     private final MesaRepository mesaRepository;
     private final CandidatoRepository candidatoRepository;
+    private final ListaElectoralRepository listaElectoralRepository;
     private final EleccionRepository eleccionRepository;
     private final MesaService mesaService;
     private final AuditoriaService auditoriaService;
     private final SyncOperationLogRepository syncOperationLogRepository;
     private final ObjectMapper objectMapper;
+    private final ElegibilidadTerritorialService elegibilidadTerritorialService;
 
     /**
      * Procesa un batch de operaciones de sync con idempotencia.
@@ -145,6 +147,9 @@ public class SyncService {
                         ? Long.valueOf(data.get("candidatoId").toString()) : null;
 
                 if (listaId != null && candidatoId == null) {
+                    ListaElectoral lista = listaElectoralRepository.findById(listaId)
+                            .orElseThrow(() -> new IllegalArgumentException("Lista not found: " + listaId));
+                    elegibilidadTerritorialService.exigirCargoElegible(lista.getCargo(), mesa);
                     Optional<Voto> existing = votoRepository.findByMesaIdAndListaId(mesaId, listaId);
                     Voto voto;
                     if (existing.isPresent()) {
@@ -179,14 +184,16 @@ public class SyncService {
                 }
 
                 final Long eleccionId = resolveEleccionId(rawEleccionId, candidatoId);
+                Candidato candidato = candidatoRepository.findById(candidatoId)
+                        .orElseThrow(() -> new IllegalArgumentException("Candidato not found: " + candidatoId));
+                // Segunda barrera tambien cuando el voto ya existe (upsert).
+                elegibilidadTerritorialService.exigirCandidatoElegible(candidato, mesa);
                 Optional<Voto> existing = votoRepository.findByMesaIdAndCandidatoId(mesaId, candidatoId);
                 Voto voto;
                 if (existing.isPresent()) {
                     voto = existing.get();
                     voto.setCantidadVotos(cantidad);
                 } else {
-                    Candidato candidato = candidatoRepository.findById(candidatoId)
-                            .orElseThrow(() -> new IllegalArgumentException("Candidato not found: " + candidatoId));
                     Eleccion eleccion = eleccionRepository.findById(eleccionId)
                             .orElseThrow(() -> new IllegalArgumentException("Eleccion not found: " + eleccionId));
                     voto = Voto.builder()
@@ -222,6 +229,15 @@ public class SyncService {
                             .operationId(op.getOperationId()).success(false)
                             .error("Usuario no asignado a la mesa " + voto.getMesa().getId())
                             .build();
+                }
+
+                // Revalidar la seleccion guardada al editar (no asumir que sigue vigente).
+                if (voto.getCandidato() != null) {
+                    elegibilidadTerritorialService.exigirCandidatoElegible(voto.getCandidato(), voto.getMesa());
+                } else if (voto.getListaId() != null) {
+                    ListaElectoral lista = listaElectoralRepository.findById(voto.getListaId())
+                            .orElseThrow(() -> new IllegalArgumentException("Lista not found: " + voto.getListaId()));
+                    elegibilidadTerritorialService.exigirCargoElegible(lista.getCargo(), voto.getMesa());
                 }
 
                 Map<String, Object> prevData = Map.of("cantidadVotos", voto.getCantidadVotos());

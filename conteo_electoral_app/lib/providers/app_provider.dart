@@ -77,6 +77,8 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
   /// Candidatos visibles en la mesa actual: filtra por el territorio del cargo
   /// (NACIONAL / PROVINCIA / CANTON / PARROQUIA) contra el recinto de la mesa.
   /// - Cargo NACIONAL: siempre visible.
+  /// - Concejales: la circunscripcion del cargo (URBANA/RURAL) debe coincidir con
+  ///   la clasificacion de la parroquia resuelta desde la BD; si esta pendiente, no mostrar.
   /// - Sin territorio asignado en el candidato o sin recinto conocido: visible
   ///   (compatibilidad con datos cargados antes de esta funcionalidad).
   List<Candidato> get candidatosVisibles {
@@ -91,6 +93,16 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
       if (cg.id == c.cargoId) { cargo = cg; break; }
     }
     final territorio = cargo?.territorio ?? 'NACIONAL';
+
+    // Regla especial concejales: se identifica por el codigo estable de la
+    // circunscripcion del CARGO, nunca por el nombre visible del cargo.
+    final circ = cargo?.tipoCircunscripcionCodigo;
+    if (circ == 'URBANA' || circ == 'RURAL') {
+      final tipoParroquia = recinto.tipoParroquia;
+      if (tipoParroquia == null) return false;
+      if (tipoParroquia != circ) return false;
+    }
+
     switch (territorio) {
       case 'PROVINCIA':
         if (c.provinciaId == null) return true;

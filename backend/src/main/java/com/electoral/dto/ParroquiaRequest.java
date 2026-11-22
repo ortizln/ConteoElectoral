@@ -1,5 +1,6 @@
 package com.electoral.dto;
 
+import com.electoral.entities.TipoParroquia;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -14,4 +15,6 @@ public class ParroquiaRequest {
     @NotNull(message = "El cantón es requerido")
     private Long cantonId;
     private String descripcion;
+    @NotNull(message = "El tipo de parroquia es requerido (URBANA o RURAL)")
+    private TipoParroquia tipoParroquia;
 }

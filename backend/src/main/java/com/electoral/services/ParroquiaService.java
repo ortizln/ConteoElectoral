@@ -3,6 +3,7 @@ package com.electoral.services;
 import com.electoral.entities.Parroquia;
 import com.electoral.entities.Canton;
 import com.electoral.exception.DuplicateEntityException;
+import com.electoral.exception.ValidacionException;
 import com.electoral.repositories.ParroquiaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ public class ParroquiaService {
 
     @Transactional
     public Parroquia save(Parroquia parroquia) {
+        exigirTipoParroquia(parroquia);
         if (parroquiaRepository.existsByNombreAndCantonId(parroquia.getNombre(), parroquia.getCanton().getId())) {
             throw new DuplicateEntityException("Ya existe una parroquia con el nombre '" + parroquia.getNombre() + "' en este cantón");
         }
@@ -52,13 +54,15 @@ public class ParroquiaService {
             "Parroquia",
             saved.getId(),
             null,
-            AuditMap.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion())
+            AuditMap.of("nombre", saved.getNombre(), "descripcion", saved.getDescripcion(),
+                    "tipoParroquia", saved.getTipoParroquia())
         );
         return saved;
     }
 
     @Transactional
     public Parroquia update(Long id, Parroquia parroquia) {
+        exigirTipoParroquia(parroquia);
         Parroquia existing = parroquiaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Parroquia no encontrada"));
         if (!existing.getNombre().equals(parroquia.getNombre())
@@ -66,19 +70,29 @@ public class ParroquiaService {
             throw new DuplicateEntityException("Ya existe una parroquia con el nombre '" + parroquia.getNombre() + "' en este cantón");
         }
         log.info("Actualizando {} con ID: {}", "Parroquia", id);
-        Map<String, Object> datosAnteriores = AuditMap.of("nombre", existing.getNombre(), "descripcion", existing.getDescripcion());
+        Map<String, Object> datosAnteriores = AuditMap.of("nombre", existing.getNombre(), "descripcion", existing.getDescripcion(),
+                "tipoParroquia", existing.getTipoParroquia());
         existing.setNombre(parroquia.getNombre());
         existing.setDescripcion(parroquia.getDescripcion());
         existing.setCanton(parroquia.getCanton());
+        existing.setTipoParroquia(parroquia.getTipoParroquia());
         auditoriaService.registrarAccion(
             securityUtil.getCurrentUserId(),
             Auditoria.TipoAccion.UPDATE,
             "Parroquia",
             id,
             datosAnteriores,
-            AuditMap.of("nombre", existing.getNombre(), "descripcion", existing.getDescripcion())
+            AuditMap.of("nombre", existing.getNombre(), "descripcion", existing.getDescripcion(),
+                    "tipoParroquia", existing.getTipoParroquia())
         );
         return parroquiaRepository.save(existing);
+    }
+
+    /** Defensa en profundidad: el DTO ya valida, pero ningun alta incompleta debe persistir. */
+    private void exigirTipoParroquia(Parroquia parroquia) {
+        if (parroquia.getTipoParroquia() == null) {
+            throw new ValidacionException("El tipo de parroquia es obligatorio (URBANA o RURAL)");
+        }
     }
 
     @Transactional

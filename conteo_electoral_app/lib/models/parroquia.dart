@@ -4,6 +4,8 @@ class Parroquia {
   final int cantonId;
   final String? cantonNombre;
   final String? descripcion;
+  /// URBANA / RURAL (null = pendiente de clasificacion administrativa).
+  final String? tipoParroquia;
 
   Parroquia({
     required this.id,
@@ -11,6 +13,7 @@ class Parroquia {
     required this.cantonId,
     this.cantonNombre,
     this.descripcion,
+    this.tipoParroquia,
   });
 
   factory Parroquia.fromJson(Map<String, dynamic> json) {
@@ -20,6 +23,7 @@ class Parroquia {
       cantonId: json['cantonId'],
       cantonNombre: json['cantonNombre'],
       descripcion: json['descripcion'],
+      tipoParroquia: json['tipoParroquia'],
     );
   }
 
@@ -29,6 +33,7 @@ class Parroquia {
       'nombre': nombre,
       'cantonId': cantonId,
       'descripcion': descripcion,
+      'tipoParroquia': tipoParroquia,
     };
   }
 }

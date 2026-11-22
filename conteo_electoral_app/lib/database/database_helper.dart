@@ -26,7 +26,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 12,
+      version: 13,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -353,6 +353,10 @@ class DatabaseHelper {
       await _addColumnIfMissing(db, 'recintos', 'cantonId', 'INTEGER');
       await _addColumnIfMissing(db, 'recintos', 'parroquiaId', 'INTEGER');
     }
+    if (oldVersion < 13) {
+      // Clasificacion urbana/rural de la parroquia del recinto (viene del backend).
+      await _addColumnIfMissing(db, 'recintos', 'tipoParroquia', 'TEXT');
+    }
   }
 
   Future<void> guardarElecciones(List<Eleccion> elecciones) async {
@@ -558,6 +562,7 @@ class DatabaseHelper {
           'provinciaId': recinto.provinciaId,
           'cantonId': recinto.cantonId,
           'parroquiaId': recinto.parroquiaId,
+          'tipoParroquia': recinto.tipoParroquia,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -578,6 +583,7 @@ class DatabaseHelper {
         provinciaId: m['provinciaId'] as int?,
         cantonId: m['cantonId'] as int?,
         parroquiaId: m['parroquiaId'] as int?,
+        tipoParroquia: m['tipoParroquia'] as String?,
       );
 
   Future<List<Recinto>> getRecintos(int eleccionesId) async {

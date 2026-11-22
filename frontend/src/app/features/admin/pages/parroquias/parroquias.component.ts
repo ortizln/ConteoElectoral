@@ -21,7 +21,8 @@ export class ParroquiasComponent implements OnInit {
   showModal = false;
   editMode = false;
   selectedId: number | null = null;
-  form: any = { nombre: '', cantonId: null, descripcion: '' };
+  form: any = { nombre: '', cantonId: null, descripcion: '', tipoParroquia: 'RURAL' };
+  tiposParroquia: Array<'URBANA' | 'RURAL'> = ['URBANA', 'RURAL'];
   filterProvinciaId: number | null = null;
   filterCantonId: number | null = null;
   sortColumn: string = '';
@@ -138,7 +139,7 @@ export class ParroquiasComponent implements OnInit {
 
   openModal(): void {
     this.editMode = false;
-    this.form = { nombre: '', cantonId: this.cantones[0]?.id || null, descripcion: '' };
+    this.form = { nombre: '', cantonId: this.cantones[0]?.id || null, descripcion: '', tipoParroquia: 'RURAL' };
     this.errorMessage = '';
     this.showModal = true;
   }
@@ -146,7 +147,7 @@ export class ParroquiasComponent implements OnInit {
   edit(p: Parroquia): void {
     this.editMode = true;
     this.selectedId = p.id;
-    this.form = { nombre: p.nombre, cantonId: p.cantonId, descripcion: p.descripcion || '' };
+    this.form = { nombre: p.nombre, cantonId: p.cantonId, descripcion: p.descripcion || '', tipoParroquia: p.tipoParroquia || 'RURAL' };
     this.errorMessage = '';
     this.showModal = true;
   }
@@ -175,9 +176,13 @@ export class ParroquiasComponent implements OnInit {
   }
 
   descargarTemplate(): void {
-    const data: any[][] = [['nombre', 'canton'], ['PARROQUIA EJEMPLO', 'CANTON EJEMPLO']];
+    const data: any[][] = [
+      ['nombre', 'canton', 'tipoParroquia'],
+      ['PARROQUIA EJEMPLO', 'CANTON EJEMPLO', 'RURAL'],
+      ['PARROQUIA URBANA EJEMPLO', 'CANTON EJEMPLO', 'URBANA']
+    ];
     const ws = XLSX.utils.aoa_to_sheet(data);
-    ws['!cols'] = [{ wch: 30 }, { wch: 30 }];
+    ws['!cols'] = [{ wch: 30 }, { wch: 30 }, { wch: 16 }];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Parroquias');
     XLSX.writeFile(wb, 'plantilla_parroquias.xlsx');
@@ -210,7 +215,22 @@ export class ParroquiasComponent implements OnInit {
       const workbook = XLSX.read(data, { type: 'array' });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const json: any[] = XLSX.utils.sheet_to_json(sheet);
-      this.importPreview = json.map((row, i) => ({ index: i + 2, nombre: row['nombre'] || '', canton: row['canton'] || '' }));
+      // Normalizacion de cabeceras: aceptar 'tipo', 'tipo_parroquia', 'tipo de parroquia', etc.
+      const normalize = (k: string) => String(k || '').trim().toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+      this.importPreview = json.map((row, i) => {
+        const r: any = {};
+        Object.keys(row).forEach(k => { r[normalize(k)] = row[k]; });
+        const rawTipo = String(r['tipoparroquia'] ?? r['tipo'] ?? '').trim().toUpperCase()
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const tipoParroquia = rawTipo.startsWith('URB') ? 'URBANA' : rawTipo.startsWith('RUR') ? 'RURAL' : '';
+        return {
+          index: i + 2,
+          nombre: String(r['nombre'] ?? '').trim(),
+          canton: String(r['canton'] ?? '').trim(),
+          tipoParroquia
+        };
+      });
     };
     reader.readAsArrayBuffer(this.importFile);
   }
@@ -226,7 +246,8 @@ export class ParroquiasComponent implements OnInit {
       if (!item.nombre) { errors++; this.importErrors.push(`Fila ${item.index}: nombre requerido`); completed++; return; }
       const canton = this.cantones.find(c => c.nombre === item.canton);
       if (!item.canton || !canton) { errors++; this.importErrors.push(`Fila ${item.index}: cantón "${item.canton}" no encontrado`); completed++; return; }
-      this.api.createParroquia({ nombre: item.nombre, cantonId: canton.id }).subscribe({
+      if (!item.tipoParroquia) { errors++; this.importErrors.push(`Fila ${item.index}: tipoParroquia debe ser URBANA o RURAL`); completed++; return; }
+      this.api.createParroquia({ nombre: item.nombre, cantonId: canton.id, tipoParroquia: item.tipoParroquia }).subscribe({
         next: () => { completed++; if (completed === this.importPreview!.length) this.finishImport(errors); },
         error: (err) => { errors++; this.importErrors.push(`Fila ${item.index}: ${err.error?.message || 'Error'}`); completed++; if (completed === this.importPreview!.length) this.finishImport(errors); }
       });

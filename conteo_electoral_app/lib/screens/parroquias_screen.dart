@@ -46,6 +46,7 @@ class _ParroquiasScreenState extends State<ParroquiasScreen> {
     final nombreCtrl = TextEditingController(text: item?.nombre ?? '');
     final descCtrl = TextEditingController(text: item?.descripcion ?? '');
     int? cantonId = item?.cantonId ?? _cantones.firstOrNull?.id;
+    String tipoParroquia = item?.tipoParroquia ?? 'RURAL';
     final formKey = GlobalKey<FormState>();
 
     final saved = await showModalBottomSheet<bool>(
@@ -90,6 +91,19 @@ class _ParroquiasScreenState extends State<ParroquiasScreen> {
                       validator: (v) =>
                           (v == null || v.isEmpty) ? 'Requerido' : null),
                   const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: tipoParroquia,
+                    decoration: const InputDecoration(
+                        labelText: 'Tipo de parroquia',
+                        prefixIcon: Icon(Icons.category_outlined)),
+                    items: const [
+                      DropdownMenuItem(value: 'URBANA', child: Text('Urbana')),
+                      DropdownMenuItem(value: 'RURAL', child: Text('Rural')),
+                    ],
+                    onChanged: (v) =>
+                        setLocalState(() => tipoParroquia = v ?? 'RURAL'),
+                  ),
+                  const SizedBox(height: 16),
                   TextFormField(
                       controller: descCtrl,
                       decoration: const InputDecoration(
@@ -115,7 +129,8 @@ class _ParroquiasScreenState extends State<ParroquiasScreen> {
                                   id: item?.id ?? 0,
                                   nombre: nombreCtrl.text,
                                   cantonId: cantonId!,
-                                  descripcion: descCtrl.text);
+                                  descripcion: descCtrl.text,
+                                  tipoParroquia: tipoParroquia);
                               if (item == null) {
                                 await api.createParroquia(p);
                               } else {

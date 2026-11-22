@@ -22,6 +22,7 @@ public class VotoPapeletaService {
     private final OpcionPapeletaRepository opcionPapeletaRepository;
     private final MesaRepository mesaRepository;
     private final EleccionService eleccionService;
+    private final ElegibilidadTerritorialService elegibilidadTerritorialService;
 
     @Transactional
     public VotoPapeletaResponse registrarVoto(VotoPapeletaRequest request) {
@@ -33,6 +34,15 @@ public class VotoPapeletaService {
 
         if (mesa.getCerrada()) {
             throw new IllegalStateException("La mesa está cerrada");
+        }
+
+        // Segunda barrera: la opcion/papeleta debe corresponder al territorio de la mesa.
+        if (opcion.getCandidato() != null) {
+            elegibilidadTerritorialService.exigirCandidatoElegible(opcion.getCandidato(), mesa);
+        } else if (opcion.getLista() != null) {
+            elegibilidadTerritorialService.exigirCargoElegible(opcion.getLista().getCargo(), mesa);
+        } else if (opcion.getPapeleta() != null) {
+            elegibilidadTerritorialService.exigirCargoElegible(opcion.getPapeleta().getCargo(), mesa);
         }
 
         VotoPapeleta voto = votoPapeletaRepository
