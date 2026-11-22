@@ -634,6 +634,33 @@ class DatabaseHelper {
     return rows.isNotEmpty;
   }
 
+  /// Todas las fotos capturadas para una mesa (galería del acta).
+  Future<List<Map<String, dynamic>>> getActaFotos(int mesaId) async {
+    final db = await database;
+    return await db.query(
+      'acta_fotos',
+      where: 'mesaId = ?',
+      whereArgs: [mesaId],
+      orderBy: 'id ASC',
+    );
+  }
+
+  Future<Map<String, dynamic>?> getActaFoto(int id) async {
+    final db = await database;
+    final rows = await db.query(
+      'acta_fotos',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    return rows.isEmpty ? null : rows.first;
+  }
+
+  Future<void> eliminarActaFoto(int id) async {
+    final db = await database;
+    await db.delete('acta_fotos', where: 'id = ?', whereArgs: [id]);
+  }
+
   Future<List<Map<String, dynamic>>> getActaFotosPendientes() async {
     final db = await database;
     return await db.query('acta_fotos', where: 'uploaded = 0', orderBy: 'id ASC');

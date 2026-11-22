@@ -669,6 +669,31 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<bool> tieneFotoActa(int mesaId) => _db.tieneActaFoto(mesaId);
 
+  /// Galería local de fotos del acta de una mesa (incluye las pendientes de subir).
+  Future<List<Map<String, dynamic>>> getFotosActa(int mesaId) =>
+      _db.getActaFotos(mesaId);
+
+  /// Contador de fotos capturadas para una mesa.
+  Future<int> contarFotosActa(int mesaId) async =>
+      (await _db.getActaFotos(mesaId)).length;
+
+  /// Elimina una foto local. Solo se permite si aún no se subió al servidor:
+  /// el endpoint de borrado del backend está reservado a ADMIN.
+  Future<bool> eliminarFotoActa(int id) async {
+    try {
+      final foto = await _db.getActaFoto(id);
+      if (foto == null || (foto['uploaded'] as int) == 1) return false;
+      await _db.eliminarActaFoto(id);
+      final path = foto['filePath'] as String;
+      final archivo = File(path);
+      if (await archivo.exists()) await archivo.delete();
+      return true;
+    } catch (e) {
+      print('Error eliminando foto del acta: $e');
+      return false;
+    }
+  }
+
   /// Sube todas las fotos del acta pendientes. Cada foto se reintenta en
   /// cada sync hasta que el servidor la confirme (200).
   Future<void> subirFotosActaPendientes() async {

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -23,6 +24,21 @@ class _VotacionScreenState extends State<VotacionScreen> {
   String _busqueda = '';
   final String _ordenPor = 'cargo';
   bool _mostrarListas = false;
+  int _fotosCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarFotosCount();
+  }
+
+  Future<void> _cargarFotosCount() async {
+    final provider = context.read<AppProvider>();
+    final mesa = provider.mesaActual;
+    if (mesa == null) return;
+    final total = await provider.contarFotosActa(mesa.id);
+    if (mounted) setState(() => _fotosCount = total);
+  }
 
   String? _circunscripcionParaCandidato(Candidato c, AppProvider provider) {
     if (c.cargoId == null) return null;
@@ -172,35 +188,15 @@ class _VotacionScreenState extends State<VotacionScreen> {
     final mesa = provider.mesaActual;
     if (mesa == null) return;
 
-    // Foto del acta obligatoria antes de cerrar (respaldo)
-    final tieneFoto = await provider.tieneFotoActa(mesa.id);
+    await _cargarFotosCount();
     if (!mounted) return;
-    if (tieneFoto) {
-      // Ya hay foto de esta mesa (intento previo o cierre anterior): permitir
-      // tomar una nueva o reutilizar la existente
-      final tomarOtra = await showConfirmDialog(
-        context,
-        title: 'Foto del acta',
-        message:
-            'Ya existe una foto del acta de esta mesa.\n\n¿Desea tomar una foto nueva?\n(Cancelar para usar la existente)',
-        confirmText: 'Tomar foto',
-        cancelText: 'Usar existente',
-      );
-      if (!mounted) return;
-      if (tomarOtra && !await _tomarFotoActa(mesa.id)) return;
-    } else {
-      final pedirFoto = await showConfirmDialog(
-        context,
-        title: 'Foto del acta requerida',
-        message:
-            'Para cerrar el acta debe tomar una foto del documento como respaldo.',
-        confirmText: 'Tomar foto',
-      );
-      if (!mounted) return;
-      if (!pedirFoto) return;
-      if (!await _tomarFotoActa(mesa.id)) return;
+
+    // Respaldos obligatorios: si no hay ninguna foto de esta mesa, se abre la
+    // galería en modo obligatorio y no se permite cerrar sin al menos una.
+    if (_fotosCount == 0) {
+      final capturadas = await _abrirFotosActa(obligatorio: true);
+      if (capturadas != true || !mounted) return;
     }
-    if (!mounted) return;
 
     final confirm = await showConfirmDialog(
       context,
@@ -229,41 +225,306 @@ class _VotacionScreenState extends State<VotacionScreen> {
     }
   }
 
-  /// Abre la cámara, captura la foto del acta y la guarda localmente
-  /// (se sube al servidor de inmediato si hay red; si no, queda pendiente
-  /// y se sube en el próximo sync). Retorna false si el usuario cancela.
-  Future<bool> _tomarFotoActa(int mesaId) async {
+  /// Toma una foto con la cámara o elige varias de la galería del dispositivo.
+  /// Cada archivo se copia a un directorio persistente y se sube de inmediato
+  /// si hay red; si no, queda en cola para el próximo sync.
+  Future<int> _capturarFotos(ImageSource source) async {
+    final mesa = context.read<AppProvider>().mesaActual;
+    if (mesa == null) return 0;
     try {
       final picker = ImagePicker();
-      final photo = await picker.pickImage(
-        source: ImageSource.camera,
-        maxWidth: 1920,
-        imageQuality: 75,
-      );
-      if (!mounted) return false;
-      if (photo == null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Debe tomar la foto del acta para cerrar'),
+      final List<XFile> archivos = [];
+      if (source == ImageSource.camera) {
+        final foto = await picker.pickImage(
+          source: ImageSource.camera,
+          maxWidth: 1920,
+          imageQuality: 75,
+        );
+        if (foto != null) archivos.add(foto);
+      } else {
+        archivos.addAll(await picker.pickMultiImage(
+          maxWidth: 1920,
+          imageQuality: 75,
         ));
-        return false;
       }
+      if (!mounted || archivos.isEmpty) return 0;
+
       final provider = context.read<AppProvider>();
-      final ok = await provider.guardarFotoActa(mesaId, photo.path);
-      if (!mounted) return ok;
-      if (!ok) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('No se pudo guardar la foto del acta'),
-        ));
+      var guardadas = 0;
+      for (final archivo in archivos) {
+        if (await provider.guardarFotoActa(mesa.id, archivo.path)) guardadas++;
       }
-      return ok;
+      await _cargarFotosCount();
+      if (!mounted) return guardadas;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(guardadas > 0
+            ? '$guardadas foto(s) guardada(s)'
+            : 'No se pudo guardar la(s) foto(s)'),
+        duration: const Duration(seconds: 1),
+      ));
+      return guardadas;
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Error al tomar la foto: $e'),
+          content: Text('Error al agregar fotos: $e'),
         ));
       }
-      return false;
+      return 0;
     }
+  }
+
+  /// Galería de fotos del acta. En modo [obligatorio] (cierre) no se permite
+  /// continuar sin al menos una foto de la mesa.
+  Future<bool> _abrirFotosActa({required bool obligatorio}) async {
+    final provider = context.read<AppProvider>();
+    final mesa = provider.mesaActual;
+    if (mesa == null) return false;
+
+    var fotos = await provider.getFotosActa(mesa.id);
+    if (!mounted) return false;
+
+    await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            Future<void> recargar() async {
+              fotos = await context.read<AppProvider>().getFotosActa(mesa.id);
+              if (ctx.mounted) setSheetState(() {});
+              await _cargarFotosCount();
+            }
+
+            return SafeArea(
+              child: SizedBox(
+                height: MediaQuery.of(ctx).size.height * 0.78,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 16, 8),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.photo_library_outlined, size: 22),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text('Fotos del acta',
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold)),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text('${fotos.length}',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary)),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.pop(ctx, false),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Text(
+                        obligatorio
+                            ? 'Registre al menos una foto del acta para cerrar la mesa.'
+                            : 'Tome o elija fotos del acta en cualquier momento. Se suben automáticamente.',
+                        style: AppTextStyles.bodySmall,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: fotos.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.add_photo_alternate_outlined,
+                                      size: 56, color: AppColors.gray),
+                                  const SizedBox(height: 8),
+                                  Text('Sin fotos del acta',
+                                      style: TextStyle(color: AppColors.gray)),
+                                ],
+                              ),
+                            )
+                          : GridView.builder(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 8,
+                                mainAxisSpacing: 8,
+                              ),
+                              itemCount: fotos.length,
+                              itemBuilder: (ctx, index) {
+                                final foto = fotos[index];
+                                final path = foto['filePath'] as String;
+                                final subida = (foto['uploaded'] as int) == 1;
+                                return ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () => _verFoto(path),
+                                        child: Image.file(
+                                          File(path),
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) => Container(
+                                            color: AppColors.muted,
+                                            child:
+                                                const Icon(Icons.broken_image),
+                                          ),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        left: 4,
+                                        bottom: 4,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black54,
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            subida ? 'Enviada' : 'Pendiente',
+                                            style: const TextStyle(
+                                                color: Colors.white, fontSize: 9),
+                                          ),
+                                        ),
+                                      ),
+                                      if (!subida)
+                                        Positioned(
+                                          right: 2,
+                                          top: 2,
+                                          child: GestureDetector(
+                                            onTap: () async {
+                                              final ok = await context
+                                                  .read<AppProvider>()
+                                                  .eliminarFotoActa(
+                                                      foto['id'] as int);
+                                              if (!ctx.mounted) return;
+                                              if (!ok) {
+                                                ScaffoldMessenger.of(ctx)
+                                                    .showSnackBar(const SnackBar(
+                                                  content: Text(
+                                                      'No se pudo eliminar la foto'),
+                                                ));
+                                              }
+                                              await recargar();
+                                            },
+                                            child: Container(
+                                              padding: const EdgeInsets.all(4),
+                                              decoration: const BoxDecoration(
+                                                color: Colors.black54,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(Icons.close,
+                                                  size: 14,
+                                                  color: Colors.white),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () async {
+                                    await _capturarFotos(ImageSource.camera);
+                                    await recargar();
+                                  },
+                                  icon: const Icon(Icons.photo_camera, size: 18),
+                                  label: const Text('Tomar foto'),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: () async {
+                                    await _capturarFotos(ImageSource.gallery);
+                                    await recargar();
+                                  },
+                                  icon:
+                                      const Icon(Icons.photo_library, size: 18),
+                                  label: const Text('Elegir fotos'),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: obligatorio && fotos.isEmpty
+                                  ? null
+                                  : () => Navigator.pop(ctx, true),
+                              child: Text(obligatorio ? 'Continuar' : 'Listo'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+    if (!mounted) return false;
+    return fotos.isNotEmpty;
+  }
+
+  /// Visor a pantalla completa de una foto del acta.
+  void _verFoto(String path) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => Dialog.fullscreen(
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.file(File(path), fit: BoxFit.contain),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: CircleAvatar(
+                backgroundColor: Colors.black54,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.pop(dialogContext),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _sincronizar() async {
@@ -411,6 +672,15 @@ class _VotacionScreenState extends State<VotacionScreen> {
               ],
             ),
             actions: [
+              IconButton(
+                icon: Badge(
+                  label: Text('$_fotosCount'),
+                  isLabelVisible: _fotosCount > 0,
+                  child: const Icon(Icons.photo_library_outlined),
+                ),
+                tooltip: 'Fotos del acta ($_fotosCount)',
+                onPressed: () => _abrirFotosActa(obligatorio: false),
+              ),
               if (provider.totalVotos > 0)
                 TextButton.icon(
                   onPressed: _cerrar,
