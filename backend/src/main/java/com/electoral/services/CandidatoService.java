@@ -239,6 +239,8 @@ public class CandidatoService {
                 .partidoSigla(candidato.getPartido() != null ? candidato.getPartido().getSigla() : null)
                 .cargoId(candidato.getCargo() != null ? candidato.getCargo().getId() : null)
                 .cargoNombre(candidato.getCargo() != null ? candidato.getCargo().getNombre() : null)
+                .tipoVotacion(candidato.getCargo() != null && candidato.getCargo().getTipoVotacion() != null
+                        ? candidato.getCargo().getTipoVotacion().name() : null)
                 .listaId(candidato.getLista() != null ? candidato.getLista().getId() : null)
                 .listaNombre(candidato.getLista() != null ? candidato.getLista().getNombre() : null)
                 .numeroLista(candidato.getLista() != null ? candidato.getLista().getNumeroLista() : null)

@@ -68,6 +68,7 @@ export interface Candidato {
   partidoSigla: string | null;
   cargoId?: number;
   cargoNombre?: string;
+  tipoVotacion?: string;
   listaId?: number;
   listaNombre?: string;
   numeroLista?: number;

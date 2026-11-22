@@ -88,7 +88,9 @@
         </select>
         <select class="filter-select" [(ngModel)]="filtroCargoId" (change)="aplicarFiltro()">
           <option [ngValue]="null">Todos los Cargos</option>
-          <option *ngFor="let c of cargos" [ngValue]="c.id">{{ c.nombre }}</option>
+          <option *ngFor="let c of cargos" [ngValue]="c.id">
+            {{ c.nombre }}{{ c.tipoVotacion === 'LISTA' ? ' (por lista)' : '' }}
+          </option>
         </select>
         <button class="btn btn-clean" (click)="limpiarFiltro()">Limpiar</button>
       </div>

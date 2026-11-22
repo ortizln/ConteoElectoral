@@ -299,8 +299,11 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     // todos los candidatos (concejales y juntas) en el registro individual.
     filtrados = filtrados.filter(c => {
       if (c.listaId) return false;
+      // El backend ya envía el tipo de votación del cargo en cada candidato;
+      // se usa primero para no depender del orden de carga de /cargos.
       const cargoCandidato = this.cargos.find(cg => cg.id === c.cargoId);
-      return cargoCandidato?.tipoVotacion !== 'LISTA';
+      const tipo = c.tipoVotacion || cargoCandidato?.tipoVotacion;
+      return tipo !== 'LISTA';
     });
     if (this.filtroTexto) {
       const texto = this.filtroTexto.toLowerCase();

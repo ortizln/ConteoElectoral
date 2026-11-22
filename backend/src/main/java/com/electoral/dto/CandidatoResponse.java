@@ -19,6 +19,8 @@ public class CandidatoResponse {
     private String partidoSigla;
     private Long cargoId;
     private String cargoNombre;
+    /** Tipo de votación del cargo (INDIVIDUAL/LISTA), para filtrar la tabla sin depender de otro catálogo. */
+    private String tipoVotacion;
     private Long listaId;
     private String listaNombre;
     private Integer numeroLista;
