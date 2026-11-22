@@ -26,7 +26,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 13,
+      version: 14,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -110,7 +110,8 @@ class DatabaseHelper {
         electoresRegistrados INTEGER,
         provinciaId INTEGER,
         cantonId INTEGER,
-        parroquiaId INTEGER
+        parroquiaId INTEGER,
+        tipoParroquia TEXT
       )
     ''');
 
@@ -355,6 +356,12 @@ class DatabaseHelper {
     }
     if (oldVersion < 13) {
       // Clasificacion urbana/rural de la parroquia del recinto (viene del backend).
+      await _addColumnIfMissing(db, 'recintos', 'tipoParroquia', 'TEXT');
+    }
+    if (oldVersion < 14) {
+      // Reparacion: el CREATE TABLE de v13 no incluia tipoParroquia, por lo que
+      // instalaciones frescas y BDs que ya marcaban version 13 quedaron sin la
+      // columna y descargarDatos() fallaba con "no column named tipoParroquia".
       await _addColumnIfMissing(db, 'recintos', 'tipoParroquia', 'TEXT');
     }
   }
