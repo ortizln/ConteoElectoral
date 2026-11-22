@@ -119,6 +119,15 @@ export class ListasElectoralesComponent implements OnInit {
     this.showForm = true;
   }
 
+  /** Ajusta la circunscripción de la lista a la del cargo seleccionado. */
+  onCargoChange(): void {
+    const cargo = this.cargos.find(c => c.id == this.formData.cargoId);
+    const circ = cargo?.tipoCircunscripcionCodigo;
+    if (circ && ['NACIONAL', 'PROVINCIAL', 'CANTONAL', 'URBANA', 'RURAL'].includes(circ)) {
+      this.formData.circunscripcionTipo = circ;
+    }
+  }
+
   cerrarForm() {
     this.showForm = false;
     if (this.logoPreview.startsWith('blob:')) URL.revokeObjectURL(this.logoPreview);

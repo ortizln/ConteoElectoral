@@ -117,7 +117,7 @@
       <div class="modal-body">
         <div class="mb-3">
           <label class="form-label">Cargo</label>
-          <select class="form-select" [(ngModel)]="formData.cargoId">
+          <select class="form-select" [(ngModel)]="formData.cargoId" (change)="onCargoChange()">
             <option value="">Seleccione...</option>
             <option *ngFor="let c of cargos" [value]="c.id">{{ c.nombre }}</option>
           </select>
@@ -147,6 +147,9 @@
             <option value="RURAL">Rural</option>
             <option value="PARROQUIAL">Parroquial</option>
           </select>
+          <div class="form-text">
+            Se ajusta automáticamente al cargo elegido. Para <strong>JUNTA PARROQUIAL</strong> use <strong>Rural</strong>.
+          </div>
         </div>
         <div class="mb-3" *ngIf="editando && editandoId">
           <label class="form-label">Logo de la lista (JPG/PNG, máx. 5 MB)</label>

@@ -265,11 +265,16 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
       if (this.filtroCargoId) {
         filtradas = filtradas.filter(l => l.cargoId === this.filtroCargoId);
       }
-      // Concejales URBANA/RURAL: solo la circunscripción de este cargo
+      // Concejales URBANA/RURAL: solo la circunscripción de este cargo.
+      // Compatibilidad: si alguien registró JUNTA PARROQUIAL como "PARROQUIAL",
+      // se muestra igual (el cargo ya dice RURAL).
       const circ = cargo?.tipoCircunscripcionCodigo;
       if (circ === 'URBANA' || circ === 'RURAL') {
+        const esJunta = cargo?.nombre?.toUpperCase().includes('JUNTA PARROQUIAL');
         filtradas = filtradas.filter(l =>
-          !l.circunscripcionTipo || l.circunscripcionTipo === circ);
+          !l.circunscripcionTipo ||
+          l.circunscripcionTipo === circ ||
+          (esJunta && l.circunscripcionTipo === 'PARROQUIAL'));
       }
       if (this.filtroPartidoId) {
         filtradas = filtradas.filter(l => l.partidoId === this.filtroPartidoId);
