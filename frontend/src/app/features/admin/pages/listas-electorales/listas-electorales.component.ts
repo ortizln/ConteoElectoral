@@ -175,9 +175,11 @@ export class ListasElectoralesComponent implements OnInit {
         this.showForm = false;
       });
     } else {
-      this.api.crearListaElectoral(req).subscribe(() => {
+      this.api.crearListaElectoral(req).subscribe((creada: any) => {
         this.loadListas();
-        this.showForm = false;
+        this.cerrarForm();
+        // Abrir el detalle recién creado para poder agregar candidatos de una vez.
+        if (creada?.id) this.verDetalle(creada.id);
       });
     }
   }
