@@ -511,6 +511,7 @@ export interface ListaElectoral {
   cargoId?: number;
   cargoNombre?: string;
   numeroLista?: number;
+  circunscripcionTipo?: string;
   circunscripcionId?: number;
   activa?: boolean;
   tieneLogo?: boolean;

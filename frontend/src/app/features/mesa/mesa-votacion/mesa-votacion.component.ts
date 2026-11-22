@@ -141,6 +141,9 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
       if (this.mesaActual && this.cargoNuloId == null && data.length > 0) {
         this.cargoNuloId = this.cargoDefaultId(this.nulosBlancosPorCargo);
       }
+      // Los candidatos ya pudieron llegar antes que los cargos: recalcular
+      // el filtro para excluir los cargos que se votan por lista.
+      this.aplicarFiltro();
     });
     this.api.getListasByEleccion(eleccionId).subscribe((data: ListaElectoral[]) => {
       this.listas = data;
@@ -259,6 +262,15 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     if (this.mostrarListas) {
       this.candidatoSeleccionado = null;
       let filtradas = [...this.listas];
+      if (this.filtroCargoId) {
+        filtradas = filtradas.filter(l => l.cargoId === this.filtroCargoId);
+      }
+      // Concejales URBANA/RURAL: solo la circunscripción de este cargo
+      const circ = cargo?.tipoCircunscripcionCodigo;
+      if (circ === 'URBANA' || circ === 'RURAL') {
+        filtradas = filtradas.filter(l =>
+          !l.circunscripcionTipo || l.circunscripcionTipo === circ);
+      }
       if (this.filtroPartidoId) {
         filtradas = filtradas.filter(l => l.partidoId === this.filtroPartidoId);
       }
@@ -277,8 +289,14 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     }
 
     let filtrados = [...this.candidatosAux];
-    // Excluir candidatos que pertenecen a una lista (votan por lista, no individual)
-    filtrados = filtrados.filter(c => !c.listaId);
+    // Los cargos con tipoVotacion LISTA se votan por lista, nunca individual.
+    // No basta con mirar candidato.listaId: si aún no se asignó, aparecían
+    // todos los candidatos (concejales y juntas) en el registro individual.
+    filtrados = filtrados.filter(c => {
+      if (c.listaId) return false;
+      const cargoCandidato = this.cargos.find(cg => cg.id === c.cargoId);
+      return cargoCandidato?.tipoVotacion !== 'LISTA';
+    });
     if (this.filtroTexto) {
       const texto = this.filtroTexto.toLowerCase();
       filtrados = filtrados.filter(c =>

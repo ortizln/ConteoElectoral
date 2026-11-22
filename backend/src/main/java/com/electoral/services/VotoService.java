@@ -96,6 +96,7 @@ public class VotoService {
             Candidato candidato = candidatoRepository.findById(request.getCandidatoId())
                     .orElseThrow(() -> new RecursoNoEncontradoException(
                             "Candidato no encontrado con ID: " + request.getCandidatoId()));
+            exigirVotoIndividual(candidato);
             elegibilidadTerritorialService.exigirCandidatoElegible(candidato, mesa);
             Voto voto = upsertVoto(candidato, mesa, eleccion, request.getCantidadVotos(), usuarioId, null);
             savedVotos.add(voto);
@@ -114,6 +115,15 @@ public class VotoService {
         notifyDashboardUpdate(eleccion.getId());
 
         return savedVotos.stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
+    /** Un cargo con tipoVotacion LISTA se vota por lista, nunca candidato a candidato. */
+    private void exigirVotoIndividual(Candidato candidato) {
+        if (candidato.getCargo() != null
+                && candidato.getCargo().getTipoVotacion() == TipoVotacion.LISTA) {
+            throw new ValidacionException("El cargo " + candidato.getCargo().getNombre()
+                    + " se vota por lista, no individualmente");
+        }
     }
 
     private Voto upsertVoto(Candidato candidato, Mesa mesa, Eleccion eleccion, Integer cantidad, Long usuarioId, Long listaId) {
@@ -171,6 +181,7 @@ public class VotoService {
             elegibilidadTerritorialService.exigirCargoElegible(lista.getCargo(), voto.getMesa());
             voto.setListaId(request.getListaId());
         } else if (voto.getCandidato() != null) {
+            exigirVotoIndividual(voto.getCandidato());
             elegibilidadTerritorialService.exigirCandidatoElegible(voto.getCandidato(), voto.getMesa());
         }
         Voto updatedVoto = votoRepository.save(voto);
