@@ -117,6 +117,9 @@ public class CandidatoService {
 
         ListaElectoral lista = request.getListaId() != null
                 ? listaElectoralRepository.findById(request.getListaId()).orElse(null) : null;
+        if (lista != null) {
+            validarListaParroquial(request.getParroquiaId(), lista);
+        }
 
         Candidato candidato = Candidato.builder()
                 .nombre(request.getNombre())
@@ -199,6 +202,14 @@ public class CandidatoService {
             candidato.setPartido(partido);
         }
         
+        // Validar circunscripción parroquial si la lista (actual o nueva) es de Junta Parroquial.
+        ListaElectoral listaFinal = candidato.getLista();
+        if (listaFinal != null) {
+            validarListaParroquial(
+                    candidato.getParroquia() != null ? candidato.getParroquia().getId() : null,
+                    listaFinal);
+        }
+
         Candidato saved = candidatoRepository.save(candidato);
         return mapToResponse(saved);
     }
@@ -210,6 +221,9 @@ public class CandidatoService {
         if (listaId != null) {
             ListaElectoral lista = listaElectoralRepository.findById(listaId)
                     .orElseThrow(() -> new RecursoNoEncontradoException("Lista no encontrada con ID: " + listaId));
+            validarListaParroquial(
+                    candidato.getParroquia() != null ? candidato.getParroquia().getId() : null,
+                    lista);
             candidato.setLista(lista);
         } else {
             candidato.setLista(null);
@@ -226,6 +240,33 @@ public class CandidatoService {
         }
         log.warn("Eliminando {} con ID: {}", "Candidato", id);
         candidatoRepository.deleteById(id);
+    }
+
+    /**
+     * Valida que, cuando la lista es de Junta Parroquial (cargo con circunscripción PARROQUIAL
+     * o nombre "JUNTA PARROQUIAL"), el candidato pertenezca a la parroquia/circunscripción de la lista.
+     */
+    private void validarListaParroquial(Long parroquiaId, ListaElectoral lista) {
+        Cargo cargo = lista.getCargo();
+        if (cargo == null) return;
+        boolean esCargoParroquial = cargo.getTipoCircunscripcion() != null
+                && "PARROQUIAL".equalsIgnoreCase(cargo.getTipoCircunscripcion().getCodigo())
+                || (cargo.getNombre() != null
+                && cargo.getNombre().toUpperCase().contains("JUNTA PARROQUIAL"));
+        if (!esCargoParroquial) return;
+        if (lista.getCircunscripcionId() == null) {
+            throw new ValidacionException("La lista '" + lista.getNombre()
+                    + "' es de Junta Parroquial pero no tiene circunscripción (parroquia) definida.");
+        }
+        if (parroquiaId == null) {
+            throw new ValidacionException("El candidato no tiene parroquia asignada. No puede agregarse a una lista de Junta Parroquial.");
+        }
+        if (!parroquiaId.equals(lista.getCircunscripcionId())) {
+            throw new ValidacionException("El candidato pertenece a la parroquia id " + parroquiaId
+                    + ", pero la lista '" + lista.getNombre()
+                    + "' es de la junta parroquial/circunscripción id " + lista.getCircunscripcionId()
+                    + ". Solo pueden agregarse candidatos de la misma junta parroquial.");
+        }
     }
 
     private CandidatoResponse mapToResponse(Candidato candidato) {

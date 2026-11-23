@@ -107,13 +107,21 @@ export class ListasElectoralesComponent implements OnInit {
     });
   }
 
+  /** Detecta si la lista abierta es de Junta Parroquial. */
+  get esListaJuntaParroquial(): boolean {
+    return !!(this.listaDetalle?.cargoNombre || '').toUpperCase().includes('JUNTA PARROQUIAL');
+  }
+
   actualizarDisponibles() {
     if (!this.listaDetalle) return;
     const enLista = this.listaDetalle.candidatos?.map((c: any) => c.id) || [];
+    const esJP = this.esListaJuntaParroquial;
     this.candidatosDisponibles = this.candidatos
       .filter((c: any) =>
         c.cargoId === this.listaDetalle.cargoId &&
         c.partidoId === this.listaDetalle.partidoId &&
+        // En listas de Junta Parroquial solo candidatos de la misma parroquia/circunscripción.
+        (!esJP || c.parroquiaId == this.listaDetalle.circunscripcionId) &&
         !enLista.includes(c.id)
       );
   }
