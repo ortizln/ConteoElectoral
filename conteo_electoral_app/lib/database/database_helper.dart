@@ -26,7 +26,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 14,
+      version: 15,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -122,6 +122,7 @@ class DatabaseHelper {
         sexo TEXT NOT NULL,
         institucionId INTEGER NOT NULL,
         institucionNombre TEXT,
+        parroquiaNombre TEXT,
         eleccionesId INTEGER NOT NULL,
         cerrada INTEGER NOT NULL DEFAULT 0,
         usuarioId INTEGER,
@@ -363,6 +364,10 @@ class DatabaseHelper {
       // instalaciones frescas y BDs que ya marcaban version 13 quedaron sin la
       // columna y descargarDatos() fallaba con "no column named tipoParroquia".
       await _addColumnIfMissing(db, 'recintos', 'tipoParroquia', 'TEXT');
+    }
+    if (oldVersion < 15) {
+      // Nombre de la parroquia de la mesa para mostrarlo en el dashboard.
+      await _addColumnIfMissing(db, 'mesas', 'parroquiaNombre', 'TEXT');
     }
   }
 
@@ -700,6 +705,7 @@ class DatabaseHelper {
           'sexo': mesa.sexo,
           'institucionId': mesa.institucionId,
           'institucionNombre': mesa.institucionNombre,
+          'parroquiaNombre': mesa.parroquiaNombre,
           'eleccionesId': mesa.eleccionesId,
           'cerrada': mesa.cerrada ? 1 : 0,
           'usuarioId': mesa.usuarioId,
@@ -707,6 +713,17 @@ class DatabaseHelper {
           'votosBlanco': mesa.votosBlanco ?? 0,
         },
         conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+      // Los nombres son datos informativos: se actualizan aunque la mesa ya
+      // exista (INSERT OR IGNORE preserva cerrada/votos pendientes de sync).
+      batch.update(
+        'mesas',
+        {
+          'institucionNombre': mesa.institucionNombre,
+          'parroquiaNombre': mesa.parroquiaNombre,
+        },
+        where: 'id = ?',
+        whereArgs: [mesa.id],
       );
     }
     await batch.commit(noResult: true);
@@ -725,6 +742,7 @@ class DatabaseHelper {
       sexo: m['sexo'] as String,
       institucionId: m['institucionId'] as int,
       institucionNombre: m['institucionNombre'] as String?,
+      parroquiaNombre: m['parroquiaNombre'] as String?,
       eleccionesId: m['eleccionesId'] as int,
       cerrada: (m['cerrada'] as int) == 1,
       usuarioId: m['usuarioId'] as int?,
@@ -744,6 +762,7 @@ class DatabaseHelper {
       sexo: m['sexo'] as String,
       institucionId: m['institucionId'] as int,
       institucionNombre: m['institucionNombre'] as String?,
+      parroquiaNombre: m['parroquiaNombre'] as String?,
       eleccionesId: m['eleccionesId'] as int,
       cerrada: (m['cerrada'] as int) == 1,
       usuarioId: m['usuarioId'] as int?,

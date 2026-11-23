@@ -73,11 +73,27 @@
     </div>
   </div>
 
+  <div class="alert alert-warning" *ngIf="errorMensaje">
+    <span class="alert-icon"><i class="bi bi-exclamation-triangle-fill"></i></span>
+    <div class="alert-content"><span>{{ errorMensaje }}</span></div>
+  </div>
+
   <div class="content-grid" *ngIf="mesaActual">
     <div class="card candidatos-card">
       <div class="card-header">
-        <h3><i class="bi bi-person"></i> Candidatos</h3>
-        <span class="card-badge">{{ candidatosFiltrados.length }} candidatos</span>
+        <h3><i class="bi" [class.bi-people]="mostrarListas" [class.bi-person]="!mostrarListas"></i> {{ mostrarListas ? 'Listas' : 'Candidatos' }}</h3>
+        <span class="card-badge">{{ mostrarListas ? listasFiltradas.length : candidatosFiltrados.length }} {{ mostrarListas ? 'listas' : 'candidatos' }}</span>
+      </div>
+
+      <div class="modo-votacion" *ngIf="cargosConLista.length > 0">
+        <button type="button" class="modo-btn" [class.active]="modoVotacion === 'CANDIDATOS'"
+                (click)="setModoVotacion('CANDIDATOS')">
+          <i class="bi bi-person"></i> Candidatos individuales
+        </button>
+        <button type="button" class="modo-btn" [class.active]="modoVotacion === 'LISTAS'"
+                (click)="setModoVotacion('LISTAS')">
+          <i class="bi bi-list-ul"></i> Votar por listas
+        </button>
       </div>
 
       <div class="filtros-rapidos">
@@ -284,29 +300,41 @@
           <button type="button" class="btn-close" (click)="cerrarFotoActaModal()"></button>
         </div>
         <div class="modal-body">
-          <p class="text-muted">Antes de cerrar debe cargar una foto del acta física como respaldo del conteo.</p>
-          <div *ngIf="fotoActaExistenteUrl && !fotoActaPreview" class="mb-3">
-            <p class="small mb-1"><i class="bi bi-check-circle-fill text-success"></i> Ya existe una foto cargada para esta mesa.</p>
-            <img [src]="fotoActaExistenteUrl" alt="Foto del acta"
-                 style="max-height: 200px; width: auto; border-radius: 8px; border: 1px solid #dee2e6;">
+          <p class="text-muted">Antes de cerrar debe registrar al menos una foto del acta física como respaldo del conteo. Puede agregar varias fotos.</p>
+          <div *ngIf="fotoActaExistentes.length > 0" class="mb-3">
+            <p class="small mb-1"><i class="bi bi-check-circle-fill text-success"></i> Fotos ya cargadas ({{ fotoActaExistentes.length }}):</p>
+            <div class="fotos-galeria">
+              <div class="foto-item" *ngFor="let f of fotoActaExistentes">
+                <img [src]="f.url" [alt]="f.nombre" [title]="f.nombre">
+                <span class="foto-tag">Enviada</span>
+              </div>
+            </div>
           </div>
           <div class="mb-3">
-            <label class="form-label fw-bold">Seleccionar o tomar foto:</label>
-            <input type="file" accept="image/*" capture="environment" class="form-control"
+            <label class="form-label fw-bold">Agregar fotos (cámara o galería):</label>
+            <input type="file" accept="image/*" multiple class="form-control"
                    (change)="onFotoActaSelected($event)">
           </div>
-          <div *ngIf="fotoActaPreview" class="mb-3 text-center">
-            <img [src]="fotoActaPreview" alt="Vista previa"
-                 style="max-height: 240px; width: auto; border-radius: 8px; border: 1px solid #dee2e6;">
+          <div *ngIf="fotoActaPreviews.length > 0" class="mb-3">
+            <p class="small mb-1">Fotos por subir ({{ fotoActaPreviews.length }}):</p>
+            <div class="fotos-galeria">
+              <div class="foto-item" *ngFor="let f of fotoActaPreviews; let i = index">
+                <img [src]="f.url" [alt]="f.nombre" [title]="f.nombre">
+                <span class="foto-tag pendiente">Pendiente</span>
+                <button type="button" class="foto-quitar" (click)="quitarFotoActa(i)" title="Quitar foto">
+                  <i class="bi bi-x"></i>
+                </button>
+              </div>
+            </div>
           </div>
           <div *ngIf="fotoActaError" class="text-danger small">{{ fotoActaError }}</div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" (click)="cerrarFotoActaModal()" [disabled]="fotoActaSubiendo">Cancelar</button>
           <button class="btn btn-danger" (click)="confirmarCerrarConFoto()"
-                  [disabled]="fotoActaSubiendo || (!fotoActaFile && !fotoActaExistenteUrl)">
+                  [disabled]="fotoActaSubiendo || (fotoActaFiles.length + fotoActaExistentes.length === 0)">
             <i class="bi bi-lock-fill"></i>
-            {{ fotoActaSubiendo ? 'Subiendo foto...' : 'Cerrar Acta' }}
+            {{ fotoActaSubiendo ? 'Subiendo fotos...' : 'Cerrar Acta' }}
           </button>
         </div>
       </div>

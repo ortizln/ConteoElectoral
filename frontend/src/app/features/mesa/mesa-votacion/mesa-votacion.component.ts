@@ -50,17 +50,25 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   sortDirectionVotos: 'asc' | 'desc' = 'desc';
 
   animando = false;
+  errorMensaje = '';
   private wsSubscription: Subscription | null = null;
   private eleccionId: number | null = null;
 
   // List voting
   listas: ListaElectoral[] = [];
   listasFiltradas: (ListaElectoral & { colorPartido?: string })[] = [];
+  // Igual que la APK: las listas visibles se derivan de los candidatos que el
+  // backend devuelve para la mesa (ya filtrados por territorio URBANA/RURAL,
+  // provincia, cantón y parroquia).
+  private listaIdsElegibles = new Set<number>();
+  private candidatosPorMesaCargados = false;
   showListaModal = false;
   listaLlamada: ListaElectoral | null = null;
   cantidadLista = 1;
   cargosConLista: Cargo[] = [];
   mostrarListas = false;
+  // Igual que la APK: se puede votar por listas sin antes elegir un cargo.
+  modoVotacion: 'CANDIDATOS' | 'LISTAS' = 'CANDIDATOS';
 
   // Delete vote confirmation
   showDeleteConfirm = false;
@@ -69,11 +77,11 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   deleteError = '';
   deleteCargando = false;
 
-  // Foto del acta (obligatoria antes de cerrar)
+  // Foto del acta (obligatoria antes de cerrar) — galería como en la APK
   showFotoActaModal = false;
-  fotoActaFile: File | null = null;
-  fotoActaPreview: string | null = null;
-  fotoActaExistenteUrl: string | null = null;
+  fotoActaFiles: File[] = [];
+  fotoActaPreviews: { url: string; nombre: string }[] = [];
+  fotoActaExistentes: { url: string; nombre: string }[] = [];
   fotoActaSubiendo = false;
   fotoActaError = '';
 
@@ -158,12 +166,15 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
 
   seleccionarMesa(mesa: Mesa): void {
     this.mesaActual = mesa;
+    this.errorMensaje = '';
     this.candidatoSeleccionado = null;
     this.cantidadVotos = 1;
     this.votosNulos = mesa.votosNulos ?? 0;
     this.votosBlanco = mesa.votosBlanco ?? 0;
     this.nulosBlancosPorCargo = [];
     this.cargoNuloId = null;
+    this.listaIdsElegibles = new Set<number>();
+    this.candidatosPorMesaCargados = false;
     this.cargarNulosBlancosPorCargo(mesa);
     this.loadVotos();
     // Filtro de territorio: solo candidatos que le corresponden a esta mesa
@@ -171,9 +182,22 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
       next: (data: Candidato[]) => {
         this.candidatos = data;
         this.candidatosAux = data;
+        this.listaIdsElegibles = new Set(
+          data.filter(c => c.listaId != null).map(c => c.listaId!)
+        );
+        this.candidatosPorMesaCargados = true;
         this.aplicarFiltro();
       },
-      error: () => {}
+      error: (err) => {
+        // El backend valida la territorialidad y clasificación URBANA/RURAL aquí.
+        // Antes se silenciaba y el miembro veía una lista incompleta sin saber por qué.
+        this.errorMensaje = err?.error?.message
+          ? `No se pudieron cargar los candidatos de esta mesa: ${err.error.message}`
+          : 'No se pudieron cargar los candidatos de esta mesa. Verifique la clasificación Urbana/Rural de la parroquia.';
+        this.candidatosPorMesaCargados = false;
+        this.listaIdsElegibles = new Set<number>();
+        this.aplicarFiltro();
+      }
     });
   }
 
@@ -258,24 +282,34 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
 
   aplicarFiltro(): void {
     const cargo = this.cargos.find(c => c.id === this.filtroCargoId);
-    this.mostrarListas = cargo?.tipoVotacion === 'LISTA';
+    this.mostrarListas = this.modoVotacion === 'LISTAS' || cargo?.tipoVotacion === 'LISTA';
     if (this.mostrarListas) {
       this.candidatoSeleccionado = null;
-      let filtradas = [...this.listas];
-      if (this.filtroCargoId) {
-        filtradas = filtradas.filter(l => l.cargoId === this.filtroCargoId);
+      // Igual que en la APK: en modo Listas se muestran las listas de todos los
+      // cargos LISTA (o solo del cargo elegido en el filtro).
+      const cargosLista = this.filtroCargoId
+        ? this.cargos.filter(c => c.id === this.filtroCargoId && c.tipoVotacion === 'LISTA')
+        : this.cargosConLista;
+      let filtradas = this.listas.filter(l => cargosLista.some(c => c.id === l.cargoId));
+      // Validez territorial exacta (igual que la APK): el backend ya filtró los
+      // candidatos de esta mesa por URBANA/RURAL, provincia, cantón y parroquia.
+      // solo se pueden votar listas que tengan candidatos elegibles en la mesa.
+      if (!this.candidatosPorMesaCargados) {
+        this.listasFiltradas = [];
+        return;
       }
-      // Concejales URBANA/RURAL: solo la circunscripción de este cargo.
-      // Compatibilidad: si alguien registró JUNTA PARROQUIAL como "PARROQUIAL",
-      // se muestra igual (el cargo ya dice RURAL).
-      const circ = cargo?.tipoCircunscripcionCodigo;
-      if (circ === 'URBANA' || circ === 'RURAL') {
-        const esJunta = cargo?.nombre?.toUpperCase().includes('JUNTA PARROQUIAL');
-        filtradas = filtradas.filter(l =>
-          !l.circunscripcionTipo ||
+      filtradas = filtradas.filter(l => this.listaIdsElegibles.has(l.id));
+      // Concejales URBANA/RURAL: solo la circunscripción de su cargo.
+      // Compatibilidad: JUNTA PARROQUIAL puede estar registrada como "PARROQUIAL".
+      filtradas = filtradas.filter(l => {
+        const cargoLista = this.cargos.find(c => c.id === l.cargoId);
+        const circ = cargoLista?.tipoCircunscripcionCodigo;
+        if (circ !== 'URBANA' && circ !== 'RURAL') return true;
+        const esJunta = cargoLista?.nombre?.toUpperCase().includes('JUNTA PARROQUIAL');
+        return !l.circunscripcionTipo ||
           l.circunscripcionTipo === circ ||
-          (esJunta && l.circunscripcionTipo === 'PARROQUIAL'));
-      }
+          (esJunta && l.circunscripcionTipo === 'PARROQUIAL');
+      });
       if (this.filtroPartidoId) {
         filtradas = filtradas.filter(l => l.partidoId === this.filtroPartidoId);
       }
@@ -337,6 +371,13 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     this.filtroTexto = '';
     this.filtroPartidoId = null;
     this.filtroCargoId = null;
+    this.aplicarFiltro();
+  }
+
+  setModoVotacion(modo: 'CANDIDATOS' | 'LISTAS'): void {
+    this.modoVotacion = modo;
+    this.candidatoSeleccionado = null;
+    this.cantidadVotos = 1;
     this.aplicarFiltro();
   }
 
@@ -479,7 +520,9 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
           this.votosBlanco = m.votosBlanco ?? 0;
         }
       },
-      error: () => {}
+      error: (err) => {
+        this.errorMensaje = err?.error?.message || 'No se pudo guardar el registro de nulos/blancos';
+      }
     });
   }
 
@@ -494,10 +537,19 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
 
   registrarVoto(): void {
     if (!this.mesaActual || !this.candidatoSeleccionado || this.mesaActual.cerrada) return;
+    const cant = Number(this.cantidadVotos);
+    if (!Number.isInteger(cant) || cant < 1) {
+      this.errorMensaje = 'La cantidad de votos debe ser al menos 1';
+      return;
+    }
 
+    this.errorMensaje = '';
     this.animando = true;
     const existingVoto = this.votosRegistrados.find(v => v.candidatoId === this.candidatoSeleccionado!.id);
-    const cant = this.cantidadVotos || 1;
+    const onError = (err: any) => {
+      this.animando = false;
+      this.errorMensaje = err?.error?.message || 'No se pudo registrar el voto';
+    };
 
     if (existingVoto) {
       this.api.actualizarVoto(existingVoto.id, {
@@ -505,10 +557,13 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
         mesaId: this.mesaActual.id,
         cantidadVotos: existingVoto.cantidadVotos + cant,
         eleccionesId: this.mesaActual.eleccionesId
-      }).subscribe(() => {
-        this.loadVotos();
-        this.cantidadVotos = 1;
-        this.animando = false;
+      }).subscribe({
+        next: () => {
+          this.loadVotos();
+          this.cantidadVotos = 1;
+          this.animando = false;
+        },
+        error: onError
       });
     } else {
       this.api.registrarVoto({
@@ -516,10 +571,13 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
         mesaId: this.mesaActual.id,
         cantidadVotos: cant,
         eleccionesId: this.mesaActual.eleccionesId
-      }).subscribe(() => {
-        this.loadVotos();
-        this.cantidadVotos = 1;
-        this.animando = false;
+      }).subscribe({
+        next: () => {
+          this.loadVotos();
+          this.cantidadVotos = 1;
+          this.animando = false;
+        },
+        error: onError
       });
     }
   }
@@ -581,20 +639,24 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
 
   cerrarMesa(): void {
     if (!this.mesaActual || this.mesaActual.cerrada) return;
-    // Obligatorio: foto del acta antes de cerrar (modal con subida)
-    this.fotoActaFile = null;
-    this.fotoActaPreview = null;
+    const mesaId = this.mesaActual.id;
+    // Igual que la APK: se exige al menos una foto del acta para cerrar.
+    this.liberarFotosActa();
     this.fotoActaError = '';
-    this.fotoActaExistenteUrl = null;
     this.showFotoActaModal = true;
-    this.api.getActaFotos(this.mesaActual.id).subscribe({
+    this.api.getActaFotos(mesaId).subscribe({
       next: (fotos) => {
-        if (fotos.length > 0 && this.mesaActual) {
-          this.api.getActaFotoBlob(this.mesaActual.id, fotos[0].id).subscribe({
-            next: (blob) => { this.fotoActaExistenteUrl = URL.createObjectURL(blob); },
+        fotos.forEach(f => {
+          this.api.getActaFotoBlob(mesaId, f.id).subscribe({
+            next: (blob) => {
+              this.fotoActaExistentes.push({
+                url: URL.createObjectURL(blob),
+                nombre: f.nombreArchivo || `Foto ${f.id}`
+              });
+            },
             error: () => {}
           });
-        }
+        });
       },
       error: () => {}
     });
@@ -602,40 +664,59 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
 
   onFotoActaSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const file = input.files?.[0] || null;
-    this.fotoActaFile = file;
     this.fotoActaError = '';
-    if (this.fotoActaPreview) URL.revokeObjectURL(this.fotoActaPreview);
-    this.fotoActaPreview = file ? URL.createObjectURL(file) : null;
+    Array.from(input.files || []).forEach(file => {
+      this.fotoActaFiles.push(file);
+      this.fotoActaPreviews.push({ url: URL.createObjectURL(file), nombre: file.name });
+    });
+    input.value = ''; // permite volver a elegir las mismas fotos
+  }
+
+  quitarFotoActa(index: number): void {
+    URL.revokeObjectURL(this.fotoActaPreviews[index].url);
+    this.fotoActaPreviews.splice(index, 1);
+    this.fotoActaFiles.splice(index, 1);
+  }
+
+  private liberarFotosActa(): void {
+    this.fotoActaPreviews.forEach(p => URL.revokeObjectURL(p.url));
+    this.fotoActaExistentes.forEach(f => URL.revokeObjectURL(f.url));
+    this.fotoActaPreviews = [];
+    this.fotoActaExistentes = [];
+    this.fotoActaFiles = [];
   }
 
   cerrarFotoActaModal(): void {
     if (this.fotoActaSubiendo) return;
     this.showFotoActaModal = false;
-    if (this.fotoActaPreview) { URL.revokeObjectURL(this.fotoActaPreview); this.fotoActaPreview = null; }
-    this.fotoActaFile = null;
+    this.liberarFotosActa();
     this.fotoActaError = '';
   }
 
   confirmarCerrarConFoto(): void {
     if (!this.mesaActual) return;
     const mesaId = this.mesaActual.id;
-    if (this.fotoActaFile) {
-      this.fotoActaSubiendo = true;
-      this.fotoActaError = '';
-      this.api.subirActaFoto(mesaId, this.fotoActaFile).subscribe({
-        next: () => { this.fotoActaSubiendo = false; this.cerrarMesaBackend(mesaId); },
+    if (this.fotoActaFiles.length + this.fotoActaExistentes.length === 0) {
+      this.fotoActaError = 'Debe registrar al menos una foto del acta';
+      return;
+    }
+    this.fotoActaSubiendo = true;
+    this.fotoActaError = '';
+    const subirSiguiente = (idx: number): void => {
+      if (idx >= this.fotoActaFiles.length) {
+        this.fotoActaSubiendo = false;
+        this.cerrarMesaBackend(mesaId);
+        return;
+      }
+      this.api.subirActaFoto(mesaId, this.fotoActaFiles[idx]).subscribe({
+        next: () => subirSiguiente(idx + 1),
         error: (err) => {
           this.fotoActaSubiendo = false;
-          this.fotoActaError = err.error?.message || 'Error al subir la foto del acta';
+          this.fotoActaError = err?.error?.message || 'Error al subir la foto del acta';
         }
       });
-    } else if (this.fotoActaExistenteUrl) {
-      // Ya hay foto previa de esta mesa: se usa como respaldo
-      this.cerrarMesaBackend(mesaId);
-    } else {
-      this.fotoActaError = 'Debe seleccionar la foto del acta';
-    }
+    };
+    subirSiguiente(0);
   }
 
   private cerrarMesaBackend(mesaId: number): void {
@@ -681,15 +762,25 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
 
   votarLista(): void {
     if (!this.mesaActual || !this.listaLlamada || this.mesaActual.cerrada) return;
-    const cant = this.cantidadLista || 1;
+    const cant = Number(this.cantidadLista);
+    if (!Number.isInteger(cant) || cant < 1) {
+      this.errorMensaje = 'La cantidad de votos debe ser al menos 1';
+      return;
+    }
+    this.errorMensaje = '';
     this.api.registrarVoto({
       listaId: this.listaLlamada.id,
       mesaId: this.mesaActual.id,
       cantidadVotos: cant,
       eleccionesId: this.mesaActual.eleccionesId
-    }).subscribe(() => {
-      this.cerrarListaModal();
-      this.loadVotos();
+    }).subscribe({
+      next: () => {
+        this.cerrarListaModal();
+        this.loadVotos();
+      },
+      error: (err) => {
+        this.errorMensaje = err?.error?.message || 'No se pudo registrar el voto a la lista';
+      }
     });
   }
 

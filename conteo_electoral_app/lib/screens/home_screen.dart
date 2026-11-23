@@ -341,21 +341,64 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 )),
                                           ),
                                         ),
+                                        isThreeLine: true,
                                         title: Text(
-                                          (m.institucionNombre ?? '').isNotEmpty
-                                              ? 'Mesa ${m.numero} · ${m.institucionNombre}'
-                                              : 'Mesa ${m.numero}',
+                                          'Mesa ${m.numero}',
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                           style: const TextStyle(
                                               fontWeight: FontWeight.w600),
                                         ),
-                                        subtitle: Text(
-                                            m.cerrada ? 'Cerrada' : 'Abierta',
-                                            style: TextStyle(
-                                                color: m.cerrada
-                                                    ? AppColors.error
-                                                    : AppColors.success)),
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            if ((m.institucionNombre ?? '')
+                                                .isNotEmpty)
+                                              Text(
+                                                m.institucionNombre!,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: AppColors.gray),
+                                              ),
+                                            const SizedBox(height: 2),
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  m.cerrada
+                                                      ? 'Cerrada'
+                                                      : 'Abierta',
+                                                  style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: m.cerrada
+                                                          ? AppColors.error
+                                                          : AppColors.success),
+                                                ),
+                                                if ((m.parroquiaNombre ?? '')
+                                                    .isNotEmpty) ...[
+                                                  Text(' · ',
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          color:
+                                                              AppColors.gray)),
+                                                  Flexible(
+                                                    child: Text(
+                                                      m.parroquiaNombre!,
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: AppColors.gray),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                         trailing: Icon(
                                             Icons.chevron_right,
                                             color: AppColors.lightGray),

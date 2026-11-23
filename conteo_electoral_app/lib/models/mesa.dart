@@ -4,6 +4,8 @@ class Mesa {
   final String sexo;
   final int institucionId;
   final String? institucionNombre;
+  /// Nombre de la parroquia de la mesa (viene en MesaResponse del backend).
+  final String? parroquiaNombre;
   final int eleccionesId;
   final bool cerrada;
   final int? usuarioId;
@@ -16,6 +18,7 @@ class Mesa {
     required this.sexo,
     required this.institucionId,
     this.institucionNombre,
+    this.parroquiaNombre,
     required this.eleccionesId,
     required this.cerrada,
     this.usuarioId,
@@ -30,6 +33,7 @@ class Mesa {
       sexo: json['sexo'],
       institucionId: json['institucionId'] ?? json['recintoId'] ?? 0,
       institucionNombre: json['institucionNombre'],
+      parroquiaNombre: json['parroquiaNombre'],
       eleccionesId: json['eleccionesId'],
       cerrada: json['cerrada'] ?? false,
       usuarioId: json['usuarioId'],
@@ -45,6 +49,7 @@ class Mesa {
       'sexo': sexo,
       'institucionId': institucionId,
       'institucionNombre': institucionNombre,
+      'parroquiaNombre': parroquiaNombre,
       'eleccionesId': eleccionesId,
       'cerrada': cerrada,
       'usuarioId': usuarioId,

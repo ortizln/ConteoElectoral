@@ -280,3 +280,70 @@
 
 @keyframes slideUpDrawer { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modo-votacion {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 0;
+  flex-wrap: wrap;
+}
+.modo-btn {
+  border: 1px solid var(--alantek-border-strong);
+  background: var(--alantek-surface);
+  color: var(--alantek-text-secondary);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.modo-btn.active {
+  background: var(--alantek-primary);
+  border-color: var(--alantek-primary);
+  color: #ffffff;
+}
+
+.fotos-galeria {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.foto-item {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border: 1px solid var(--alantek-border-strong);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--alantek-background);
+}
+.foto-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.foto-tag {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--alantek-success);
+  color: #ffffff;
+  font-size: 10px;
+  text-align: center;
+  padding: 2px 0;
+}
+.foto-tag.pendiente { background: var(--alantek-warning); }
+.foto-quitar {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.65);
+  color: #ffffff;
+  line-height: 1;
+  cursor: pointer;
+}
