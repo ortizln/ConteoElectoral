@@ -31,6 +31,33 @@ export class ListasElectoralesComponent implements OnInit {
 
   filtroCandidato = '';
 
+  // Filtros del listado de listas
+  filtroListaTexto = '';
+  filtroListaCargoId: number | null = null;
+  filtroListaPartidoId: number | null = null;
+  filtroListaCirc = '';
+
+  get listasFiltradas(): any[] {
+    const q = this.filtroListaTexto.trim().toLowerCase();
+    return this.listas.filter(l => {
+      if (q) {
+        const texto = `${l.numeroLista ?? ''} ${l.nombre ?? ''} ${this.getPartidoNombre(l.partidoId)}`.toLowerCase();
+        if (!texto.includes(q)) return false;
+      }
+      if (this.filtroListaCargoId && l.cargoId !== this.filtroListaCargoId) return false;
+      if (this.filtroListaPartidoId && l.partidoId !== this.filtroListaPartidoId) return false;
+      if (this.filtroListaCirc && l.circunscripcionTipo !== this.filtroListaCirc) return false;
+      return true;
+    });
+  }
+
+  limpiarFiltrosListas(): void {
+    this.filtroListaTexto = '';
+    this.filtroListaCargoId = null;
+    this.filtroListaPartidoId = null;
+    this.filtroListaCirc = '';
+  }
+
   // Miniaturas de logo en caché (blob)
   private logoThumbCache = new Map<number, string>();
   logoThumb(id: number): string {
@@ -49,7 +76,12 @@ export class ListasElectoralesComponent implements OnInit {
   constructor(private api: ApiService) {}
 
   ngOnInit() {
-    this.api.getElecciones().subscribe(data => this.elecciones = data);
+    this.api.getElecciones().subscribe(data => {
+      this.elecciones = data;
+      // Entrar directamente a la elección activa para no tener que buscarla.
+      const activa = data.find((e: any) => e.activa) || data[data.length - 1];
+      if (activa) this.selectEleccion(activa);
+    });
   }
 
   selectEleccion(e: any) {

@@ -20,10 +20,51 @@
     </div>
 
     <div class="col-md-4">
+      <div class="card mb-2" *ngIf="selectedEleccion">
+        <div class="card-body p-2">
+          <input type="text" class="form-control form-control-sm mb-2"
+                 placeholder="Buscar por número, nombre o partido..."
+                 [(ngModel)]="filtroListaTexto">
+          <div class="row g-1">
+            <div class="col-6">
+              <select class="form-select form-select-sm" [(ngModel)]="filtroListaCargoId">
+                <option [ngValue]="null">Todos los cargos</option>
+                <option *ngFor="let c of cargos" [ngValue]="c.id">{{ c.nombre }}</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <select class="form-select form-select-sm" [(ngModel)]="filtroListaPartidoId">
+                <option [ngValue]="null">Todos los partidos</option>
+                <option *ngFor="let p of partidos" [ngValue]="p.id">{{ p.sigla || p.nombre }}</option>
+              </select>
+            </div>
+            <div class="col-8">
+              <select class="form-select form-select-sm" [(ngModel)]="filtroListaCirc">
+                <option value="">Todas las circunscripciones</option>
+                <option value="NACIONAL">Nacional</option>
+                <option value="PROVINCIAL">Provincial</option>
+                <option value="CANTONAL">Cantonal</option>
+                <option value="URBANA">Urbana</option>
+                <option value="RURAL">Rural</option>
+                <option value="PARROQUIAL">Parroquial</option>
+              </select>
+            </div>
+            <div class="col-4">
+              <button class="btn btn-sm btn-outline-secondary w-100" (click)="limpiarFiltrosListas()">
+                Limpiar
+              </button>
+            </div>
+          </div>
+          <small class="text-muted d-block mt-1">
+            {{ listasFiltradas.length }} de {{ listas.length }} listas
+          </small>
+        </div>
+      </div>
+
       <div class="card">
         <div class="card-header"><strong>Listas</strong></div>
         <div class="list-group list-group-flush">
-          <button *ngFor="let l of listas"
+          <button *ngFor="let l of listasFiltradas"
             class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
             [class.active]="listaDetalle?.id === l.id"
             (click)="verDetalle(l.id)">
@@ -33,12 +74,15 @@
               <div>
                 <strong>Lista {{ l.numeroLista }}</strong>
                 <small class="d-block text-muted">{{ l.nombre }}</small>
+                <small class="d-block text-muted" style="font-size:.72rem;">
+                  {{ getCargoNombre(l.cargoId) }} · {{ l.circunscripcionTipo || '-' }}
+                </small>
               </div>
             </div>
             <span class="badge bg-secondary">{{ getPartidoSigla(l.partidoId) || 'IND' }}</span>
           </button>
-          <div class="list-group-item text-muted text-center" *ngIf="listas.length === 0">
-            Sin listas registradas
+          <div class="list-group-item text-muted text-center" *ngIf="listasFiltradas.length === 0">
+            {{ listas.length === 0 ? 'Sin listas registradas' : 'No hay listas con estos filtros' }}
           </div>
         </div>
       </div>

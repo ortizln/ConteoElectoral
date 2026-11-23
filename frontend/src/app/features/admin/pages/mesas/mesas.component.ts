@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
+import * as XLSX from 'xlsx';
 import { ApiService } from '../../../../core/services/api.service';
 import { Eleccion, InstitucionEducativa, Mesa, Zona, Provincia, Canton, Parroquia } from '../../../../core/models';
 import { FiltrosPanelComponent } from '../../../shared/components/filtros-panel/filtros-panel.component';
@@ -30,6 +31,7 @@ export class MesasComponent implements OnInit {
   sortColumn: string = '';
   sortDirection: string = 'asc';
   searchText: string = '';
+  soloAsignadas: boolean = false;
   currentPage: number = 1;
   pageSize: number = 10;
   pageSizes: number[] = [5, 10, 25, 50];
@@ -187,11 +189,48 @@ export class MesasComponent implements OnInit {
   }
 
   get mesasFiltradas(): Mesa[] {
-    if (!this.searchText) return this.mesasOrdenadas;
+    let result = this.mesasOrdenadas;
+    if (this.soloAsignadas) {
+      result = result.filter(m => m.usuarioId != null);
+    }
+    if (!this.searchText) return result;
     const term = this.searchText.toLowerCase();
-    return this.mesasOrdenadas.filter(item =>
+    return result.filter(item =>
       Object.values(item).some(v => v != null && String(v).toLowerCase().includes(term))
     );
+  }
+
+  /** Mesas con miembro asignado en la elección actualmente cargada. */
+  get mesasAsignadas(): Mesa[] {
+    return this.mesas.filter(m => m.usuarioId != null);
+  }
+
+  /** Reporte Excel de mesas asignadas (todas las de la elección cargada). */
+  exportarAsignadasExcel(): void {
+    const asignadas = this.mesasAsignadas;
+    if (asignadas.length === 0) {
+      alert('No hay mesas asignadas en la elección seleccionada.');
+      return;
+    }
+    const data: any[][] = [
+      ['Elección', 'N° Mesa', 'Miembro asignado', 'Institución / Recinto', 'Parroquia', 'Cantón', 'Provincia', 'Sexo', 'Estado'],
+      ...asignadas.map(m => [
+        this.elecciones.find(e => e.id === m.eleccionesId)?.nombre ?? '',
+        m.numero,
+        m.usuarioNombre || '',
+        m.institucionNombre || '',
+        m.parroquiaNombre || '',
+        m.cantonNombre || '',
+        m.provinciaNombre || '',
+        m.sexo,
+        m.cerrada ? 'CERRADA' : 'ABIERTA'
+      ])
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    ws['!cols'] = [{ wch: 28 }, { wch: 10 }, { wch: 30 }, { wch: 40 }, { wch: 22 }, { wch: 18 }, { wch: 18 }, { wch: 12 }, { wch: 12 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Mesas asignadas');
+    XLSX.writeFile(wb, 'mesas_asignadas.xlsx');
   }
 
   get mesasPaginadas(): Mesa[] {

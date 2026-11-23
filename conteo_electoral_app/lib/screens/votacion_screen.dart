@@ -1033,45 +1033,9 @@ class _VotacionScreenState extends State<VotacionScreen> {
                                           ),
                                           const SizedBox(height: 8),
                                           Text(
-                                            '${candidatosLista.length} candidatos',
+                                            '${candidatosLista.length} candidatos · toca la lista para verlos',
                                             style: AppTextStyles.bodySmall,
                                           ),
-                                          const SizedBox(height: 4),
-                                          Wrap(
-                                            spacing: 4,
-                                            runSpacing: 2,
-                                            children: candidatosLista
-                                                .take(5)
-                                                .map((c) => Container(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 6,
-                                                          vertical: 2),
-                                                      decoration: BoxDecoration(
-                                                        color: AppColors.muted,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(4),
-                                                      ),
-                                                      child: Text(
-                                                        c.nombreCompleto,
-                                                        style: const TextStyle(
-                                                            fontSize: 10),
-                                                      ),
-                                                    ))
-                                                .toList(),
-                                          ),
-                                          if (candidatosLista.length > 5)
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.only(top: 2),
-                                              child: Text(
-                                                '+${candidatosLista.length - 5} más',
-                                                style: TextStyle(
-                                                    fontSize: 10,
-                                                    color: AppColors.gray),
-                                              ),
-                                            ),
                                         ],
                                       ),
                                     ),

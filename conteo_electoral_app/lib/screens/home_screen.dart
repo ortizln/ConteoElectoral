@@ -341,9 +341,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 )),
                                           ),
                                         ),
-                                        title: Text('Mesa ${m.numero}',
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w600)),
+                                        title: Text(
+                                          (m.institucionNombre ?? '').isNotEmpty
+                                              ? 'Mesa ${m.numero} · ${m.institucionNombre}'
+                                              : 'Mesa ${m.numero}',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w600),
+                                        ),
                                         subtitle: Text(
                                             m.cerrada ? 'Cerrada' : 'Abierta',
                                             style: TextStyle(
