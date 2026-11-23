@@ -57,7 +57,7 @@
   color: var(--alantek-text, #212529);
 }
 
-/* --- Lista de listas (cards) --- */
+/* --- Lista de listas (cards) con scroll interno --- */
 .lista-candidatos-disponibles {
   max-height: 380px;
   overflow-y: auto;
@@ -65,6 +65,26 @@
   border-radius: var(--alantek-radius-md, 8px);
   background: var(--alantek-surface, #ffffff);
   padding: 4px;
+}
+
+.listas-scrollable {
+  max-height: calc(100vh - 330px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--alantek-surface, #ffffff);
+}
+
+/* Asegurar que el card no crezca más allá del viewport y permita scroll interno */
+.col-md-4 .card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.col-md-4 .card .card-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .list-group-item.active {
