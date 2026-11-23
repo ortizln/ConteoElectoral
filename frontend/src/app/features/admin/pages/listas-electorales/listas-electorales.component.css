@@ -1,18 +1,69 @@
-/* Listas Electorales — presentación en cards estáticas */
+/* ============================================================
+   Listas Electorales — presentación en cards estáticas
+   ============================================================ */
 
-.lista-candidatos-disponibles {
-  max-height: 320px;
-  overflow-y: auto;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  background: #fff;
+/* --- Colores del sistema (tokens) ---
+   Se usan las variables CSS globales --alantek-* para que
+   todo siga la paleta del sistema (primary, surface, border, etc.).
+   ============================================================ */
+
+/* --- Scrollbar del sistema (Webkit: Chrome, Edge, Safari) --- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--alantek-surface, #ffffff);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--alantek-border-strong, #adb5bd);
+  border-radius: var(--alantek-radius-md, 8px);
+  border: 2px solid var(--alantek-surface, #ffffff);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--alantek-text-secondary, #6c757d);
+}
+::-webkit-scrollbar-corner {
+  background: var(--alantek-surface, #ffffff);
 }
 
-.table thead.sticky-top th {
-  background: #f8f9fa;
+/* --- Scrollbar para Firefox --- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--alantek-border-strong, #adb5bd) var(--alantek-surface, #ffffff);
+}
+
+/* --- Contenedor scrollable para tablas --- */
+.table-scrollable {
+  overflow: auto;
+  max-height: 420px;
+  border: 1px solid var(--alantek-border, #dee2e6);
+  border-radius: var(--alantek-radius-md, 8px);
+  background: var(--alantek-surface, #ffffff);
+}
+
+/* Forzar scroll horizontal si la tabla es ancha */
+.table-scrollable table {
+  min-width: 100%;
+}
+
+/* Cabecera sticky dentro del contenedor scrollable */
+.table-scrollable thead.sticky-top th {
+  background: var(--alantek-background, #f8f9fa);
   position: sticky;
   top: 0;
-  z-index: 2;
+  z-index: 3;
+  border-bottom: 2px solid var(--alantek-border-strong, #adb5bd);
+}
+
+/* --- Lista de listas (cards) --- */
+.lista-candidatos-disponibles {
+  max-height: 340px;
+  overflow-y: auto;
+  border: 1px solid var(--alantek-border, #dee2e6);
+  border-radius: var(--alantek-radius-md, 8px);
+  background: var(--alantek-surface, #ffffff);
+  padding: 4px;
 }
 
 .list-group-item.active {
@@ -27,37 +78,68 @@
 
 .list-group-item.active .badge {
   background-color: rgba(255,255,255,0.85) !important;
-  color: #0d6efd !important;
+  color: var(--alantek-primary, #0d6efd) !important;
 }
 
+/* --- Cards --- */
 .card-header {
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid var(--alantek-border, #dee2e6);
+  background: var(--alantek-surface, #ffffff);
 }
 
 .card.shadow-sm {
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--alantek-border, #e9ecef);
+  box-shadow: var(--alantek-shadow-sm, 0 1px 3px rgba(0,0,0,0.08));
 }
 
+/* --- Labels --- */
 .form-label.small {
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  color: var(--alantek-text-muted, #6c757d);
 }
 
+/* --- Botones --- */
 .btn-outline-secondary.btn-sm {
-  border-color: #adb5bd;
-  color: #495057;
+  border-color: var(--alantek-border-strong, #adb5bd);
+  color: var(--alantek-text-secondary, #495057);
 }
 
+.btn-outline-secondary.btn-sm:hover {
+  border-color: var(--alantek-primary, #0d6efd);
+  color: var(--alantek-primary, #0d6efd);
+}
+
+/* --- Badges consistentes con el sistema --- */
 .badge.bg-primary {
   background-color: var(--alantek-primary, #0d6efd);
 }
-
-.table-hover tbody tr:hover {
-  background-color: rgba(13, 110, 253, 0.04);
+.badge.bg-success {
+  background-color: var(--alantek-success, #198754);
+}
+.badge.bg-info {
+  background-color: var(--alantek-info, #0dcaf0);
+}
+.badge.bg-secondary {
+  background-color: var(--alantek-secondary, #6c757d);
+}
+.badge.rounded-pill {
+  border-radius: 50rem;
 }
 
+/* --- Tabla hover --- */
+.table-hover tbody tr:hover {
+  background-color: rgba(var(--alantek-primary-rgb, 13, 110, 253), 0.04);
+}
+
+/* --- Modal --- */
 .modal-backdrop.show {
   opacity: 0.55;
 }
+
+/* --- Utilitarios de alineación y espaciado --- */
+.fw-semibold { font-weight: 600; }
+.fw-light { font-weight: 300; }
+.text-muted { color: var(--alantek-text-muted, #6c757d); }
