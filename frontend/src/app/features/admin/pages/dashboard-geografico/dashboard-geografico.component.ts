@@ -7,6 +7,8 @@ import { PROVINCIAS_ECUADOR, ProvinciaCoords } from '../../../../core/data/ecuad
 import L from 'leaflet';
 import { Subscription } from 'rxjs';
 
+type Nivel = 'provincia' | 'canton' | 'parroquia' | 'recinto';
+
 @Component({
   selector: 'app-dashboard-geografico',
   standalone: true,
@@ -20,7 +22,7 @@ export class DashboardGeograficoComponent implements OnInit, OnDestroy, AfterVie
   selectedEleccionId: number | null = null;
   selectedCandidatoId: number | null = null;
   loading = false;
-  nivel: 'provincia' | 'canton' | 'parroquia' = 'provincia';
+  nivel: Nivel = 'provincia';
   tituloNivel = 'Provincias';
   items: DatoGeografico[] = [];
   totalVotos = 0;
@@ -104,6 +106,22 @@ export class DashboardGeograficoComponent implements OnInit, OnDestroy, AfterVie
         this.updateMap();
         this.loading = false;
       }));
+    } else if (this.nivel === 'recinto' && this.selectedItem) {
+      const parrId = this.selectedItem.id;
+      const provId = this.selectedItem.provinciaId ?? undefined;
+      const cantId = this.selectedItem.cantonId ?? undefined;
+      this.subs.push(this.api.getGeoRecintos(
+        this.selectedEleccionId,
+        candId,
+        provId,
+        cantId,
+        parrId
+      ).subscribe(items => {
+        this.items = items;
+        this.totalVotos = items.reduce((s, i) => s + i.totalVotos, 0);
+        this.updateMap();
+        this.loading = false;
+      }));
     }
   }
 
@@ -140,11 +158,29 @@ export class DashboardGeograficoComponent implements OnInit, OnDestroy, AfterVie
         const marker = L.circleMarker([coords.lat, coords.lng], {
           radius, color, fillColor: color, fillOpacity: 0.7, weight: 2, opacity: 1
         });
-        marker.bindPopup(`<b>${item.nombre}</b><br>Votos: ${item.totalVotos.toLocaleString()}<br>${item.porcentaje != null ? item.porcentaje + '%' : ''}`);
+        marker.bindPopup(this.buildPopup(item));
         marker.on('click', () => this.drillDown(item, coords));
         this.markersLayer!.addLayer(marker);
       }
+    } else if (this.nivel === 'recinto') {
+      // Pintar recintos con coordenadas reales
+      for (const item of this.items) {
+        if (item.latitud == null || item.longitud == null) continue;
+        const radius = Math.max(6, Math.sqrt(item.totalVotos / maxVotos) * 25);
+        const color = this.getColor(item.totalVotos, maxVotos);
+        const marker = L.circleMarker([item.latitud, item.longitud], {
+          radius, color, fillColor: color, fillOpacity: 0.75, weight: 2, opacity: 1
+        });
+        marker.bindPopup(this.buildPopup(item));
+        this.markersLayer!.addLayer(marker);
+      }
+      // Centrar el mapa en el primer recinto con coordenadas
+      const primeroConCoords = this.items.find(i => i.latitud != null && i.longitud != null);
+      if (primeroConCoords && this.map) {
+        this.map.setView([primeroConCoords.latitud!, primeroConCoords.longitud!], 13);
+      }
     } else {
+      // canton / parroquia: usar jitter sobre la provincia de referencia
       for (const item of this.items) {
         const jitter = (Math.random() - 0.5) * 0.1;
         const base = this.provinciaRef ?? { lat: -1.4, lng: -78.5 };
@@ -155,7 +191,7 @@ export class DashboardGeograficoComponent implements OnInit, OnDestroy, AfterVie
         const marker = L.circleMarker([lat, lng], {
           radius, color, fillColor: color, fillOpacity: 0.6, weight: 1, opacity: 1
         });
-        marker.bindPopup(`<b>${item.nombre}</b><br>Votos: ${item.totalVotos.toLocaleString()}`);
+        marker.bindPopup(this.buildPopup(item));
         if (this.nivel === 'canton') {
           marker.on('click', () => {
             this.selectedItem = item;
@@ -163,10 +199,26 @@ export class DashboardGeograficoComponent implements OnInit, OnDestroy, AfterVie
             this.tituloNivel = 'Parroquias';
             this.loadData();
           });
+        } else if (this.nivel === 'parroquia') {
+          marker.on('click', () => {
+            this.selectedItem = item;
+            this.nivel = 'recinto';
+            this.tituloNivel = `Recintos - ${item.nombre}`;
+            this.loadData();
+          });
         }
         this.markersLayer!.addLayer(marker);
       }
     }
+  }
+
+  private buildPopup(item: DatoGeografico): string {
+    let geo = '';
+    if (item.parroquiaNombre) geo += `<br>Parroquia: ${item.parroquiaNombre}`;
+    if (item.cantonNombre) geo += `<br>Cantón: ${item.cantonNombre}`;
+    if (item.provinciaNombre) geo += `<br>Provincia: ${item.provinciaNombre}`;
+    if (item.totalMesas != null) geo += `<br>Mesas: ${item.totalMesas}`;
+    return `<b>${item.nombre}</b><br>Votos: ${item.totalVotos.toLocaleString()}${geo}<br>${item.porcentaje != null ? item.porcentaje + '%' : ''}`;
   }
 
   drillDown(item: DatoGeografico, coords: ProvinciaCoords): void {
@@ -182,11 +234,26 @@ export class DashboardGeograficoComponent implements OnInit, OnDestroy, AfterVie
     if (this.nivel === 'provincia') {
       const coords = PROVINCIAS_ECUADOR.find(p => p.id === item.id);
       if (coords) this.drillDown(item, coords);
+    } else if (this.nivel === 'canton') {
+      this.selectedItem = item;
+      this.nivel = 'parroquia';
+      this.tituloNivel = 'Parroquias';
+      this.loadData();
+    } else if (this.nivel === 'parroquia') {
+      this.selectedItem = item;
+      this.nivel = 'recinto';
+      this.tituloNivel = `Recintos - ${item.nombre}`;
+      this.loadData();
     }
   }
 
   volver(): void {
-    if (this.nivel === 'canton') {
+    if (this.nivel === 'recinto') {
+      this.nivel = 'parroquia';
+      this.tituloNivel = 'Parroquias';
+      this.selectedItem = null;
+      this.loadData();
+    } else if (this.nivel === 'canton') {
       this.nivel = 'provincia';
       this.tituloNivel = 'Provincias';
       this.selectedItem = null;

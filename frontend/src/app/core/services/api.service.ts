@@ -842,6 +842,23 @@ export class ApiService {
     return this.http.get<DatoGeografico[]>(url);
   }
 
+  getGeoRecintos(
+    eleccionId: number,
+    candidatoId?: number,
+    provinciaId?: number,
+    cantonId?: number,
+    parroquiaId?: number
+  ): Observable<DatoGeografico[]> {
+    let url = `${this.API_URL}/dashboard/geografico/${eleccionId}/recintos`;
+    const params: string[] = [];
+    if (candidatoId) params.push(`candidatoId=${candidatoId}`);
+    if (provinciaId) params.push(`provinciaId=${provinciaId}`);
+    if (cantonId) params.push(`cantonId=${cantonId}`);
+    if (parroquiaId) params.push(`parroquiaId=${parroquiaId}`);
+    if (params.length) url += `?${params.join('&')}`;
+    return this.http.get<DatoGeografico[]>(url);
+  }
+
   getDashboardConFiltros(
     eleccionId: number, 
     cargoId?: number, 

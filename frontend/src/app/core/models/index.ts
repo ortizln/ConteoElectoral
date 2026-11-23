@@ -449,6 +449,16 @@ export interface DatoGeografico {
   nombre: string;
   totalVotos: number;
   porcentaje?: number;
+  /** Coordenadas del recinto (solo en nivel recinto). */
+  latitud?: number;
+  longitud?: number;
+  parroquiaId?: number;
+  parroquiaNombre?: string;
+  cantonId?: number;
+  cantonNombre?: string;
+  provinciaId?: number;
+  provinciaNombre?: string;
+  totalMesas?: number;
 }
 
 export interface GeoResumen {

@@ -2,6 +2,7 @@ package com.electoral.controllers;
 
 import com.electoral.dto.DatoGeograficoDTO;
 import com.electoral.dto.GeoResumenDTO;
+import com.electoral.dto.RecintoGeoDTO;
 import com.electoral.services.DashboardGeograficoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -37,5 +38,16 @@ public class DashboardGeograficoController {
             @PathVariable Long cantonId,
             @RequestParam(required = false) Long candidatoId) {
         return ResponseEntity.ok(service.getParroquiasByCanton(eleccionId, cantonId, candidatoId));
+    }
+
+    @GetMapping("/{eleccionId}/recintos")
+    public ResponseEntity<List<RecintoGeoDTO>> getRecintos(
+            @PathVariable Long eleccionId,
+            @RequestParam(required = false) Long candidatoId,
+            @RequestParam(required = false) Long provinciaId,
+            @RequestParam(required = false) Long cantonId,
+            @RequestParam(required = false) Long parroquiaId) {
+        return ResponseEntity.ok(service.getRecintosConVotos(
+                eleccionId, candidatoId, provinciaId, cantonId, parroquiaId));
     }
 }

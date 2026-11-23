@@ -36,7 +36,7 @@
 /* --- Contenedor scrollable para tablas --- */
 .table-scrollable {
   overflow: auto;
-  max-height: 420px;
+  max-height: 460px;
   border: 1px solid var(--alantek-border, #dee2e6);
   border-radius: var(--alantek-radius-md, 8px);
   background: var(--alantek-surface, #ffffff);
@@ -54,11 +54,12 @@
   top: 0;
   z-index: 3;
   border-bottom: 2px solid var(--alantek-border-strong, #adb5bd);
+  color: var(--alantek-text, #212529);
 }
 
 /* --- Lista de listas (cards) --- */
 .lista-candidatos-disponibles {
-  max-height: 340px;
+  max-height: 380px;
   overflow-y: auto;
   border: 1px solid var(--alantek-border, #dee2e6);
   border-radius: var(--alantek-radius-md, 8px);
@@ -115,15 +116,19 @@
 /* --- Badges consistentes con el sistema --- */
 .badge.bg-primary {
   background-color: var(--alantek-primary, #0d6efd);
+  color: #fff;
 }
 .badge.bg-success {
   background-color: var(--alantek-success, #198754);
+  color: #fff;
 }
 .badge.bg-info {
   background-color: var(--alantek-info, #0dcaf0);
+  color: #212529;
 }
 .badge.bg-secondary {
   background-color: var(--alantek-secondary, #6c757d);
+  color: #fff;
 }
 .badge.rounded-pill {
   border-radius: 50rem;
@@ -132,6 +137,34 @@
 /* --- Tabla hover --- */
 .table-hover tbody tr:hover {
   background-color: rgba(var(--alantek-primary-rgb, 13, 110, 253), 0.04);
+}
+
+/* --- Tabla: asegurar texto blanco en fondos oscuros / modo oscuro --- */
+.table-scrollable table thead th {
+  color: var(--alantek-text, #212529) !important;
+}
+.table-scrollable table tbody td {
+  color: var(--alantek-text, #212529) !important;
+}
+.table-scrollable table tbody tr {
+  background: var(--alantek-surface, #ffffff) !important;
+}
+
+/* Texto blanco sobre fondos oscuros (modo oscuro) */
+[data-theme='dark'] .table-scrollable table tbody td,
+[data-theme='dark'] .table-scrollable table thead th {
+  color: #ffffff !important;
+}
+[data-theme='dark'] .table-scrollable table tbody tr {
+  background: rgba(0,0,0,0.3) !important;
+}
+[data-theme='dark'] .table-scrollable {
+  background: #1a1a1a !important;
+}
+
+/* Texto blanco en badges cuando el fondo es oscuro */
+[data-theme='dark'] .badge.bg-info {
+  color: #ffffff !important;
 }
 
 /* --- Modal --- */
@@ -143,3 +176,22 @@
 .fw-semibold { font-weight: 600; }
 .fw-light { font-weight: 300; }
 .text-muted { color: var(--alantek-text-muted, #6c757d); }
+
+/* Asegurar que el texto de los items de lista tenga buen contraste */
+.list-group-item {
+  color: var(--alantek-text, #212529);
+}
+[data-theme='dark'] .list-group-item {
+  color: #ffffff;
+  background: #1a1a1a;
+}
+
+/* Texto de los nombres y datos en tablas: blanco sobre oscuro */
+.item-name, .item-votos, .item-pct {
+  color: var(--alantek-text, #212529);
+}
+[data-theme='dark'] .item-name,
+[data-theme='dark'] .item-votos,
+[data-theme='dark'] .item-pct {
+  color: #ffffff;
+}
