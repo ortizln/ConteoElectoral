@@ -1,0 +1,63 @@
+/* Listas Electorales — presentación en cards estáticas */
+
+.lista-candidatos-disponibles {
+  max-height: 320px;
+  overflow-y: auto;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.table thead.sticky-top th {
+  background: #f8f9fa;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.list-group-item.active {
+  background-color: var(--alantek-primary, #0d6efd) !important;
+  border-color: var(--alantek-primary, #0d6efd) !important;
+  color: #fff !important;
+}
+
+.list-group-item.active .text-muted {
+  color: rgba(255,255,255,0.75) !important;
+}
+
+.list-group-item.active .badge {
+  background-color: rgba(255,255,255,0.85) !important;
+  color: #0d6efd !important;
+}
+
+.card-header {
+  border-bottom: 1px solid #dee2e6;
+}
+
+.card.shadow-sm {
+  border: 1px solid #e9ecef;
+}
+
+.form-label.small {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-outline-secondary.btn-sm {
+  border-color: #adb5bd;
+  color: #495057;
+}
+
+.badge.bg-primary {
+  background-color: var(--alantek-primary, #0d6efd);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(13, 110, 253, 0.04);
+}
+
+.modal-backdrop.show {
+  opacity: 0.55;
+}
