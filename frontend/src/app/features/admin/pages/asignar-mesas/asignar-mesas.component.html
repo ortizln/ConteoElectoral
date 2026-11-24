@@ -74,6 +74,8 @@
                 <th>Mesa</th>
                 <th>Institución</th>
                 <th>Sexo</th>
+                <th>Parroquia</th>
+                <th>Cantón</th>
                 <th>Acción</th>
               </tr>
             </thead>
@@ -82,14 +84,18 @@
                 <td>{{ m.numero }}</td>
                 <td>{{ m.institucionNombre }}</td>
                 <td>
-                  <span class="badge" [class]="m.sexo === 'MIXTA' ? 'bg-info' : m.sexo === 'MASCULINO' ? 'bg-primary' : 'bg-warning'">{{ m.sexo }}</span>
+                  <span class="sexo-icon" [title]="m.sexo">{{ getSexoIcono(m.sexo) }}</span>
                 </td>
+                <td>{{ m.parroquiaNombre || '-' }}</td>
+                <td>{{ m.cantonNombre || '-' }}</td>
                 <td>
-                  <button class="btn btn-sm btn-primary" (click)="asignarMesa(m)">Asignar</button>
+                  <button class="btn btn-sm btn-primary btn-icon-only" (click)="asignarMesa(m)" title="Asignar">
+                    <i class="bi bi-person-plus"></i>
+                  </button>
                 </td>
               </tr>
               <tr *ngIf="disponiblesFiltradas.length === 0">
-                <td colspan="4" class="text-center text-muted">No hay mesas disponibles</td>
+                <td colspan="6" class="text-center text-muted">No hay mesas disponibles</td>
               </tr>
             </tbody>
           </table>
@@ -110,6 +116,8 @@
                 <th>Mesa</th>
                 <th>Institución</th>
                 <th>Sexo</th>
+                <th>Parroquia</th>
+                <th>Cantón</th>
                 <th>Acción</th>
               </tr>
             </thead>
@@ -118,14 +126,18 @@
                 <td>{{ m.numero }}</td>
                 <td>{{ m.institucionNombre }}</td>
                 <td>
-                  <span class="badge" [class]="m.sexo === 'MIXTA' ? 'bg-info' : m.sexo === 'MASCULINO' ? 'bg-primary' : 'bg-warning'">{{ m.sexo }}</span>
+                  <span class="sexo-icon" [title]="m.sexo">{{ getSexoIcono(m.sexo) }}</span>
                 </td>
+                <td>{{ m.parroquiaNombre || '-' }}</td>
+                <td>{{ m.cantonNombre || '-' }}</td>
                 <td>
-                  <button class="btn btn-sm btn-danger" (click)="desasignarMesa(m)">Quitar</button>
+                  <button class="btn btn-sm btn-danger btn-icon-only" (click)="desasignarMesa(m)" title="Quitar">
+                    <i class="bi bi-person-dash"></i>
+                  </button>
                 </td>
               </tr>
               <tr *ngIf="asignadasFiltradas.length === 0">
-                <td colspan="4" class="text-center text-muted">No hay mesas asignadas</td>
+                <td colspan="6" class="text-center text-muted">No hay mesas asignadas</td>
               </tr>
             </tbody>
           </table>

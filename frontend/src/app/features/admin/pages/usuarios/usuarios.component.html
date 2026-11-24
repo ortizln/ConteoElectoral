@@ -221,8 +221,8 @@
             <div *ngIf="viewMesasLoading" class="text-center py-3">
               <span class="spinner-border spinner-border-sm"></span> Cargando mesas...
             </div>
-            <div *ngIf="!viewMesasLoading && viewMesas.length > 0" class="table-responsive">
-              <table class="table table-sm table-striped">
+            <div *ngIf="!viewMesasLoading && viewMesas.length > 0" class="table-responsive-sm">
+              <table class="table table-xs table-striped">
                 <thead class="table-light">
                   <tr>
                     <th>N° Mesa</th>
@@ -237,10 +237,10 @@
                 <tbody>
                   <tr *ngFor="let m of viewMesas">
                     <td class="fw-semibold">{{ m.numero }}</td>
-                    <td>{{ m.institucionNombre }}</td>
-                    <td>{{ m.parroquiaNombre }}</td>
-                    <td>{{ m.cantonNombre }}</td>
-                    <td>{{ m.provinciaNombre }}</td>
+                    <td><span class="text-truncate" [title]="m.institucionNombre">{{ m.institucionNombre }}</span></td>
+                    <td><span class="text-truncate" [title]="m.parroquiaNombre">{{ m.parroquiaNombre }}</span></td>
+                    <td><span class="text-truncate" [title]="m.cantonNombre">{{ m.cantonNombre }}</span></td>
+                    <td><span class="text-truncate" [title]="m.provinciaNombre">{{ m.provinciaNombre }}</span></td>
                     <td>{{ m.sexo }}</td>
                     <td>
                       <span [class]="m.cerrada ? 'badge bg-danger' : 'badge bg-success'">

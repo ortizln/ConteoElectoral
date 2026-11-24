@@ -42,3 +42,32 @@
 .btn-close:hover { background: var(--alantek-background); }
 .btn-secondary { background: var(--alantek-border); color: var(--alantek-text-secondary); }
 .btn-secondary:hover { background: var(--alantek-border-strong); }
+
+/* Ícono de sexo en tabla de mesas */
+.sexo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 4px;
+  text-align: center;
+}
+.sexo-icon[title="MASCULINO"] { color: var(--alantek-primary); }
+.sexo-icon[title="FEMENINO"] { color: var(--alantek-danger); }
+.sexo-icon[title="MIXTA"] { color: var(--alantek-info); }
+
+/* Botón de acción solo con ícono */
+.btn-icon-only {
+  padding: 6px 4px;
+  min-width: 32px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-icon-only i {
+  font-size: 13px;
+}

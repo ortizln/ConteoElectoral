@@ -165,4 +165,15 @@ export class AsignarMesasComponent implements OnInit {
     const id = typeof this.usuarioId === 'string' ? Number(this.usuarioId) : this.usuarioId;
     return this.miembros.find(m => m.id === id);
   }
+
+  /** Retorna un ícono Unicode para el sexo del mesa */
+  getSexoIcono(sexo: string | undefined | null): string {
+    if (!sexo) return '⚥';
+    switch (sexo.toUpperCase()) {
+      case 'MASCULINO': return '♂';
+      case 'FEMENINO': return '♀';
+      case 'MIXTA': return '⚥';
+      default: return '⚥';
+    }
+  }
 }
