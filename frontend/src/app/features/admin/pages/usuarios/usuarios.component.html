@@ -60,6 +60,7 @@
               <i class="bi bi-three-dots-vertical"></i>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
+              <li><button class="dropdown-item" (click)="verUsuario(u)">Ver</button></li>
               <li><button class="dropdown-item" (click)="openEditModal(u)">Editar</button></li>
               <li><button class="dropdown-item" (click)="openResetPasswordModal(u)">Reset Pass</button></li>
               <li><hr class="dropdown-divider"></li>
@@ -174,6 +175,94 @@
         <div class="modal-footer">
           <button class="btn btn-secondary" (click)="closeResetModal()">Cancelar</button>
           <button class="btn btn-primary" (click)="resetPassword()">Resetear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ver Usuario Modal -->
+  <div class="modal" *ngIf="showViewModal">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-light">
+          <h5 class="modal-title">Información del Usuario</h5>
+          <button class="btn-close" (click)="cerrarViewModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div *ngIf="viewUser" class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-uppercase small">Username</label>
+              <div class="form-control readonly bg-white">{{ viewUser.username }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-uppercase small">Nombre completo</label>
+              <div class="form-control readonly bg-white">{{ viewUser.nombre }} {{ viewUser.apellido }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-uppercase small">Email</label>
+              <div class="form-control readonly bg-white">{{ viewUser.email }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-uppercase small">Rol</label>
+              <span class="badge" [class]="viewUser.rol === 'ADMIN' ? 'bg-danger' : viewUser.rol === 'SUPERVISOR' ? 'bg-warning' : 'bg-info'">
+                {{ viewUser.rol }}
+              </span>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-uppercase small">Estado</label>
+              <span [class]="viewUser.activo ? 'badge bg-success' : 'badge bg-secondary'">
+                {{ viewUser.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+          </div>
+
+          <div *ngIf="viewUser?.rol === 'MIEMBRO_MESA'; else noMesas">
+            <h6 class="fw-bold text-uppercase small mb-2">Mesas Asignadas</h6>
+            <div *ngIf="viewMesasLoading" class="text-center py-3">
+              <span class="spinner-border spinner-border-sm"></span> Cargando mesas...
+            </div>
+            <div *ngIf="!viewMesasLoading && viewMesas.length > 0" class="table-responsive">
+              <table class="table table-sm table-striped">
+                <thead class="table-light">
+                  <tr>
+                    <th>N° Mesa</th>
+                    <th>Institución / Recinto</th>
+                    <th>Parroquia</th>
+                    <th>Cantón</th>
+                    <th>Provincia</th>
+                    <th>Sexo</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let m of viewMesas">
+                    <td class="fw-semibold">{{ m.numero }}</td>
+                    <td>{{ m.institucionNombre }}</td>
+                    <td>{{ m.parroquiaNombre }}</td>
+                    <td>{{ m.cantonNombre }}</td>
+                    <td>{{ m.provinciaNombre }}</td>
+                    <td>{{ m.sexo }}</td>
+                    <td>
+                      <span [class]="m.cerrada ? 'badge bg-danger' : 'badge bg-success'">
+                        {{ m.cerrada ? 'Cerrada' : 'Abierta' }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div *ngIf="!viewMesasLoading && viewMesas.length === 0" class="text-muted text-center py-3">
+              No tiene mesas asignadas en esta elección.
+            </div>
+          </div>
+          <ng-template #noMesas>
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle me-1"></i> Este usuario no es miembro de mesa, por lo que no tiene mesas asignadas.
+            </div>
+          </ng-template>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="cerrarViewModal()">Cerrar</button>
         </div>
       </div>
     </div>

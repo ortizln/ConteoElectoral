@@ -16,9 +16,13 @@ export class UsuariosComponent implements OnInit {
   usuarios: Usuario[] = [];
   eleccionActivaId: number | null = null;
   showModal = false;
+  showViewModal = false;
   showResetModal = false;
   editingUser: Usuario | null = null;
+  viewUser: Usuario | null = null;
   resetUser: Usuario | null = null;
+  viewMesas: any[] = [];
+  viewMesasLoading = false;
   newPassword = '';
   confirmPassword = '';
   form: any = { username: '', password: '', nombre: '', apellido: '', email: '', rolId: 3, activo: true };
@@ -58,6 +62,36 @@ export class UsuariosComponent implements OnInit {
       return;
     }
     this.api.exportUsuariosMesasExcel(this.eleccionActivaId);
+  }
+
+  verUsuario(user: Usuario): void {
+    this.viewUser = user;
+    this.viewMesas = [];
+    this.viewMesasLoading = false;
+    this.showViewModal = true;
+    if (user.rol === 'MIEMBRO_MESA' && this.eleccionActivaId) {
+      this.cargarMesasUsuario(user.id, this.eleccionActivaId);
+    }
+  }
+
+  cargarMesasUsuario(usuarioId: number, eleccionId: number): void {
+    this.viewMesasLoading = true;
+    this.api.getMesasByUsuario(usuarioId, eleccionId).subscribe({
+      next: (mesas) => {
+        this.viewMesas = mesas;
+        this.viewMesasLoading = false;
+      },
+      error: () => {
+        this.viewMesasLoading = false;
+      }
+    });
+  }
+
+  cerrarViewModal(): void {
+    this.showViewModal = false;
+    this.viewUser = null;
+    this.viewMesas = [];
+    this.viewMesasLoading = false;
   }
 
   sort(column: string): void {
