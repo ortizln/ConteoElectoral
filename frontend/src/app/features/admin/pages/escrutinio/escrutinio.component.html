@@ -27,7 +27,7 @@
             <td>{{ r.mesaNumero }}<br><small class="text-muted">{{ r.institucionNombre }}</small></td>
             <td>{{ r.motivo }}</td>
             <td>{{ r.solicitadoPor }}</td>
-            <td><span class="badge" [class]="getBadgeClass(r.estado)">{{ r.estado }}</span></td>
+            <td><span class="estado-icon" [class]="getEstadoIcono(r.estado)" [title]="r.estado"></span></td>
             <td>{{ r.resultado || '-' }}</td>
             <td>
               <select class="form-select form-select-sm" (change)="updateReconteoEstado(r.id, $any($event.target).value)" *ngIf="r.estado === 'PENDIENTE' || r.estado === 'EN_PROCESO'">
@@ -58,7 +58,7 @@
             <td><span class="badge bg-secondary">{{ i.tipo }}</span></td>
             <td>{{ i.descripcion }}</td>
             <td>{{ i.solicitante }}</td>
-            <td><span class="badge" [class]="getBadgeClass(i.estado)">{{ i.estado }}</span></td>
+            <td><span class="estado-icon" [class]="getEstadoIcono(i.estado)" [title]="i.estado"></span></td>
             <td>
               <select class="form-select form-select-sm" (change)="updateImpugnacionEstado(i.id, $any($event.target).value)" *ngIf="i.estado === 'PENDIENTE' || i.estado === 'EN_REVISION'">
                 <option value="">Cambiar estado</option>

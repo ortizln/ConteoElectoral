@@ -266,4 +266,15 @@ export class ReportesComponent implements OnInit, OnDestroy, AfterViewInit {
   totalNulosBlanco(): number {
     return this.modalMesas.reduce((s, m) => s + m.votosNulos + m.votosBlanco, 0);
   }
+
+  /** Ícono Unicode para el sexo del mesa (♂ / ♀ / ⚥) */
+  getSexoIcono(sexo: string | undefined | null): string {
+    if (!sexo) return '⚥';
+    switch (sexo.toUpperCase()) {
+      case 'MASCULINO': return '♂';
+      case 'FEMENINO': return '♀';
+      case 'MIXTA': return '⚥';
+      default: return '⚥';
+    }
+  }
 }

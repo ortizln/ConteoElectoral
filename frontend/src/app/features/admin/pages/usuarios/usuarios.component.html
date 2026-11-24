@@ -50,9 +50,8 @@
         <td>{{ u.email }}</td>
         <td><span class="badge" [class]="u.rol === 'ADMIN' ? 'bg-danger' : u.rol === 'SUPERVISOR' ? 'bg-warning' : 'bg-info'">{{ u.rol }}</span></td>
         <td>
-          <span [class]="u.activo ? 'badge bg-success' : 'badge bg-secondary'">
-            {{ u.activo ? 'Activo' : 'Inactivo' }}
-          </span>
+          <span class="estado-icon" [class]="u.activo ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-secondary'"
+                [title]="u.activo ? 'Activo' : 'Inactivo'"></span>
         </td>
         <td>
           <div class="dropdown">
@@ -210,9 +209,8 @@
             </div>
             <div class="col-md-6">
               <label class="form-label fw-bold text-uppercase small">Estado</label>
-              <span [class]="viewUser.activo ? 'badge bg-success' : 'badge bg-secondary'">
-                {{ viewUser.activo ? 'Activo' : 'Inactivo' }}
-              </span>
+              <span class="estado-icon" [class]="viewUser.activo ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-secondary'"
+                    [title]="viewUser.activo ? 'Activo' : 'Inactivo'"></span>
             </div>
           </div>
 
@@ -241,11 +239,10 @@
                     <td><span class="text-truncate" [title]="m.parroquiaNombre">{{ m.parroquiaNombre }}</span></td>
                     <td><span class="text-truncate" [title]="m.cantonNombre">{{ m.cantonNombre }}</span></td>
                     <td><span class="text-truncate" [title]="m.provinciaNombre">{{ m.provinciaNombre }}</span></td>
-                    <td>{{ m.sexo }}</td>
+                    <td><span class="sexo-icon" [title]="m.sexo">{{ getSexoIcono(m.sexo) }}</span></td>
                     <td>
-                      <span [class]="m.cerrada ? 'badge bg-danger' : 'badge bg-success'">
-                        {{ m.cerrada ? 'Cerrada' : 'Abierta' }}
-                      </span>
+                      <span class="estado-icon" [class]="m.cerrada ? 'bi bi-lock-fill text-danger' : 'bi bi-unlock-fill text-success'"
+                            [title]="m.cerrada ? 'Cerrada' : 'Abierta'"></span>
                     </td>
                   </tr>
                 </tbody>

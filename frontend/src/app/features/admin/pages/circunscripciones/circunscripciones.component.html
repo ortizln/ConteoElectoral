@@ -35,9 +35,8 @@
           <td>{{ c.umbralElectoral != null ? c.umbralElectoral + '%' : '0%' }}</td>
           <td><span class="badge bg-secondary">{{ c.metodoAsignacion }}</span></td>
           <td>
-            <span class="badge" [class.bg-success]="c.activa" [class.bg-danger]="!c.activa">
-              {{ c.activa ? 'Sí' : 'No' }}
-            </span>
+            <span class="estado-icon" [class]="c.activa ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-danger'"
+                  [title]="c.activa ? 'Activa' : 'Inactiva'"></span>
           </td>
           <td>
             <div class="dropdown">

@@ -80,6 +80,8 @@
         <th>#</th>
         <th class="sortable" (click)="sort('numero')">Número {{ sortColumn === 'numero' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('institucionNombre')">Institución {{ sortColumn === 'institucionNombre' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
+        <th class="sortable" (click)="sort('cantonNombre')">Cantón {{ sortColumn === 'cantonNombre' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
+        <th class="sortable" (click)="sort('parroquiaNombre')">Parroquia {{ sortColumn === 'parroquiaNombre' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('sexo')">Sexo {{ sortColumn === 'sexo' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('cerrada')">Estado {{ sortColumn === 'cerrada' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('usuarioNombre')">Asignación {{ sortColumn === 'usuarioNombre' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
@@ -91,11 +93,12 @@
         <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
         <td>{{ m.numero }}</td>
         <td>{{ m.institucionNombre }}</td>
-        <td><span class="badge" [class]="m.sexo === 'MIXTA' ? 'bg-info' : m.sexo === 'MASCULINO' ? 'bg-primary' : 'bg-warning'">{{ m.sexo }}</span></td>
+        <td>{{ m.cantonNombre || '-' }}</td>
+        <td>{{ m.parroquiaNombre || '-' }}</td>
+        <td><span class="sexo-icon" [title]="m.sexo">{{ getSexoIcono(m.sexo) }}</span></td>
         <td>
-          <span [class]="m.cerrada ? 'badge bg-danger' : 'badge bg-success'">
-            {{ m.cerrada ? 'CERRADA' : 'ABIERTA' }}
-          </span>
+          <span class="estado-icon" [class]="m.cerrada ? 'bi bi-lock-fill text-danger' : 'bi bi-unlock-fill text-success'"
+                [title]="m.cerrada ? 'CERRADA' : 'ABIERTA'"></span>
         </td>
         <td>
           <span *ngIf="m.usuarioId" class="badge bg-success">
@@ -121,7 +124,7 @@
         </td>
       </tr>
       <tr *ngIf="mesasFiltradas.length === 0">
-        <td colspan="7" class="text-center py-3">No se encontraron registros</td>
+        <td colspan="9" class="text-center py-3">No se encontraron registros</td>
       </tr>
     </tbody>
   </table>

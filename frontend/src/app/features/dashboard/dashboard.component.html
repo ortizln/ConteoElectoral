@@ -475,8 +475,8 @@
               <td><strong>Mesa {{ m.mesaNumero }}</strong> <small class="text-muted">{{ m.sexo || '' }}</small></td>
               <td>{{ m.institucionNombre || '—' }}</td>
               <td>
-                <span *ngIf="m.cerrada" class="badge bg-success">Cerrada</span>
-                <span *ngIf="!m.cerrada" class="badge bg-warning text-dark">Abierta</span>
+                <span class="estado-icon" [class]="m.cerrada ? 'bi bi-lock-fill text-danger' : 'bi bi-unlock-fill text-success'"
+                      [title]="m.cerrada ? 'Cerrada' : 'Abierta'"></span>
               </td>
               <td class="text-right">{{ m.votosCandidatos | number }}</td>
               <td class="text-right">{{ m.votosNulos | number }}</td>
@@ -684,8 +684,8 @@
                   <td>{{ i + 1 }}</td>
                   <td><strong>Mesa {{ m.mesaNumero }}</strong></td>
                   <td>
-                    <span *ngIf="m.cerrada" class="badge bg-success">Cerrada</span>
-                    <span *ngIf="!m.cerrada" class="badge bg-warning text-dark">Abierta</span>
+                    <span class="estado-icon" [class]="m.cerrada ? 'bi bi-lock-fill text-danger' : 'bi bi-unlock-fill text-success'"
+                          [title]="m.cerrada ? 'Cerrada' : 'Abierta'"></span>
                   </td>
                   <td class="text-right">{{ m.votosNulos | number }}</td>
                   <td class="text-right">{{ m.votosBlanco | number }}</td>
@@ -850,7 +850,7 @@
                 <tr *ngFor="let m of mesasCerradasList; let i = index">
                   <td>{{ i + 1 }}</td>
                   <td><strong>{{ m.numero }}</strong></td>
-                  <td>{{ m.sexo }}</td>
+                  <td><span class="sexo-icon" [title]="m.sexo">{{ getSexoIcono(m.sexo) }}</span></td>
                   <td class="col-text-wrap" [title]="m.institucionNombre">{{ m.institucionNombre }}</td>
                   <td class="col-text-wrap" [title]="m.parroquiaNombre">{{ m.parroquiaNombre }}</td>
                   <td class="text-right"><strong>{{ m.totalVotos | number }}</strong></td>

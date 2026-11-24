@@ -118,4 +118,18 @@ export class EscrutinioComponent implements OnInit {
     };
     return map[estado] || 'bg-secondary';
   }
+
+  /** Clases de ícono para el estado (sin texto en la tabla) */
+  getEstadoIcono(estado: string): string {
+    switch ((estado || '').toUpperCase()) {
+      case 'COMPLETADO':
+      case 'APROBADA': return 'bi bi-check-circle-fill text-success';
+      case 'RECHAZADO':
+      case 'RECHAZADA': return 'bi bi-x-circle-fill text-danger';
+      case 'PENDIENTE': return 'bi bi-clock-history text-warning';
+      case 'EN_PROCESO':
+      case 'EN_REVISION': return 'bi bi-arrow-repeat text-info';
+      default: return 'bi bi-question-circle-fill text-secondary';
+    }
+  }
 }

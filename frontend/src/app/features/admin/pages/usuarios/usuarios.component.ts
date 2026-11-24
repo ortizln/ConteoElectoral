@@ -221,6 +221,17 @@ export class UsuariosComponent implements OnInit {
     }
   }
 
+  /** Ícono Unicode para el sexo del mesa (♂ / ♀ / ⚥) */
+  getSexoIcono(sexo: string | undefined | null): string {
+    if (!sexo) return '⚥';
+    switch (sexo.toUpperCase()) {
+      case 'MASCULINO': return '♂';
+      case 'FEMENINO': return '♀';
+      case 'MIXTA': return '⚥';
+      default: return '⚥';
+    }
+  }
+
   readonly roles: { value: string; label: string }[] = [
     { value: 'ADMIN', label: 'ADMIN' },
     { value: 'SUPERVISOR', label: 'SUPERVISOR' },

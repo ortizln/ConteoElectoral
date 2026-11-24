@@ -816,6 +816,17 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     return 'candidato-rank';
   }
 
+  /** Ícono Unicode para el sexo del mesa (♂ / ♀ / ⚥) */
+  getSexoIcono(sexo: string | undefined | null): string {
+    if (!sexo) return '⚥';
+    switch (sexo.toUpperCase()) {
+      case 'MASCULINO': return '♂';
+      case 'FEMENINO': return '♀';
+      case 'MIXTA': return '⚥';
+      default: return '⚥';
+    }
+  }
+
   getRankIcon(r: any, i: number): string {
     if (r.candidatoId === 0) return 'bi-x-circle-fill';
     if (r.candidatoId === -1) return 'bi-square';

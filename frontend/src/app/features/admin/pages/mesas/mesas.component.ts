@@ -309,6 +309,17 @@ export class MesasComponent implements OnInit {
     if (obj[prop]) obj[prop] = obj[prop].toUpperCase();
   }
 
+  /** Ícono Unicode para el sexo del mesa (♂ / ♀ / ⚥) */
+  getSexoIcono(sexo: string | undefined | null): string {
+    if (!sexo) return '⚥';
+    switch (sexo.toUpperCase()) {
+      case 'MASCULINO': return '♂';
+      case 'FEMENINO': return '♀';
+      case 'MIXTA': return '⚥';
+      default: return '⚥';
+    }
+  }
+
   openModal(): void {
     this.editMode = false;
     this.form = { numero: '', sexo: 'MIXTA', institucionId: null, eleccionesId: this.form.eleccionesId };

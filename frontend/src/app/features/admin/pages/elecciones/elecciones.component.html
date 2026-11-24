@@ -41,9 +41,8 @@
         <td>{{ e.fechaInicio | date:'shortDate' }}</td>
         <td>{{ e.fechaFin | date:'shortDate' }}</td>
         <td>
-          <span [class]="e.activa ? 'badge bg-success' : 'badge bg-secondary'">
-            {{ e.activa ? 'Activa' : 'Inactiva' }}
-          </span>
+          <span class="estado-icon" [class]="e.activa ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-secondary'"
+                [title]="e.activa ? 'Activa' : 'Inactiva'"></span>
         </td>
         <td>
           <div class="dropdown">

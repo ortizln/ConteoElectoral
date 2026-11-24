@@ -95,6 +95,33 @@ body {
   border-radius: 6px;
 }
 
+/* ============================================================
+   ICONOS DE ESTADO / SEXO EN TABLAS (sin texto)
+   ============================================================ */
+.estado-icon,
+.sexo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 15px;
+  line-height: 1;
+  border-radius: 4px;
+  cursor: default;
+}
+.estado-icon i,
+.sexo-icon i {
+  font-size: 15px;
+}
+.sexo-icon {
+  font-size: 16px;
+  font-weight: 700;
+}
+.sexo-icon[title="MASCULINO"] { color: #0d6efd; }
+.sexo-icon[title="FEMENINO"] { color: #dc3545; }
+.sexo-icon[title="MIXTA"] { color: #0dcaf0; }
+
 .page-header {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
