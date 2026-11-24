@@ -32,6 +32,7 @@ export class MesasComponent implements OnInit {
   sortDirection: string = 'asc';
   searchText: string = '';
   soloAsignadas: boolean = false;
+  soloNoAsignadas: boolean = false;
   currentPage: number = 1;
   pageSize: number = 10;
   pageSizes: number[] = [5, 10, 25, 50];
@@ -50,6 +51,14 @@ export class MesasComponent implements OnInit {
   buscarInstitucionText: string = '';
   institucionesCargadas = false;
   zonasCargadas = false;
+
+  // Geographic filters for table (list view)
+  provinciasTabla: Provincia[] = [];
+  cantonesTabla: Canton[] = [];
+  parroquiasTabla: Parroquia[] = [];
+  filterTablaProvinciaId: number | null = null;
+  filterTablaCantonId: number | null = null;
+  filterTablaParroquiaId: number | null = null;
 
   constructor(public api: ApiService) {}
 
@@ -73,6 +82,10 @@ export class MesasComponent implements OnInit {
         this.load(e[0].id);
       }
     });
+    // Geografía para filtros de tabla
+    this.api.getProvincias().subscribe((d: Provincia[]) => this.provinciasTabla = d);
+    this.api.getCantones().subscribe((d: Canton[]) => this.cantonesTabla = d);
+    this.api.getParroquias().subscribe((d: Parroquia[]) => this.parroquiasTabla = d);
   }
 
   get filteredInstituciones(): InstitucionEducativa[] {
@@ -96,6 +109,29 @@ export class MesasComponent implements OnInit {
 
   filtrarPorInstitucion(): void {
     if (this.form.eleccionesId) this.load(this.form.eleccionesId);
+    this.currentPage = 1;
+  }
+
+  /** Cantones disponibles según la provincia seleccionada en la tabla */
+  get cantonesTablaFiltrados(): Canton[] {
+    if (!this.filterTablaProvinciaId) return this.cantonesTabla;
+    return this.cantonesTabla.filter(c => Number(c.provinciaId) === Number(this.filterTablaProvinciaId));
+  }
+
+  /** Parroquias disponibles según el cantón seleccionado en la tabla */
+  get parroquiasTablaFiltradas(): Parroquia[] {
+    if (!this.filterTablaCantonId) return this.parroquiasTabla;
+    return this.parroquiasTabla.filter(p => Number(p.cantonId) === Number(this.filterTablaCantonId));
+  }
+
+  onTablaProvinciaChange(): void {
+    this.filterTablaCantonId = null;
+    this.filterTablaParroquiaId = null;
+    this.currentPage = 1;
+  }
+
+  onTablaCantonChange(): void {
+    this.filterTablaParroquiaId = null;
     this.currentPage = 1;
   }
 
@@ -190,9 +226,23 @@ export class MesasComponent implements OnInit {
 
   get mesasFiltradas(): Mesa[] {
     let result = this.mesasOrdenadas;
+    // Filtro por asignadas / no asignadas
     if (this.soloAsignadas) {
       result = result.filter(m => m.usuarioId != null);
+    } else if (this.soloNoAsignadas) {
+      result = result.filter(m => m.usuarioId == null);
     }
+    // Filtro por territorio (provincia / canton / parroquia)
+    if (this.filterTablaProvinciaId) {
+      result = result.filter(m => Number(m.provinciaId) === Number(this.filterTablaProvinciaId));
+    }
+    if (this.filterTablaCantonId) {
+      result = result.filter(m => Number(m.cantonId) === Number(this.filterTablaCantonId));
+    }
+    if (this.filterTablaParroquiaId) {
+      result = result.filter(m => Number(m.parroquiaId) === Number(this.filterTablaParroquiaId));
+    }
+    // Filtro por texto
     if (!this.searchText) return result;
     const term = this.searchText.toLowerCase();
     return result.filter(item =>
@@ -200,23 +250,19 @@ export class MesasComponent implements OnInit {
     );
   }
 
-  /** Mesas con miembro asignado en la elección actualmente cargada. */
-  get mesasAsignadas(): Mesa[] {
-    return this.mesas.filter(m => m.usuarioId != null);
-  }
-
-  /** Reporte Excel de mesas asignadas (todas las de la elección cargada). */
+  /** Reporte Excel de asignaciones respetando los filtros activos de la tabla. */
   exportarAsignadasExcel(): void {
-    const asignadas = this.mesasAsignadas;
-    if (asignadas.length === 0) {
-      alert('No hay mesas asignadas en la elección seleccionada.');
+    const mesas = this.mesasFiltradas;
+    if (mesas.length === 0) {
+      alert('No hay mesas para exportar con los filtros actuales.');
       return;
     }
     const data: any[][] = [
-      ['Elección', 'N° Mesa', 'Miembro asignado', 'Institución / Recinto', 'Parroquia', 'Cantón', 'Provincia', 'Sexo', 'Estado'],
-      ...asignadas.map(m => [
+      ['Elección', 'N° Mesa', 'Asignación', 'Miembro asignado', 'Institución / Recinto', 'Parroquia', 'Cantón', 'Provincia', 'Sexo', 'Estado'],
+      ...mesas.map(m => [
         this.elecciones.find(e => e.id === m.eleccionesId)?.nombre ?? '',
         m.numero,
+        m.usuarioId ? 'ASIGNADA' : 'SIN ASIGNAR',
         m.usuarioNombre || '',
         m.institucionNombre || '',
         m.parroquiaNombre || '',
@@ -227,10 +273,10 @@ export class MesasComponent implements OnInit {
       ])
     ];
     const ws = XLSX.utils.aoa_to_sheet(data);
-    ws['!cols'] = [{ wch: 28 }, { wch: 10 }, { wch: 30 }, { wch: 40 }, { wch: 22 }, { wch: 18 }, { wch: 18 }, { wch: 12 }, { wch: 12 }];
+    ws['!cols'] = [{ wch: 28 }, { wch: 10 }, { wch: 14 }, { wch: 30 }, { wch: 40 }, { wch: 22 }, { wch: 18 }, { wch: 18 }, { wch: 12 }, { wch: 12 }];
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Mesas asignadas');
-    XLSX.writeFile(wb, 'mesas_asignadas.xlsx');
+    XLSX.utils.book_append_sheet(wb, ws, 'Asignaciones');
+    XLSX.writeFile(wb, 'reporte_asignaciones_mesas.xlsx');
   }
 
   get mesasPaginadas(): Mesa[] {

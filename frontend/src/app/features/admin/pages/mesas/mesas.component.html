@@ -10,7 +10,7 @@
         <li><hr class="dropdown-divider"></li>
         <li><button class="dropdown-item" (click)="api.exportMesasPdf()"><i class="bi bi-printer"></i> Imprimir PDF</button></li>
         <li><button class="dropdown-item" (click)="api.exportMesasExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> Exportar Excel</button></li>
-        <li><button class="dropdown-item fw-bold" (click)="exportarAsignadasExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> Reporte de mesas asignadas</button></li>
+        <li><button class="dropdown-item fw-bold" (click)="exportarAsignadasExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> Reporte de Asignaciones</button></li>
       </ul>
     </div>
   </div>
@@ -35,14 +35,41 @@
       </datalist>
     </div>
     <div class="filter-item">
+      <label>Provincia:</label>
+      <select class="form-select" [(ngModel)]="filterTablaProvinciaId" (change)="onTablaProvinciaChange()">
+        <option [ngValue]="null">Todas</option>
+        <option *ngFor="let p of provinciasTabla" [ngValue]="p.id">{{ p.nombre }}</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label>Cantón:</label>
+      <select class="form-select" [(ngModel)]="filterTablaCantonId" (change)="onTablaCantonChange()" [disabled]="!filterTablaProvinciaId">
+        <option [ngValue]="null">Todos</option>
+        <option *ngFor="let c of cantonesTablaFiltrados" [ngValue]="c.id">{{ c.nombre }}</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label>Parroquia:</label>
+      <select class="form-select" [(ngModel)]="filterTablaParroquiaId" (change)="currentPage = 1" [disabled]="!filterTablaCantonId">
+        <option [ngValue]="null">Todas</option>
+        <option *ngFor="let p of parroquiasTablaFiltradas" [ngValue]="p.id">{{ p.nombre }}</option>
+      </select>
+    </div>
+    <div class="filter-item">
       <label>Buscar:</label>
       <input type="text" class="form-control" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
     </div>
     <div class="filter-item">
-      <label>Identificativo:</label>
-      <div class="form-check form-switch mt-1">
-        <input class="form-check-input" type="checkbox" id="soloAsignadas" [(ngModel)]="soloAsignadas" (change)="currentPage = 1">
-        <label class="form-check-label" for="soloAsignadas">Solo mesas asignadas</label>
+      <label>Asignación:</label>
+      <div class="d-flex flex-column gap-1 mt-1">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="soloAsignadas" [(ngModel)]="soloAsignadas" (change)="currentPage = 1">
+          <label class="form-check-label" for="soloAsignadas">Solo asignadas</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="soloNoAsignadas" [(ngModel)]="soloNoAsignadas" (change)="currentPage = 1">
+          <label class="form-check-label" for="soloNoAsignadas">Solo no asignadas</label>
+        </div>
       </div>
     </div>
   </app-filtros-panel>
