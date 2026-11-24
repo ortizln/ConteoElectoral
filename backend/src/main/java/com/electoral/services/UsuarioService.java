@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ public class UsuarioService {
     private final PasswordEncoder passwordEncoder;
     private final AuditoriaService auditoriaService;
     private final SecurityUtil securityUtil;
+    private final MesaService mesaService;
 
     public List<UsuarioResponse> getAllUsuarios() {
         return usuarioRepository.findAll().stream()
@@ -161,5 +163,37 @@ public class UsuarioService {
                 .rol(usuario.getRol().getNombre())
                 .activo(usuario.getActivo())
                 .build();
+    }
+
+    /**
+     * Devuelve usuarios con rol MIEMBRO_MESA y sus mesas asignadas (con datos de recinto
+     * denormalizados: institución, parroquia, cantón, provincia) para reporte Excel.
+     */
+    public List<UsuarioMesaAsignadaDTO> getUsuariosConMesasAsignadas(Long eleccionId) {
+        List<UsuarioMesaAsignadaDTO> resultado = new ArrayList<>();
+        List<UsuarioResponse> usuarios = getUsuariosByRol("MIEMBRO_MESA");
+        for (UsuarioResponse u : usuarios) {
+            List<MesaResponse> mesas = mesaService.getMesasByUsuario(u.getId(), eleccionId);
+            for (MesaResponse m : mesas) {
+                resultado.add(UsuarioMesaAsignadaDTO.builder()
+                        .usuarioId(u.getId())
+                        .username(u.getUsername())
+                        .nombre(u.getNombre())
+                        .apellido(u.getApellido())
+                        .email(u.getEmail())
+                        .rol(u.getRol())
+                        .activo(u.getActivo())
+                        .mesaId(m.getId())
+                        .numeroMesa(m.getNumero())
+                        .sexo(m.getSexo())
+                        .institucionNombre(m.getInstitucionNombre())
+                        .parroquiaNombre(m.getParroquiaNombre())
+                        .cantonNombre(m.getCantonNombre())
+                        .provinciaNombre(m.getProvinciaNombre())
+                        .cerrada(m.getCerrada())
+                        .build());
+            }
+        }
+        return resultado;
     }
 }

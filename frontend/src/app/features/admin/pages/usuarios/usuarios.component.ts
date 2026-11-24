@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
-import { Usuario } from '../../../../core/models';
+import { Usuario, Eleccion } from '../../../../core/models';
 import { FiltrosPanelComponent } from '../../../shared/components/filtros-panel/filtros-panel.component';
 
 @Component({
@@ -14,6 +14,7 @@ import { FiltrosPanelComponent } from '../../../shared/components/filtros-panel/
 })
 export class UsuariosComponent implements OnInit {
   usuarios: Usuario[] = [];
+  eleccionActivaId: number | null = null;
   showModal = false;
   showResetModal = false;
   editingUser: Usuario | null = null;
@@ -33,7 +34,14 @@ export class UsuariosComponent implements OnInit {
 
   constructor(public api: ApiService) {}
 
-  ngOnInit(): void { this.load(); }
+  ngOnInit(): void {
+    this.load();
+    this.api.getEleccionesActivas().subscribe((elecciones: Eleccion[]) => {
+      if (elecciones.length > 0) {
+        this.eleccionActivaId = elecciones[0].id;
+      }
+    });
+  }
 
   load(): void {
     const obs = this.filterRol
@@ -43,6 +51,14 @@ export class UsuariosComponent implements OnInit {
   }
 
   filtrarPorRol(): void { this.load(); this.currentPage = 1; }
+
+  exportarUsuariosMesasExcel(): void {
+    if (!this.eleccionActivaId) {
+      alert('No se pudo determinar la elección activa. Intente de nuevo.');
+      return;
+    }
+    this.api.exportUsuariosMesasExcel(this.eleccionActivaId);
+  }
 
   sort(column: string): void {
     if (this.sortColumn === column) {

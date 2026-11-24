@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UsuarioController {
     private final UsuarioService usuarioService;
+    private final MesaService mesaService;
     private final ExcelExportService excelExportService;
     private final PdfExportService pdfExportService;
 
@@ -93,5 +94,26 @@ public class UsuarioController {
         httpHeaders.setContentType(MediaType.APPLICATION_PDF);
         httpHeaders.setContentDispositionFormData("attachment", "usuarios.pdf");
         return ResponseEntity.ok().headers(httpHeaders).body(pdf);
+    }
+
+    @GetMapping("/exportar-mesas-excel")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<byte[]> exportarUsuariosMesasExcel(
+            @RequestParam(required = false) Long eleccionId) {
+        List<UsuarioMesaAsignadaDTO> datos = usuarioService.getUsuariosConMesasAsignadas(eleccionId);
+        String[] headers = {"Usuario", "Username", "Nombre", "Apellido", "Email", "Rol", "Activo",
+                "N° Mesa", "Sexo", "Institución / Recinto", "Parroquia", "Cantón", "Provincia", "Estado"};
+        List<String[]> data = datos.stream()
+                .map(d -> new String[]{d.getUsername(), d.getUsername(), d.getNombre(),
+                        d.getApellido(), d.getEmail(), d.getRol(), d.getActivo() ? "Si" : "No",
+                        d.getNumeroMesa(), d.getSexo(), d.getInstitucionNombre(),
+                        d.getParroquiaNombre(), d.getCantonNombre(), d.getProvinciaNombre(),
+                        d.getCerrada() ? "CERRADA" : "ABIERTA"})
+                .collect(Collectors.toList());
+        byte[] excel = excelExportService.exportExcel("Usuarios Mesas Asignadas", headers, data);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        httpHeaders.setContentDispositionFormData("attachment", "usuarios_mesas_asignadas.xlsx");
+        return ResponseEntity.ok().headers(httpHeaders).body(excel);
     }
 }

@@ -441,6 +441,13 @@ export class ApiService {
   exportUsuariosPdf(): void { this.exportPdf(`${this.API_URL}/usuarios/exportar-pdf`, 'usuarios.pdf'); }
   exportUsuariosExcel(): void { this.exportExcel(`${this.API_URL}/usuarios/exportar-excel`, 'usuarios.xlsx'); }
 
+  // Export Usuarios con mesas asignadas (reporte de miembros de mesa y sus mesas/recintos)
+  exportUsuariosMesasExcel(eleccionId?: number): void {
+    let url = `${this.API_URL}/usuarios/exportar-mesas-excel`;
+    if (eleccionId) url += `?eleccionId=${eleccionId}`;
+    this.exportExcel(url, 'usuarios_mesas_asignadas.xlsx');
+  }
+
   // Export Dashboard
   exportDashboardPdf(eleccionId: number, filtros?: any): void {
     let url = `${this.API_URL}/dashboard/eleccion/${eleccionId}/exportar-pdf`;
