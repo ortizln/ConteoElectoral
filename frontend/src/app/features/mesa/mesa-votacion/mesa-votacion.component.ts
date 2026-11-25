@@ -587,6 +587,62 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     return this.nulosBlancosPorCargo.reduce((s, f) => s + (f.blancos || 0), 0);
   }
 
+  /** Votos de la pestaña activa (Alcalde, Consejal Urbano/Rural, Junta). */
+  get votosFiltrados(): VotoConIndice[] {
+    const categoria = this.categoriaSel;
+    if (!categoria) return this.votosRegistrados;
+    return this.votosRegistrados.filter(v => this.categoriaVoto(v) === categoria);
+  }
+
+  get totalVotosFiltrados(): number {
+    return this.votosFiltrados.reduce((s, v) => s + (v.cantidadVotos || 0), 0);
+  }
+
+  get totalNulosCategoria(): number {
+    if (!this.categoriaSel) return this.totalNulosGlobal;
+    return this.nulosBlancosPorCargo
+      .filter(f => this.cargoIdsCategoriaSel.includes(f.cargoId))
+      .reduce((s, f) => s + (f.nulos || 0), 0);
+  }
+
+  get totalBlancosCategoria(): number {
+    if (!this.categoriaSel) return this.totalBlancosGlobal;
+    return this.nulosBlancosPorCargo
+      .filter(f => this.cargoIdsCategoriaSel.includes(f.cargoId))
+      .reduce((s, f) => s + (f.blancos || 0), 0);
+  }
+
+  /** Cargo al que pertenece un voto, para poder filtrarlo por pestaña. */
+  private categoriaVoto(v: Voto): string | null {
+    if (v.candidatoId != null) {
+      const candidato = this.candidatos.find(c => c.id === v.candidatoId);
+      return candidato?.cargoNombre ? this.categoriaDe(candidato.cargoNombre) : null;
+    }
+    if (v.listaId != null) {
+      const lista = this.listas.find(l => l.id === v.listaId);
+      const cargoNombre = lista?.cargoNombre ||
+        this.candidatos.find(c => c.listaId === v.listaId)?.cargoNombre;
+      return cargoNombre ? this.categoriaDe(cargoNombre) : null;
+    }
+    return null;
+  }
+
+  nombreListaDeVoto(v: Voto): string {
+    if (v.listaId == null) return '';
+    return this.listas.find(l => l.id === v.listaId)?.nombre || `Lista #${v.listaId}`;
+  }
+
+  partidoDeVoto(v: Voto): string {
+    if (v.partidoNombre) return v.partidoNombre;
+    if (v.listaId != null) {
+      return this.listas.find(l => l.id === v.listaId)?.partidoNombre || '';
+    }
+    if (v.candidatoId != null) {
+      return this.candidatos.find(c => c.id === v.candidatoId)?.partidoNombre || '';
+    }
+    return '';
+  }
+
   incrementarNulos(): void {
     this.nulosCargoSel = this.nulosCargoSel + 1;
   }

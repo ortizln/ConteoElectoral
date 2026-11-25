@@ -47,6 +47,9 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
   Timer? _nulosDebounce;
   Timer? _blancoDebounce;
 
+  /// Evita que un doble tap (o dos llamadas simultáneas) registre el mismo voto dos veces.
+  bool _registrandoVoto = false;
+
   List<Candidato> _candidatos = [];
   List<Partido> _partidos = [];
   List<Cargo> _cargos = [];
@@ -539,48 +542,58 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> registrarVoto(Candidato candidato, int cantidad, {int? listaId}) async {
-    if (_mesaActual == null) return;
+    // Un doble tap puede disparar dos llamadas antes de que _recargarVotos()
+    // actualice la caché; el candado evita crear dos filas locales.
+    if (_registrandoVoto || _mesaActual == null) return;
+    _registrandoVoto = true;
+    try {
+      final isListaCargo = listaId != null || _isCargoLista(candidato.cargoId);
+      final targetListaId = listaId ?? candidato.listaId;
 
-    final isListaCargo = listaId != null || _isCargoLista(candidato.cargoId);
-    final targetListaId = listaId ?? candidato.listaId;
+      if (isListaCargo && targetListaId != null) {
+        await _registrarVotoLista(targetListaId, cantidad);
+        return;
+      }
 
-    if (isListaCargo && targetListaId != null) {
-      await _registrarVotoLista(targetListaId, cantidad);
-      return;
-    }
-
-    final existente = _votosMesa.cast<Voto?>().firstWhere(
-      (v) => v?.candidatoId == candidato.id,
-      orElse: () => null,
-    );
-
-    Voto voto;
-    if (existente != null) {
-      // El valor ingresado reemplaza al registrado (edición absoluta).
-      voto = existente.copyWith(cantidadVotos: cantidad);
-      await _db.actualizarVoto(existente.id!, voto);
-    } else {
-      voto = Voto(
-        candidatoId: candidato.id,
-        mesaId: _mesaActual!.id,
-        cantidadVotos: cantidad,
-        eleccionesId: _mesaActual!.eleccionesId,
+      // Releer de la BD: la caché puede estar desactualizada si el usuario
+      // tocó Registrar dos veces seguidas.
+      final votosActuales = await _db.getVotosByMesa(_mesaActual!.id);
+      final existente = votosActuales.cast<Voto?>().firstWhere(
+        (v) => v?.candidatoId == candidato.id,
+        orElse: () => null,
       );
-      final newId = await _db.guardarVoto(voto);
-      voto = voto.copyWith(id: newId);
-    }
 
-    await _sync.enqueueVoto(voto);
-    await _recargarVotos();
-    await _refreshSyncCounts();
+      Voto voto;
+      if (existente != null) {
+        // El valor ingresado reemplaza al registrado (edición absoluta).
+        voto = existente.copyWith(cantidadVotos: cantidad, sincronizado: false);
+        await _db.actualizarVoto(existente.id!, voto);
+      } else {
+        voto = Voto(
+          candidatoId: candidato.id,
+          mesaId: _mesaActual!.id,
+          cantidadVotos: cantidad,
+          eleccionesId: _mesaActual!.eleccionesId,
+        );
+        final newId = await _db.guardarVoto(voto);
+        voto = voto.copyWith(id: newId);
+      }
 
-    if (_isOnline) {
-      await sincronizarVotos();
+      await _sync.enqueueVoto(voto);
+      await _recargarVotos();
+      await _refreshSyncCounts();
+
+      if (_isOnline) {
+        await sincronizarVotos();
+      }
+    } finally {
+      _registrandoVoto = false;
     }
   }
 
   Future<void> _registrarVotoLista(int listaId, int cantidad) async {
-    final existente = _votosMesa.cast<Voto?>().firstWhere(
+    final votosActuales = await _db.getVotosByMesa(_mesaActual!.id);
+    final existente = votosActuales.cast<Voto?>().firstWhere(
       (v) => v?.listaId == listaId && v?.candidatoId == null,
       orElse: () => null,
     );
@@ -588,7 +601,7 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     Voto voto;
     if (existente != null) {
       // El valor ingresado reemplaza al registrado (edición absoluta).
-      voto = existente.copyWith(cantidadVotos: cantidad);
+      voto = existente.copyWith(cantidadVotos: cantidad, sincronizado: false);
       await _db.actualizarVoto(existente.id!, voto);
     } else {
       voto = Voto(
@@ -620,7 +633,13 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<void> registrarVotosLista(int listaId, List<Candidato> candidatos, int cantidad) async {
-    await _registrarVotoLista(listaId, cantidad);
+    if (_registrandoVoto || _mesaActual == null) return;
+    _registrandoVoto = true;
+    try {
+      await _registrarVotoLista(listaId, cantidad);
+    } finally {
+      _registrandoVoto = false;
+    }
   }
 
   Future<void> _recargarVotos() async {

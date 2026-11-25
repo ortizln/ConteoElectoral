@@ -232,7 +232,8 @@
       <div class="card-header">
         <h3><i class="bi bi-clipboard-data"></i> Votos Registrados</h3>
         <div class="card-header-actions">
-          <span class="total-votos-badge">Total: <strong>{{ totalVotos }}</strong></span>
+          <small class="cargo-contexto" *ngIf="categoriaSel">{{ categoriaSel }}</small>
+          <span class="total-votos-badge">Total: <strong>{{ totalVotosFiltrados }}</strong></span>
         </div>
       </div>
 
@@ -360,7 +361,8 @@
     <div class="drawer-handle"></div>
     <div class="drawer-header">
       <h3><i class="bi bi-clipboard-data"></i> Votos Registrados</h3>
-      <span class="total-votos-badge">Total: <strong>{{ totalVotos }}</strong></span>
+      <small class="cargo-contexto" *ngIf="categoriaSel">{{ categoriaSel }}</small>
+      <span class="total-votos-badge">Total: <strong>{{ totalVotosFiltrados }}</strong></span>
       <button class="drawer-close" (click)="showVotosPanel = false" aria-label="Cerrar">
         <i class="bi bi-x-lg"></i>
       </button>
@@ -399,36 +401,36 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let v of votosRegistrados; let i = index">
+          <tr *ngFor="let v of votosFiltrados; let i = index">
             <td><span class="row-num">{{ i + 1 }}</span></td>
-            <td>{{ v.candidatoNombre ? (v.candidatoNombre + ' ' + (v.candidatoApellido || '')) : (v.listaId ? 'Lista #' + v.listaId : '—') }}</td>
-            <td><span class="partido-tag" [title]="v.partidoNombre || ''">{{ siglaDe(v.partidoNombre) }}</span></td>
+            <td>{{ v.candidatoNombre ? (v.candidatoNombre + ' ' + (v.candidatoApellido || '')) : nombreListaDeVoto(v) }}</td>
+            <td><span class="partido-tag" [title]="partidoDeVoto(v)">{{ siglaDe(partidoDeVoto(v)) }}</span></td>
             <td class="text-right"><strong class="voto-count">{{ v.cantidadVotos }}</strong></td>
             <td *ngIf="!mesaActual?.cerrada" class="text-right">
               <button class="btn btn-eliminar" (click)="eliminarVoto(v.id)"><i class="bi bi-x-lg"></i></button>
             </td>
           </tr>
-          <tr *ngIf="votosRegistrados.length === 0">
-            <td colspan="5" class="empty-msg">No hay votos registrados aún</td>
+          <tr *ngIf="votosFiltrados.length === 0">
+            <td colspan="5" class="empty-msg">No hay votos registrados para {{ categoriaSel || 'esta mesa' }}</td>
           </tr>
           <tr class="stats-nulos-row">
             <td><span class="row-num">—</span></td>
             <td>
               <span class="nulos-label"><i class="bi bi-check2-square"></i> Votos Nulos</span>
-              <small class="cargo-contexto">Estadística general</small>
+              <small class="cargo-contexto">{{ categoriaSel || 'Estadística general' }}</small>
             </td>
             <td>—</td>
-            <td class="text-right"><strong class="voto-count-nulos">{{ totalNulosGlobal }}</strong></td>
+            <td class="text-right"><strong class="voto-count-nulos">{{ totalNulosCategoria }}</strong></td>
             <td *ngIf="!mesaActual?.cerrada"></td>
           </tr>
           <tr class="stats-blanco-row">
             <td><span class="row-num">—</span></td>
             <td>
               <span class="blanco-label"><i class="bi bi-square"></i> Votos en Blanco</span>
-              <small class="cargo-contexto">Estadística general</small>
+              <small class="cargo-contexto">{{ categoriaSel || 'Estadística general' }}</small>
             </td>
             <td>—</td>
-            <td class="text-right"><strong class="voto-count-blanco">{{ totalBlancosGlobal }}</strong></td>
+            <td class="text-right"><strong class="voto-count-blanco">{{ totalBlancosCategoria }}</strong></td>
             <td *ngIf="!mesaActual?.cerrada"></td>
           </tr>
         </tbody>

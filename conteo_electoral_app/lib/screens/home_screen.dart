@@ -318,29 +318,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         contentPadding:
                                             const EdgeInsets.symmetric(
                                                 horizontal: 16, vertical: 4),
-                                        leading: Container(
-                                          width: 44,
-                                          height: 44,
-                                          decoration: BoxDecoration(
-                                            color: m.cerrada
-                                                ? AppColors.error
-                                                    .withValues(alpha: 0.1)
-                                                : AppColors.success
-                                                    .withValues(alpha: 0.1),
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                          ),
-                                          child: Center(
-                                            child: Text(m.numero,
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: m.cerrada
-                                                      ? AppColors.error
-                                                      : AppColors.success,
-                                                  fontSize: 16,
-                                                )),
-                                          ),
-                                        ),
+                                        leading: _mesaLeading(m),
                                         isThreeLine: true,
                                         title: Text(
                                           'Mesa ${m.numero}',
@@ -457,6 +435,50 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
         );
       },
+    );
+  }
+
+  /// Azul para mesas masculinas, rosa para femeninas (y gris si no hay dato).
+  Color _colorSexo(String sexo) {
+    final s = sexo.toUpperCase();
+    if (s.contains('FEM')) return Colors.pink;
+    if (s.contains('MASC')) return Colors.blue;
+    return AppColors.gray;
+  }
+
+  IconData _iconoSexo(String sexo) {
+    final s = sexo.toUpperCase();
+    if (s.contains('FEM')) return Icons.female;
+    if (s.contains('MASC')) return Icons.male;
+    return Icons.help_outline;
+  }
+
+  Widget _mesaLeading(Mesa m) {
+    final color = _colorSexo(m.sexo);
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              m.numero,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: color,
+                fontSize: 14,
+                height: 1.1,
+              ),
+            ),
+            Icon(_iconoSexo(m.sexo), size: 13, color: color),
+          ],
+        ),
+      ),
     );
   }
 

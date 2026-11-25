@@ -38,6 +38,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
   String? _categoriaSel;
   bool _pendingCategoriaDefault = false;
   int _fotosCount = 0;
+  /// Bloquea el botón mientras se guarda para evitar doble registro por doble tap.
+  bool _registrando = false;
 
   static const _categoriasOrden = [
     'Alcalde',
@@ -214,13 +216,15 @@ class _VotacionScreenState extends State<VotacionScreen> {
 
   int _getVotosLista(int listaId) {
     final provider = context.read<AppProvider>();
-    final candidatos = _agrupadosPorLista[listaId] ?? [];
-    final perCandidate = candidatos.fold(0, (sum, c) => sum + provider.getVotosCandidato(c));
     final listVoto = provider.votosMesa.cast<Voto?>().firstWhere(
       (v) => v?.listaId == listaId && v?.candidatoId == null,
       orElse: () => null,
     );
-    return perCandidate + (listVoto?.cantidadVotos ?? 0);
+    // El voto de lista manda. Solo se suman votos individuales heredados
+    // cuando no existe aún el voto de lista (evita contar dos veces lo mismo).
+    if (listVoto != null) return listVoto.cantidadVotos;
+    final candidatos = _agrupadosPorLista[listaId] ?? [];
+    return candidatos.fold(0, (sum, c) => sum + provider.getVotosCandidato(c));
   }
 
   /// Votos ya registrados para la postulación seleccionada.
@@ -234,32 +238,45 @@ class _VotacionScreenState extends State<VotacionScreen> {
   }
 
   Future<void> _registrar() async {
+    if (_registrando) return;
     final cantidad = int.tryParse(_cantidadCtrl.text) ?? 1;
     if (cantidad <= 0) return;
 
     final provider = context.read<AppProvider>();
-
-    if (_selectedListaId != null) {
-      await provider.registrarVotosLista(
-          _selectedListaId!, _selectedListaCandidates, cantidad);
-    } else if (_selected != null) {
-      await provider.registrarVoto(_selected!, cantidad);
-    } else {
+    if (provider.mesaActual?.cerrada == true) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('La mesa está cerrada; no se pueden registrar votos'),
+        ));
+      }
       return;
     }
 
-    setState(() {
-      _selected = null;
-      _selectedListaId = null;
-      _selectedListaCandidates = [];
-      _cantidadCtrl.text = '1';
-    });
+    setState(() => _registrando = true);
+    try {
+      if (_selectedListaId != null) {
+        await provider.registrarVotosLista(
+            _selectedListaId!, _selectedListaCandidates, cantidad);
+      } else if (_selected != null) {
+        await provider.registrarVoto(_selected!, cantidad);
+      } else {
+        return;
+      }
 
-    if (mounted) {
+      if (!mounted) return;
+      setState(() {
+        _selected = null;
+        _selectedListaId = null;
+        _selectedListaCandidates = [];
+        _cantidadCtrl.text = '1';
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Voto registrado'),
         duration: Duration(seconds: 1),
       ));
+    } finally {
+      if (mounted) setState(() => _registrando = false);
     }
   }
 
@@ -1346,11 +1363,13 @@ class _VotacionScreenState extends State<VotacionScreen> {
                             ),
                             const Spacer(),
                             ElevatedButton.icon(
-                              onPressed: _registrar,
+                              onPressed: _registrando ? null : _registrar,
                               icon: const Icon(Icons.how_to_vote, size: 20),
-                              label: Text(_selectedListaId != null
-                                  ? 'Votar Lista'
-                                  : 'Registrar'),
+                              label: Text(_registrando
+                                  ? 'Registrando...'
+                                  : (_selectedListaId != null
+                                      ? 'Votar Lista'
+                                      : 'Registrar')),
                               style: ElevatedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 28, vertical: 14),
