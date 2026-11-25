@@ -156,9 +156,21 @@
                 <td><span class="partido-tag" [style.background]="(l.colorPartido || '#666') + '20'" [style.color]="l.colorPartido || '#666'" [title]="l.partidoNombre || ''">{{ l.partidoSigla || l.partidoNombre || 'Independiente' }}</span></td>
                 <td class="cargo-cell">{{ l.cargoNombre || '—' }}</td>
                 <td class="text-right">
-                  <button *ngIf="!mesaActual?.cerrada" class="btn btn-seleccionar" (click)="abrirListaModal(l)">
-                    Ver
-                  </button>
+                  <ng-container *ngIf="!mesaActual?.cerrada">
+                    <div *ngIf="listaSeleccionada?.id === l.id; else accionesLista" class="voto-input-group">
+                      <input type="number" class="voto-input" #cantidadListaInput
+                             [(ngModel)]="cantidadLista" min="1"
+                             (keyup.enter)="registrarVotoLista()">
+                      <button class="btn btn-registrar" (click)="registrarVotoLista()">Registrar</button>
+                      <button class="btn btn-cancelar" (click)="cancelarSeleccionLista()">Cancelar</button>
+                    </div>
+                    <ng-template #accionesLista>
+                      <div class="acciones-lista">
+                        <button class="btn btn-seleccionar" (click)="seleccionarLista(l)">Votar</button>
+                        <button class="btn btn-ver" (click)="abrirListaModal(l)">Ver</button>
+                      </div>
+                    </ng-template>
+                  </ng-container>
                 </td>
               </tr>
               <tr *ngIf="listasFiltradas.length === 0">
@@ -209,6 +221,11 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Nulos/blancos debajo de la tabla de candidatos, consejales o juntas -->
+      <div class="nulos-blancos-panel" *ngIf="mesaActual">
+        <ng-container *ngTemplateOutlet="nulosBlancosTpl"></ng-container>
+      </div>
     </div>
 
     <div class="card votos-card">
@@ -256,15 +273,6 @@
           </table>
           <div *ngIf="!listaLlamada?.candidatos || listaLlamada!.candidatos!.length === 0" class="empty-msg">
             Cargando candidatos...
-          </div>
-          <div class="voto-lista-section" *ngIf="!mesaActual?.cerrada">
-            <label>Cantidad de votos para toda la lista:</label>
-            <div class="voto-lista-controls">
-              <button class="btn-nulos-minus" (click)="decrementarCantidadLista()">−</button>
-              <input type="number" class="voto-input" [(ngModel)]="cantidadLista" min="1">
-              <button class="btn-nulos-plus" (click)="incrementarCantidadLista()">+</button>
-              <button class="btn btn-registrar" (click)="votarLista()">Votar Lista</button>
-            </div>
           </div>
         </div>
       </div>
@@ -403,6 +411,26 @@
           <tr *ngIf="votosRegistrados.length === 0">
             <td colspan="5" class="empty-msg">No hay votos registrados aún</td>
           </tr>
+          <tr class="stats-nulos-row">
+            <td><span class="row-num">—</span></td>
+            <td>
+              <span class="nulos-label"><i class="bi bi-check2-square"></i> Votos Nulos</span>
+              <small class="cargo-contexto">Estadística general</small>
+            </td>
+            <td>—</td>
+            <td class="text-right"><strong class="voto-count-nulos">{{ totalNulosGlobal }}</strong></td>
+            <td *ngIf="!mesaActual?.cerrada"></td>
+          </tr>
+          <tr class="stats-blanco-row">
+            <td><span class="row-num">—</span></td>
+            <td>
+              <span class="blanco-label"><i class="bi bi-square"></i> Votos en Blanco</span>
+              <small class="cargo-contexto">Estadística general</small>
+            </td>
+            <td>—</td>
+            <td class="text-right"><strong class="voto-count-blanco">{{ totalBlancosGlobal }}</strong></td>
+            <td *ngIf="!mesaActual?.cerrada"></td>
+          </tr>
         </tbody>
         <tfoot>
           <tr class="total-row">
@@ -410,53 +438,42 @@
             <td class="text-right"><strong class="voto-count-total">{{ totalVotos }}</strong></td>
             <td *ngIf="!mesaActual?.cerrada"></td>
           </tr>
-          <tr class="nulos-cargo-row">
-            <td></td>
-            <td colspan="3">
-              <div class="cargo-nulos-line">
-                <span class="cargo-nulos-title"><i class="bi bi-funnel"></i> Nulos / Blancos por cargo</span>
-                <select class="cargo-nulos-select" name="cargoNuloSel" [(ngModel)]="cargoNuloId" [disabled]="mesaActual?.cerrada === true">
-                  <option *ngFor="let c of cargos" [ngValue]="c.id">{{ c.nombre }}</option>
-                </select>
-                <span class="nulos-totales">Totales: {{ totalNulosGlobal }} nulos · {{ totalBlancosGlobal }} en blanco</span>
-              </div>
-            </td>
-            <td *ngIf="!mesaActual?.cerrada"></td>
-          </tr>
-          <tr class="nulos-row">
-            <td></td>
-            <td colspan="2">
-              <span class="nulos-label"><i class="bi bi-check2-square"></i> Votos Nulos</span>
-              <small class="cargo-contexto">({{ cargoNuloNombre }})</small>
-            </td>
-            <td class="text-right">
-              <span *ngIf="!mesaActual?.cerrada" class="nulos-input-group">
-                <button class="btn-nulos-minus" (click)="decrementarNulos()">−</button>
-                <input type="number" class="nulos-input" [(ngModel)]="nulosCargoSel" min="0">
-                <button class="btn-nulos-plus" (click)="incrementarNulos()">+</button>
-              </span>
-              <strong *ngIf="mesaActual?.cerrada" class="voto-count-nulos">{{ nulosCargoSel }}</strong>
-            </td>
-            <td *ngIf="!mesaActual?.cerrada"></td>
-          </tr>
-          <tr class="blanco-row">
-            <td></td>
-            <td colspan="2">
-              <span class="blanco-label"><i class="bi bi-square"></i> Votos en Blanco</span>
-              <small class="cargo-contexto">({{ cargoNuloNombre }})</small>
-            </td>
-            <td class="text-right">
-              <span *ngIf="!mesaActual?.cerrada" class="nulos-input-group">
-                <button class="btn-nulos-minus" (click)="decrementarBlanco()">−</button>
-                <input type="number" class="nulos-input" [(ngModel)]="blancosCargoSel" min="0">
-                <button class="btn-nulos-plus" (click)="incrementarBlanco()">+</button>
-              </span>
-              <strong *ngIf="mesaActual?.cerrada" class="voto-count-blanco">{{ blancosCargoSel }}</strong>
-            </td>
-            <td *ngIf="!mesaActual?.cerrada"></td>
-          </tr>
         </tfoot>
       </table>
+    </div>
+  </ng-template>
+
+  <!-- Controles de nulos/blancos, ahora debajo de la tabla de votación -->
+  <ng-template #nulosBlancosTpl>
+    <div class="cargo-nulos-line nulos-panel-header">
+      <span class="cargo-nulos-title"><i class="bi bi-funnel"></i> Nulos / Blancos por cargo</span>
+      <select class="cargo-nulos-select" name="cargoNuloSel" [(ngModel)]="cargoNuloId"
+              [disabled]="mesaActual?.cerrada === true">
+        <option *ngFor="let c of cargos" [ngValue]="c.id">{{ c.nombre }}</option>
+      </select>
+      <span class="nulos-totales">Totales: {{ totalNulosGlobal }} nulos · {{ totalBlancosGlobal }} en blanco</span>
+    </div>
+    <div class="nulos-blancos-grid">
+      <div class="nulos-row-panel">
+        <span class="nulos-label"><i class="bi bi-check2-square"></i> Votos Nulos</span>
+        <small class="cargo-contexto">({{ cargoNuloNombre }})</small>
+        <div class="nulos-input-group" *ngIf="!mesaActual?.cerrada">
+          <button class="btn-nulos-minus" (click)="decrementarNulos()">−</button>
+          <input type="number" class="nulos-input" [(ngModel)]="nulosCargoSel" min="0">
+          <button class="btn-nulos-plus" (click)="incrementarNulos()">+</button>
+        </div>
+        <strong *ngIf="mesaActual?.cerrada" class="voto-count-nulos">{{ nulosCargoSel }}</strong>
+      </div>
+      <div class="nulos-row-panel blanco-panel">
+        <span class="blanco-label"><i class="bi bi-square"></i> Votos en Blanco</span>
+        <small class="cargo-contexto">({{ cargoNuloNombre }})</small>
+        <div class="nulos-input-group" *ngIf="!mesaActual?.cerrada">
+          <button class="btn-nulos-minus" (click)="decrementarBlanco()">−</button>
+          <input type="number" class="nulos-input" [(ngModel)]="blancosCargoSel" min="0">
+          <button class="btn-nulos-plus" (click)="incrementarBlanco()">+</button>
+        </div>
+        <strong *ngIf="mesaActual?.cerrada" class="voto-count-blanco">{{ blancosCargoSel }}</strong>
+      </div>
     </div>
   </ng-template>
 </div>

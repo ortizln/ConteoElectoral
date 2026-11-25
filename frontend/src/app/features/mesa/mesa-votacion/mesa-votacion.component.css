@@ -114,6 +114,7 @@
 .voto-count { font-size: 18px; color: var(--alantek-text); }
 .voto-count-total { font-size: 20px; color: var(--alantek-primary); }
 .voto-count-nulos { font-size: 18px; color: var(--alantek-danger); }
+.voto-count-blanco { font-size: 18px; color: var(--alantek-text-secondary); }
 
 .nulos-row td { border-top: 2px solid var(--alantek-border); padding: 12px 14px; background: var(--alantek-warning-bg); }
 .nulos-label { font-weight: 600; color: var(--alantek-warning); font-size: 14px; }
@@ -132,8 +133,29 @@
 .btn-nulos-minus:hover, .btn-nulos-plus:hover { background: var(--alantek-warning-bg); border-color: var(--alantek-highlight); }
 .empty-msg { padding: 32px !important; color: var(--alantek-text-muted); text-align: center; font-size: 14px; }
 
+/* Acciones de listas: Votar en la fila y Ver solo para consultar candidatos. */
+.acciones-lista { display: flex; justify-content: flex-end; gap: 6px; flex-wrap: wrap; }
+.btn-ver { padding: 6px 12px; background: var(--alantek-surface); border: 1px solid var(--alantek-border); color: var(--alantek-text-secondary); border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.btn-ver:hover { background: var(--alantek-background); border-color: var(--alantek-border-strong); }
+
+/* Nulos/blancos debajo de la tabla de candidatos/listas. */
+.nulos-blancos-panel { margin: 0 4px 16px; padding: 12px 14px; border: 1px solid var(--alantek-border); border-radius: 12px; background: var(--alantek-background); }
+.nulos-panel-header { margin-bottom: 10px; }
+.nulos-blancos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.nulos-row-panel { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 10px 12px; border-radius: 10px; background: var(--alantek-warning-bg); }
+.blanco-panel { background: var(--alantek-background); border: 1px solid var(--alantek-border); }
+.blanco-label { font-weight: 600; color: var(--alantek-text-secondary); font-size: 14px; }
+
+/* Nulos/blancos como estadística dentro de Votos Registrados. */
+.stats-nulos-row td, .stats-blanco-row td { background: var(--alantek-background); }
+.stats-nulos-row td:first-child { border-top: 2px solid var(--alantek-border); }
+
 @media (max-width: 1100px) {
   .content-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .nulos-blancos-grid { grid-template-columns: 1fr; }
+  .acciones-lista { justify-content: flex-start; }
 }
 /* Listas section */
 .listas-card { margin-bottom: 20px; }

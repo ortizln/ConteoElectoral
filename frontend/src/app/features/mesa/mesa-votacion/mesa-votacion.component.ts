@@ -27,6 +27,7 @@ interface CategoriaMesa {
 })
 export class MesaVotacionComponent implements OnInit, OnDestroy {
   @ViewChild('cantidadInput') cantidadInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('cantidadListaInput') cantidadListaInput!: ElementRef<HTMLInputElement>;
 
   elecciones: Eleccion[] = [];
   candidatos: Candidato[] = [];
@@ -70,6 +71,7 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   private candidatosPorMesaCargados = false;
   showListaModal = false;
   listaLlamada: ListaElectoral | null = null;
+  listaSeleccionada: ListaElectoral | null = null;
   cantidadLista = 1;
   cargosConLista: Cargo[] = [];
   mostrarListas = false;
@@ -183,6 +185,8 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     this.errorMensaje = '';
     this.candidatoSeleccionado = null;
     this.cantidadVotos = 1;
+    this.listaSeleccionada = null;
+    this.cantidadLista = 1;
     this.votosNulos = mesa.votosNulos ?? 0;
     this.votosBlanco = mesa.votosBlanco ?? 0;
     this.nulosBlancosPorCargo = [];
@@ -482,6 +486,8 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     this.modoVotacion = modo;
     this.candidatoSeleccionado = null;
     this.cantidadVotos = 1;
+    this.listaSeleccionada = null;
+    this.cantidadLista = 1;
     this.aplicarFiltro();
   }
 
@@ -541,6 +547,8 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
 
   seleccionarCandidato(candidato: Candidato): void {
     this.candidatoSeleccionado = candidato;
+    // Si ya hay votos, se muestra el total cargado: registrar reemplaza ese valor.
+    this.cantidadVotos = this.votosRegistrados.find(v => v.candidatoId === candidato.id)?.cantidadVotos ?? 1;
     setTimeout(() => this.cantidadInput?.nativeElement?.focus(), 100);
   }
 
@@ -659,7 +667,7 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
       this.api.actualizarVoto(existingVoto.id, {
         candidatoId: this.candidatoSeleccionado.id,
         mesaId: this.mesaActual.id,
-        cantidadVotos: existingVoto.cantidadVotos + cant,
+        cantidadVotos: cant,
         eleccionesId: this.mesaActual.eleccionesId
       }).subscribe({
         next: () => {
@@ -837,9 +845,20 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** "Votar" abre el formulario en la fila; "Ver" solo consulta los candidatos. */
+  seleccionarLista(lista: ListaElectoral): void {
+    this.listaSeleccionada = lista;
+    this.cantidadLista = this.votosRegistrados.find(v => v.listaId === lista.id)?.cantidadVotos ?? 1;
+    setTimeout(() => this.cantidadListaInput?.nativeElement?.focus(), 100);
+  }
+
+  cancelarSeleccionLista(): void {
+    this.listaSeleccionada = null;
+    this.cantidadLista = 1;
+  }
+
   abrirListaModal(lista: ListaElectoral): void {
     this.listaLlamada = lista;
-    this.cantidadLista = 1;
     this.showListaModal = true;
     if (!lista.candidatos || lista.candidatos.length === 0) {
       this.api.getListaDetalle(lista.id).subscribe((detalle: any) => {
@@ -861,31 +880,39 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   cerrarListaModal(): void {
     this.showListaModal = false;
     this.listaLlamada = null;
-    this.cantidadLista = 1;
   }
 
-  votarLista(): void {
-    if (!this.mesaActual || !this.listaLlamada || this.mesaActual.cerrada) return;
+  registrarVotoLista(): void {
+    if (!this.mesaActual || !this.listaSeleccionada || this.mesaActual.cerrada) return;
     const cant = Number(this.cantidadLista);
     if (!Number.isInteger(cant) || cant < 1) {
       this.errorMensaje = 'La cantidad de votos debe ser al menos 1';
       return;
     }
     this.errorMensaje = '';
-    this.api.registrarVoto({
-      listaId: this.listaLlamada.id,
-      mesaId: this.mesaActual.id,
-      cantidadVotos: cant,
-      eleccionesId: this.mesaActual.eleccionesId
-    }).subscribe({
-      next: () => {
-        this.cerrarListaModal();
-        this.loadVotos();
-      },
-      error: (err) => {
-        this.errorMensaje = err?.error?.message || 'No se pudo registrar el voto a la lista';
-      }
-    });
+    const existingVoto = this.votosRegistrados.find(v => v.listaId === this.listaSeleccionada!.id);
+    const onError = (err: any) => {
+      this.errorMensaje = err?.error?.message || 'No se pudo registrar el voto a la lista';
+    };
+    const onSuccess = () => {
+      this.cancelarSeleccionLista();
+      this.loadVotos();
+    };
+    if (existingVoto) {
+      this.api.actualizarVoto(existingVoto.id, {
+        listaId: this.listaSeleccionada.id,
+        mesaId: this.mesaActual.id,
+        cantidadVotos: cant,
+        eleccionesId: this.mesaActual.eleccionesId
+      }).subscribe({ next: onSuccess, error: onError });
+    } else {
+      this.api.registrarVoto({
+        listaId: this.listaSeleccionada.id,
+        mesaId: this.mesaActual.id,
+        cantidadVotos: cant,
+        eleccionesId: this.mesaActual.eleccionesId
+      }).subscribe({ next: onSuccess, error: onError });
+    }
   }
 
   getEstadoMesaClass(): string {

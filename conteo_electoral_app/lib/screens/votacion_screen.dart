@@ -174,11 +174,6 @@ class _VotacionScreenState extends State<VotacionScreen> {
     return list;
   }
 
-  List<String> get _partidosUnicos {
-    final p = context.read<AppProvider>();
-    return p.candidatosVisibles.map((c) => c.partidoNombre).toSet().toList()..sort();
-  }
-
   Map<int, List<Candidato>> get _agrupadosPorLista {
     final provider = context.read<AppProvider>();
     var filtered = provider.candidatosVisibles.where((c) => c.activo != false);
@@ -811,50 +806,11 @@ class _VotacionScreenState extends State<VotacionScreen> {
           ),
           body: Column(
             children: [
-              // Filters
+              // Solo las pestañas de cargos de la mesa; se quitaron los filtros.
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
                 color: AppColors.surface,
-                child: Column(
-                  children: [
-                    TextField(
-                      decoration: const InputDecoration(
-                        hintText: 'Buscar candidato...',
-                        prefixIcon: Icon(Icons.search, size: 20),
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        isDense: true,
-                      ),
-                      onChanged: (v) => setState(() => _busqueda = v),
-                    ),
-                    const SizedBox(height: 8),
-                    // Cargos disponibles en esta mesa (Alcalde, Consejal
-                    // Urbano/Rural, Junta Parroquial) — solo los que existen.
-                    _buildModoSelector(),
-                    const SizedBox(height: 6),
-                    // Filtro de partido
-                    DropdownButtonFormField<String>(
-                      initialValue: _partidosUnicos.contains(_filtroPartido)
-                          ? _filtroPartido
-                          : '',
-                      isDense: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Partido',
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                      items: [
-                        const DropdownMenuItem(
-                            value: '', child: Text('Todos los partidos')),
-                        ..._partidosUnicos.map((p) => DropdownMenuItem(
-                              value: p,
-                              child: Text(p, overflow: TextOverflow.ellipsis),
-                            )),
-                      ],
-                      onChanged: (v) => setState(() => _filtroPartido = v ?? ''),
-                    ),
-                  ],
-                ),
+                child: _buildModoSelector(),
               ),
 
               // Mesa info card

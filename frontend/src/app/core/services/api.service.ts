@@ -363,7 +363,7 @@ export class ApiService {
     return this.http.post<Voto>(`${this.API_URL}/votos`, data);
   }
 
-  actualizarVoto(id: number, data: { candidatoId: number; mesaId: number; cantidadVotos: number; eleccionesId: number }): Observable<Voto> {
+  actualizarVoto(id: number, data: { candidatoId?: number; listaId?: number; mesaId: number; cantidadVotos: number; eleccionesId: number }): Observable<Voto> {
     return this.http.put<Voto>(`${this.API_URL}/votos/${id}`, data);
   }
 
