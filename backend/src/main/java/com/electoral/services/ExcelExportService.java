@@ -17,7 +17,7 @@ public class ExcelExportService {
             CellStyle headerStyle = workbook.createCellStyle();
             headerStyle.setFillForegroundColor(IndexedColors.ROYAL_BLUE.getIndex());
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-            headerStyle.setFont(createFont(workbook, true, (short) 14));
+            headerStyle.setFont(createHeaderFont(workbook, (short) 14));
             headerStyle.setAlignment(HorizontalAlignment.CENTER);
             headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
             headerStyle.setBorderBottom(BorderStyle.THIN);
@@ -67,7 +67,7 @@ public class ExcelExportService {
             CellStyle headerStyle = workbook.createCellStyle();
             headerStyle.setFillForegroundColor(IndexedColors.ROYAL_BLUE.getIndex());
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-            headerStyle.setFont(createFont(workbook, true, (short) 14));
+            headerStyle.setFont(createHeaderFont(workbook, (short) 14));
             headerStyle.setAlignment(HorizontalAlignment.CENTER);
             headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
             headerStyle.setBorderBottom(BorderStyle.THIN);
@@ -109,10 +109,21 @@ public class ExcelExportService {
         }
     }
 
+    /** Texto de datos siempre negro (independientemente del color de fondo). */
     private Font createFont(Workbook workbook, boolean bold, short size) {
         Font font = workbook.createFont();
         font.setFontHeightInPoints(size);
         font.setBold(bold);
+        font.setColor(IndexedColors.BLACK.getIndex());
+        font.setFontName("Arial");
+        return font;
+    }
+
+    /** Texto blanco exclusivamente para encabezados sobre fondo azul. */
+    private Font createHeaderFont(Workbook workbook, short size) {
+        Font font = workbook.createFont();
+        font.setFontHeightInPoints(size);
+        font.setBold(true);
         font.setColor(IndexedColors.WHITE.getIndex());
         font.setFontName("Arial");
         return font;

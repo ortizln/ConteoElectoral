@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ResultadoCandidato {
     private Long candidatoId;
+    private Long cargoId;
     private String nombreCompleto;
     private String partidoNombre;
     private String cargoNombre;

@@ -288,11 +288,9 @@ public class VotoService {
         return getDashboardDataConFiltros(eleccionId, null, null, null, null, null, null, null, null);
     }
 
-    @Transactional(readOnly = true)
-    public DashboardResponse getDashboardDataConFiltros(Long eleccionId, Long cargoId, Long partidoId,
-            Long zonaId, Long provinciaId, Long cantonId, Long parroquiaId, Long institucionId, Long mesaId) {
-        Eleccion eleccion = eleccionService.getEleccionEntityById(eleccionId);
-
+    /** Mesas que aplican a un conjunto de filtros geográficos / de mesa. */
+    private List<Mesa> filtrarMesas(Long eleccionId, Long zonaId, Long provinciaId,
+            Long cantonId, Long parroquiaId, Long institucionId, Long mesaId) {
         List<Mesa> mesas = mesaRepository.findByEleccionesId(eleccionId);
 
         if (mesaId != null) {
@@ -325,6 +323,139 @@ public class VotoService {
                     m.getInstitucion().getParroquia().getCanton().getProvincia().getZona().getId().equals(zonaId))
                     .collect(Collectors.toList());
         }
+        return mesas;
+    }
+
+    private static String claveVoto(Long id, Long mesaId) {
+        return id + ":" + mesaId;
+    }
+
+    private static String nombreCanton(Mesa m) {
+        return m.getInstitucion() != null && m.getInstitucion().getParroquia() != null
+                && m.getInstitucion().getParroquia().getCanton() != null
+                ? m.getInstitucion().getParroquia().getCanton().getNombre() : "—";
+    }
+
+    private static String nombreParroquia(Mesa m) {
+        return m.getInstitucion() != null && m.getInstitucion().getParroquia() != null
+                ? m.getInstitucion().getParroquia().getNombre() : "—";
+    }
+
+    private static String nombreRecinto(Mesa m) {
+        return m.getInstitucion() != null ? m.getInstitucion().getNombre() : "—";
+    }
+
+    /** Detalle por candidato/lista y mesa para el Excel de resultados. */
+    @Transactional(readOnly = true)
+    public List<ResultadoDetalleVoto> getDetalleResultadosParaExport(
+            Long eleccionId, Long cargoId, Long partidoId, Long zonaId,
+            Long provinciaId, Long cantonId, Long parroquiaId,
+            Long institucionId, Long mesaId) {
+        List<Mesa> mesas = filtrarMesas(eleccionId, zonaId, provinciaId, cantonId,
+                parroquiaId, institucionId, mesaId);
+        if (mesas.isEmpty()) return List.of();
+
+        List<Long> mesaIds = mesas.stream().map(Mesa::getId).collect(Collectors.toList());
+        List<ResultadoDetalleVoto> detalle = new ArrayList<>();
+
+        Map<String, Long> votosCandidato = votoRepository
+                .sumVotosGroupByCandidatoAndMesaDetalle(eleccionId, mesaIds).stream()
+                .collect(Collectors.toMap(
+                        r -> claveVoto(((Number) r[0]).longValue(), ((Number) r[1]).longValue()),
+                        r -> ((Number) r[2]).longValue(),
+                        Long::sum));
+
+        for (Candidato c : candidatoRepository.findByEleccionesId(eleccionId)) {
+            if (c.getCargo() == null || c.getCargo().getTipoVotacion() == TipoVotacion.LISTA) continue;
+            if (cargoId != null && !cargoId.equals(c.getCargo().getId())) continue;
+            if (partidoId != null && (c.getPartido() == null || !partidoId.equals(c.getPartido().getId()))) continue;
+            String categoria = com.electoral.util.CargoCategoriaUtil.categoria(c.getCargo().getNombre());
+            for (Mesa m : mesas) {
+                Long votos = votosCandidato.get(claveVoto(c.getId(), m.getId()));
+                if (votos == null || votos <= 0) continue;
+                detalle.add(ResultadoDetalleVoto.builder()
+                        .cargoId(c.getCargo().getId())
+                        .cargoNombre(c.getCargo().getNombre())
+                        .categoria(categoria)
+                        .lista(false)
+                        .postulacionId(c.getId())
+                        .postulacionNombre(c.getNombreCompleto())
+                        .partidoNombre(c.getPartido() != null ? c.getPartido().getNombre() : "Independiente")
+                        .cantonNombre(nombreCanton(m))
+                        .parroquiaNombre(nombreParroquia(m))
+                        .recintoNombre(nombreRecinto(m))
+                        .mesaNumero(m.getNumero())
+                        .totalVotos(votos)
+                        .build());
+            }
+        }
+
+        Map<String, Long> votosLista = votoRepository
+                .sumVotosGroupByListaAndMesaDetalle(eleccionId, mesaIds).stream()
+                .collect(Collectors.toMap(
+                        r -> claveVoto(((Number) r[0]).longValue(), ((Number) r[1]).longValue()),
+                        r -> ((Number) r[2]).longValue(),
+                        Long::sum));
+
+        List<ListaElectoral> listas = cargoId != null
+                ? listaElectoralRepository.findByEleccionIdAndCargoId(eleccionId, cargoId)
+                : listaElectoralRepository.findByEleccionId(eleccionId);
+        for (ListaElectoral l : listas) {
+            if (partidoId != null && (l.getPartido() == null || !partidoId.equals(l.getPartido().getId()))) continue;
+            String nombreCargo = l.getCargo() != null ? l.getCargo().getNombre() : "—";
+            String categoria = com.electoral.util.CargoCategoriaUtil.categoria(nombreCargo);
+            for (Mesa m : mesas) {
+                Long votos = votosLista.get(claveVoto(l.getId(), m.getId()));
+                if (votos == null || votos <= 0) continue;
+                detalle.add(ResultadoDetalleVoto.builder()
+                        .cargoId(l.getCargo() != null ? l.getCargo().getId() : null)
+                        .cargoNombre(nombreCargo)
+                        .categoria(categoria)
+                        .lista(true)
+                        .postulacionId(l.getId())
+                        .postulacionNombre(l.getNombre())
+                        .partidoNombre(l.getPartido() != null ? l.getPartido().getNombre() : "—")
+                        .cantonNombre(nombreCanton(m))
+                        .parroquiaNombre(nombreParroquia(m))
+                        .recintoNombre(nombreRecinto(m))
+                        .mesaNumero(m.getNumero())
+                        .totalVotos(votos)
+                        .build());
+            }
+        }
+
+        String[] orden = com.electoral.util.CargoCategoriaUtil.categoriasOrdenadas();
+        detalle.sort((a, b) -> {
+            int ca = indexOfCategoria(orden, a.getCategoria());
+            int cb = indexOfCategoria(orden, b.getCategoria());
+            if (ca != cb) return Integer.compare(ca, cb);
+            int cr = compararTexto(a.getRecintoNombre(), b.getRecintoNombre());
+            if (cr != 0) return cr;
+            int cm = compararTexto(a.getMesaNumero(), b.getMesaNumero());
+            if (cm != 0) return cm;
+            return compararTexto(a.getPostulacionNombre(), b.getPostulacionNombre());
+        });
+        return detalle;
+    }
+
+    private static int indexOfCategoria(String[] orden, String categoria) {
+        for (int i = 0; i < orden.length; i++) {
+            if (orden[i].equalsIgnoreCase(categoria)) return i;
+        }
+        return orden.length;
+    }
+
+    private static int compararTexto(String a, String b) {
+        return String.valueOf(a == null ? "" : a).compareToIgnoreCase(String.valueOf(b == null ? "" : b));
+    }
+
+    @Transactional(readOnly = true)
+    public DashboardResponse getDashboardDataConFiltros(Long eleccionId, Long cargoId, Long partidoId,
+            Long zonaId, Long provinciaId, Long cantonId, Long parroquiaId, Long institucionId, Long mesaId) {
+        Eleccion eleccion = eleccionService.getEleccionEntityById(eleccionId);
+
+        List<Mesa> mesas = filtrarMesas(eleccionId, zonaId, provinciaId, cantonId,
+                parroquiaId, institucionId, mesaId);
 
         List<Long> mesaIds = mesas.stream().map(Mesa::getId).collect(Collectors.toList());
 
@@ -358,6 +489,7 @@ public class VotoService {
 
                     return ResultadoCandidato.builder()
                             .candidatoId(c.getId())
+                            .cargoId(c.getCargo() != null ? c.getCargo().getId() : null)
                             .nombreCompleto(c.getNombreCompleto())
                             .partidoNombre(c.getPartido() != null ? c.getPartido().getNombre() : "Independiente")
                             .cargoNombre(c.getCargo().getNombre())
@@ -443,6 +575,7 @@ public class VotoService {
                     double pct = totalVotos > 0 ? (double) votos / totalVotos * 100.0 : 0.0;
                     resultadosListas.add(ResultadoLista.builder()
                             .listaId(l.getId())
+                            .cargoId(l.getCargo() != null ? l.getCargo().getId() : null)
                             .listaNombre(l.getNombre())
                             .numeroLista(l.getNumeroLista())
                             .partidoNombre(l.getPartido() != null ? l.getPartido().getNombre() : null)

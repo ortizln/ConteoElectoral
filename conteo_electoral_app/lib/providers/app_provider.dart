@@ -556,9 +556,8 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     Voto voto;
     if (existente != null) {
-      voto = existente.copyWith(
-        cantidadVotos: existente.cantidadVotos + cantidad,
-      );
+      // El valor ingresado reemplaza al registrado (edición absoluta).
+      voto = existente.copyWith(cantidadVotos: cantidad);
       await _db.actualizarVoto(existente.id!, voto);
     } else {
       voto = Voto(
@@ -588,9 +587,8 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     Voto voto;
     if (existente != null) {
-      voto = existente.copyWith(
-        cantidadVotos: existente.cantidadVotos + cantidad,
-      );
+      // El valor ingresado reemplaza al registrado (edición absoluta).
+      voto = existente.copyWith(cantidadVotos: cantidad);
       await _db.actualizarVoto(existente.id!, voto);
     } else {
       voto = Voto(

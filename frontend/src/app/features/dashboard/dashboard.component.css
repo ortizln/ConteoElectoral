@@ -142,6 +142,21 @@
 .tab-count { background: var(--alantek-background); border: 1px solid var(--alantek-border); border-radius: 10px; font-size: 11px; font-weight: 700; padding: 0 7px; color: var(--alantek-text-muted); }
 .tabs-nav .nav-link.active .tab-count { background: var(--alantek-info-bg); border-color: transparent; color: var(--alantek-primary); }
 
+.resultados-filtros {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  gap: 12px;
+  margin: -4px 0 16px;
+  padding: 12px;
+  background: var(--alantek-surface-muted, rgba(0, 0, 0, 0.02));
+  border: 1px solid var(--alantek-border);
+  border-radius: 8px;
+}
+.resultados-filtros .form-select { font-size: 13px; }
+@media (max-width: 576px) {
+  .resultados-filtros { grid-template-columns: 1fr; }
+}
+
 .partido-badge { display: inline-block; padding: 3px 12px; background: var(--alantek-info-bg); color: var(--alantek-primary); border-radius: 6px; font-size: 13px; font-weight: 500; }
 .porcentaje-badge { display: inline-block; padding: 3px 10px; background: var(--alantek-success-bg); color: var(--alantek-success); border-radius: 6px; font-size: 13px; font-weight: 600; }
 

@@ -15,6 +15,16 @@ class VotacionScreen extends StatefulWidget {
   State<VotacionScreen> createState() => _VotacionScreenState();
 }
 
+/// Cargo presente en la mesa, ya sea individual o por lista.
+class _CategoriaMesa {
+  final String etiqueta;
+  bool esLista;
+  final Set<int> cargoIds;
+
+  _CategoriaMesa(this.etiqueta, this.esLista, [Set<int>? ids])
+      : cargoIds = ids ?? <int>{};
+}
+
 class _VotacionScreenState extends State<VotacionScreen> {
   Candidato? _selected;
   int? _selectedListaId;
@@ -24,7 +34,62 @@ class _VotacionScreenState extends State<VotacionScreen> {
   String _busqueda = '';
   final String _ordenPor = 'cargo';
   bool _mostrarListas = false;
+  /// null = ver todo; si no, una de las cuatro categorías de cargo.
+  String? _categoriaSel;
   int _fotosCount = 0;
+
+  static const _categoriasOrden = [
+    'Alcalde',
+    'Consejal Urbano',
+    'Consejal Rural',
+    'Junta Parroquial',
+  ];
+
+  /// Normaliza el nombre del cargo a las cuatro categorías del conteo.
+  String? _categoriaCargo(String? nombre) {
+    if (nombre == null || nombre.trim().isEmpty) return null;
+    final n = nombre.toLowerCase()
+        .replaceAll('á', 'a').replaceAll('é', 'e')
+        .replaceAll('í', 'i').replaceAll('ó', 'o')
+        .replaceAll('ú', 'u').replaceAll('ñ', 'n');
+    if (n.contains('alcalde')) return 'Alcalde';
+    if ((n.contains('junta') && n.contains('parroqui')) || n.contains('vocal')) {
+      return 'Junta Parroquial';
+    }
+    if (n.contains('concej')) {
+      if (n.contains('urban')) return 'Consejal Urbano';
+      if (n.contains('rural')) return 'Consejal Rural';
+    }
+    return null;
+  }
+
+  /// Cargos que realmente tiene esta mesa (según los candidatos autorizados
+  /// por el backend). El orden es fijo y no se muestran categorías ausentes.
+  List<_CategoriaMesa> get _categoriasDeMesa {
+    final provider = context.read<AppProvider>();
+    final mapa = <String, _CategoriaMesa>{};
+    for (final c in provider.candidatosVisibles) {
+      final etiqueta = _categoriaCargo(c.cargoNombre);
+      if (etiqueta == null) continue;
+      final cargo = provider.cargos.cast<Cargo?>().firstWhere(
+            (cg) => cg?.id == c.cargoId,
+            orElse: () => null,
+          );
+      final esLista = cargo?.tipoVotacion == 'LISTA';
+      final actual = mapa[etiqueta];
+      if (actual == null) {
+        mapa[etiqueta] = _CategoriaMesa(
+            etiqueta, esLista, c.cargoId == null ? <int>{} : {c.cargoId!});
+      } else {
+        if (c.cargoId != null) actual.cargoIds.add(c.cargoId!);
+        if (esLista) actual.esLista = true;
+      }
+    }
+    return _categoriasOrden
+        .where(mapa.containsKey)
+        .map((e) => mapa[e]!)
+        .toList();
+  }
 
   @override
   void initState() {
@@ -79,6 +144,11 @@ class _VotacionScreenState extends State<VotacionScreen> {
     }
 
     list = list.where((c) => c.activo != false).toList();
+    if (_categoriaSel != null) {
+      list = list
+          .where((c) => _categoriaCargo(c.cargoNombre) == _categoriaSel)
+          .toList();
+    }
     // Only show candidates for cargos that are NOT list-type in individual mode
     list = list.where((c) {
       if (c.cargoId == null) return true;
@@ -111,6 +181,10 @@ class _VotacionScreenState extends State<VotacionScreen> {
   Map<int, List<Candidato>> get _agrupadosPorLista {
     final provider = context.read<AppProvider>();
     var filtered = provider.candidatosVisibles.where((c) => c.activo != false);
+    if (_categoriaSel != null) {
+      filtered =
+          filtered.where((c) => _categoriaCargo(c.cargoNombre) == _categoriaSel);
+    }
     // Only show candidates for list-type cargos in list mode
     filtered = filtered.where((c) {
       if (c.cargoId == null) return false;
@@ -151,6 +225,16 @@ class _VotacionScreenState extends State<VotacionScreen> {
       orElse: () => null,
     );
     return perCandidate + (listVoto?.cantidadVotos ?? 0);
+  }
+
+  /// Votos ya registrados para la postulación seleccionada.
+  /// Se colocan en el cuadro para poder corregirlos en lugar de acumular.
+  int _cantidadPreferida({Candidato? candidato, int? listaId}) {
+    final provider = context.read<AppProvider>();
+    final votos = listaId != null
+        ? _getVotosLista(listaId)
+        : (candidato != null ? provider.getVotosCandidato(candidato) : 0);
+    return votos > 0 ? votos : 1;
   }
 
   Future<void> _registrar() async {
@@ -722,40 +806,30 @@ class _VotacionScreenState extends State<VotacionScreen> {
                       onChanged: (v) => setState(() => _busqueda = v),
                     ),
                     const SizedBox(height: 8),
-                    // Individual / Lista mode selector
+                    // Cargos disponibles en esta mesa (Alcalde, Consejal
+                    // Urbano/Rural, Junta Parroquial) — solo los que existen.
                     _buildModoSelector(),
                     const SizedBox(height: 6),
-                    // Filtro de partido (select) + vista de candidatos/listas
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            initialValue: _partidosUnicos.contains(_filtroPartido)
-                                ? _filtroPartido
-                                : '',
-                            isDense: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Partido',
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 8),
-                            ),
-                            items: [
-                              const DropdownMenuItem(
-                                  value: '',
-                                  child: Text('Todos los partidos')),
-                              ..._partidosUnicos.map((p) => DropdownMenuItem(
-                                    value: p,
-                                    child:
-                                        Text(p, overflow: TextOverflow.ellipsis),
-                                  )),
-                            ],
-                            onChanged: (v) =>
-                                setState(() => _filtroPartido = v ?? ''),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        _buildViewToggle(),
+                    // Filtro de partido
+                    DropdownButtonFormField<String>(
+                      initialValue: _partidosUnicos.contains(_filtroPartido)
+                          ? _filtroPartido
+                          : '',
+                      isDense: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Partido',
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                      items: [
+                        const DropdownMenuItem(
+                            value: '', child: Text('Todos los partidos')),
+                        ..._partidosUnicos.map((p) => DropdownMenuItem(
+                              value: p,
+                              child: Text(p, overflow: TextOverflow.ellipsis),
+                            )),
                       ],
+                      onChanged: (v) => setState(() => _filtroPartido = v ?? ''),
                     ),
                   ],
                 ),
@@ -932,11 +1006,14 @@ class _VotacionScreenState extends State<VotacionScreen> {
                                       if (isSelected) {
                                         _selectedListaId = null;
                                         _selectedListaCandidates = [];
+                                        _cantidadCtrl.text = '1';
                                       } else {
                                         _selectedListaId = listaId;
                                         _selectedListaCandidates =
                                             candidatosLista;
                                         _selected = null;
+                                        _cantidadCtrl.text =
+                                            '${_cantidadPreferida(listaId: listaId)}';
                                       }
                                     }),
                                     child: Padding(
@@ -1080,10 +1157,13 @@ class _VotacionScreenState extends State<VotacionScreen> {
                                     onTap: () => setState(() {
                                       if (isSelected) {
                                         _selected = null;
+                                        _cantidadCtrl.text = '1';
                                       } else {
                                         _selected = c;
                                         _selectedListaId = null;
                                         _selectedListaCandidates = [];
+                                        _cantidadCtrl.text =
+                                            '${_cantidadPreferida(candidato: c)}';
                                       }
                                     }),
                                     child: Padding(
@@ -1574,68 +1654,46 @@ class _VotacionScreenState extends State<VotacionScreen> {
     ctrl.dispose();
   }
 
+  /// Selector de cargos de la mesa: Alcalde / Consejal Urbano / Consejal
+  /// Rural / Junta Parroquial. Solo aparecen los que realmente tiene la mesa.
   Widget _buildModoSelector() {
-    final provider = context.read<AppProvider>();
-    final hasListas = provider.cargos.any((c) => c.tipoVotacion == 'LISTA');
+    final categorias = _categoriasDeMesa;
+    final seleccion = _categoriaSel;
+    if (seleccion != null && !categorias.any((c) => c.etiqueta == seleccion)) {
+      // La mesa cambió y ya no tiene ese cargo: volver a "Todos".
+      _categoriaSel = null;
+      _mostrarListas = false;
+    }
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _filterChip('Individual', 'individual', !_mostrarListas, () {
-            setState(() => _mostrarListas = false);
+          _filterChip('Todos', 'todos', _categoriaSel == null, () {
+            setState(() {
+              _categoriaSel = null;
+              _mostrarListas = false;
+              _selected = null;
+              _selectedListaId = null;
+              _selectedListaCandidates = [];
+              _cantidadCtrl.text = '1';
+            });
           }),
-          if (hasListas) ...[
-            const SizedBox(width: 6),
-            _filterChip('Lista', 'lista', _mostrarListas, () {
-              setState(() => _mostrarListas = true);
-            }),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildViewToggle() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.muted,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GestureDetector(
-            onTap: () => setState(() => _mostrarListas = false),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: !_mostrarListas ? AppColors.primary : Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text('👤',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: !_mostrarListas ? Colors.white : AppColors.gray,
-                    fontWeight: FontWeight.w600,
-                  )),
-            ),
-          ),
-          GestureDetector(
-            onTap: () => setState(() => _mostrarListas = true),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: _mostrarListas ? AppColors.primary : Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text('📋',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: _mostrarListas ? Colors.white : AppColors.gray,
-                    fontWeight: FontWeight.w600,
-                  )),
-            ),
-          ),
+          ...categorias.map((cat) {
+            final selected = _categoriaSel == cat.etiqueta;
+            return Padding(
+              padding: const EdgeInsets.only(left: 6),
+              child: _filterChip(cat.etiqueta, cat.etiqueta, selected, () {
+                setState(() {
+                  _categoriaSel = cat.etiqueta;
+                  _mostrarListas = cat.esLista;
+                  _selected = null;
+                  _selectedListaId = null;
+                  _selectedListaCandidates = [];
+                  _cantidadCtrl.text = '1';
+                });
+              }),
+            );
+          }),
         ],
       ),
     );

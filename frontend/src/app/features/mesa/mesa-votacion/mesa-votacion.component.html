@@ -81,18 +81,28 @@
   <div class="content-grid" *ngIf="mesaActual">
     <div class="card candidatos-card">
       <div class="card-header">
-        <h3><i class="bi" [class.bi-people]="mostrarListas" [class.bi-person]="!mostrarListas"></i> {{ mostrarListas ? 'Listas' : 'Candidatos' }}</h3>
-        <span class="card-badge">{{ mostrarListas ? listasFiltradas.length : candidatosFiltrados.length }} {{ mostrarListas ? 'listas' : 'candidatos' }}</span>
+        <h3>
+          <i class="bi" [ngClass]="categoriaSel ? (mostrarListas ? 'bi-list-ul' : 'bi-person') : 'bi-grid'"></i>
+          {{ categoriaSel || (mostrarListas ? 'Listas' : 'Candidatos') }}
+        </h3>
+        <span class="card-badge">
+          {{ mostrarListas ? listasFiltradas.length : candidatosFiltrados.length }}
+          {{ categoriaSel ? 'resultados' : (mostrarListas ? 'listas' : 'candidatos') }}
+        </span>
       </div>
 
-      <div class="modo-votacion" *ngIf="cargosConLista.length > 0">
-        <button type="button" class="modo-btn" [class.active]="modoVotacion === 'CANDIDATOS'"
-                (click)="setModoVotacion('CANDIDATOS')">
-          <i class="bi bi-person"></i> Candidatos individuales
+      <!-- Solo los cargos que tiene esta mesa. Al elegir uno se fija también
+           el cargo de nulos/blanco más abajo. -->
+      <div class="modo-votacion" *ngIf="categoriasMesa.length > 0">
+        <button type="button" class="modo-btn" [class.active]="categoriaSel === null"
+                (click)="seleccionarCategoria(null)">
+          <i class="bi bi-grid"></i> Todos
         </button>
-        <button type="button" class="modo-btn" [class.active]="modoVotacion === 'LISTAS'"
-                (click)="setModoVotacion('LISTAS')">
-          <i class="bi bi-list-ul"></i> Votar por listas
+        <button *ngFor="let cat of categoriasMesa" type="button" class="modo-btn"
+                [class.active]="categoriaSel === cat.etiqueta"
+                (click)="seleccionarCategoria(cat)">
+          <i class="bi" [ngClass]="cat.esLista ? 'bi-list-ul' : 'bi-person'"></i>
+          {{ cat.etiqueta }}
         </button>
       </div>
 
@@ -102,7 +112,7 @@
           <option [ngValue]="null">Todos los Partidos</option>
           <option *ngFor="let p of partidos" [ngValue]="p.id">{{ p.nombre }}</option>
         </select>
-        <select class="filter-select" [(ngModel)]="filtroCargoId" (change)="aplicarFiltro()">
+        <select class="filter-select" [(ngModel)]="filtroCargoId" (change)="onFiltroCargoChange()">
           <option [ngValue]="null">Todos los Cargos</option>
           <option *ngFor="let c of cargos" [ngValue]="c.id">
             {{ c.nombre }}{{ c.tipoVotacion === 'LISTA' ? ' (por lista)' : '' }}
@@ -117,7 +127,7 @@
             <tr>
               <th style="width: 40px">#</th>
               <th class="sortable" (click)="!mostrarListas && setSortCandidatos('nombre')">
-                {{ mostrarListas ? 'Lista' : 'Candidato' }} <span class="sort-icon">{{ getSortIconCandidatos('nombre') }}</span>
+                {{ categoriaSel || (mostrarListas ? 'Lista' : 'Candidato') }} <span class="sort-icon">{{ getSortIconCandidatos('nombre') }}</span>
               </th>
               <th class="sortable" (click)="setSortCandidatos('partido')">
                 Partido <span class="sort-icon">{{ getSortIconCandidatos('partido') }}</span>

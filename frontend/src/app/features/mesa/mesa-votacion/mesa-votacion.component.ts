@@ -12,6 +12,12 @@ interface VotoConIndice extends Voto {
   indice: number;
 }
 
+interface CategoriaMesa {
+  etiqueta: string;
+  cargoIds: number[];
+  esLista: boolean;
+}
+
 @Component({
   selector: 'app-mesa-votacion',
   standalone: true,
@@ -69,6 +75,14 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   mostrarListas = false;
   // Igual que la APK: se puede votar por listas sin antes elegir un cargo.
   modoVotacion: 'CANDIDATOS' | 'LISTAS' = 'CANDIDATOS';
+  /** Cargo elegido arriba (null = "Todos"); también fija nulos/blancos. */
+  categoriaSel: string | null = null;
+  private cargoIdsCategoriaSel: number[] = [];
+  private usuarioSeleccionoCargoNulo = false;
+
+  private static readonly CATEGORIAS_ORDEN = [
+    'Alcalde', 'Consejal Urbano', 'Consejal Rural', 'Junta Parroquial'
+  ];
 
   // Delete vote confirmation
   showDeleteConfirm = false;
@@ -173,6 +187,9 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     this.votosBlanco = mesa.votosBlanco ?? 0;
     this.nulosBlancosPorCargo = [];
     this.cargoNuloId = null;
+    this.categoriaSel = null;
+    this.cargoIdsCategoriaSel = [];
+    this.usuarioSeleccionoCargoNulo = false;
     this.listaIdsElegibles = new Set<number>();
     this.candidatosPorMesaCargados = false;
     this.cargarNulosBlancosPorCargo(mesa);
@@ -225,11 +242,14 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
           }
         }
         this.nulosBlancosPorCargo = finales;
-        this.cargoNuloId = cargoDefault;
+        // Si el usuario ya eligió Alcalde/Consejal/Junta, se respeta ese cargo.
+        if (!this.usuarioSeleccionoCargoNulo) this.cargoNuloId = cargoDefault;
       },
       error: () => {
         this.nulosBlancosPorCargo = [];
-        this.cargoNuloId = this.cargoDefaultId([]);
+        if (!this.usuarioSeleccionoCargoNulo) {
+          this.cargoNuloId = this.cargoDefaultId([]);
+        }
       }
     });
   }
@@ -280,6 +300,71 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     return url;
   }
 
+  /** Normaliza el nombre del cargo a las cuatro categorías del conteo. */
+  private categoriaDe(nombre?: string | null): string | null {
+    if (!nombre) return null;
+    const n = nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (n.includes('alcalde')) return 'Alcalde';
+    if ((n.includes('junta') && n.includes('parroqui')) || n.includes('vocal')) {
+      return 'Junta Parroquial';
+    }
+    if (n.includes('concej')) {
+      if (n.includes('urban')) return 'Consejal Urbano';
+      if (n.includes('rural')) return 'Consejal Rural';
+    }
+    return null;
+  }
+
+  /** Cargos que tiene esta mesa, derivados de los candidatos autorizados. */
+  get categoriasMesa(): CategoriaMesa[] {
+    const encontradas = new Map<string, CategoriaMesa>();
+    for (const c of this.candidatos) {
+      const cargo = this.cargos.find(cg => cg.id === c.cargoId);
+      const etiqueta = this.categoriaDe(c.cargoNombre || cargo?.nombre);
+      if (!etiqueta || c.cargoId == null) continue;
+      const esLista = (c.tipoVotacion || cargo?.tipoVotacion || '') === 'LISTA';
+      const actual = encontradas.get(etiqueta);
+      if (!actual) {
+        encontradas.set(etiqueta, {
+          etiqueta, cargoIds: [c.cargoId], esLista
+        });
+      } else {
+        if (!actual.cargoIds.includes(c.cargoId)) actual.cargoIds.push(c.cargoId);
+        if (esLista) actual.esLista = true;
+      }
+    }
+    return Array.from(encontradas.values()).sort((a, b) => {
+      const ia = MesaVotacionComponent.CATEGORIAS_ORDEN.indexOf(a.etiqueta);
+      const ib = MesaVotacionComponent.CATEGORIAS_ORDEN.indexOf(b.etiqueta);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    });
+  }
+
+  /** Al elegir Alcalde/Consejal/Junta se activa su modo y su nulo/blanco. */
+  seleccionarCategoria(cat: CategoriaMesa | null): void {
+    if (!cat) {
+      this.categoriaSel = null;
+      this.cargoIdsCategoriaSel = [];
+      this.filtroCargoId = null;
+      this.setModoVotacion('CANDIDATOS');
+      return;
+    }
+    this.categoriaSel = cat.etiqueta;
+    this.cargoIdsCategoriaSel = [...cat.cargoIds];
+    this.filtroCargoId = cat.cargoIds.length > 0 ? cat.cargoIds[0] : null;
+    this.setModoVotacion(cat.esLista ? 'LISTAS' : 'CANDIDATOS');
+    if (cat.cargoIds.length > 0) {
+      this.cargoNuloId = cat.cargoIds[0];
+      this.usuarioSeleccionoCargoNulo = true;
+    }
+  }
+
+  onFiltroCargoChange(): void {
+    this.categoriaSel = null;
+    this.cargoIdsCategoriaSel = [];
+    this.aplicarFiltro();
+  }
+
   aplicarFiltro(): void {
     const cargo = this.cargos.find(c => c.id === this.filtroCargoId);
     this.mostrarListas = this.modoVotacion === 'LISTAS' || cargo?.tipoVotacion === 'LISTA';
@@ -289,7 +374,9 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
       // cargos LISTA (o solo del cargo elegido en el filtro).
       const cargosLista = this.filtroCargoId
         ? this.cargos.filter(c => c.id === this.filtroCargoId && c.tipoVotacion === 'LISTA')
-        : this.cargosConLista;
+        : this.categoriaSel
+          ? this.cargos.filter(c => this.cargoIdsCategoriaSel.includes(c.id) && c.tipoVotacion === 'LISTA')
+          : this.cargosConLista;
       let filtradas = this.listas.filter(l => cargosLista.some(c => c.id === l.cargoId));
       // Validez territorial exacta (igual que la APK): el backend ya filtró los
       // candidatos de esta mesa por URBANA/RURAL, provincia, cantón y parroquia.
@@ -349,8 +436,11 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     if (this.filtroPartidoId) {
       filtrados = filtrados.filter(c => c.partidoId === this.filtroPartidoId);
     }
-    if (this.filtroCargoId) {
-      filtrados = filtrados.filter(c => c.cargoId === this.filtroCargoId);
+    const idsPermitidos = this.filtroCargoId != null
+      ? [this.filtroCargoId]
+      : (this.categoriaSel ? this.cargoIdsCategoriaSel : []);
+    if (idsPermitidos.length > 0) {
+      filtrados = filtrados.filter(c => c.cargoId != null && idsPermitidos.includes(c.cargoId));
     }
     this.candidatosFiltrados = filtrados.map(c => ({
       ...c,
@@ -371,6 +461,8 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     this.filtroTexto = '';
     this.filtroPartidoId = null;
     this.filtroCargoId = null;
+    this.categoriaSel = null;
+    this.cargoIdsCategoriaSel = [];
     this.aplicarFiltro();
   }
 

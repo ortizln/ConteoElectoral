@@ -4,8 +4,11 @@ import com.electoral.dto.DashboardResponse;
 import com.electoral.dto.ResultadoCandidato;
 import com.electoral.dto.ResultadoGeo;
 import com.electoral.dto.ResultadoLista;
+import com.electoral.dto.ResultadoMesa;
 import com.electoral.dto.ResultadoRecinto;
 import com.electoral.entities.Mesa;
+import com.electoral.util.CargoCategoriaUtil;
+import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.colors.Color;
 import com.itextpdf.kernel.colors.ColorConstants;
@@ -81,16 +84,45 @@ public class PdfExportService {
         byte[] logoBytes = configService.getLogo();
         document.setMargins(65, 36, 50, 36);
         pdf.addEventHandler(PdfDocumentEvent.END_PAGE, new PdfFooterEventHandler());
-        pdf.addEventHandler(PdfDocumentEvent.START_PAGE, new PdfHeaderEventHandler(partyName, logoBytes));
+        // El logo original puede ser de 1536x1024 px; incrustarlo en cada
+        // página producía un PDF de ~63 MB. Se reduce una sola vez a 160 px.
+        ImageData logoData = prepararLogo(logoBytes);
+        pdf.addEventHandler(PdfDocumentEvent.START_PAGE, new PdfHeaderEventHandler(partyName, logoData));
+    }
+
+    /** Logo reducido a 160x160 px; si no se puede procesar, se omite. */
+    private static ImageData prepararLogo(byte[] logoBytes) {
+        if (logoBytes == null || logoBytes.length == 0) return null;
+        try {
+            java.awt.image.BufferedImage src =
+                    javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(logoBytes));
+            if (src == null) return null;
+            int max = 160;
+            double escala = Math.min(max / (double) src.getWidth(), max / (double) src.getHeight());
+            int w = Math.max(1, (int) Math.round(src.getWidth() * escala));
+            int h = Math.max(1, (int) Math.round(src.getHeight() * escala));
+            java.awt.image.BufferedImage out = new java.awt.image.BufferedImage(
+                    w, h, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+            java.awt.Graphics2D g = out.createGraphics();
+            g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+                    java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.drawImage(src, 0, 0, w, h, null);
+            g.dispose();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            javax.imageio.ImageIO.write(out, "PNG", baos);
+            return ImageDataFactory.create(baos.toByteArray());
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private static class PdfHeaderEventHandler implements IEventHandler {
         private final String partyName;
-        private final byte[] logoBytes;
+        private final ImageData logoData;
 
-        PdfHeaderEventHandler(String partyName, byte[] logoBytes) {
+        PdfHeaderEventHandler(String partyName, ImageData logoData) {
             this.partyName = partyName;
-            this.logoBytes = logoBytes;
+            this.logoData = logoData;
         }
 
         @Override
@@ -103,9 +135,9 @@ public class PdfExportService {
 
             try (Canvas hc = new Canvas(canvas, new Rectangle(ps.getLeft() + 36, ps.getTop() - 55, ps.getWidth() - 72, 45))) {
                 float cw = (ps.getWidth() - 72) / 3;
-                if (logoBytes != null && logoBytes.length > 0) {
+                if (logoData != null) {
                     try {
-                        Image logo = new Image(ImageDataFactory.create(logoBytes));
+                        Image logo = new Image(logoData);
                         logo.scaleToFit(35, 35);
                         hc.add(logo.setFixedPosition(ps.getLeft() + 36, ps.getTop() - 50, 35));
                     } catch (Exception e) { /* ignore */ }
@@ -141,7 +173,9 @@ public class PdfExportService {
                 String now = LocalDateTime.now().format(DATE_FMT);
                 fc.add(new Paragraph("Impreso: " + now).setFontSize(7).setFontColor(ColorConstants.GRAY)
                         .setFixedPosition(ps.getLeft() + 36, ps.getBottom() + 12, cw));
-                String pn = "Pag. " + pdf.getPageNumber(page) + " de " + pdf.getNumberOfPages();
+                // En END_PAGE el total aún puede crecer (saltos de página),
+                // por eso se muestra solo el número de la página actual.
+                String pn = "Pag. " + pdf.getPageNumber(page);
                 fc.add(new Paragraph(pn).setFontSize(7).setFontColor(ColorConstants.GRAY).setTextAlignment(TextAlignment.CENTER)
                         .setFixedPosition(ps.getLeft() + 36 + cw, ps.getBottom() + 12, cw));
                 fc.add(new Paragraph("Sistema de Conteo Electoral").setFontSize(7).setFontColor(ColorConstants.GRAY)
@@ -192,6 +226,11 @@ public class PdfExportService {
                 addRecintoTable(doc, data);
             }
 
+            if (data.getResultadosMesa() != null && !data.getResultadosMesa().isEmpty()) {
+                doc.add(new AreaBreak());
+                addMesaTable(doc, data);
+            }
+
         } catch (Exception e) {
             throw new RuntimeException("Error al generar PDF", e);
         }
@@ -215,21 +254,39 @@ public class PdfExportService {
     // ── Stat Cards ────────────────────────────────────────────────────
 
     private void addStatCards(Document doc, DashboardResponse data) {
+        long nulos = valueOf(data.getTotalVotosNulos());
+        long blanco = valueOf(data.getTotalVotosBlanco());
+        long totalVotos = valueOf(data.getTotalVotos());
+
         Table grid = new Table(UnitValue.createPercentArray(new float[]{1, 1, 1, 1}));
         grid.setWidth(UnitValue.createPercentValue(100));
-        grid.addCell(statCell("Total Votos", String.format("%,d", data.getTotalVotos()), C_PRIMARY));
-        grid.addCell(statCell("Total Mesas", String.format("%,d", data.getTotalMesas()), C_INFO));
-        grid.addCell(statCell("Mesas Cerradas", String.format("%,d", data.getMesasCerradas()), C_SUCCESS));
-        grid.addCell(statCell("Mesas Abiertas", String.format("%,d", data.getMesasAbiertas()), C_WARNING));
+        grid.addCell(statCell("Total Votos", String.format("%,d", totalVotos), C_PRIMARY));
+        grid.addCell(statCell("Votos Nulos", String.format("%,d", nulos), C_WARNING));
+        grid.addCell(statCell("Votos en Blanco", String.format("%,d", blanco), C_INFO));
+        grid.addCell(statCell("Total General", String.format("%,d", totalVotos + nulos + blanco), C_SUCCESS));
         doc.add(grid);
 
         Table row2 = new Table(UnitValue.createPercentArray(new float[]{1, 1, 1, 1}));
         row2.setWidth(UnitValue.createPercentValue(100));
-        row2.addCell(statCell("% Escrutinio", String.format("%.1f%%", data.getPorcentajeMesasCerradas()), C_PRIMARY));
-        for (int i = 0; i < 3; i++) {
-            Cell e = new Cell(); e.setBorder(Border.NO_BORDER); e.setBackgroundColor(C_LIGHT_BG); row2.addCell(e);
-        }
+        row2.addCell(statCell("Total Mesas", String.format("%,d", valueOf(data.getTotalMesas())), C_INFO));
+        row2.addCell(statCell("Mesas Cerradas", String.format("%,d", valueOf(data.getMesasCerradas())), C_SUCCESS));
+        row2.addCell(statCell("Mesas Abiertas", String.format("%,d", valueOf(data.getMesasAbiertas())), C_WARNING));
+        row2.addCell(statCell("% Escrutinio", String.format("%.1f%%",
+                data.getPorcentajeMesasCerradas() == null ? 0 : data.getPorcentajeMesasCerradas()), C_PRIMARY));
         doc.add(row2);
+    }
+
+    private static long valueOf(Number n) {
+        return n == null ? 0L : n.longValue();
+    }
+
+    private static String tituloVotos(List<ResultadoCandidato> resultados) {
+        if (resultados != null && !resultados.isEmpty() &&
+                resultados.stream().allMatch(r -> CargoCategoriaUtil.ALCALDES.equalsIgnoreCase(
+                        CargoCategoriaUtil.categoria(r.getCargoNombre())))) {
+            return "Distribución de Votos por Alcalde";
+        }
+        return "Distribución de Votos por Postulación";
     }
 
     private Cell statCell(String label, String value, Color accent) {
@@ -247,7 +304,7 @@ public class PdfExportService {
 
     private void addBarChart(Document doc, PdfDocument pdf, List<ResultadoCandidato> resultados) {
         if (resultados == null || resultados.isEmpty()) return;
-        doc.add(new Paragraph("Distribucion de Votos por Candidato")
+        doc.add(new Paragraph(tituloVotos(resultados))
                 .setFontSize(13).setBold().setFontColor(C_DARK));
 
         List<ResultadoCandidato> top = resultados.size() > 10 ? resultados.subList(0, 10) : resultados;
@@ -304,7 +361,7 @@ public class PdfExportService {
 
     private void addPieChart(Document doc, PdfDocument pdf, List<ResultadoCandidato> resultados) {
         if (resultados == null || resultados.isEmpty()) return;
-        doc.add(new Paragraph("Proporcion de Votos por Candidato")
+        doc.add(new Paragraph(tituloVotos(resultados))
                 .setFontSize(13).setBold().setFontColor(C_DARK));
 
         long total = resultados.stream().mapToLong(ResultadoCandidato::getTotalVotos).sum();
@@ -377,55 +434,76 @@ public class PdfExportService {
     // ── Detail Table ──────────────────────────────────────────────────
 
     private void addDetailTable(Document doc, DashboardResponse data) {
-        doc.add(new Paragraph("Detalle de Resultados por Candidato")
+        doc.add(new Paragraph("Detalle de Resultados por Cargo")
                 .setFontSize(14).setBold().setFontColor(C_DARK));
 
+        String etiqueta = "Postulación";
+        if (data.getResultados() != null && !data.getResultados().isEmpty()) {
+            etiqueta = CargoCategoriaUtil.postulacion(
+                    CargoCategoriaUtil.categoria(data.getResultados().get(0).getCargoNombre()));
+        }
         Table t = new Table(UnitValue.createPercentArray(new float[]{0.5f, 3f, 2.5f, 2f, 1.5f, 1.5f}));
         t.setWidth(UnitValue.createPercentValue(100));
-        String[] hd = {"#", "Candidato", "Partido", "Cargo", "Votos", "%"};
+        String[] hd = {"#", etiqueta, "Partido", "Cargo", "Votos", "%"};
         for (String h : hd) {
             Cell hc = new Cell().add(new Paragraph(h).setBold().setFontSize(8).setFontColor(C_WHITE));
             hc.setBackgroundColor(C_HEADER_BG); hc.setPadding(6); hc.setTextAlignment(TextAlignment.CENTER);
             t.addHeaderCell(hc);
         }
         if (data.getResultados() != null) {
+            String categoriaActual = null;
             for (int i = 0; i < data.getResultados().size(); i++) {
                 ResultadoCandidato r = data.getResultados().get(i);
+                String categoria = CargoCategoriaUtil.categoria(r.getCargoNombre());
+                if (!categoria.equalsIgnoreCase(categoriaActual)) {
+                    categoriaActual = categoria;
+                    t.addCell(new Cell(1, hd.length).setBorder(Border.NO_BORDER)
+                            .add(new Paragraph(categoria).setBold().setFontSize(9).setFontColor(C_PRIMARY)));
+                }
                 boolean odd = i % 2 == 1;
                 t.addCell(td(String.valueOf(i + 1), odd, TextAlignment.CENTER));
                 t.addCell(td(r.getNombreCompleto(), odd, TextAlignment.LEFT));
                 t.addCell(td(r.getPartidoNombre(), odd, TextAlignment.LEFT));
                 t.addCell(td(r.getCargoNombre(), odd, TextAlignment.LEFT));
-                t.addCell(td(String.format("%,d", r.getTotalVotos()), odd, TextAlignment.RIGHT));
-                t.addCell(td(String.format("%.1f%%", r.getPorcentaje()), odd, TextAlignment.RIGHT));
+                t.addCell(td(String.format("%,d", valueOf(r.getTotalVotos())), odd, TextAlignment.RIGHT));
+                t.addCell(td(String.format("%.1f%%", r.getPorcentaje() == null ? 0 : r.getPorcentaje()),
+                        odd, TextAlignment.RIGHT));
             }
         }
         doc.add(t);
     }
 
     private void addListasTable(Document doc, DashboardResponse data) {
-        doc.add(new Paragraph("Resultados por Lista")
+        doc.add(new Paragraph("Resultados por Cargo (votación en lista)")
                 .setFontSize(14).setBold().setFontColor(C_DARK));
 
         Table t = new Table(UnitValue.createPercentArray(new float[]{0.5f, 3f, 1f, 2f, 2f, 1.5f, 1.5f}));
         t.setWidth(UnitValue.createPercentValue(100));
-        String[] hd = {"#", "Lista", "N°", "Partido", "Cargo", "Votos", "%"};
+        String[] hd = {"#", "Postulación", "N°", "Partido", "Cargo", "Votos", "%"};
         for (String h : hd) {
             Cell hc = new Cell().add(new Paragraph(h).setBold().setFontSize(8).setFontColor(C_WHITE));
             hc.setBackgroundColor(C_HEADER_BG); hc.setPadding(6); hc.setTextAlignment(TextAlignment.CENTER);
             t.addHeaderCell(hc);
         }
         if (data.getResultadosListas() != null) {
+            String categoriaActual = null;
             for (int i = 0; i < data.getResultadosListas().size(); i++) {
                 ResultadoLista r = data.getResultadosListas().get(i);
+                String categoria = CargoCategoriaUtil.categoria(r.getCargoNombre());
+                if (!categoria.equalsIgnoreCase(categoriaActual)) {
+                    categoriaActual = categoria;
+                    t.addCell(new Cell(1, hd.length).setBorder(Border.NO_BORDER)
+                            .add(new Paragraph(categoria).setBold().setFontSize(9).setFontColor(C_PRIMARY)));
+                }
                 boolean odd = i % 2 == 1;
                 t.addCell(td(String.valueOf(i + 1), odd, TextAlignment.CENTER));
                 t.addCell(td(r.getListaNombre(), odd, TextAlignment.LEFT));
                 t.addCell(td(String.valueOf(r.getNumeroLista()), odd, TextAlignment.CENTER));
                 t.addCell(td(r.getPartidoNombre() != null ? r.getPartidoNombre() : "—", odd, TextAlignment.LEFT));
                 t.addCell(td(r.getCargoNombre() != null ? r.getCargoNombre() : "—", odd, TextAlignment.LEFT));
-                t.addCell(td(String.format("%,d", r.getTotalVotos()), odd, TextAlignment.RIGHT));
-                t.addCell(td(String.format("%.1f%%", r.getPorcentaje()), odd, TextAlignment.RIGHT));
+                t.addCell(td(String.format("%,d", valueOf(r.getTotalVotos())), odd, TextAlignment.RIGHT));
+                t.addCell(td(String.format("%.1f%%", r.getPorcentaje() == null ? 0 : r.getPorcentaje()),
+                        odd, TextAlignment.RIGHT));
             }
         }
         doc.add(t);
@@ -485,6 +563,41 @@ public class PdfExportService {
                 t.addCell(td(String.format("%,d", r.getTotalVotos()), odd, TextAlignment.RIGHT));
                 t.addCell(td(String.format("%.1f%%", r.getPorcentaje()), odd, TextAlignment.RIGHT));
             }
+        }
+        doc.add(t);
+    }
+
+    // ── Mesa Table ─────────────────────────────────────────────────────
+
+    private void addMesaTable(Document doc, DashboardResponse data) {
+        doc.add(new Paragraph("Resultados por Mesa")
+                .setFontSize(14).setBold().setFontColor(C_DARK));
+        doc.add(new Paragraph("Incluye nulos y blancos registrados en cada mesa.")
+                .setFontSize(8).setFontColor(C_GRAY));
+
+        Table t = new Table(UnitValue.createPercentArray(
+                new float[]{0.4f, 0.9f, 3f, 0.7f, 1.2f, 1f, 1f, 1.1f, 0.9f}));
+        t.setWidth(UnitValue.createPercentValue(100));
+        String[] hd = {"#", "Mesa", "Recinto", "Est.", "Votos", "Nulos", "Blancos", "Total", "%"};
+        for (String h : hd) {
+            Cell hc = new Cell().add(new Paragraph(h).setBold().setFontSize(7).setFontColor(C_WHITE));
+            hc.setBackgroundColor(C_HEADER_BG); hc.setPadding(5); hc.setTextAlignment(TextAlignment.CENTER);
+            t.addHeaderCell(hc);
+        }
+        for (int i = 0; i < data.getResultadosMesa().size(); i++) {
+            ResultadoMesa r = data.getResultadosMesa().get(i);
+            boolean odd = i % 2 == 1;
+            t.addCell(td(String.valueOf(i + 1), odd, TextAlignment.CENTER));
+            t.addCell(td(r.getMesaNumero(), odd, TextAlignment.CENTER));
+            t.addCell(td(r.getInstitucionNombre() != null ? r.getInstitucionNombre() : "—",
+                    odd, TextAlignment.LEFT));
+            t.addCell(td(Boolean.TRUE.equals(r.getCerrada()) ? "C" : "A", odd, TextAlignment.CENTER));
+            t.addCell(td(String.format("%,d", valueOf(r.getVotosCandidatos())), odd, TextAlignment.RIGHT));
+            t.addCell(td(String.format("%,d", valueOf(r.getVotosNulos())), odd, TextAlignment.RIGHT));
+            t.addCell(td(String.format("%,d", valueOf(r.getVotosBlanco())), odd, TextAlignment.RIGHT));
+            t.addCell(td(String.format("%,d", valueOf(r.getTotalVotos())), odd, TextAlignment.RIGHT));
+            t.addCell(td(String.format("%.1f%%", r.getPorcentaje() == null ? 0 : r.getPorcentaje()),
+                    odd, TextAlignment.RIGHT));
         }
         doc.add(t);
     }

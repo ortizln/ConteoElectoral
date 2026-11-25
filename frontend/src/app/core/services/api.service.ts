@@ -460,6 +460,7 @@ export class ApiService {
       if (filtros.cantonId) params.set('cantonId', filtros.cantonId);
       if (filtros.parroquiaId) params.set('parroquiaId', filtros.parroquiaId);
       if (filtros.institucionId) params.set('institucionId', filtros.institucionId);
+      if (filtros.mesaId) params.set('mesaId', filtros.mesaId);
     }
     const qs = params.toString();
     if (qs) url += '?' + qs;
@@ -477,6 +478,7 @@ export class ApiService {
       if (filtros.cantonId) params.set('cantonId', filtros.cantonId);
       if (filtros.parroquiaId) params.set('parroquiaId', filtros.parroquiaId);
       if (filtros.institucionId) params.set('institucionId', filtros.institucionId);
+      if (filtros.mesaId) params.set('mesaId', filtros.mesaId);
     }
     const qs = params.toString();
     if (qs) url += '?' + qs;

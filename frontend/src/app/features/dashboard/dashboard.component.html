@@ -288,18 +288,13 @@
     </div>
     <div class="table-wrapper" [class.hidden]="resultadosMinimized">
 
-      <!-- Pestañas de resultados -->
+      <!-- Pestañas por cargo + Recintos y Mesas -->
       <ul class="nav nav-tabs tabs-nav">
-        <li class="nav-item" (click)="tabResultados = 'candidatos'">
-          <a class="nav-link" [class.active]="tabResultados === 'candidatos'">
-            <i class="bi bi-person"></i> Candidatos
-            <span class="tab-count">{{ resultados.length }}</span>
-          </a>
-        </li>
-        <li class="nav-item" *ngIf="showListaResults" (click)="tabResultados = 'listas'">
-          <a class="nav-link" [class.active]="tabResultados === 'listas'">
-            <i class="bi bi-clipboard-data"></i> Listas
-            <span class="tab-count">{{ resultadosListas.length }}</span>
+        <li class="nav-item" *ngFor="let tab of cargoTabs" (click)="tabResultados = tab.label">
+          <a class="nav-link" [class.active]="tabResultados === tab.label">
+            <i class="bi" [ngClass]="tab.esLista ? 'bi-list-check' : 'bi-person'"></i>
+            {{ tab.label }}
+            <span class="tab-count">{{ tab.count }}</span>
           </a>
         </li>
         <li class="nav-item" *ngIf="resultadosRecinto.length > 0" (click)="tabResultados = 'recintos'">
@@ -316,13 +311,34 @@
         </li>
       </ul>
 
-      <div *ngIf="tabResultados === 'candidatos' && resultados.length > 0" class="resultados-section">
-        <h4 class="section-title"><i class="bi bi-person"></i> Candidatos Individuales</h4>
+      <!-- Filtros específicos de las pestañas por cargo -->
+      <div class="resultados-filtros" *ngIf="esTabCargo">
+        <div class="filtro-group">
+          <label>Recinto</label>
+          <select class="form-select" [(ngModel)]="filtroInstitucionId"
+            (change)="onFiltroRecintoResultadosChange()">
+            <option [ngValue]="null">Todos los recintos</option>
+            <option *ngFor="let i of instituciones" [value]="i.id">{{ i.nombre }}</option>
+          </select>
+        </div>
+        <div class="filtro-group">
+          <label>Mesa</label>
+          <select class="form-select" [(ngModel)]="filtroMesaId" (change)="onFiltroMesaResultadosChange()">
+            <option [ngValue]="null">Todas las mesas</option>
+            <option *ngFor="let m of mesasFiltradasPorRecinto" [value]="m.id">
+              Mesa {{ m.numero }} - {{ m.institucionNombre || '' }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div *ngIf="esTabCargo && !tabCargoActual?.esLista && resultadosDelTab.length > 0" class="resultados-section">
+        <h4 class="section-title"><i class="bi bi-person"></i> {{ tabResultados }} — Resultados individuales</h4>
         <table class="table-moderno">
           <thead>
             <tr>
               <th class="sortable" (click)="setSortColumn('nombreCompleto')">
-                Candidato <span class="sort-icon">{{ getSortIcon('nombreCompleto') }}</span>
+                {{ etiquetaPostulacion }} <span class="sort-icon">{{ getSortIcon('nombreCompleto') }}</span>
               </th>
               <th class="sortable" (click)="setSortColumn('partidoNombre')">
                 Partido <span class="sort-icon">{{ getSortIcon('partidoNombre') }}</span>
@@ -339,7 +355,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let r of resultadosOrdenados; let i = index" [class]="getRowClass(r)"
+            <tr *ngFor="let r of resultadosDelTab; let i = index" [class]="getRowClass(r)"
               (click)="r.candidatoId > 0 && verDetalleCandidato(r.candidatoId)">
               <td>
                 <div class="candidato-info-cell">
@@ -369,20 +385,20 @@
                 <span class="porcentaje-badge">{{ r.porcentaje | number:'1.1-1' }}%</span>
               </td>
             </tr>
-            <tr *ngIf="resultadosOrdenados.length === 0">
-              <td colspan="5" class="text-center empty-msg">No hay candidatos individuales</td>
+            <tr *ngIf="resultadosDelTab.length === 0">
+              <td colspan="5" class="text-center empty-msg">No hay resultados individuales</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div *ngIf="tabResultados === 'listas' && showListaResults && resultadosListas.length > 0" class="resultados-section">
-        <h4 class="section-title"><i class="bi bi-clipboard-data"></i> Resultados por Lista</h4>
+      <div *ngIf="esTabCargo && tabCargoActual?.esLista && resultadosListasDelTab.length > 0" class="resultados-section">
+        <h4 class="section-title"><i class="bi bi-clipboard-data"></i> {{ tabResultados }} — Resultados</h4>
         <table class="table-moderno">
           <thead>
             <tr>
               <th>#</th>
-              <th>Lista</th>
+              <th>{{ etiquetaPostulacion }}</th>
               <th>N°</th>
               <th>Partido</th>
               <th>Cargo</th>
@@ -391,7 +407,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let l of resultadosListas; let i = index">
+            <tr *ngFor="let l of resultadosListasDelTab; let i = index">
               <td>{{ i + 1 }}</td>
               <td>
                 <div class="candidato-info-cell">
@@ -410,14 +426,14 @@
               <td class="text-right"><strong>{{ l.totalVotos | number }}</strong></td>
               <td class="text-right"><span class="porcentaje-badge">{{ l.porcentaje | number:'1.1-1' }}%</span></td>
             </tr>
-            <tr *ngIf="resultadosListas.length === 0">
-              <td colspan="7" class="text-center empty-msg">No hay resultados por lista</td>
+            <tr *ngIf="resultadosListasDelTab.length === 0">
+              <td colspan="7" class="text-center empty-msg">No hay resultados para este cargo</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div *ngIf="tabResultados === 'candidatos' && resultados.length === 0"
+      <div *ngIf="esTabCargo && resultadosDelTab.length === 0 && resultadosListasDelTab.length === 0"
         class="empty-msg text-center py-4">
         No hay resultados disponibles
       </div>

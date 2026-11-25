@@ -1,6 +1,9 @@
 package com.electoral.controllers;
 
 import com.electoral.dto.DashboardResponse;
+import com.electoral.dto.ResultadoCandidato;
+import com.electoral.dto.ResultadoDetalleVoto;
+import com.electoral.dto.ResultadoLista;
 import com.electoral.dto.SyncPushRequest;
 import com.electoral.dto.SyncPushResponse;
 import com.electoral.dto.VotoResponse;
@@ -8,6 +11,7 @@ import com.electoral.services.ExcelExportService;
 import com.electoral.services.PdfExportService;
 import com.electoral.services.SyncService;
 import com.electoral.services.VotoService;
+import com.electoral.util.CargoCategoriaUtil;
 import com.electoral.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -18,7 +22,12 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -88,28 +97,84 @@ public class DashboardController {
         DashboardResponse data = votoService.getDashboardDataConFiltros(eleccionesId, cargoId, partidoId,
                 zonaId, provinciaId, cantonId, parroquiaId, institucionId, mesaId);
 
-        String[] headersInd = {"Candidato", "Partido", "Cargo", "Votos", "Porcentaje"};
-        List<String[]> rowsInd = data.getResultados().stream()
-                .map(r -> new String[]{r.getNombreCompleto(), r.getPartidoNombre(), r.getCargoNombre(),
-                        String.valueOf(r.getTotalVotos()), String.format("%.2f%%", r.getPorcentaje())})
-                .collect(Collectors.toList());
-        byte[] excel = excelExportService.exportExcel("Resultados", headersInd, rowsInd);
+        // ── Totales globales ─────────────────────────────────────────────
+        List<String[]> rowsTotales = new ArrayList<>();
+        rowsTotales.add(new String[]{"Total Votos", String.valueOf(data.getTotalVotos())});
+        rowsTotales.add(new String[]{"Votos Nulos", String.valueOf(data.getTotalVotosNulos())});
+        rowsTotales.add(new String[]{"Votos en Blanco", String.valueOf(data.getTotalVotosBlanco())});
+        rowsTotales.add(new String[]{"Total General", String.valueOf(data.getTotalVotos()
+                + data.getTotalVotosNulos() + data.getTotalVotosBlanco())});
+        rowsTotales.add(new String[]{"Total Mesas", String.valueOf(data.getTotalMesas())});
+        rowsTotales.add(new String[]{"Mesas Cerradas", String.valueOf(data.getMesasCerradas())});
+        rowsTotales.add(new String[]{"Mesas Abiertas", String.valueOf(data.getMesasAbiertas())});
+        rowsTotales.add(new String[]{"% Escrutinio", String.format("%.2f%%", data.getPorcentajeMesasCerradas())});
+        byte[] excel = excelExportService.exportExcel(
+                "Resumen General", new String[]{"Concepto", "Cantidad"}, rowsTotales);
 
-        if (data.getResultadosListas() != null && !data.getResultadosListas().isEmpty()) {
-            String[] headersLis = {"Lista", "N°", "Partido", "Cargo", "Votos", "Porcentaje"};
-            List<String[]> rowsLis = data.getResultadosListas().stream()
-                    .map(r -> new String[]{r.getListaNombre(), String.valueOf(r.getNumeroLista()),
-                            r.getPartidoNombre() != null ? r.getPartidoNombre() : "—",
-                            r.getCargoNombre() != null ? r.getCargoNombre() : "—",
-                            String.valueOf(r.getTotalVotos()), String.format("%.2f%%", r.getPorcentaje())})
-                    .collect(Collectors.toList());
-            excel = excelExportService.appendSheetToExcel(excel, "Listas", headersLis, rowsLis);
+        // Detalle por candidato/lista y mesa → número de mesas por postulación
+        List<ResultadoDetalleVoto> detalle = votoService.getDetalleResultadosParaExport(
+                eleccionesId, cargoId, partidoId, zonaId, provinciaId, cantonId,
+                parroquiaId, institucionId, mesaId);
+        Map<String, Set<String>> mesasPorPostulacion = new HashMap<>();
+        for (ResultadoDetalleVoto d : detalle) {
+            String key = (d.isLista() ? "L" : "C") + d.getPostulacionId();
+            mesasPorPostulacion.computeIfAbsent(key, k -> new HashSet<>())
+                    .add(d.getRecintoNombre() + " | " + d.getMesaNumero());
         }
+
+        // ── Una hoja por cargo ───────────────────────────────────────────
+        for (String categoria : CargoCategoriaUtil.categoriasOrdenadas()) {
+            boolean esLista = !CargoCategoriaUtil.ALCALDES.equals(categoria);
+            String etiqueta = CargoCategoriaUtil.postulacion(categoria);
+            String[] headers = esLista
+                    ? new String[]{"Cargo", etiqueta, "N°", "Partido", "Votos", "Porcentaje", "Mesas"}
+                    : new String[]{"Cargo", etiqueta, "Partido", "Votos", "Porcentaje", "Mesas"};
+            List<String[]> rows = new ArrayList<>();
+
+            if (!esLista && data.getResultados() != null) {
+                for (ResultadoCandidato r : data.getResultados()) {
+                    if (r.getCandidatoId() == null || r.getCandidatoId() <= 0) continue;
+                    if (!categoria.equalsIgnoreCase(
+                            CargoCategoriaUtil.categoria(r.getCargoNombre()))) continue;
+                    Set<String> mesas = mesasPorPostulacion.get("C" + r.getCandidatoId());
+                    rows.add(new String[]{r.getCargoNombre(), r.getNombreCompleto(), r.getPartidoNombre(),
+                            String.valueOf(r.getTotalVotos()), porcentaje(r.getPorcentaje()),
+                            String.valueOf(mesas == null ? 0 : mesas.size())});
+                }
+            }
+            if (esLista && data.getResultadosListas() != null) {
+                for (ResultadoLista r : data.getResultadosListas()) {
+                    if (!categoria.equalsIgnoreCase(
+                            CargoCategoriaUtil.categoria(r.getCargoNombre()))) continue;
+                    Set<String> mesas = mesasPorPostulacion.get("L" + r.getListaId());
+                    rows.add(new String[]{r.getCargoNombre(), r.getListaNombre(),
+                            String.valueOf(r.getNumeroLista()),
+                            r.getPartidoNombre() != null ? r.getPartidoNombre() : "—",
+                            String.valueOf(r.getTotalVotos()), porcentaje(r.getPorcentaje()),
+                            String.valueOf(mesas == null ? 0 : mesas.size())});
+                }
+            }
+            excel = excelExportService.appendSheetToExcel(excel, categoria, headers, rows);
+        }
+
+        // ── Desglose por mesa ────────────────────────────────────────────
+        List<String[]> rowsDetalle = detalle.stream()
+                .map(d -> new String[]{d.getCategoria(), d.getCantonNombre(), d.getParroquiaNombre(),
+                        d.getRecintoNombre(), d.getMesaNumero(), d.getPostulacionNombre(),
+                        d.getPartidoNombre(), String.valueOf(d.getTotalVotos())})
+                .collect(Collectors.toList());
+        excel = excelExportService.appendSheetToExcel(excel, "Detalle por Mesa",
+                new String[]{"Categoría", "Cantón", "Parroquia", "Recinto", "Mesa",
+                        "Postulación", "Partido", "Votos"}, rowsDetalle);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         httpHeaders.setContentDispositionFormData("attachment", "resultados.xlsx");
         return ResponseEntity.ok().headers(httpHeaders).body(excel);
+    }
+
+    private static String porcentaje(Double valor) {
+        return String.format("%.2f%%", valor == null ? 0.0 : valor);
     }
 }
 

@@ -203,6 +203,7 @@ export interface Voto {
 
 export interface ResultadoLista {
   listaId: number;
+  cargoId?: number;
   listaNombre: string;
   numeroLista: number;
   partidoNombre: string;
@@ -436,6 +437,7 @@ export interface ReglaNegocio {
 
 export interface ResultadoCandidato {
   candidatoId: number;
+  cargoId?: number;
   nombreCompleto: string;
   partidoNombre: string;
   cargoNombre: string;

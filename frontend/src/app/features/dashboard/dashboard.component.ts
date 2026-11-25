@@ -46,8 +46,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   drillMesaFotosLoading = false;
   drillMesaFotoVisor: string | null = null;
 
-  // Pestañas de resultados
-  tabResultados: 'candidatos' | 'listas' | 'recintos' | 'mesas' = 'candidatos';
+  // Pestañas de resultados: una por cargo + Recintos y Mesas
+  tabResultados = '';
 
   // Modal de resumen por recinto
   showRecintoResumen = false;
@@ -245,10 +245,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     this.resultados = resultados;
 
-    // Si la pestaña activa ya no tiene datos, volver a candidatos
-    if (this.tabResultados === 'listas' && !this.showListaResults) this.tabResultados = 'candidatos';
-    if (this.tabResultados === 'recintos' && this.resultadosRecinto.length === 0) this.tabResultados = 'candidatos';
-    if (this.tabResultados === 'mesas' && this.resultadosMesa.length === 0) this.tabResultados = 'candidatos';
+    // Mantener una pestaña válida tras cualquier actualización de datos
+    const validas = [...this.cargoTabs.map(t => t.label), 'recintos', 'mesas'];
+    if (!this.tabResultados || !validas.includes(this.tabResultados)) {
+      this.tabResultados = this.cargoTabs[0]?.label || 'recintos';
+    }
   }
 
   private subscribeToMesaEstado(): void {
@@ -623,14 +624,126 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       .slice(0, 5);
   }
 
+  /** Pestañas por cargo (individual → candidatos, LISTA → listas). */
+  get cargoTabs(): { label: string; esLista: boolean; count: number }[] {
+    const orden = ['Alcaldes', 'Consejales Urbanos', 'Consejales Rurales', 'Juntas Parroquiales'];
+    const tipos = new Map<string, boolean>();
+    const registrar = (nombre: string, esLista: boolean) => {
+      const label = this.etiquetaCategoria(nombre);
+      if (!tipos.has(label) || esLista) tipos.set(label, esLista);
+    };
+    for (const c of this.cargos || []) {
+      if (c?.nombre) registrar(c.nombre, (c.tipoVotacion || '').toUpperCase() === 'LISTA');
+    }
+    for (const r of this.resultados || []) registrar(r.cargoNombre, false);
+    for (const r of this.resultadosListas || []) registrar(r.cargoNombre, true);
+
+    return Array.from(tipos.entries())
+      .map(([label, esLista]) => ({
+        label,
+        esLista,
+        count: esLista
+          ? this.resultadosListas.filter(l => this.etiquetaCategoria(l.cargoNombre) === label).length
+          : this.resultados.filter(r => this.etiquetaCategoria(r.cargoNombre) === label ||
+              (r.candidatoId <= 0 && label === this.primeraCargoIndividual)).length
+      }))
+      .sort((a, b) => {
+        const ia = orden.indexOf(a.label) < 0 ? 99 : orden.indexOf(a.label);
+        const ib = orden.indexOf(b.label) < 0 ? 99 : orden.indexOf(b.label);
+        return ia !== ib ? ia - ib : a.label.localeCompare(b.label);
+      });
+  }
+
+  get esTabCargo(): boolean {
+    return this.tabResultados !== 'recintos' && this.tabResultados !== 'mesas';
+  }
+
+  get tabCargoActual(): { label: string; esLista: boolean; count: number } | undefined {
+    return this.cargoTabs.find(t => t.label === this.tabResultados);
+  }
+
+  /** Normaliza el nombre del cargo a una de las cuatro categorías del reporte. */
+  private etiquetaCategoria(nombre?: string | null): string {
+    const original = (nombre || '').trim() || 'Otros';
+    const n = original.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+    if (n.includes('ALCALDE')) return 'Alcaldes';
+    if ((n.includes('JUNTA') && n.includes('PARROQUI')) || n.includes('VOCAL')) {
+      return 'Juntas Parroquiales';
+    }
+    if (n.includes('CONCEJAL') || n.includes('CONCEJO')) {
+      if (n.includes('URBAN')) return 'Consejales Urbanos';
+      if (n.includes('RURAL')) return 'Consejales Rurales';
+    }
+    return original;
+  }
+
+  private get primeraCargoIndividual(): string | undefined {
+    for (const c of this.cargos || []) {
+      if (c?.nombre && (c.tipoVotacion || '').toUpperCase() !== 'LISTA') {
+        return this.etiquetaCategoria(c.nombre);
+      }
+    }
+    const r = this.resultados.find(x => x.candidatoId > 0 && x.cargoNombre);
+    return r ? this.etiquetaCategoria(r.cargoNombre) : undefined;
+  }
+
+  /** Palabra a usar en la tabla según el cargo activo. */
+  get etiquetaPostulacion(): string {
+    switch (this.tabResultados) {
+      case 'Alcaldes': return 'Alcalde';
+      case 'Consejales Urbanos': return 'Consejal Urbano';
+      case 'Consejales Rurales': return 'Consejal Rural';
+      case 'Juntas Parroquiales': return 'Junta Parroquial';
+      default: return 'Postulación';
+    }
+  }
+
+  /** Resultados individuales del cargo indicado (nulos/blanco solo en el primero). */
+  resultadosDelCargo(label: string): ResultadoCandidato[] {
+    const propios = this.resultadosOrdenados.filter(
+      r => r.candidatoId > 0 && this.etiquetaCategoria(r.cargoNombre) === label);
+    if (label === this.primeraCargoIndividual) {
+      return [...propios, ...this.resultadosOrdenados.filter(r => r.candidatoId <= 0)];
+    }
+    return propios;
+  }
+
+  get resultadosDelTab(): ResultadoCandidato[] {
+    return this.esTabCargo && !this.tabCargoActual?.esLista
+      ? this.resultadosDelCargo(this.tabResultados) : [];
+  }
+
+  get resultadosListasDelTab(): ResultadoLista[] {
+    return this.esTabCargo && this.tabCargoActual?.esLista
+      ? this.resultadosListas.filter(l => this.etiquetaCategoria(l.cargoNombre) === this.tabResultados)
+      : [];
+  }
+
+  get mesasFiltradasPorRecinto(): Mesa[] {
+    return this.filtroInstitucionId != null
+      ? this.mesas.filter(m => m.institucionId === this.filtroInstitucionId)
+      : this.mesas;
+  }
+
+  onFiltroRecintoResultadosChange(): void {
+    if (this.filtroInstitucionId != null) {
+      this.filtroMesaId = null;
+      this.filtroMesaTexto = '';
+    }
+    this.aplicarFiltros();
+  }
+
+  onFiltroMesaResultadosChange(): void {
+    const m = this.mesas.find(x => x.id === this.filtroMesaId);
+    this.filtroMesaTexto = m ? this.etiquetaMesa(m) : '';
+    this.aplicarFiltros();
+  }
+
   /** Etiqueta del contador según la pestaña activa */
   get tabCountLabel(): string {
-    switch (this.tabResultados) {
-      case 'listas': return `${this.resultadosListas.length} listas`;
-      case 'recintos': return `${this.resultadosRecinto.length} recintos`;
-      case 'mesas': return `${this.resultadosMesa.length} mesas`;
-      default: return `${this.resultados.length} candidatos`;
-    }
+    if (this.tabResultados === 'recintos') return `${this.resultadosRecinto.length} recintos`;
+    if (this.tabResultados === 'mesas') return `${this.resultadosMesa.length} mesas`;
+    return `${this.tabCargoActual?.count || 0} resultados`;
   }
 
   limpiarAlcance(): void {
@@ -931,6 +1044,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     if (this.filtroCantonId) f.cantonId = this.filtroCantonId;
     if (this.filtroParroquiaId) f.parroquiaId = this.filtroParroquiaId;
     if (this.filtroInstitucionId) f.institucionId = this.filtroInstitucionId;
+    if (this.filtroMesaId) f.mesaId = this.filtroMesaId;
     return f;
   }
 
