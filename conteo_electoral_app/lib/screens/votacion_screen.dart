@@ -57,7 +57,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
     if ((n.contains('junta') && n.contains('parroqui')) || n.contains('vocal')) {
       return 'Junta Parroquial';
     }
-    if (n.contains('concej')) {
+    if (n.contains('consej') || n.contains('concejo') || n.contains('consejo')) {
       if (n.contains('urban')) return 'Consejal Urbano';
       if (n.contains('rural')) return 'Consejal Rural';
     }

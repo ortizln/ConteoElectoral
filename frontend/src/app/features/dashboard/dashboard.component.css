@@ -94,6 +94,19 @@
 .chart-card.fullscreen .chart-canvas-wrap { height: calc(100vh - 200px); }
 .card-body.hidden { display: none; }
 
+/* Tres cards de resultados por lista, uno por contienda. */
+.categorias-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); transition: none; }
+.categorias-grid .chart-card { transition: none; }
+.categoria-lista-layout { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+.categoria-lista-layout .chart-canvas-donut { width: 180px; height: 180px; }
+.categoria-lista-detalle { flex: 1; min-width: 190px; }
+.categoria-lista-detalle .progress-item { margin-bottom: 10px; }
+.lista-numero { color: var(--alantek-text-muted); }
+.lista-partido { display: block; margin-top: 2px; color: var(--alantek-text-muted); font-size: 11px; }
+.sin-resultados { color: var(--alantek-text-muted); font-size: 13px; margin: 0; }
+.chart-card.fullscreen .categoria-lista-layout { align-items: center; }
+.chart-card.fullscreen .categoria-lista-layout .chart-canvas-donut { width: 220px; height: 220px; }
+
 .table-card { background: var(--alantek-surface); border-radius: 12px; box-shadow: var(--alantek-shadow-sm); border: 1px solid var(--alantek-border); overflow: hidden; transition: all 0.3s; }
 .table-card.minimized .table-wrapper { display: none; }
 .table-card.dimmed { visibility: hidden; height: 0; min-height: 0; padding: 0 24px; margin: 0; border: none; overflow: hidden; }

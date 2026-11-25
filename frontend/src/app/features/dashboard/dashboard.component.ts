@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ViewChildren, QueryList, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,6 +13,23 @@ import { catchError, of } from 'rxjs';
 
 Chart.register(...registerables);
 
+type ResultadoListaCategoriaItem = {
+  lista: string;
+  numero: number;
+  partido: string;
+  votos: number;
+  porcentaje: number;
+};
+
+type ResultadoListaCategoriaCard = {
+  clave: string;
+  categoria: string;
+  titulo: string;
+  icono: string;
+  totalVotos: number;
+  items: ResultadoListaCategoriaItem[];
+};
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -23,8 +40,7 @@ Chart.register(...registerables);
 export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('barChart') barChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('pieChart') pieChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('partyPieChart') partyPieChartRef!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('listPieChart') listPieChartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChildren('categoriaListaChart') categoriaListaCharts!: QueryList<ElementRef<HTMLCanvasElement>>;
 
   elecciones: Eleccion[] = [];
   selectedEleccionId: number | null = null;
@@ -55,8 +71,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   recintoResumenData: DashboardData | null = null;
   recintoResumenLoading = false;
 
-  resultadosPorPartido: { partido: string; votos: number; porcentaje: number }[] = [];
-  resultadosListasChart: { lista: string; numero: number; partido: string; votos: number; porcentaje: number }[] = [];
+  /** Un card por contienda por lista: JP, consejal urbano y consejal rural. */
+  categoriasListasCards: ResultadoListaCategoriaCard[] = [
+    { clave: 'junta', categoria: 'Juntas Parroquiales', titulo: 'Resultado por Junta Parroquial', icono: 'bi-people-fill', totalVotos: 0, items: [] },
+    { clave: 'urbano', categoria: 'Consejales Urbanos', titulo: 'Resultado por Consejal Urbano', icono: 'bi-building', totalVotos: 0, items: [] },
+    { clave: 'rural', categoria: 'Consejales Rurales', titulo: 'Resultado por Consejal Rural', icono: 'bi-tree-fill', totalVotos: 0, items: [] }
+  ];
 
   sortColumn: string = 'votos';
   sortDirection: 'asc' | 'desc' = 'desc';
@@ -91,10 +111,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   barChartFullscreen = false;
   pieChartMinimized = false;
   pieChartFullscreen = false;
-  partyChartMinimized = false;
-  partyChartFullscreen = false;
-  listChartMinimized = false;
-  listChartFullscreen = false;
+  categoriaChartMinimized: Record<string, boolean> = { junta: false, urbano: false, rural: false };
+  categoriaChartFullscreen: Record<string, boolean> = { junta: false, urbano: false, rural: false };
   resultadosMinimized = false;
   resultadosFullscreen = false;
 
@@ -125,8 +143,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private barChart?: Chart;
   private pieChart?: Chart;
-  private partyPieChart?: Chart;
-  private listPieChart?: Chart;
+  private categoriaCharts: Chart[] = [];
   private wsSubscription?: Subscription;
   private autoRefreshTimer?: ReturnType<typeof setInterval>;
 
@@ -144,28 +161,32 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   toggleMinimize(card: string): void {
     if (card === 'barChart') this.barChartMinimized = !this.barChartMinimized;
     else if (card === 'pieChart') this.pieChartMinimized = !this.pieChartMinimized;
-    else if (card === 'partyChart') this.partyChartMinimized = !this.partyChartMinimized;
-    else if (card === 'listChart') this.listChartMinimized = !this.listChartMinimized;
+    else if (card in this.categoriaChartMinimized) {
+      this.categoriaChartMinimized[card] = !this.categoriaChartMinimized[card];
+    }
     else if (card === 'resultados') this.resultadosMinimized = !this.resultadosMinimized;
     else if (card === 'stats') this.statsMinimized = !this.statsMinimized;
   }
 
+  get algunaCategoriaFullscreen(): boolean {
+    return Object.values(this.categoriaChartFullscreen).some(Boolean);
+  }
+
   toggleFullscreen(card: string): void {
+    const esCategoria = card in this.categoriaChartFullscreen;
+    const activarCategoria = esCategoria && !this.categoriaChartFullscreen[card];
     const activating = card === 'barChart' ? !this.barChartFullscreen
       : card === 'pieChart' ? !this.pieChartFullscreen
-      : card === 'partyChart' ? !this.partyChartFullscreen
-      : card === 'listChart' ? !this.listChartFullscreen
+      : esCategoria ? activarCategoria
       : !this.resultadosFullscreen;
     this.barChartFullscreen = false;
     this.pieChartFullscreen = false;
-    this.partyChartFullscreen = false;
-    this.listChartFullscreen = false;
+    Object.keys(this.categoriaChartFullscreen).forEach(k => this.categoriaChartFullscreen[k] = false);
     this.resultadosFullscreen = false;
     if (activating) {
       if (card === 'barChart') this.barChartFullscreen = true;
       else if (card === 'pieChart') this.pieChartFullscreen = true;
-      else if (card === 'partyChart') this.partyChartFullscreen = true;
-      else if (card === 'listChart') this.listChartFullscreen = true;
+      else if (esCategoria) this.categoriaChartFullscreen[card] = true;
       else if (card === 'resultados') this.resultadosFullscreen = true;
       document.body.style.overflow = 'hidden';
     } else {
@@ -174,8 +195,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     setTimeout(() => {
       this.barChart?.resize();
       this.pieChart?.resize();
-      this.partyPieChart?.resize();
-      this.listPieChart?.resize();
     }, 100);
   }
 
@@ -270,19 +289,16 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit(): void {
     setTimeout(() => {
       this.initCharts();
-      this.initPartyChart();
-      this.initListChart();
+      this.initCategoriaCharts();
       this.updateCharts();
-      this.updatePartyChart();
-      this.updateListChart();
+      this.updateCategoriaCharts();
     }, 100);
   }
 
   loadDataComplete(): void {
-    this.computeResultadosPorPartido();
+    this.computeCategoriasListas();
     this.updateCharts();
-    this.updatePartyChart();
-    this.updateListChart();
+    this.updateCategoriaCharts();
     this.ultimaActualizacion = new Date().toLocaleTimeString();
   }
 
@@ -291,8 +307,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.stopAutoRefresh();
     this.barChart?.destroy();
     this.pieChart?.destroy();
-    this.partyPieChart?.destroy();
-    this.listPieChart?.destroy();
+    this.categoriaCharts.forEach(c => c.destroy());
+    this.categoriaCharts = [];
     document.body.style.overflow = '';
   }
 
@@ -1047,78 +1063,54 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     return f;
   }
 
-  private computeResultadosPorPartido(): void {
-    const partidoMap = new Map<string, number>();
-    for (const r of this.resultados) {
-      if (r.candidatoId === 0 || r.candidatoId === -1 || (r.candidatoId ?? 0) < -1) continue;
-      const key = r.partidoNombre || 'Sin partido';
-      partidoMap.set(key, (partidoMap.get(key) || 0) + r.totalVotos);
+  /** Agrupa los resultados por lista en JP / consejal urbano / consejal rural. */
+  private computeCategoriasListas(): void {
+    for (const card of this.categoriasListasCards) {
+      const items = (this.resultadosListas || [])
+        .filter(l => this.etiquetaCategoria(l.cargoNombre) === card.categoria)
+        .map(l => ({
+          lista: l.listaNombre,
+          numero: l.numeroLista,
+          partido: l.partidoNombre || '—',
+          votos: l.totalVotos
+        }))
+        .sort((a, b) => b.votos - a.votos);
+      const total = items.reduce((s, l) => s + l.votos, 0);
+      card.totalVotos = total;
+      card.items = items.map(l => ({
+        ...l,
+        porcentaje: total > 0 ? l.votos * 100 / total : 0
+      }));
     }
-    const total = Array.from(partidoMap.values()).reduce((a, b) => a + b, 0);
-    this.resultadosPorPartido = Array.from(partidoMap.entries())
-      .map(([partido, votos]) => ({ partido, votos, porcentaje: total > 0 ? votos * 100 / total : 0 }))
-      .sort((a, b) => b.votos - a.votos);
+  }
 
-    if (!this.resultadosListas) { this.resultadosListasChart = []; return; }
-    const listaTotal = this.resultadosListas.reduce((s, l) => s + l.totalVotos, 0);
-    this.resultadosListasChart = this.resultadosListas.map(l => ({
-      lista: l.listaNombre, numero: l.numeroLista, partido: l.partidoNombre || '—',
-      votos: l.totalVotos, porcentaje: listaTotal > 0 ? l.totalVotos * 100 / listaTotal : 0
+  initCategoriaCharts(): void {
+    this.categoriaCharts.forEach(c => c.destroy());
+    this.categoriaCharts = this.categoriaListaCharts.toArray().map(ref => new Chart(ref.nativeElement, {
+      type: 'doughnut',
+      data: { labels: [], datasets: [] },
+      options: {
+        responsive: false, animation: false,
+        color: this.getChartTextColor(),
+        plugins: { legend: { display: false }, tooltip: { enabled: true } },
+        cutout: '60%'
+      }
     }));
+    this.updateCategoriaCharts();
   }
 
-  initPartyChart(): void {
-    if (!this.partyPieChartRef?.nativeElement) return;
-    if (this.partyPieChart) this.partyPieChart.destroy();
-    this.partyPieChart = new Chart(this.partyPieChartRef.nativeElement, {
-      type: 'doughnut',
-      data: { labels: [], datasets: [] },
-      options: {
-        responsive: false, animation: false,
-        color: this.getChartTextColor(),
-        plugins: { legend: { display: false }, tooltip: { enabled: true } },
-        cutout: '60%'
-      }
-    });
-  }
-
-  initListChart(): void {
-    if (!this.listPieChartRef?.nativeElement) return;
-    if (this.listPieChart) this.listPieChart.destroy();
-    this.listPieChart = new Chart(this.listPieChartRef.nativeElement, {
-      type: 'doughnut',
-      data: { labels: [], datasets: [] },
-      options: {
-        responsive: false, animation: false,
-        color: this.getChartTextColor(),
-        plugins: { legend: { display: false }, tooltip: { enabled: true } },
-        cutout: '60%'
-      }
-    });
-  }
-
-  updatePartyChart(): void {
-    if (!this.partyPieChart || !this.resultadosPorPartido.length) return;
-    const items = this.resultadosPorPartido;
+  updateCategoriaCharts(): void {
     const colors = this.getChartColors();
-    this.partyPieChart.data.labels = items.map(i => i.partido);
-    this.partyPieChart.data.datasets = [{
-      data: items.map(i => i.votos),
-      backgroundColor: colors.slice(0, items.length)
-    }];
-    this.partyPieChart.update('none');
-  }
-
-  updateListChart(): void {
-    if (!this.listPieChart || !this.resultadosListasChart.length) return;
-    const items = this.resultadosListasChart;
-    const colors = this.getChartColors();
-    this.listPieChart.data.labels = items.map(i => i.lista);
-    this.listPieChart.data.datasets = [{
-      data: items.map(i => i.votos),
-      backgroundColor: colors.slice(0, items.length)
-    }];
-    this.listPieChart.update('none');
+    this.categoriaCharts.forEach((chart, index) => {
+      const card = this.categoriasListasCards[index];
+      if (!card) return;
+      chart.data.labels = card.items.map(i => i.lista);
+      chart.data.datasets = [{
+        data: card.items.map(i => i.votos),
+        backgroundColor: colors.slice(0, card.items.length)
+      }];
+      chart.update('none');
+    });
   }
 
   exportarPdf(): void {

@@ -310,7 +310,7 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     if ((n.includes('junta') && n.includes('parroqui')) || n.includes('vocal')) {
       return 'Junta Parroquial';
     }
-    if (n.includes('concej')) {
+    if (n.includes('consej') || n.includes('concejo') || n.includes('consejo')) {
       if (n.includes('urban')) return 'Consejal Urbano';
       if (n.includes('rural')) return 'Consejal Rural';
     }
