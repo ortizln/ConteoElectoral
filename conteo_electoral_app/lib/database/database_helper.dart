@@ -691,6 +691,39 @@ class DatabaseHelper {
     );
   }
 
+  /// Fuerza el estado de las mesas con lo que viene del servidor.
+  /// Se usa solo al reiniciar el conteo local para prácticas.
+  Future<void> forzarEstadoMesas(List<Mesa> mesas) async {
+    final db = await database;
+    final batch = db.batch();
+    for (final mesa in mesas) {
+      batch.update(
+        'mesas',
+        {
+          'cerrada': mesa.cerrada ? 1 : 0,
+          'votosNulos': mesa.votosNulos ?? 0,
+          'votosBlanco': mesa.votosBlanco ?? 0,
+        },
+        where: 'id = ?',
+        whereArgs: [mesa.id],
+      );
+    }
+    await batch.commit(noResult: true);
+  }
+
+  /// Borra votos, fotos y cola de sincronización locales para repetir prácticas.
+  Future<void> limpiarDatosLocalesParaPractica() async {
+    final db = await database;
+    await db.delete('votos');
+    await db.delete('sync_queue');
+    await db.delete('acta_fotos');
+    await db.update('mesas', {
+      'cerrada': 0,
+      'votosNulos': 0,
+      'votosBlanco': 0,
+    });
+  }
+
   Future<void> guardarMesas(List<Mesa> mesas) async {
     final db = await database;
     final batch = db.batch();

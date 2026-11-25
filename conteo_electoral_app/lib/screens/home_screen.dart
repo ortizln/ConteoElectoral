@@ -46,6 +46,30 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _reiniciarConteoLocal() async {
+    final confirm = await showConfirmDialog(
+      context,
+      title: 'Reiniciar conteo local',
+      message: 'Se borrarán los votos, fotos y cambios pendientes de este teléfono, y se descargará el estado actual del servidor. ¿Continuar?',
+      confirmText: 'Reiniciar',
+      confirmColor: AppColors.warning,
+    );
+    if (!confirm || !mounted) return;
+
+    final provider = context.read<AppProvider>();
+    final ok = await provider.reiniciarConteoLocal();
+    _mesasFuture = null;
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(ok
+              ? 'Conteo local reiniciado.'
+              : (provider.error ?? 'No se pudo reiniciar el conteo local.')),
+        ),
+      );
+    }
+  }
+
   Future<void> _logout() async {
     final confirm = await showConfirmDialog(
       context,
@@ -692,6 +716,15 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {
               Navigator.pop(context);
               Navigator.pushNamed(context, '/pendientes');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.restart_alt, color: AppColors.warning),
+            title: const Text('Reiniciar conteo local'),
+            subtitle: const Text('Borra datos de prueba y trae los del servidor'),
+            onTap: () {
+              Navigator.pop(context);
+              _reiniciarConteoLocal();
             },
           ),
           if (provider.usuario?.rol == 'ADMIN') ...[

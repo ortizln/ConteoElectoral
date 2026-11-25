@@ -434,7 +434,7 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  Future<bool> descargarDatos() async {
+  Future<bool> descargarDatos({bool forzarEstadoServidor = false}) async {
     if (_usuario == null) return false;
     
     _isLoading = true;
@@ -476,6 +476,9 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
       
       final mesas = await _api.getMesasByCurrentUser(_eleccionActual!.id, token: token);
       await _db.guardarMesas(mesas);
+      if (forzarEstadoServidor) {
+        await _db.forzarEstadoMesas(mesas);
+      }
 
       for (var mesa in mesas) {
         await _db.limpiarVotosSincronizadosByMesa(mesa.id);
@@ -505,6 +508,27 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     } catch (e) {
       _isLoading = false;
       _error = 'Error al descargar datos: $e';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Borra los datos de prueba guardados en el teléfono y vuelve a descargar
+  /// el estado real del servidor. Útil después de resetear la BD para prácticas.
+  Future<bool> reiniciarConteoLocal() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      await _db.limpiarDatosLocalesParaPractica();
+      final ok = await descargarDatos(forzarEstadoServidor: true);
+      if (ok) {
+        await _cargarEleccionActual();
+      }
+      return ok;
+    } catch (e) {
+      _isLoading = false;
+      _error = 'Error al reiniciar el conteo local: $e';
       notifyListeners();
       return false;
     }
