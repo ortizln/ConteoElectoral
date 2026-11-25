@@ -9,6 +9,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
+import '../services/apk_cleanup_service.dart';
 import '../services/sync_service.dart';
 import '../services/stomp_service.dart';
 import '../database/database_helper.dart';
@@ -18,6 +19,7 @@ import '../config/app_config.dart';
 class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
   final DatabaseHelper _db = DatabaseHelper.instance;
   final ApiService _api = ApiService();
+  final ApkCleanupService _apkCleanup = ApkCleanupService();
   late SyncService _sync;
 
   ApiService get api => _api;
@@ -204,6 +206,7 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     await _checkConnectivity();
     _initStomp();
     _loadCurrentVersion();
+    unawaited(_limpiarApkTrasInstalacion());
     _checkForUpdate();
     // B7: empujar la cola pendiente al iniciar la app (no esperar a votar)
     if (_usuario != null && _isOnline) {
@@ -299,6 +302,24 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
       final info = await PackageInfo.fromPlatform();
       _currentVersion = info.version;
     } catch (_) {}
+  }
+
+  /// Borra la APK descargada una sola vez por versión instalada.
+  Future<void> _limpiarApkTrasInstalacion() async {
+    await _apkCleanup.runIfNeeded();
+  }
+
+  /// Acción manual del menú: reintenta borrar la APK de Descargas.
+  Future<bool> borrarApkDescargada() async {
+    final result = await _apkCleanup.clean(abrirAjustesSiFalta: true);
+    _error = result.permissionGranted
+        ? (result.deleted > 0
+            ? 'APK eliminada de Descargas.'
+            : 'No hay APK de Conteo Electoral en Descargas.')
+        : 'Activa «Acceso a todos los archivos» para Conteo Electoral '
+            'en Ajustes y vuelve a intentar.';
+    notifyListeners();
+    return result.permissionGranted;
   }
 
   Future<void> _checkForUpdate() async {

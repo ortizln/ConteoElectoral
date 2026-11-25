@@ -70,6 +70,20 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _borrarApkDescargada() async {
+    final provider = context.read<AppProvider>();
+    final ok = await provider.borrarApkDescargada();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(ok
+              ? (provider.error ?? 'APK eliminada de Descargas.')
+              : (provider.error ?? 'No se pudo borrar la APK.')),
+        ),
+      );
+    }
+  }
+
   Future<void> _logout() async {
     final confirm = await showConfirmDialog(
       context,
@@ -725,6 +739,16 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () {
               Navigator.pop(context);
               _reiniciarConteoLocal();
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.delete_forever_outlined,
+                color: AppColors.info),
+            title: const Text('Borrar APK descargada'),
+            subtitle: const Text('Elimina el instalador de Descargas'),
+            onTap: () {
+              Navigator.pop(context);
+              _borrarApkDescargada();
             },
           ),
           if (provider.usuario?.rol == 'ADMIN') ...[
