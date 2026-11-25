@@ -123,11 +123,8 @@
 .nulos-input:focus { outline: none; box-shadow: 0 0 0 3px rgba(230,185,79,0.2); }
 
 .nulos-cargo-row td { border-top: 2px solid var(--alantek-border); padding: 10px 14px; background: var(--alantek-surface); }
-.cargo-nulos-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .cargo-nulos-title { font-weight: 600; color: var(--alantek-warning); font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
-.cargo-nulos-select { padding: 6px 10px; border: 1px solid var(--alantek-border); border-radius: 8px; font-size: 13px; background: var(--alantek-background); color: var(--alantek-text); max-width: 220px; }
-.cargo-nulos-select:disabled { opacity: 0.6; cursor: not-allowed; }
-.nulos-totales { font-size: 12px; color: var(--alantek-text-muted); }
+.cargo-nulos-actual { padding: 4px 10px; border-radius: 999px; background: var(--alantek-surface); border: 1px solid var(--alantek-border); color: var(--alantek-text); font-size: 12px; font-weight: 600; }
 .cargo-contexto { display: block; font-size: 11px; color: var(--alantek-text-muted); margin-top: 2px; font-weight: 400; }
 .btn-nulos-minus, .btn-nulos-plus { width: 28px; height: 28px; border: 1px solid var(--alantek-highlight); background: var(--alantek-warning-bg); border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: var(--alantek-warning); transition: all 0.15s; }
 .btn-nulos-minus:hover, .btn-nulos-plus:hover { background: var(--alantek-warning-bg); border-color: var(--alantek-highlight); }
@@ -139,12 +136,16 @@
 .btn-ver:hover { background: var(--alantek-background); border-color: var(--alantek-border-strong); }
 
 /* Nulos/blancos debajo de la tabla de candidatos/listas. */
-.nulos-blancos-panel { margin: 0 4px 16px; padding: 12px 14px; border: 1px solid var(--alantek-border); border-radius: 12px; background: var(--alantek-background); }
-.nulos-panel-header { margin-bottom: 10px; }
-.nulos-blancos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.nulos-row-panel { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 10px 12px; border-radius: 10px; background: var(--alantek-warning-bg); }
+.nulos-blancos-panel { margin: 0 4px 16px; padding: 14px; border: 1px solid var(--alantek-border); border-radius: 12px; background: var(--alantek-background); }
+.nulos-panel-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.nulos-blancos-rows { display: flex; flex-direction: column; gap: 10px; }
+.nulos-row-panel { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 10px; background: var(--alantek-warning-bg); }
 .blanco-panel { background: var(--alantek-background); border: 1px solid var(--alantek-border); }
+.nulos-row-control { display: flex; align-items: center; gap: 8px; }
 .blanco-label { font-weight: 600; color: var(--alantek-text-secondary); font-size: 14px; }
+.nulos-totales-line { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--alantek-border); font-size: 12px; color: var(--alantek-text-muted); }
+.nulos-totales-line strong { color: var(--alantek-warning); font-size: 14px; }
+.nulos-totales-line .total-blancos { color: var(--alantek-text-secondary); }
 
 /* Nulos/blancos como estadística dentro de Votos Registrados. */
 .stats-nulos-row td, .stats-blanco-row td { background: var(--alantek-background); }
@@ -154,7 +155,8 @@
   .content-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 480px) {
-  .nulos-blancos-grid { grid-template-columns: 1fr; }
+  .nulos-row-panel { flex-wrap: wrap; }
+  .nulos-row-control { width: 100%; }
   .acciones-lista { justify-content: flex-start; }
 }
 /* Listas section */
