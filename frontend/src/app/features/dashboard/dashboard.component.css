@@ -85,6 +85,13 @@
 .btn-reabrir:hover { background: var(--alantek-warning-bg); border-color: var(--alantek-highlight); }
 
 .card-body { transition: all 0.3s; }
+/* Chart.js ajusta el canvas al contenedor; si el contenedor anima su tamaño,
+   ResizeObserver vuelve a dispararse y entra en bucle hasta colgar la página. */
+.chart-card .card-body { transition: none; }
+.chart-canvas-wrap { position: relative; width: 100%; height: 260px; }
+.chart-canvas-wrap canvas { max-width: 100%; height: auto !important; }
+.chart-canvas-donut { flex: 0 0 auto; width: 220px; height: 220px; margin: 0 auto; }
+.chart-card.fullscreen .chart-canvas-wrap { height: calc(100vh - 200px); }
 .card-body.hidden { display: none; }
 
 .table-card { background: var(--alantek-surface); border-radius: 12px; box-shadow: var(--alantek-shadow-sm); border: 1px solid var(--alantek-border); overflow: hidden; transition: all 0.3s; }

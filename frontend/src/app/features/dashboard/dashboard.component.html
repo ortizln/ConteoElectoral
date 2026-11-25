@@ -34,7 +34,7 @@
         </button>
       </div>
     </div>
-    <div class="filtros-grid" [class.hidden]="filtrosMinimized">
+    <div class="filtros-grid" *ngIf="!filtrosMinimized">
       <div class="filtro-group">
         <label>Zona</label>
         <select class="form-select" [(ngModel)]="filtroZonaId" (change)="onZonaChange()">
@@ -184,7 +184,7 @@
         </div>
       </div>
       <div class="card-body" [class.hidden]="barChartMinimized">
-        <canvas #barChart></canvas>
+        <div class="chart-canvas-wrap"><canvas #barChart width="600" height="260"></canvas></div>
       </div>
     </div>
     <div class="chart-card" [class.minimized]="pieChartMinimized" [class.fullscreen]="pieChartFullscreen"
@@ -200,7 +200,7 @@
         </div>
       </div>
       <div class="card-body" [class.hidden]="pieChartMinimized">
-        <canvas #pieChart></canvas>
+        <div class="chart-canvas-wrap"><canvas #pieChart width="600" height="260"></canvas></div>
       </div>
     </div>
   </div>
@@ -223,7 +223,7 @@
       </div>
       <div class="card-body" [class.hidden]="partyChartMinimized">
         <div style="display:flex;gap:20px;flex-wrap:wrap;">
-          <div style="flex:0 0 auto;width:220px;height:220px;margin:0 auto;"><canvas #partyPieChart></canvas></div>
+          <div class="chart-canvas-wrap chart-canvas-donut"><canvas #partyPieChart width="220" height="220"></canvas></div>
           <div style="flex:1;min-width:220px;">
             <div *ngFor="let p of resultadosPorPartido" class="progress-item">
               <div class="progress-header">
@@ -254,7 +254,7 @@
       </div>
       <div class="card-body" [class.hidden]="listChartMinimized">
         <div style="display:flex;gap:20px;flex-wrap:wrap;">
-          <div style="flex:0 0 auto;width:220px;height:220px;margin:0 auto;"><canvas #listPieChart></canvas></div>
+          <div class="chart-canvas-wrap chart-canvas-donut"><canvas #listPieChart width="220" height="220"></canvas></div>
           <div style="flex:1;min-width:220px;">
             <div *ngFor="let l of resultadosListasChart" class="progress-item">
               <div class="progress-header">

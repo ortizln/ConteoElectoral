@@ -406,7 +406,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.dashboard = data;
       this.procesarResultados(data);
       this.ordenarResultados();
-      this.cdr.detectChanges();
       this.loadDataComplete();
     });
     this.api.getCargosByEleccion(this.selectedEleccionId).subscribe((data: Cargo[]) => {
@@ -501,7 +500,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.api.getActaFotoBlob(foto.mesaId, foto.id).subscribe({
         next: (blob) => {
           this.fotoThumbCache.set(foto.id, URL.createObjectURL(blob));
-          try { this.cdr.detectChanges(); } catch (_) {}
+          // Change detection es automática; no forzar pasadas desde callbacks HTTP.
         },
         error: () => { this.fotoThumbCache.set(foto.id, ''); }
       });
@@ -533,7 +532,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         const m = new Map<number, boolean>();
         candidatos.forEach(c => m.set(c.id, !!c.tieneFoto));
         this.candTieneFoto = m;
-        try { this.cdr.detectChanges(); } catch (_) {}
+        // Change detection es automática; no forzar pasadas desde callbacks HTTP.
       },
       error: () => { this.candTieneFoto = new Map(); }
     });
@@ -542,7 +541,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         const m = new Map<number, boolean>();
         listas.forEach((l: any) => m.set(l.id, !!l.tieneLogo));
         this.listTieneLogo = m;
-        try { this.cdr.detectChanges(); } catch (_) {}
+        // Change detection es automática; no forzar pasadas desde callbacks HTTP.
       },
       error: () => { this.listTieneLogo = new Map(); }
     });
@@ -556,7 +555,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.api.getFotoCandidatoBlob(id).subscribe({
         next: (blob) => {
           this.candFotoCache.set(id, URL.createObjectURL(blob));
-          try { this.cdr.detectChanges(); } catch (_) {}
+          // Change detection es automática; no forzar pasadas desde callbacks HTTP.
         },
         error: () => this.candFotoCache.set(id, '')
       });
@@ -573,7 +572,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.api.getLogoListaBlob(id).subscribe({
         next: (blob) => {
           this.listaLogoCache.set(id, URL.createObjectURL(blob));
-          try { this.cdr.detectChanges(); } catch (_) {}
+          // Change detection es automática; no forzar pasadas desde callbacks HTTP.
         },
         error: () => this.listaLogoCache.set(id, '')
       });
@@ -670,7 +669,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     if ((n.includes('JUNTA') && n.includes('PARROQUI')) || n.includes('VOCAL')) {
       return 'Juntas Parroquiales';
     }
-    if (n.includes('CONCEJAL') || n.includes('CONCEJO')) {
+    if (n.includes('CONCEJAL') || n.includes('CONSEJAL') ||
+        n.includes('CONCEJO') || n.includes('CONSEJO')) {
       if (n.includes('URBAN')) return 'Consejales Urbanos';
       if (n.includes('RURAL')) return 'Consejales Rurales';
     }
@@ -769,7 +769,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.dashboard = data;
       this.procesarResultados(data);
       this.ordenarResultados();
-      this.cdr.detectChanges();
       this.loadDataComplete();
     });
   }
@@ -989,7 +988,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         type: 'bar',
         data: { labels: [], datasets: [] },
         options: {
-          responsive: true, animation: false,
+          responsive: false, animation: false,
           color: textColor,
           scales: {
             x: { ticks: { color: textColor }, grid: { color: this.getChartGridColor() } },
@@ -1005,7 +1004,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         type: 'pie',
         data: { labels: [], datasets: [] },
         options: {
-          responsive: true, animation: false,
+          responsive: false, animation: false,
           color: textColor,
           plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
         }
@@ -1075,7 +1074,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       type: 'doughnut',
       data: { labels: [], datasets: [] },
       options: {
-        responsive: true, animation: false,
+        responsive: false, animation: false,
         color: this.getChartTextColor(),
         plugins: { legend: { display: false }, tooltip: { enabled: true } },
         cutout: '60%'
@@ -1090,7 +1089,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       type: 'doughnut',
       data: { labels: [], datasets: [] },
       options: {
-        responsive: true, animation: false,
+        responsive: false, animation: false,
         color: this.getChartTextColor(),
         plugins: { legend: { display: false }, tooltip: { enabled: true } },
         cutout: '60%'
