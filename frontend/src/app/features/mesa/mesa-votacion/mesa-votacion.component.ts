@@ -75,13 +75,13 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   mostrarListas = false;
   // Igual que la APK: se puede votar por listas sin antes elegir un cargo.
   modoVotacion: 'CANDIDATOS' | 'LISTAS' = 'CANDIDATOS';
-  /** Cargo elegido arriba (null = "Todos"); también fija nulos/blancos. */
+  /** Cargo elegido arriba; también fija nulos/blancos. */
   categoriaSel: string | null = null;
   private cargoIdsCategoriaSel: number[] = [];
   private usuarioSeleccionoCargoNulo = false;
 
   private static readonly CATEGORIAS_ORDEN = [
-    'Alcalde', 'Consejal Urbano', 'Consejal Rural', 'Junta Parroquial'
+    'Alcalde', 'Consejal Rural', 'Consejal Urbano', 'Junta Parroquial'
   ];
 
   // Delete vote confirmation
@@ -204,6 +204,7 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
         );
         this.candidatosPorMesaCargados = true;
         this.aplicarFiltro();
+        this.asegurarCategoriaPorDefecto();
       },
       error: (err) => {
         // El backend valida la territorialidad y clasificación URBANA/RURAL aquí.
@@ -214,6 +215,7 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
         this.candidatosPorMesaCargados = false;
         this.listaIdsElegibles = new Set<number>();
         this.aplicarFiltro();
+        this.asegurarCategoriaPorDefecto();
       }
     });
   }
@@ -341,17 +343,11 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   }
 
   /** Al elegir Alcalde/Consejal/Junta se activa su modo y su nulo/blanco. */
-  seleccionarCategoria(cat: CategoriaMesa | null): void {
-    if (!cat) {
-      this.categoriaSel = null;
-      this.cargoIdsCategoriaSel = [];
-      this.filtroCargoId = null;
-      this.setModoVotacion('CANDIDATOS');
-      return;
-    }
+  seleccionarCategoria(cat: CategoriaMesa): void {
     this.categoriaSel = cat.etiqueta;
     this.cargoIdsCategoriaSel = [...cat.cargoIds];
     this.filtroCargoId = cat.cargoIds.length > 0 ? cat.cargoIds[0] : null;
+    this.usuarioSeleccionoCargoNulo = false;
     this.setModoVotacion(cat.esLista ? 'LISTAS' : 'CANDIDATOS');
     if (cat.cargoIds.length > 0) {
       this.cargoNuloId = cat.cargoIds[0];
@@ -359,9 +355,24 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** No hay pestaña "Todos": siempre queda activo el primer cargo de la mesa. */
+  private asegurarCategoriaPorDefecto(): void {
+    const cats = this.categoriasMesa;
+    if (cats.length === 0) return;
+    if (cats.some(c => c.etiqueta === this.categoriaSel)) return;
+    this.seleccionarCategoria(cats[0]);
+  }
+
   onFiltroCargoChange(): void {
-    this.categoriaSel = null;
-    this.cargoIdsCategoriaSel = [];
+    if (this.filtroCargoId != null) {
+      const cat = this.categoriasMesa.find(c => c.cargoIds.includes(this.filtroCargoId!));
+      if (cat) {
+        this.categoriaSel = cat.etiqueta;
+        this.cargoIdsCategoriaSel = [...cat.cargoIds];
+        this.cargoNuloId = this.filtroCargoId;
+        this.usuarioSeleccionoCargoNulo = true;
+      }
+    }
     this.aplicarFiltro();
   }
 
@@ -464,6 +475,7 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     this.categoriaSel = null;
     this.cargoIdsCategoriaSel = [];
     this.aplicarFiltro();
+    this.asegurarCategoriaPorDefecto();
   }
 
   setModoVotacion(modo: 'CANDIDATOS' | 'LISTAS'): void {

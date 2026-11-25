@@ -91,13 +91,9 @@
         </span>
       </div>
 
-      <!-- Solo los cargos que tiene esta mesa. Al elegir uno se fija también
-           el cargo de nulos/blanco más abajo. -->
+      <!-- Pestañas de los cargos que tiene esta mesa. Al elegir uno se fija
+           también el cargo de nulos/blanco más abajo. -->
       <div class="modo-votacion" *ngIf="categoriasMesa.length > 0">
-        <button type="button" class="modo-btn" [class.active]="categoriaSel === null"
-                (click)="seleccionarCategoria(null)">
-          <i class="bi bi-grid"></i> Todos
-        </button>
         <button *ngFor="let cat of categoriasMesa" type="button" class="modo-btn"
                 [class.active]="categoriaSel === cat.etiqueta"
                 (click)="seleccionarCategoria(cat)">

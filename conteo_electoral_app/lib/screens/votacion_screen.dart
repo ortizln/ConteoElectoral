@@ -34,14 +34,15 @@ class _VotacionScreenState extends State<VotacionScreen> {
   String _busqueda = '';
   final String _ordenPor = 'cargo';
   bool _mostrarListas = false;
-  /// null = ver todo; si no, una de las cuatro categorías de cargo.
+  /// null = aún no se eligió; siempre se fija al primer cargo de la mesa.
   String? _categoriaSel;
+  bool _pendingCategoriaDefault = false;
   int _fotosCount = 0;
 
   static const _categoriasOrden = [
     'Alcalde',
-    'Consejal Urbano',
     'Consejal Rural',
+    'Consejal Urbano',
     'Junta Parroquial',
   ];
 
@@ -729,6 +730,27 @@ class _VotacionScreenState extends State<VotacionScreen> {
               ),
             ),
           );
+        }
+
+        // No hay opción "Todos": al entrar (o al cambiar de mesa) se activa
+        // automáticamente el primer cargo que realmente tiene la mesa.
+        final categoriasActuales = _categoriasDeMesa;
+        final seleccionActual = _categoriaSel;
+        if (categoriasActuales.isNotEmpty &&
+            (seleccionActual == null ||
+                !categoriasActuales.any((c) => c.etiqueta == seleccionActual)) &&
+            !_pendingCategoriaDefault) {
+          _pendingCategoriaDefault = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _pendingCategoriaDefault = false;
+            if (!mounted) return;
+            final actuales = _categoriasDeMesa;
+            if (actuales.isEmpty) return;
+            if (_categoriaSel == null ||
+                !actuales.any((c) => c.etiqueta == _categoriaSel)) {
+              _seleccionarCategoria(actuales.first);
+            }
+          });
         }
 
         return Scaffold(
@@ -1654,46 +1676,32 @@ class _VotacionScreenState extends State<VotacionScreen> {
     ctrl.dispose();
   }
 
-  /// Selector de cargos de la mesa: Alcalde / Consejal Urbano / Consejal
-  /// Rural / Junta Parroquial. Solo aparecen los que realmente tiene la mesa.
+  void _seleccionarCategoria(_CategoriaMesa cat) {
+    setState(() {
+      _categoriaSel = cat.etiqueta;
+      _mostrarListas = cat.esLista;
+      _selected = null;
+      _selectedListaId = null;
+      _selectedListaCandidates = [];
+      _cantidadCtrl.text = '1';
+    });
+  }
+
+  /// Pestañas de los cargos de la mesa: Alcalde / Consejal Rural /
+  /// Consejal Urbano / Junta Parroquial. No hay "Todos" y solo aparecen los
+  /// cargos que realmente tiene la mesa.
   Widget _buildModoSelector() {
     final categorias = _categoriasDeMesa;
-    final seleccion = _categoriaSel;
-    if (seleccion != null && !categorias.any((c) => c.etiqueta == seleccion)) {
-      // La mesa cambió y ya no tiene ese cargo: volver a "Todos".
-      _categoriaSel = null;
-      _mostrarListas = false;
-    }
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _filterChip('Todos', 'todos', _categoriaSel == null, () {
-            setState(() {
-              _categoriaSel = null;
-              _mostrarListas = false;
-              _selected = null;
-              _selectedListaId = null;
-              _selectedListaCandidates = [];
-              _cantidadCtrl.text = '1';
-            });
-          }),
-          ...categorias.map((cat) {
-            final selected = _categoriaSel == cat.etiqueta;
-            return Padding(
-              padding: const EdgeInsets.only(left: 6),
-              child: _filterChip(cat.etiqueta, cat.etiqueta, selected, () {
-                setState(() {
-                  _categoriaSel = cat.etiqueta;
-                  _mostrarListas = cat.esLista;
-                  _selected = null;
-                  _selectedListaId = null;
-                  _selectedListaCandidates = [];
-                  _cantidadCtrl.text = '1';
-                });
-              }),
-            );
-          }),
+          for (var i = 0; i < categorias.length; i++) ...[
+            if (i > 0) const SizedBox(width: 6),
+            _filterChip(categorias[i].etiqueta, categorias[i].etiqueta,
+                _categoriaSel == categorias[i].etiqueta,
+                () => _seleccionarCategoria(categorias[i])),
+          ],
         ],
       ),
     );
