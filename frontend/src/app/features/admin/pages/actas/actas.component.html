@@ -22,6 +22,44 @@
     </div>
   </div>
 
+  <!-- Filtros territoriales dependientes -->
+  <div class="filtros-territoriales row g-2 mb-3">
+    <div class="col-6 col-md-3">
+      <label class="form-label small mb-1">Provincia</label>
+      <select class="form-select form-select-sm" [(ngModel)]="provinciaId" (ngModelChange)="onProvinciaChange()">
+        <option [ngValue]="null">Todas las provincias</option>
+        <option *ngFor="let p of provincias" [ngValue]="p.id">{{ p.nombre }}</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-3">
+      <label class="form-label small mb-1">Cantón</label>
+      <select class="form-select form-select-sm" [(ngModel)]="cantonId" (ngModelChange)="onCantonChange()">
+        <option [ngValue]="null">Todos los cantones</option>
+        <option *ngFor="let c of cantonesDisponibles" [ngValue]="c.id">{{ c.nombre }}</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-3">
+      <label class="form-label small mb-1">Parroquia</label>
+      <select class="form-select form-select-sm" [(ngModel)]="parroquiaId" (ngModelChange)="onParroquiaChange()">
+        <option [ngValue]="null">Todas las parroquias</option>
+        <option *ngFor="let p of parroquiasDisponibles" [ngValue]="p.id">{{ p.nombre }}</option>
+      </select>
+    </div>
+    <div class="col-6 col-md-2">
+      <label class="form-label small mb-1">Recinto</label>
+      <select class="form-select form-select-sm" [(ngModel)]="recintoId">
+        <option [ngValue]="null">Todos los recintos</option>
+        <option *ngFor="let r of recintosDisponibles" [ngValue]="r.id">{{ r.nombre }}</option>
+      </select>
+    </div>
+    <div class="col-12 col-md-1 d-flex align-items-end">
+      <button type="button" class="btn btn-sm btn-outline-secondary w-100" (click)="limpiarFiltros()"
+              title="Limpiar todos los filtros">
+        <i class="bi bi-x-circle"></i> Limpiar
+      </button>
+    </div>
+  </div>
+
   <div *ngIf="loading" class="text-center py-5 text-muted">
     <div class="spinner-border mb-2"></div>
     <div>Cargando actas...</div>
@@ -49,6 +87,9 @@
           <div class="small text-muted mb-2">
             <div><i class="bi bi-building"></i> {{ m.institucionNombre || '—' }}</div>
             <div><i class="bi bi-house-door"></i> {{ m.parroquiaNombre || '—' }}</div>
+            <div *ngIf="m.cantonNombre || m.provinciaNombre">
+              <i class="bi bi-geo-alt"></i> {{ m.cantonNombre || '—' }} / {{ m.provinciaNombre || '—' }}
+            </div>
           </div>
 
           <div *ngIf="(m.fotos?.length || 0) === 0" class="text-danger small">

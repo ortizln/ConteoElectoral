@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -62,6 +63,13 @@ public class UsuarioController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UsuarioResponse>> getUsuariosByRol(@PathVariable String rolNombre) {
         return ResponseEntity.ok(usuarioService.getUsuariosByRol(rolNombre));
+    }
+
+    @GetMapping("/conteo-mesas")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<Long, Long>> conteoMesasUsuarios(
+            @RequestParam(required = false) Long eleccionId) {
+        return ResponseEntity.ok(usuarioService.getConteoMesasUsuarios(eleccionId));
     }
 
     @GetMapping("/exportar-excel")

@@ -15,6 +15,7 @@ import { FiltrosPanelComponent } from '../../../shared/components/filtros-panel/
 export class UsuariosComponent implements OnInit {
   usuarios: Usuario[] = [];
   eleccionActivaId: number | null = null;
+  conteoMesas: { [usuarioId: number]: number } = {};
   showModal = false;
   showViewModal = false;
   showResetModal = false;
@@ -43,8 +44,21 @@ export class UsuariosComponent implements OnInit {
     this.api.getEleccionesActivas().subscribe((elecciones: Eleccion[]) => {
       if (elecciones.length > 0) {
         this.eleccionActivaId = elecciones[0].id;
+        this.cargarConteoMesas();
       }
     });
+  }
+
+  cargarConteoMesas(): void {
+    if (!this.eleccionActivaId) return;
+    this.api.getConteoMesasUsuarios(this.eleccionActivaId).subscribe({
+      next: (data) => this.conteoMesas = data || {},
+      error: () => this.conteoMesas = {}
+    });
+  }
+
+  mesasAsignadas(usuario: Usuario): number {
+    return this.conteoMesas[usuario.id] ?? 0;
   }
 
   load(): void {
@@ -107,8 +121,8 @@ export class UsuariosComponent implements OnInit {
   get usuariosOrdenados(): Usuario[] {
     if (!this.sortColumn) return this.usuarios;
     return [...this.usuarios].sort((a, b) => {
-      const valA = (a as any)[this.sortColumn];
-      const valB = (b as any)[this.sortColumn];
+      const valA = this.sortColumn === 'mesas' ? this.mesasAsignadas(a) : (a as any)[this.sortColumn];
+      const valB = this.sortColumn === 'mesas' ? this.mesasAsignadas(b) : (b as any)[this.sortColumn];
       if (valA == null) return 1;
       if (valB == null) return -1;
       if (typeof valA === 'boolean') {
@@ -195,12 +209,12 @@ export class UsuariosComponent implements OnInit {
     this.errorMessage = '';
     if (this.editingUser) {
       this.api.updateUsuario(this.editingUser.id, this.form).subscribe({
-        next: () => { this.load(); this.closeModal(); },
+        next: () => { this.load(); this.cargarConteoMesas(); this.closeModal(); },
         error: (err) => { this.errorMessage = err.error?.message || 'Error al guardar. Intente de nuevo.'; }
       });
     } else {
       this.api.createUsuario(this.form).subscribe({
-        next: () => { this.load(); this.closeModal(); },
+        next: () => { this.load(); this.cargarConteoMesas(); this.closeModal(); },
         error: (err) => { this.errorMessage = err.error?.message || 'Error al guardar. Intente de nuevo.'; }
       });
     }
@@ -217,7 +231,7 @@ export class UsuariosComponent implements OnInit {
 
   deleteUsuario(user: Usuario): void {
     if (confirm('Esta seguro de eliminar al usuario: ' + user.username + '?')) {
-      this.api.deleteUsuario(user.id).subscribe(() => this.load());
+      this.api.deleteUsuario(user.id).subscribe(() => { this.load(); this.cargarConteoMesas(); });
     }
   }
 

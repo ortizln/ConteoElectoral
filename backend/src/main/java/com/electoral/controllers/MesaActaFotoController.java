@@ -2,8 +2,12 @@ package com.electoral.controllers;
 
 import com.electoral.dto.MesaActaFotoResponse;
 import com.electoral.dto.MesaActaFotosDeMesaResponse;
+import com.electoral.entities.Canton;
+import com.electoral.entities.InstitucionEducativa;
 import com.electoral.entities.Mesa;
 import com.electoral.entities.MesaActaFoto;
+import com.electoral.entities.Parroquia;
+import com.electoral.entities.Provincia;
 import com.electoral.exception.RecursoNoEncontradoException;
 import com.electoral.exception.ValidacionException;
 import com.electoral.repositories.MesaActaFotoRepository;
@@ -115,14 +119,23 @@ public class MesaActaFotoController {
             List<MesaActaFotoResponse> fotos = fotosPorMesa.getOrDefault(mesa.getId(), List.of()).stream()
                     .map(this::toResponse)
                     .collect(Collectors.toList());
+            InstitucionEducativa institucion = mesa.getInstitucion();
+            Parroquia parroquia = institucion != null ? institucion.getParroquia() : null;
+            Canton canton = parroquia != null ? parroquia.getCanton() : null;
+            Provincia provincia = canton != null ? canton.getProvincia() : null;
+
             response.add(MesaActaFotosDeMesaResponse.builder()
                     .mesaId(mesa.getId())
                     .mesaNumero(mesa.getNumero())
                     .sexo(mesa.getSexo() != null ? mesa.getSexo().name() : null)
-                    .institucionNombre(mesa.getInstitucion() != null ? mesa.getInstitucion().getNombre() : null)
-                    .parroquiaNombre(mesa.getInstitucion() != null && mesa.getInstitucion().getParroquia() != null
-                            ? mesa.getInstitucion().getParroquia().getNombre()
-                            : null)
+                    .institucionId(institucion != null ? institucion.getId() : null)
+                    .institucionNombre(institucion != null ? institucion.getNombre() : null)
+                    .parroquiaId(parroquia != null ? parroquia.getId() : null)
+                    .parroquiaNombre(parroquia != null ? parroquia.getNombre() : null)
+                    .cantonId(canton != null ? canton.getId() : null)
+                    .cantonNombre(canton != null ? canton.getNombre() : null)
+                    .provinciaId(provincia != null ? provincia.getId() : null)
+                    .provinciaNombre(provincia != null ? provincia.getNombre() : null)
                     .cerrada(mesa.getCerrada())
                     .fotos(fotos)
                     .build());

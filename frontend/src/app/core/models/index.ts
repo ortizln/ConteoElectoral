@@ -175,8 +175,14 @@ export interface MesaActaFotosDeMesa {
   mesaId: number;
   mesaNumero: string;
   sexo?: string;
+  institucionId?: number | null;
   institucionNombre?: string;
+  parroquiaId?: number | null;
   parroquiaNombre?: string;
+  cantonId?: number | null;
+  cantonNombre?: string;
+  provinciaId?: number | null;
+  provinciaNombre?: string;
   cerrada?: boolean;
   fotos: MesaActaFoto[];
 }

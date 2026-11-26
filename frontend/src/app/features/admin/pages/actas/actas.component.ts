@@ -2,12 +2,17 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
-import { Eleccion, MesaActaFotosDeMesa, MesaActaFoto } from '../../../../core/models';
+import {
+  Eleccion, MesaActaFotosDeMesa, MesaActaFoto,
+  Provincia, Canton, Parroquia, InstitucionEducativa
+} from '../../../../core/models';
 
 /**
  * Página "Actas" (ADMIN/SUPERVISOR): lista todas las mesas de la elección
  * con sus fotos del acta para revisión rápida. Las mesas sin foto se marcan
  * para identificar cuáles cerraron sin respaldo.
+ *
+ * Incluye filtros dependientes por provincia → cantón → parroquía → recinto.
  */
 @Component({
   selector: 'app-actas',
@@ -24,6 +29,16 @@ export class ActasComponent implements OnInit, OnDestroy {
   searchText = '';
   filtro: 'todas' | 'con-foto' | 'sin-foto' = 'todas';
 
+  // Catálogos territoriales para los filtros
+  provincias: Provincia[] = [];
+  cantones: Canton[] = [];
+  parroquias: Parroquia[] = [];
+  recintos: InstitucionEducativa[] = [];
+  provinciaId: number | null = null;
+  cantonId: number | null = null;
+  parroquiaId: number | null = null;
+  recintoId: number | null = null;
+
   visorUrl: string | null = null;
   visorInfo = '';
 
@@ -32,6 +47,7 @@ export class ActasComponent implements OnInit, OnDestroy {
   constructor(private api: ApiService) {}
 
   ngOnInit(): void {
+    this.cargarCatalogos();
     this.api.getEleccionesActivas().subscribe((data: Eleccion[]) => {
       this.elecciones = data;
       if (data.length > 0) {
@@ -44,6 +60,60 @@ export class ActasComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.limpiarThumbs();
     this.cerrarVisor();
+  }
+
+  private cargarCatalogos(): void {
+    this.api.getProvincias().subscribe({ next: d => this.provincias = d || [], error: () => {} });
+    this.api.getCantones().subscribe({ next: d => this.cantones = d || [], error: () => {} });
+    this.api.getParroquias().subscribe({ next: d => this.parroquias = d || [], error: () => {} });
+    this.api.getInstituciones().subscribe({ next: d => this.recintos = d || [], error: () => {} });
+  }
+
+  /** Catálogos dependientes: cada nivel muestra solo los hijos del superior. */
+  get cantonesDisponibles(): Canton[] {
+    return this.provinciaId != null
+      ? this.cantones.filter(c => c.provinciaId === this.provinciaId)
+      : this.cantones;
+  }
+
+  get parroquiasDisponibles(): Parroquia[] {
+    if (this.cantonId != null) {
+      return this.parroquias.filter(p => p.cantonId === this.cantonId);
+    }
+    if (this.provinciaId != null) {
+      const cantonIds = new Set(this.cantonesDisponibles.map(c => c.id));
+      return this.parroquias.filter(p => cantonIds.has(p.cantonId));
+    }
+    return this.parroquias;
+  }
+
+  get recintosDisponibles(): InstitucionEducativa[] {
+    const parroquiaIds = new Set(this.parroquiasDisponibles.map(p => p.id));
+    return this.recintos.filter(r => parroquiaIds.has(r.parroquiaId));
+  }
+
+  onProvinciaChange(): void {
+    this.cantonId = null;
+    this.parroquiaId = null;
+    this.recintoId = null;
+  }
+
+  onCantonChange(): void {
+    this.parroquiaId = null;
+    this.recintoId = null;
+  }
+
+  onParroquiaChange(): void {
+    this.recintoId = null;
+  }
+
+  limpiarFiltros(): void {
+    this.provinciaId = null;
+    this.cantonId = null;
+    this.parroquiaId = null;
+    this.recintoId = null;
+    this.searchText = '';
+    this.filtro = 'todas';
   }
 
   onEleccionChange(): void {
@@ -60,15 +130,37 @@ export class ActasComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Compara por ID y, si el backend aún no envía el ID, por nombre del catálogo. */
+  private coincideCatalogo(
+    id: number | null,
+    mesaId: number | null | undefined,
+    nombre: string | null | undefined,
+    catalogo: { id: number; nombre: string }[]
+  ): boolean {
+    if (id == null) return true;
+    if (mesaId != null) return mesaId === id;
+    const item = catalogo.find(c => c.id === id);
+    // Si no hay dato en la mesa ni en el catálogo, no se descarta.
+    return !item || !nombre || nombre.trim().toLowerCase() === item.nombre.trim().toLowerCase();
+  }
+
   get mesasFiltradas(): MesaActaFotosDeMesa[] {
     const q = this.searchText.trim().toLowerCase();
     return this.mesas.filter(m => {
       if (this.filtro === 'con-foto' && (m.fotos?.length || 0) === 0) return false;
       if (this.filtro === 'sin-foto' && (m.fotos?.length || 0) > 0) return false;
+
+      if (!this.coincideCatalogo(this.provinciaId, m.provinciaId, m.provinciaNombre, this.provincias)) return false;
+      if (!this.coincideCatalogo(this.cantonId, m.cantonId, m.cantonNombre, this.cantones)) return false;
+      if (!this.coincideCatalogo(this.parroquiaId, m.parroquiaId, m.parroquiaNombre, this.parroquias)) return false;
+      if (!this.coincideCatalogo(this.recintoId, m.institucionId, m.institucionNombre, this.recintos)) return false;
+
       if (!q) return true;
       return (m.mesaNumero || '').toLowerCase().includes(q) ||
         (m.institucionNombre || '').toLowerCase().includes(q) ||
-        (m.parroquiaNombre || '').toLowerCase().includes(q);
+        (m.parroquiaNombre || '').toLowerCase().includes(q) ||
+        (m.cantonNombre || '').toLowerCase().includes(q) ||
+        (m.provinciaNombre || '').toLowerCase().includes(q);
     });
   }
 

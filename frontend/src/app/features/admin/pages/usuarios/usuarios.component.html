@@ -37,6 +37,7 @@
         <th class="sortable" (click)="sort('apellido')">Apellido {{ sortColumn === 'apellido' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('email')">Email {{ sortColumn === 'email' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('rol')">Rol {{ sortColumn === 'rol' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
+        <th class="sortable" (click)="sort('mesas')" title="Cantidad de mesas asignadas en la elección activa">Mesas {{ sortColumn === 'mesas' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('activo')">Estado {{ sortColumn === 'activo' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th></th>
       </tr>
@@ -49,6 +50,11 @@
         <td>{{ u.apellido }}</td>
         <td>{{ u.email }}</td>
         <td><span class="badge" [class]="u.rol === 'ADMIN' ? 'bg-danger' : u.rol === 'SUPERVISOR' ? 'bg-warning' : 'bg-info'">{{ u.rol }}</span></td>
+        <td class="text-center">
+          <span *ngIf="u.rol === 'MIEMBRO_MESA'" class="badge bg-light text-dark border"
+                [title]="mesasAsignadas(u) + ' mesa(s) asignada(s)'">{{ mesasAsignadas(u) }}</span>
+          <span *ngIf="u.rol !== 'MIEMBRO_MESA'" class="text-muted" title="No aplica">—</span>
+        </td>
         <td>
           <span class="estado-icon" [class]="u.activo ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-secondary'"
                 [title]="u.activo ? 'Activo' : 'Inactivo'"></span>
@@ -69,7 +75,7 @@
         </td>
       </tr>
       <tr *ngIf="usuariosFiltrados.length === 0">
-        <td colspan="8" class="text-center py-3">No se encontraron registros</td>
+        <td colspan="9" class="text-center py-3">No se encontraron registros</td>
       </tr>
     </tbody>
   </table>

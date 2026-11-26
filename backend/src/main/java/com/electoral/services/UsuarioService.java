@@ -196,4 +196,13 @@ public class UsuarioService {
         }
         return resultado;
     }
+
+    /** Conteo de mesas asignadas por usuario MIEMBRO_MESA, para la tabla de usuarios. */
+    public Map<Long, Long> getConteoMesasUsuarios(Long eleccionId) {
+        Map<Long, Long> conteos = new HashMap<>();
+        for (UsuarioResponse u : getUsuariosByRol("MIEMBRO_MESA")) {
+            conteos.put(u.getId(), (long) mesaService.getMesasByUsuario(u.getId(), eleccionId).size());
+        }
+        return conteos;
+    }
 }

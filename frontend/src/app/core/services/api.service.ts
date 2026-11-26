@@ -330,6 +330,11 @@ export class ApiService {
     return this.http.get<Usuario[]>(`${this.API_URL}/usuarios/rol/${rolNombre}`);
   }
 
+  getConteoMesasUsuarios(eleccionId: number): Observable<{ [id: number]: number }> {
+    return this.http.get<{ [id: number]: number }>(
+      `${this.API_URL}/usuarios/conteo-mesas?eleccionId=${eleccionId}`);
+  }
+
   createUsuario(data: Partial<Usuario>): Observable<Usuario> {
     return this.http.post<Usuario>(`${this.API_URL}/usuarios`, data);
   }
