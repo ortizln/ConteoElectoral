@@ -29,7 +29,9 @@ public final class CargoCategoriaUtil {
         if ((n.contains("JUNTA") && n.contains("PARROQUI")) || n.contains("VOCAL")) {
             return JUNTAS_PARROQUIALES;
         }
-        if (n.contains("CONCEJAL") || n.contains("CONCEJALES") || n.contains("CONCEJO")) {
+        // En la BD el cargo se llama "CONSEJAL - URBANO" / "CONSEJAL - RURAL" (con S).
+        // Se admiten además las variantes "CONCEJAL"/"CONCEJO" por datos legados.
+        if (n.contains("CONSEJAL") || n.contains("CONCEJAL") || n.contains("CONCEJO") || n.contains("CONSEJO")) {
             if (n.contains("URBAN")) return CONSEJALES_URBANOS;
             if (n.contains("RURAL")) return CONSEJALES_RURALES;
         }

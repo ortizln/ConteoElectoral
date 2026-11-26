@@ -18,6 +18,7 @@ import com.itextpdf.kernel.events.IEventHandler;
 import com.itextpdf.kernel.events.PdfDocumentEvent;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfPage;
@@ -191,7 +192,8 @@ public class PdfExportService {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (PdfWriter writer = new PdfWriter(baos);
              PdfDocument pdf = new PdfDocument(writer);
-             Document doc = new Document(pdf)) {
+             // Las tablas de detalle son anchas; en A4 horizontal caben sin recortarse.
+             Document doc = new Document(pdf, PageSize.A4.rotate())) {
 
             configurarDocumento(pdf, doc, "Resultados Electorales");
 
@@ -259,7 +261,7 @@ public class PdfExportService {
         long totalVotos = valueOf(data.getTotalVotos());
 
         Table grid = new Table(UnitValue.createPercentArray(new float[]{1, 1, 1, 1}));
-        grid.setWidth(UnitValue.createPercentValue(100));
+        configurarTabla(grid);
         grid.addCell(statCell("Total Votos", String.format("%,d", totalVotos), C_PRIMARY));
         grid.addCell(statCell("Votos Nulos", String.format("%,d", nulos), C_WARNING));
         grid.addCell(statCell("Votos en Blanco", String.format("%,d", blanco), C_INFO));
@@ -267,7 +269,7 @@ public class PdfExportService {
         doc.add(grid);
 
         Table row2 = new Table(UnitValue.createPercentArray(new float[]{1, 1, 1, 1}));
-        row2.setWidth(UnitValue.createPercentValue(100));
+        configurarTabla(row2);
         row2.addCell(statCell("Total Mesas", String.format("%,d", valueOf(data.getTotalMesas())), C_INFO));
         row2.addCell(statCell("Mesas Cerradas", String.format("%,d", valueOf(data.getMesasCerradas())), C_SUCCESS));
         row2.addCell(statCell("Mesas Abiertas", String.format("%,d", valueOf(data.getMesasAbiertas())), C_WARNING));
@@ -278,6 +280,25 @@ public class PdfExportService {
 
     private static long valueOf(Number n) {
         return n == null ? 0L : n.longValue();
+    }
+
+    /** Ancho fijo para que ninguna columna se salga del área imprimible. */
+    private static void configurarTabla(Table tabla) {
+        tabla.setWidth(UnitValue.createPercentValue(100));
+        tabla.setFixedLayout();
+    }
+
+    private Cell th(String texto) {
+        Cell c = new Cell().add(new Paragraph(texto).setBold().setFontSize(10).setFontColor(C_WHITE));
+        c.setBackgroundColor(C_HEADER_BG);
+        c.setPadding(4);
+        c.setTextAlignment(TextAlignment.CENTER);
+        return c;
+    }
+
+    private Cell categoriaCell(String categoria, int columnas) {
+        return new Cell(1, columnas).setBorder(Border.NO_BORDER)
+                .add(new Paragraph(categoria).setBold().setFontSize(10).setFontColor(C_PRIMARY));
     }
 
     private static String tituloVotos(List<ResultadoCandidato> resultados) {
@@ -295,7 +316,7 @@ public class PdfExportService {
         c.setBackgroundColor(C_LIGHT_BG);
         c.setPadding(10);
         c.setVerticalAlignment(VerticalAlignment.MIDDLE);
-        c.add(new Paragraph(label).setFontSize(8).setFontColor(C_GRAY).setTextAlignment(TextAlignment.CENTER));
+        c.add(new Paragraph(label).setFontSize(9).setFontColor(C_GRAY).setTextAlignment(TextAlignment.CENTER));
         c.add(new Paragraph(value).setFontSize(18).setBold().setFontColor(accent).setTextAlignment(TextAlignment.CENTER));
         return c;
     }
@@ -443,12 +464,10 @@ public class PdfExportService {
                     CargoCategoriaUtil.categoria(data.getResultados().get(0).getCargoNombre()));
         }
         Table t = new Table(UnitValue.createPercentArray(new float[]{0.5f, 3f, 2.5f, 2f, 1.5f, 1.5f}));
-        t.setWidth(UnitValue.createPercentValue(100));
+        configurarTabla(t);
         String[] hd = {"#", etiqueta, "Partido", "Cargo", "Votos", "%"};
         for (String h : hd) {
-            Cell hc = new Cell().add(new Paragraph(h).setBold().setFontSize(8).setFontColor(C_WHITE));
-            hc.setBackgroundColor(C_HEADER_BG); hc.setPadding(6); hc.setTextAlignment(TextAlignment.CENTER);
-            t.addHeaderCell(hc);
+            t.addHeaderCell(th(h));
         }
         if (data.getResultados() != null) {
             String categoriaActual = null;
@@ -457,8 +476,7 @@ public class PdfExportService {
                 String categoria = CargoCategoriaUtil.categoria(r.getCargoNombre());
                 if (!categoria.equalsIgnoreCase(categoriaActual)) {
                     categoriaActual = categoria;
-                    t.addCell(new Cell(1, hd.length).setBorder(Border.NO_BORDER)
-                            .add(new Paragraph(categoria).setBold().setFontSize(9).setFontColor(C_PRIMARY)));
+                    t.addCell(categoriaCell(categoria, hd.length));
                 }
                 boolean odd = i % 2 == 1;
                 t.addCell(td(String.valueOf(i + 1), odd, TextAlignment.CENTER));
@@ -474,16 +492,14 @@ public class PdfExportService {
     }
 
     private void addListasTable(Document doc, DashboardResponse data) {
-        doc.add(new Paragraph("Resultados por Cargo (votación en lista)")
+        doc.add(new Paragraph("Resultados por Cargo")
                 .setFontSize(14).setBold().setFontColor(C_DARK));
 
         Table t = new Table(UnitValue.createPercentArray(new float[]{0.5f, 3f, 1f, 2f, 2f, 1.5f, 1.5f}));
-        t.setWidth(UnitValue.createPercentValue(100));
+        configurarTabla(t);
         String[] hd = {"#", "Postulación", "N°", "Partido", "Cargo", "Votos", "%"};
         for (String h : hd) {
-            Cell hc = new Cell().add(new Paragraph(h).setBold().setFontSize(8).setFontColor(C_WHITE));
-            hc.setBackgroundColor(C_HEADER_BG); hc.setPadding(6); hc.setTextAlignment(TextAlignment.CENTER);
-            t.addHeaderCell(hc);
+            t.addHeaderCell(th(h));
         }
         if (data.getResultadosListas() != null) {
             String categoriaActual = null;
@@ -492,8 +508,7 @@ public class PdfExportService {
                 String categoria = CargoCategoriaUtil.categoria(r.getCargoNombre());
                 if (!categoria.equalsIgnoreCase(categoriaActual)) {
                     categoriaActual = categoria;
-                    t.addCell(new Cell(1, hd.length).setBorder(Border.NO_BORDER)
-                            .add(new Paragraph(categoria).setBold().setFontSize(9).setFontColor(C_PRIMARY)));
+                    t.addCell(categoriaCell(categoria, hd.length));
                 }
                 boolean odd = i % 2 == 1;
                 t.addCell(td(String.valueOf(i + 1), odd, TextAlignment.CENTER));
@@ -510,8 +525,9 @@ public class PdfExportService {
     }
 
     private Cell td(String text, boolean odd, TextAlignment align) {
-        Cell c = new Cell().add(new Paragraph(text).setFontSize(8).setFontColor(C_DARK));
-        c.setTextAlignment(align); c.setPadding(5);
+        Cell c = new Cell().add(new Paragraph(text == null ? "" : text)
+                .setFontSize(10).setFontColor(C_DARK));
+        c.setTextAlignment(align); c.setPadding(4);
         if (odd) c.setBackgroundColor(C_MUTED);
         return c;
     }
@@ -522,12 +538,10 @@ public class PdfExportService {
         doc.add(new Paragraph(title).setFontSize(14).setBold().setFontColor(C_DARK));
 
         Table t = new Table(UnitValue.createPercentArray(new float[]{0.5f, 4f, 1.5f, 1.5f}));
-        t.setWidth(UnitValue.createPercentValue(100));
+        configurarTabla(t);
         String[] hd = {"#", "Nombre", "Votos", "%"};
         for (String h : hd) {
-            Cell hc = new Cell().add(new Paragraph(h).setBold().setFontSize(8).setFontColor(C_WHITE));
-            hc.setBackgroundColor(C_HEADER_BG); hc.setPadding(6); hc.setTextAlignment(TextAlignment.CENTER);
-            t.addHeaderCell(hc);
+            t.addHeaderCell(th(h));
         }
         for (int i = 0; i < items.size(); i++) {
             ResultadoGeo r = items.get(i);
@@ -547,12 +561,10 @@ public class PdfExportService {
                 .setFontSize(14).setBold().setFontColor(C_DARK));
 
         Table t = new Table(UnitValue.createPercentArray(new float[]{0.5f, 4f, 1.5f, 1.5f}));
-        t.setWidth(UnitValue.createPercentValue(100));
+        configurarTabla(t);
         String[] hd = {"#", "Institucion", "Votos", "%"};
         for (String h : hd) {
-            Cell hc = new Cell().add(new Paragraph(h).setBold().setFontSize(8).setFontColor(C_WHITE));
-            hc.setBackgroundColor(C_HEADER_BG); hc.setPadding(6); hc.setTextAlignment(TextAlignment.CENTER);
-            t.addHeaderCell(hc);
+            t.addHeaderCell(th(h));
         }
         if (data.getResultadosRecinto() != null) {
             for (int i = 0; i < data.getResultadosRecinto().size(); i++) {
@@ -577,12 +589,10 @@ public class PdfExportService {
 
         Table t = new Table(UnitValue.createPercentArray(
                 new float[]{0.4f, 0.9f, 3f, 0.7f, 1.2f, 1f, 1f, 1.1f, 0.9f}));
-        t.setWidth(UnitValue.createPercentValue(100));
+        configurarTabla(t);
         String[] hd = {"#", "Mesa", "Recinto", "Est.", "Votos", "Nulos", "Blancos", "Total", "%"};
         for (String h : hd) {
-            Cell hc = new Cell().add(new Paragraph(h).setBold().setFontSize(7).setFontColor(C_WHITE));
-            hc.setBackgroundColor(C_HEADER_BG); hc.setPadding(5); hc.setTextAlignment(TextAlignment.CENTER);
-            t.addHeaderCell(hc);
+            t.addHeaderCell(th(h));
         }
         for (int i = 0; i < data.getResultadosMesa().size(); i++) {
             ResultadoMesa r = data.getResultadosMesa().get(i);
