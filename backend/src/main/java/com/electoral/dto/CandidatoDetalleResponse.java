@@ -12,6 +12,8 @@ import java.util.List;
 @AllArgsConstructor
 public class CandidatoDetalleResponse {
     private Long candidatoId;
+    /** Id de la lista cuando el detalle corresponde a un cargo de votación en lista. */
+    private Long listaId;
     private String nombreCompleto;
     private String partidoNombre;
     private String cargoNombre;

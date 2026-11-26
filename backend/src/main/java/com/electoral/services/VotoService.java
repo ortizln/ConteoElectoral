@@ -272,6 +272,40 @@ public class VotoService {
                 .build();
     }
 
+    /** Detalle por recinto/mesa y agrupaciones geográficas de una lista electoral. */
+    @Transactional(readOnly = true)
+    public CandidatoDetalleResponse getDetalleLista(Long listaId, Long eleccionId) {
+        ListaElectoral lista = listaElectoralRepository.findById(listaId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Lista no encontrada"));
+
+        List<Object[]> rows = votoRepository.findVotosByListaAndEleccion(listaId, eleccionId);
+        Long totalVotos = rows.stream().mapToLong(r -> ((Number) r[4]).longValue()).sum();
+
+        List<CandidatoDetalleResponse.VotoPorMesa> votosPorMesa = rows.stream()
+                .map(r -> CandidatoDetalleResponse.VotoPorMesa.builder()
+                        .mesaId(((Number) r[0]).longValue())
+                        .mesaNumero((String) r[1])
+                        .institucion((String) r[2])
+                        .parroquia(r[3] != null ? (String) r[3] : "")
+                        .votos(((Number) r[4]).longValue())
+                        .build())
+                .collect(Collectors.toList());
+
+        return CandidatoDetalleResponse.builder()
+                .listaId(listaId)
+                .nombreCompleto(lista.getNombre())
+                .partidoNombre(lista.getPartido() != null ? lista.getPartido().getNombre() : "—")
+                .cargoNombre(lista.getCargo() != null ? lista.getCargo().getNombre() : "—")
+                .totalVotos(totalVotos)
+                .votosPorMesa(votosPorMesa)
+                .zonas(mapGeoGroup(votoRepository.sumVotosByZonaLista(listaId, eleccionId), totalVotos))
+                .provincias(mapGeoGroup(votoRepository.sumVotosByProvinciaLista(listaId, eleccionId), totalVotos))
+                .cantones(mapGeoGroup(votoRepository.sumVotosByCantonLista(listaId, eleccionId), totalVotos))
+                .parroquias(mapGeoGroup(votoRepository.sumVotosByParroquiaLista(listaId, eleccionId), totalVotos))
+                .instituciones(mapGeoGroup(votoRepository.sumVotosByInstitucionLista(listaId, eleccionId), totalVotos))
+                .build();
+    }
+
     private List<CandidatoDetalleResponse.GeoGroup> mapGeoGroup(List<Object[]> rows, Long totalVotos) {
         return rows.stream()
                 .map(r -> CandidatoDetalleResponse.GeoGroup.builder()

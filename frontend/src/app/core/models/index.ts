@@ -283,7 +283,8 @@ export interface RolPermiso {
 }
 
 export interface CandidatoDetalleResponse {
-  candidatoId: number;
+  candidatoId?: number;
+  listaId?: number;
   nombreCompleto: string;
   partidoNombre: string;
   cargoNombre: string;

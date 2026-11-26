@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ViewChildren, QueryList, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ViewChildren, QueryList, ElementRef, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -166,6 +166,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     else if (card === 'resultados') this.resultadosMinimized = !this.resultadosMinimized;
     else if (card === 'stats') this.statsMinimized = !this.statsMinimized;
+    setTimeout(() => this.resizeCharts(), 60);
   }
 
   get algunaCategoriaFullscreen(): boolean {
@@ -192,10 +193,31 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     } else {
       document.body.style.overflow = '';
     }
-    setTimeout(() => {
-      this.barChart?.resize();
-      this.pieChart?.resize();
-    }, 100);
+    // El contenedor cambia de tamaño (incluye la transición de salir de fullscreen),
+    // por eso se ajusta al primer frame y de nuevo al finalizar la animación.
+    requestAnimationFrame(() => this.resizeCharts());
+    setTimeout(() => this.resizeCharts(), 350);
+  }
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    setTimeout(() => this.resizeCharts(), 80);
+  }
+
+  /** Ajusta los canvas al tamaño real de su wrapper (Chart.js responsive:false). */
+  private resizeCharts(): void {
+    const charts = [this.barChart, this.pieChart, ...this.categoriaCharts]
+      .filter((c): c is Chart => !!c);
+    charts.forEach(chart => {
+      const canvas = chart.canvas as HTMLCanvasElement;
+      const wrap = canvas?.parentElement as HTMLElement | null;
+      if (!wrap) return;
+      const width = wrap.clientWidth;
+      const height = wrap.clientHeight;
+      if (width > 0 && height > 0) {
+        chart.resize(width, height);
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -265,7 +287,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.resultados = resultados;
 
     // Mantener una pestaña válida tras cualquier actualización de datos
-    const validas = [...this.cargoTabs.map(t => t.label), 'recintos', 'mesas'];
+    const validas = [...this.cargoTabs.map(t => t.label), 'recintos', 'mesas', 'Recintos', 'Mesas'];
     if (!this.tabResultados || !validas.includes(this.tabResultados)) {
       this.tabResultados = this.cargoTabs[0]?.label || 'recintos';
     }
@@ -292,6 +314,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.initCategoriaCharts();
       this.updateCharts();
       this.updateCategoriaCharts();
+      this.resizeCharts();
     }, 100);
   }
 
@@ -356,6 +379,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.filtroCantonId = null;
     this.filtroParroquiaId = null;
     this.filtroInstitucionId = null;
+    this.filtroMesaId = null;
+    this.filtroMesaTexto = '';
     this.provincias = [];
     this.cantones = [];
     this.parroquias = [];
@@ -364,6 +389,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.api.getProvinciasByZona(this.filtroZonaId).subscribe((data: Provincia[]) => {
         this.provincias = data;
       });
+    } else {
+      this.api.getProvincias().subscribe((data: Provincia[]) => { this.provincias = data; });
     }
     this.aplicarFiltros();
   }
@@ -372,6 +399,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.filtroCantonId = null;
     this.filtroParroquiaId = null;
     this.filtroInstitucionId = null;
+    this.filtroMesaId = null;
+    this.filtroMesaTexto = '';
     this.cantones = [];
     this.parroquias = [];
     this.instituciones = [];
@@ -379,6 +408,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.api.getCantonesByProvincia(this.filtroProvinciaId).subscribe((data: Canton[]) => {
         this.cantones = data;
       });
+    } else {
+      this.api.getCantones().subscribe((data: Canton[]) => { this.cantones = data; });
     }
     this.aplicarFiltros();
   }
@@ -386,18 +417,24 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   onCantonChange(): void {
     this.filtroParroquiaId = null;
     this.filtroInstitucionId = null;
+    this.filtroMesaId = null;
+    this.filtroMesaTexto = '';
     this.parroquias = [];
     this.instituciones = [];
     if (this.filtroCantonId) {
       this.api.getParroquiasByCanton(this.filtroCantonId).subscribe((data: Parroquia[]) => {
         this.parroquias = data;
       });
+    } else {
+      this.api.getParroquias().subscribe((data: Parroquia[]) => { this.parroquias = data; });
     }
     this.aplicarFiltros();
   }
 
   onParroquiaChange(): void {
     this.filtroInstitucionId = null;
+    this.filtroMesaId = null;
+    this.filtroMesaTexto = '';
     this.instituciones = [];
     if (this.filtroParroquiaId) {
       this.api.getInstitucionesByParroquia(this.filtroParroquiaId).subscribe((data: InstitucionEducativa[]) => {
@@ -669,8 +706,42 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       });
   }
 
+  /** Las pestañas usan etiquetas ("Recintos", "Mesas"); normalizamos para evitar comparar contra claves en minúsculas. */
+  private get tabResultadosKey(): string {
+    return (this.tabResultados || '').toLowerCase();
+  }
+
   get esTabCargo(): boolean {
-    return this.tabResultados !== 'recintos' && this.tabResultados !== 'mesas';
+    const key = this.tabResultadosKey;
+    return key !== 'recintos' && key !== 'mesas';
+  }
+
+  get esTabMesas(): boolean {
+    return this.tabResultadosKey === 'mesas';
+  }
+
+  onTabResultadosChange(tab: string): void {
+    this.tabResultados = tab;
+    if (this.esTabMesas) this.cargarCatalogosParaMesas();
+  }
+
+  /** Catálogos completos para los filtros de la pestaña Mesas (sin depender de Zona). */
+  private catalogosMesasCargados = false;
+  private cargarCatalogosParaMesas(): void {
+    if (this.catalogosMesasCargados) return;
+    this.catalogosMesasCargados = true;
+    this.api.getProvincias().subscribe(data => {
+      if (!this.filtroZonaId) this.provincias = data;
+    });
+    this.api.getCantones().subscribe(data => {
+      if (!this.filtroProvinciaId) this.cantones = data;
+    });
+    this.api.getParroquias().subscribe(data => {
+      if (!this.filtroCantonId) this.parroquias = data;
+    });
+    this.api.getInstituciones().subscribe(data => {
+      if (!this.filtroParroquiaId) this.instituciones = data;
+    });
   }
 
   get tabCargoActual(): { label: string; esLista: boolean; count: number } | undefined {
@@ -736,16 +807,17 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   get mesasFiltradasPorRecinto(): Mesa[] {
-    return this.filtroInstitucionId != null
-      ? this.mesas.filter(m => m.institucionId === this.filtroInstitucionId)
-      : this.mesas;
+    return this.mesas.filter(m =>
+      (this.filtroInstitucionId == null || m.institucionId === this.filtroInstitucionId) &&
+      (this.filtroParroquiaId == null || m.parroquiaId === this.filtroParroquiaId) &&
+      (this.filtroCantonId == null || m.cantonId === this.filtroCantonId) &&
+      (this.filtroProvinciaId == null || m.provinciaId === this.filtroProvinciaId)
+    );
   }
 
   onFiltroRecintoResultadosChange(): void {
-    if (this.filtroInstitucionId != null) {
-      this.filtroMesaId = null;
-      this.filtroMesaTexto = '';
-    }
+    this.filtroMesaId = null;
+    this.filtroMesaTexto = '';
     this.aplicarFiltros();
   }
 
@@ -757,8 +829,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   /** Etiqueta del contador según la pestaña activa */
   get tabCountLabel(): string {
-    if (this.tabResultados === 'recintos') return `${this.resultadosRecinto.length} recintos`;
-    if (this.tabResultados === 'mesas') return `${this.resultadosMesa.length} mesas`;
+    if (this.tabResultadosKey === 'recintos') return `${this.resultadosRecinto.length} recintos`;
+    if (this.tabResultadosKey === 'mesas') return `${this.resultadosMesa.length} mesas`;
     return `${this.tabCargoActual?.count || 0} resultados`;
   }
 
@@ -852,6 +924,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.cantones = [];
     this.parroquias = [];
     this.instituciones = [];
+    this.catalogosMesasCargados = false;
+    this.cargarCatalogosParaMesas();
     this.loadDashboard();
   }
 
@@ -1004,7 +1078,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         type: 'bar',
         data: { labels: [], datasets: [] },
         options: {
-          responsive: false, animation: false,
+          responsive: false, maintainAspectRatio: false, animation: false,
           color: textColor,
           scales: {
             x: { ticks: { color: textColor }, grid: { color: this.getChartGridColor() } },
@@ -1020,7 +1094,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
         type: 'pie',
         data: { labels: [], datasets: [] },
         options: {
-          responsive: false, animation: false,
+          responsive: false, maintainAspectRatio: false, animation: false,
           color: textColor,
           plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
         }
@@ -1090,7 +1164,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       type: 'doughnut',
       data: { labels: [], datasets: [] },
       options: {
-        responsive: false, animation: false,
+        responsive: false, maintainAspectRatio: false, animation: false,
         color: this.getChartTextColor(),
         plugins: { legend: { display: false }, tooltip: { enabled: true } },
         cutout: '60%'
@@ -1150,6 +1224,29 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   cerrarDetalle(): void {
     this.showDetalle = false;
     this.detalleCandidato = null;
+  }
+
+  /** Igual que Alcaldes, pero para filas de listas (JP / consejales). */
+  verDetalleLista(listaId: number): void {
+    if (!this.selectedEleccionId) return;
+    this.detalleLoading = true;
+    this.showDetalle = true;
+    this.geoDetalleTab = 'mesas';
+    this.api.getDetalleLista(listaId, this.selectedEleccionId).subscribe({
+      next: (data) => {
+        this.detalleCandidato = data;
+        this.detalleLoading = false;
+        this.geoDetalleTabs = [
+          { key: 'mesas', label: 'Mesas', count: data.votosPorMesa?.length || 0 },
+          { key: 'zonas', label: 'Zonas', count: data.zonas?.length || 0 },
+          { key: 'provincias', label: 'Provincias', count: data.provincias?.length || 0 },
+          { key: 'cantones', label: 'Cantones', count: data.cantones?.length || 0 },
+          { key: 'parroquias', label: 'Parroquias', count: data.parroquias?.length || 0 },
+          { key: 'instituciones', label: 'Instituciones', count: data.instituciones?.length || 0 },
+        ].filter(t => t.count > 0);
+      },
+      error: () => { this.detalleLoading = false; }
+    });
   }
 
   verMesasCerradas(): void {

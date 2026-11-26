@@ -266,20 +266,20 @@
 
       <!-- Pestañas por cargo + Recintos y Mesas -->
       <ul class="nav nav-tabs tabs-nav">
-        <li class="nav-item" *ngFor="let tab of cargoTabs" (click)="tabResultados = tab.label">
+        <li class="nav-item" *ngFor="let tab of cargoTabs" (click)="onTabResultadosChange(tab.label)">
           <a class="nav-link" [class.active]="tabResultados === tab.label">
             <i class="bi" [ngClass]="tab.esLista ? 'bi-list-check' : 'bi-person'"></i>
             {{ tab.label }}
             <span class="tab-count">{{ tab.count }}</span>
           </a>
         </li>
-        <li class="nav-item" *ngIf="resultadosRecinto.length > 0" (click)="tabResultados = 'recintos'">
+        <li class="nav-item" *ngIf="resultadosRecinto.length > 0" (click)="onTabResultadosChange('recintos')">
           <a class="nav-link" [class.active]="tabResultados === 'recintos'">
             <i class="bi bi-building"></i> Recintos
             <span class="tab-count">{{ resultadosRecinto.length }}</span>
           </a>
         </li>
-        <li class="nav-item" *ngIf="resultadosMesa.length > 0" (click)="tabResultados = 'mesas'">
+        <li class="nav-item" *ngIf="resultadosMesa.length > 0" (click)="onTabResultadosChange('mesas')">
           <a class="nav-link" [class.active]="tabResultados === 'mesas'">
             <i class="bi bi-grid-3x3-gap"></i> Mesas
             <span class="tab-count">{{ resultadosMesa.length }}</span>
@@ -287,21 +287,44 @@
         </li>
       </ul>
 
-      <!-- Filtros específicos de las pestañas por cargo -->
-      <div class="resultados-filtros" *ngIf="esTabCargo">
+      <!-- Filtros específicos de las pestañas (y de Resultados por Mesa) -->
+      <div class="resultados-filtros" *ngIf="esTabCargo || esTabMesas">
+        <ng-container *ngIf="esTabMesas">
+          <div class="filtro-group">
+            <label>Provincia</label>
+            <select class="form-select" [(ngModel)]="filtroProvinciaId" (change)="onProvinciaChange()">
+              <option [ngValue]="null">Todas</option>
+              <option *ngFor="let p of provincias" [ngValue]="p.id">{{ p.nombre }}</option>
+            </select>
+          </div>
+          <div class="filtro-group">
+            <label>Cantón</label>
+            <select class="form-select" [(ngModel)]="filtroCantonId" (change)="onCantonChange()">
+              <option [ngValue]="null">Todos</option>
+              <option *ngFor="let c of cantones" [ngValue]="c.id">{{ c.nombre }}</option>
+            </select>
+          </div>
+          <div class="filtro-group">
+            <label>Parroquia</label>
+            <select class="form-select" [(ngModel)]="filtroParroquiaId" (change)="onParroquiaChange()">
+              <option [ngValue]="null">Todas</option>
+              <option *ngFor="let p of parroquias" [ngValue]="p.id">{{ p.nombre }}</option>
+            </select>
+          </div>
+        </ng-container>
         <div class="filtro-group">
           <label>Recinto</label>
           <select class="form-select" [(ngModel)]="filtroInstitucionId"
             (change)="onFiltroRecintoResultadosChange()">
             <option [ngValue]="null">Todos los recintos</option>
-            <option *ngFor="let i of instituciones" [value]="i.id">{{ i.nombre }}</option>
+            <option *ngFor="let i of instituciones" [ngValue]="i.id">{{ i.nombre }}</option>
           </select>
         </div>
         <div class="filtro-group">
           <label>Mesa</label>
           <select class="form-select" [(ngModel)]="filtroMesaId" (change)="onFiltroMesaResultadosChange()">
             <option [ngValue]="null">Todas las mesas</option>
-            <option *ngFor="let m of mesasFiltradasPorRecinto" [value]="m.id">
+            <option *ngFor="let m of mesasFiltradasPorRecinto" [ngValue]="m.id">
               Mesa {{ m.numero }} - {{ m.institucionNombre || '' }}
             </option>
           </select>
@@ -370,6 +393,7 @@
 
       <div *ngIf="esTabCargo && tabCargoActual?.esLista && resultadosListasDelTab.length > 0" class="resultados-section">
         <h4 class="section-title"><i class="bi bi-clipboard-data"></i> {{ tabResultados }} — Resultados</h4>
+        <p class="text-muted small mb-2">Haz clic en una lista para ver sus resultados por recinto y mesa.</p>
         <table class="table-moderno">
           <thead>
             <tr>
@@ -383,7 +407,9 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let l of resultadosListasDelTab; let i = index">
+            <tr *ngFor="let l of resultadosListasDelTab; let i = index"
+              (click)="verDetalleLista(l.listaId)" style="cursor:pointer;"
+              title="Ver resultados por recinto y mesa">
               <td>{{ i + 1 }}</td>
               <td>
                 <div class="candidato-info-cell">
@@ -726,12 +752,15 @@
   <!-- Modal backdrop -->
   <div class="modal-backdrop show" *ngIf="showDetalle"></div>
 
-  <!-- Candidate Detail Modal -->
+  <!-- Candidate / List Detail Modal -->
   <div class="modal show" *ngIf="showDetalle" style="display:block;">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 *ngIf="detalleCandidato"><i class="bi bi-bar-chart-fill"></i> {{ detalleCandidato.nombreCompleto }}</h5>
+          <h5 *ngIf="detalleCandidato">
+            <i class="bi bi-bar-chart-fill"></i> {{ detalleCandidato.nombreCompleto }}
+            <small class="text-muted" *ngIf="detalleCandidato.listaId">(Lista)</small>
+          </h5>
           <button type="button" class="btn-close" (click)="cerrarDetalle()"></button>
         </div>
         <div class="modal-body">
