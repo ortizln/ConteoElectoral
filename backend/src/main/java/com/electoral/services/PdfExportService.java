@@ -7,6 +7,7 @@ import com.electoral.dto.ResultadoLista;
 import com.electoral.dto.ResultadoMesa;
 import com.electoral.dto.ResultadoRecinto;
 import com.electoral.entities.Mesa;
+import com.electoral.util.AlantekLogoUtil;
 import com.electoral.util.CargoCategoriaUtil;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
@@ -36,7 +37,6 @@ import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
 import com.itextpdf.layout.properties.VerticalAlignment;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -45,10 +45,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class PdfExportService {
-
-    private final ConfiguracionSistemaService configService;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
@@ -81,14 +78,11 @@ public class PdfExportService {
     // ── Headers & Footers ──────────────────────────────────────────────
 
     private void configurarDocumento(PdfDocument pdf, Document document, String titulo) {
-        String partyName = configService.getConfiguracion().getNombrePartido();
-        byte[] logoBytes = configService.getLogo();
         document.setMargins(65, 36, 50, 36);
         pdf.addEventHandler(PdfDocumentEvent.END_PAGE, new PdfFooterEventHandler());
-        // El logo original puede ser de 1536x1024 px; incrustarlo en cada
-        // página producía un PDF de ~63 MB. Se reduce una sola vez a 160 px.
-        ImageData logoData = prepararLogo(logoBytes);
-        pdf.addEventHandler(PdfDocumentEvent.START_PAGE, new PdfHeaderEventHandler(partyName, logoData));
+        // El logo se reduce una sola vez para no repetir una imagen pesada en cada página.
+        ImageData logoData = prepararLogo(AlantekLogoUtil.logoBytes());
+        pdf.addEventHandler(PdfDocumentEvent.START_PAGE, new PdfHeaderEventHandler(titulo, logoData));
     }
 
     /** Logo reducido a 160x160 px; si no se puede procesar, se omite. */
@@ -118,11 +112,11 @@ public class PdfExportService {
     }
 
     private static class PdfHeaderEventHandler implements IEventHandler {
-        private final String partyName;
+        private final String titulo;
         private final ImageData logoData;
 
-        PdfHeaderEventHandler(String partyName, ImageData logoData) {
-            this.partyName = partyName;
+        PdfHeaderEventHandler(String titulo, ImageData logoData) {
+            this.titulo = titulo;
             this.logoData = logoData;
         }
 
@@ -134,23 +128,29 @@ public class PdfExportService {
             Rectangle ps = page.getPageSize();
             PdfCanvas canvas = new PdfCanvas(page.newContentStreamBefore(), page.getResources(), pdf);
 
-            try (Canvas hc = new Canvas(canvas, new Rectangle(ps.getLeft() + 36, ps.getTop() - 55, ps.getWidth() - 72, 45))) {
-                float cw = (ps.getWidth() - 72) / 3;
-                if (logoData != null) {
-                    try {
-                        Image logo = new Image(logoData);
-                        logo.scaleToFit(35, 35);
-                        hc.add(logo.setFixedPosition(ps.getLeft() + 36, ps.getTop() - 50, 35));
-                    } catch (Exception e) { /* ignore */ }
+            float left = ps.getLeft() + 36;
+            float right = ps.getRight() - 36;
+            float brandX = left;
+            if (logoData != null) {
+                try {
+                    Image logo = new Image(logoData);
+                    logo.scaleToFit(38, 38);
+                    try (Canvas lc = new Canvas(canvas, new Rectangle(left, ps.getTop() - 55, 42, 42))) {
+                        lc.add(logo.setFixedPosition(left, ps.getTop() - 49, 38));
+                    }
+                    brandX = left + 44;
+                } catch (Exception e) { /* se conserva solo el texto */ }
+            }
+
+            try (Canvas hc = new Canvas(canvas, new Rectangle(brandX, ps.getTop() - 55, right - brandX, 45))) {
+                hc.add(new Paragraph("ALANTEK").setFontSize(14).setBold().setFontColor(C_DARK));
+                if (titulo != null && !titulo.isBlank()) {
+                    hc.add(new Paragraph(titulo).setFontSize(8).setFontColor(C_GRAY));
                 }
-                hc.add(new Paragraph(partyName).setFontSize(10).setBold().setTextAlignment(TextAlignment.CENTER)
-                        .setFixedPosition(ps.getLeft() + 36 + cw, ps.getTop() - 48, cw));
-                hc.add(new Paragraph("ALANTEK").setFontSize(9).setBold().setTextAlignment(TextAlignment.RIGHT)
-                        .setFixedPosition(ps.getLeft() + 36 + cw * 2, ps.getTop() - 48, cw));
             }
             canvas.setStrokeColor(ColorConstants.LIGHT_GRAY);
-            canvas.moveTo(ps.getLeft() + 36, ps.getTop() - 60);
-            canvas.lineTo(ps.getRight() - 36, ps.getTop() - 60);
+            canvas.moveTo(left, ps.getTop() - 60);
+            canvas.lineTo(right, ps.getTop() - 60);
             canvas.stroke();
         }
     }
