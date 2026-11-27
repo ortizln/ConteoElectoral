@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import * as XLSX from 'xlsx';
 import { ApiService } from '../../../../core/services/api.service';
-import { InstitucionEducativa, Parroquia } from '../../../../core/models';
+import { InstitucionEducativa, Parroquia, Provincia, Canton } from '../../../../core/models';
 import { FiltrosPanelComponent } from '../../../shared/components/filtros-panel/filtros-panel.component';
 
 @Component({
@@ -15,7 +15,11 @@ import { FiltrosPanelComponent } from '../../../shared/components/filtros-panel/
 })
 export class InstitucionesComponent implements OnInit {
   instituciones: InstitucionEducativa[] = [];
+  provincias: Provincia[] = [];
+  cantones: Canton[] = [];
   parroquias: Parroquia[] = [];
+  filterProvinciaId: number | null = null;
+  filterCantonId: number | null = null;
   showModal = false;
   editMode = false;
   selectedId: number | null = null;
@@ -46,22 +50,58 @@ export class InstitucionesComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.api.getProvincias().subscribe((d: Provincia[]) => this.provincias = d || []);
+    this.api.getCantones().subscribe((d: Canton[]) => this.cantones = d || []);
     this.loadParroquias();
     this.load();
   }
 
   loadParroquias(): void {
-    this.api.getParroquias().subscribe((d: Parroquia[]) => this.parroquias = d);
+    this.api.getParroquias().subscribe((d: Parroquia[]) => this.parroquias = d || []);
   }
 
   load(): void {
-    const obs = this.filterParroquiaId
-      ? this.api.getInstitucionesByParroquia(this.filterParroquiaId)
-      : this.api.getInstituciones();
-    obs.subscribe((d: InstitucionEducativa[]) => this.instituciones = d);
+    this.api.getInstituciones().subscribe((d: InstitucionEducativa[]) => this.instituciones = d || []);
   }
 
-  filtrarPorParroquia(): void { this.load(); this.currentPage = 1; }
+  /** Catálogos dependientes provincia → cantón → parroquía. */
+  get cantonesDisponibles(): Canton[] {
+    return this.filterProvinciaId != null
+      ? this.cantones.filter(c => c.provinciaId === this.filterProvinciaId)
+      : this.cantones;
+  }
+
+  get parroquiasDisponibles(): Parroquia[] {
+    if (this.filterCantonId != null) {
+      return this.parroquias.filter(p => p.cantonId === this.filterCantonId);
+    }
+    if (this.filterProvinciaId != null) {
+      const cantonIds = new Set(this.cantonesDisponibles.map(c => c.id));
+      return this.parroquias.filter(p => cantonIds.has(p.cantonId));
+    }
+    return this.parroquias;
+  }
+
+  onProvinciaChange(): void {
+    this.filterCantonId = null;
+    this.filterParroquiaId = null;
+    this.currentPage = 1;
+  }
+
+  onCantonChange(): void {
+    this.filterParroquiaId = null;
+    this.currentPage = 1;
+  }
+
+  filtrarPorParroquia(): void { this.currentPage = 1; }
+
+  limpiarFiltros(): void {
+    this.filterProvinciaId = null;
+    this.filterCantonId = null;
+    this.filterParroquiaId = null;
+    this.searchText = '';
+    this.currentPage = 1;
+  }
 
   sort(column: string): void {
     if (this.sortColumn === column) {
@@ -90,9 +130,18 @@ export class InstitucionesComponent implements OnInit {
   }
 
   get institucionesFiltradas(): InstitucionEducativa[] {
-    if (!this.searchText) return this.institucionesOrdenadas;
+    let lista = this.institucionesOrdenadas;
+    const hayFiltroGeo = this.filterProvinciaId != null
+      || this.filterCantonId != null || this.filterParroquiaId != null;
+    if (hayFiltroGeo) {
+      const parroquiaIds = new Set(this.parroquiasDisponibles.map(p => p.id));
+      lista = lista.filter(i => this.filterParroquiaId != null
+        ? i.parroquiaId === this.filterParroquiaId
+        : parroquiaIds.has(i.parroquiaId));
+    }
+    if (!this.searchText) return lista;
     const term = this.searchText.toLowerCase();
-    return this.institucionesOrdenadas.filter(item =>
+    return lista.filter(item =>
       Object.values(item).some(v => v != null && String(v).toLowerCase().includes(term))
     );
   }

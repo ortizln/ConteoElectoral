@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ViewChildren, QueryList, ElementRef, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, AfterViewInit, ViewChild, ViewChildren, QueryList, ElementRef, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -38,6 +38,9 @@ type ResultadoListaCategoriaCard = {
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
+  /** Ruta pública /resultados: solo lectura, sin descargas ni acciones de administración. */
+  @Input() publico = false;
+
   @ViewChild('barChart') barChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('pieChart') pieChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChildren('categoriaListaChart') categoriaListaCharts!: QueryList<ElementRef<HTMLCanvasElement>>;
@@ -226,16 +229,18 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       if (elecciones.length > 0) {
         this.selectedEleccionId = elecciones[0].id;
         this.eleccionNombre = elecciones[0].nombre;
-        this.cargarMetaFotos(elecciones[0].id);
+        if (!this.publico) this.cargarMetaFotos(elecciones[0].id);
         this.loadZonas();
         this.api.getInstituciones().subscribe((data: InstitucionEducativa[]) => {
           this.instituciones = data;
         });
-        this.loadMesas();
+        if (!this.publico) this.loadMesas();
         this.loadDashboard();
-        this.subscribeToUpdates();
-        this.subscribeToMesaEstado();
-        this.startAutoRefresh();
+        if (!this.publico) {
+          this.subscribeToUpdates();
+          this.subscribeToMesaEstado();
+          this.startAutoRefresh();
+        }
       }
     });
   }
@@ -520,6 +525,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.drillMesaFotos = [];
     this.drillMesaFotosLoading = true;
     this.aplicarFiltros();
+    if (this.publico) {
+      this.drillMesaFotosLoading = false;
+      return;
+    }
     this.api.getActaFotos(m.mesaId).subscribe({
       next: (fotos) => {
         this.drillMesaFotos = fotos;
@@ -1188,12 +1197,14 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   exportarPdf(): void {
+    if (this.publico) return;
     if (this.selectedEleccionId) {
       this.api.exportDashboardPdf(this.selectedEleccionId, this.getFiltrosActuales());
     }
   }
 
   exportarExcel(): void {
+    if (this.publico) return;
     if (this.selectedEleccionId) {
       this.api.exportDashboardExcel(this.selectedEleccionId, this.getFiltrosActuales());
     }
@@ -1250,7 +1261,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   verMesasCerradas(): void {
-    if (!this.selectedEleccionId) return;
+    if (this.publico || !this.selectedEleccionId) return;
     this.showMesasCerradas = true;
     this.mesasCerradasLoading = true;
     this.api.getMesasCerradas(this.selectedEleccionId).subscribe({
@@ -1265,10 +1276,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   descargarActa(mesaId: number): void {
+    if (this.publico) return;
     this.api.descargarActaMesa(mesaId);
   }
 
   confirmarReabrirMesa(m: MesaCerradaResponse): void {
+    if (this.publico) return;
     this.reabrirMesaSeleccionada = m;
     this.reabrirPassword = '';
     this.reabrirError = '';

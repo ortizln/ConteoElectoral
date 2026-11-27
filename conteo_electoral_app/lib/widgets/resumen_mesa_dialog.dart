@@ -9,6 +9,8 @@ Future<void> showResumenMesaDialog(
   required List<Candidato> candidatos,
   required int nulos,
   required int blanco,
+  int ausentes = 0,
+  int? electoresRegistrados,
 }) {
   final porCandidato = <int, int>{};
   final porLista = <int, int>{};
@@ -115,6 +117,14 @@ Future<void> showResumenMesaDialog(
               _filaResumen(
                   'Nulos', '', nulos, AppColors.error),
               _filaResumen('Blanco', '', blanco, AppColors.gray),
+              _filaResumen(
+                electoresRegistrados != null
+                    ? 'Ausentes (padrón: $electoresRegistrados)'
+                    : 'Ausentes',
+                '',
+                ausentes,
+                AppColors.warning,
+              ),
               const Divider(height: 24),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -128,6 +138,13 @@ Future<void> showResumenMesaDialog(
                     _filaTotales('Candidatos y listas', totalCandidatos),
                     _filaTotales('Nulos', nulos),
                     _filaTotales('Blanco', blanco),
+                    _filaTotales('Ausentes', ausentes),
+                    if (electoresRegistrados != null) ...[
+                      const Divider(height: 12),
+                      _filaTotales('Padrón del recinto', electoresRegistrados),
+                      _filaTotales(
+                          'Votaron + ausentes', totalGeneral + ausentes),
+                    ],
                     const Divider(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

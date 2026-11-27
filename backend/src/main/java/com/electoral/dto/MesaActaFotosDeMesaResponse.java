@@ -24,5 +24,10 @@ public class MesaActaFotosDeMesaResponse {
     private Long provinciaId;
     private String provinciaNombre;
     private Boolean cerrada;
+    private Integer votosNulos;
+    private Integer votosBlanco;
+    private Integer ausentes;
+    private Boolean aprobada;
+    private Integer electoresRegistrados;
     private List<MesaActaFotoResponse> fotos;
 }

@@ -42,6 +42,16 @@ public class Mesa {
     @Column(name = "votos_blanco", columnDefinition = "integer default 0")
     private Integer votosBlanco = 0;
 
+    /** Ausentes registrados manualmente por el miembro de mesa (o corregidos por el supervisor). */
+    @Builder.Default
+    @Column(name = "ausentes", columnDefinition = "integer default 0")
+    private Integer ausentes = 0;
+
+    /** El acta fue revisada y aprobada por ADMIN/SUPERVISOR: bloquea edición del miembro de mesa. */
+    @Builder.Default
+    @Column(name = "aprobada", nullable = false)
+    private Boolean aprobada = false;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

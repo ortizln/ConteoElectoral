@@ -35,6 +35,7 @@ public class VotoService {
     private final SimpMessagingTemplate messagingTemplate;
     private final ListaElectoralRepository listaElectoralRepository;
     private final ElegibilidadTerritorialService elegibilidadTerritorialService;
+    private final com.electoral.util.SecurityUtil securityUtil;
 
     @Transactional(readOnly = true)
     public List<VotoResponse> getVotosByMesa(Long mesaId) {
@@ -57,17 +58,31 @@ public class VotoService {
         return mapToResponse(voto);
     }
 
-    @Transactional
-    public List<VotoResponse> registrarVoto(VotoRequest request, Long usuarioId) {
-        Mesa mesa = mesaService.getMesaEntityById(request.getMesaId());
+    /** ADMIN/SUPERVISOR corrigen actas cerradas; MIEMBRO_MESA solo con mesa abierta y no aprobada. */
+    private boolean esSupervisorOAdmin() {
+        Usuario usuario = securityUtil.getCurrentUser();
+        return usuario != null && usuario.getRol() != null
+                && ("ADMIN".equals(usuario.getRol().getNombre())
+                || "SUPERVISOR".equals(usuario.getRol().getNombre()));
+    }
 
-        if (mesa.getCerrada()) {
-            throw new MesaCerradaException("No se puede registrar votos en una mesa cerrada");
+    private void validarEdicionVotos(Mesa mesa, Long usuarioId) {
+        if (esSupervisorOAdmin()) return;
+        if (Boolean.TRUE.equals(mesa.getCerrada())) {
+            throw new MesaCerradaException("No se puede modificar votos en una mesa cerrada");
         }
-
+        if (Boolean.TRUE.equals(mesa.getAprobada())) {
+            throw new ValidacionException("El acta de esta mesa ya fue aprobada y no admite cambios");
+        }
         if (!mesaService.usuarioPerteneceAMesa(usuarioId, mesa.getId())) {
             throw new AccesoDenegadoException("No tiene permisos para registrar votos en esta mesa");
         }
+    }
+
+    @Transactional
+    public List<VotoResponse> registrarVoto(VotoRequest request, Long usuarioId) {
+        Mesa mesa = mesaService.getMesaEntityById(request.getMesaId());
+        validarEdicionVotos(mesa, usuarioId);
 
         Eleccion eleccion = eleccionService.getEleccionEntityById(request.getEleccionesId());
         List<Voto> savedVotos = new ArrayList<>();
@@ -165,13 +180,7 @@ public class VotoService {
         Voto voto = votoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Voto no encontrado con ID: " + id));
 
-        if (voto.getMesa().getCerrada()) {
-            throw new MesaCerradaException("No se puede modificar votos en una mesa cerrada");
-        }
-
-        if (!mesaService.usuarioPerteneceAMesa(usuarioId, voto.getMesa().getId())) {
-            throw new AccesoDenegadoException("No tiene permisos para modificar votos en esta mesa");
-        }
+        validarEdicionVotos(voto.getMesa(), usuarioId);
 
         voto.setCantidadVotos(request.getCantidadVotos());
         if (request.getListaId() != null) {
@@ -204,13 +213,7 @@ public class VotoService {
         Voto voto = votoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Voto no encontrado con ID: " + id));
 
-        if (voto.getMesa().getCerrada()) {
-            throw new MesaCerradaException("No se puede eliminar votos en una mesa cerrada");
-        }
-
-        if (!mesaService.usuarioPerteneceAMesa(usuarioId, voto.getMesa().getId())) {
-            throw new AccesoDenegadoException("No tiene permisos para eliminar votos en esta mesa");
-        }
+        validarEdicionVotos(voto.getMesa(), usuarioId);
 
         auditoriaService.registrarAccion(
                 usuarioId,
@@ -498,6 +501,22 @@ public class VotoService {
         Long totalVotosBlanco = mesaIds.isEmpty() ? 0L : mesaRepository.sumVotosBlancoByMesaIds(mesaIds);
         Long mesasCerradas = mesas.stream().filter(Mesa::getCerrada).count();
 
+        // Ausentes y padrón: se cuentan por recinto para no duplicar electores cuando
+        // una institución tiene varias mesas.
+        Map<Long, Long> ausentesPorRecinto = new HashMap<>();
+        Map<Long, Integer> electoresPorRecinto = new HashMap<>();
+        for (Mesa m : mesas) {
+            if (m.getInstitucion() == null) continue;
+            Long recintoId = m.getInstitucion().getId();
+            long aus = m.getAusentes() != null ? m.getAusentes() : 0L;
+            ausentesPorRecinto.put(recintoId, ausentesPorRecinto.getOrDefault(recintoId, 0L) + aus);
+            if (m.getInstitucion().getElectoresRegistrados() != null) {
+                electoresPorRecinto.putIfAbsent(recintoId, m.getInstitucion().getElectoresRegistrados());
+            }
+        }
+        Long totalAusentes = ausentesPorRecinto.values().stream().mapToLong(Long::longValue).sum();
+        Long totalElectoresRegistrados = electoresPorRecinto.values().stream().mapToLong(Integer::longValue).sum();
+
         List<Object[]> votosPorCandidato = votoRepository.sumVotosGroupByCandidatoAndMesaIds(eleccionId, mesaIds);
         List<Candidato> candidatos = candidatoRepository.findByEleccionesId(eleccionId);
 
@@ -558,12 +577,17 @@ public class VotoService {
         // Votos por recinto (institución educativa) — drill-down por recinto
         List<ResultadoRecinto> resultadosRecinto = mesaIds.isEmpty() ? List.of()
                 : votoRepository.sumVotosByInstitucionDashboard(eleccionId, mesaIds)
-                .stream().map(r -> ResultadoRecinto.builder()
-                        .recintoId(((Number) r[0]).longValue())
+                .stream().map(r -> {
+                    Long recintoId = ((Number) r[0]).longValue();
+                    return ResultadoRecinto.builder()
+                        .recintoId(recintoId)
                         .recintoNombre((String) r[1])
                         .totalVotos(((Number) r[2]).longValue())
+                        .ausentes(ausentesPorRecinto.getOrDefault(recintoId, 0L))
+                        .electoresRegistrados(electoresPorRecinto.get(recintoId))
                         .porcentaje(totalVotos > 0 ? Math.round(((Number) r[2]).longValue() * 10000.0 / totalVotos) / 100.0 : 0)
-                        .build())
+                        .build();
+                })
                 .collect(Collectors.toList());
 
         // Votos por mesa — drill-down por mesa (candidatos + nulos/blancos)
@@ -587,6 +611,9 @@ public class VotoService {
                         .votosCandidatos(votosCandidatos)
                         .votosNulos(nulos)
                         .votosBlanco(blanco)
+                        .ausentes(m.getAusentes() != null ? m.getAusentes().longValue() : 0L)
+                        .electoresRegistrados(m.getInstitucion() != null
+                                ? m.getInstitucion().getElectoresRegistrados() : null)
                         .totalVotos(total)
                         .porcentaje(totalVotos > 0 ? Math.round(total * 10000.0 / totalVotos) / 100.0 : 0)
                         .build());
@@ -629,6 +656,8 @@ public class VotoService {
                 .totalVotos(totalVotos)
                 .totalVotosNulos(totalVotosNulos)
                 .totalVotosBlanco(totalVotosBlanco)
+                .totalAusentes(totalAusentes)
+                .totalElectoresRegistrados(totalElectoresRegistrados)
                 .totalMesas((long) mesas.size())
                 .mesasCerradas(mesasCerradas)
                 .mesasAbiertas((long) mesas.size() - mesasCerradas)

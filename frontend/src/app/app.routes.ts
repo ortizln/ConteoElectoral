@@ -25,6 +25,11 @@ export const routes: Routes = [
       }
     ]
   },
+  {
+    path: 'resultados',
+    loadComponent: () => import('./features/dashboard/resultados-publicos.component')
+      .then(m => m.ResultadosPublicosComponent)
+  },
   { 
     path: 'actas', 
     canActivate: [authGuard, roleGuard],

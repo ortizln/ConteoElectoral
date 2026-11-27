@@ -316,6 +316,9 @@ class _VotacionScreenState extends State<VotacionScreen> {
             candidatos: provider.candidatos,
             nulos: provider.votosNulos,
             blanco: provider.votosBlanco,
+            ausentes: provider.ausentes,
+            electoresRegistrados:
+                provider.recintoActual?.electoresRegistrados,
           );
         }
       }
@@ -733,6 +736,9 @@ class _VotacionScreenState extends State<VotacionScreen> {
                         candidatos: provider.candidatos,
                         nulos: provider.votosNulos,
                         blanco: provider.votosBlanco,
+                        ausentes: provider.ausentes,
+                        electoresRegistrados:
+                            provider.recintoActual?.electoresRegistrados,
                       );
                     },
                     icon: const Icon(Icons.summarize_outlined, size: 18),
@@ -963,7 +969,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
                           : ListView.builder(
                               padding:
                                   const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                              itemCount: _agrupadosPorLista.length + 2,
+                              itemCount: _agrupadosPorLista.length + 3,
                               itemBuilder: (context, index) {
                                 if (index >= _agrupadosPorLista.length) {
                                   return _nulosBlancoFila(
@@ -1123,7 +1129,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
                           : ListView.builder(
                               padding:
                                   const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                              itemCount: _candidatosFiltrados.length + 2,
+                              itemCount: _candidatosFiltrados.length + 3,
                               itemBuilder: (context, index) {
                                 if (index >= _candidatosFiltrados.length) {
                                   return _nulosBlancoFila(
@@ -1467,8 +1473,36 @@ class _VotacionScreenState extends State<VotacionScreen> {
 
   Widget _nulosBlancoFila(int tipo, AppProvider provider) {
     final esNulos = tipo == 0;
-    final color = esNulos ? AppColors.error : AppColors.gray;
-    final valor = esNulos ? provider.votosNulos : provider.votosBlanco;
+    final esBlanco = tipo == 1;
+    final esAusentes = tipo == 2;
+    final color = esNulos
+        ? AppColors.error
+        : esBlanco
+            ? AppColors.gray
+            : AppColors.warning;
+    final valor = esNulos
+        ? provider.votosNulos
+        : esBlanco
+            ? provider.votosBlanco
+            : provider.ausentes;
+    final titulo = esNulos
+        ? 'Votos Nulos'
+        : esBlanco
+            ? 'Votos en Blanco'
+            : 'Ausentes';
+    final icono = esNulos
+        ? Icons.cancel_outlined
+        : esBlanco
+            ? Icons.check_circle_outline
+            : Icons.person_off_outlined;
+    final bloqueado = provider.mesaActual?.aprobada == true;
+    final padron = provider.recintoActual?.electoresRegistrados;
+    final subtitulo = bloqueado
+        ? 'Acta aprobada — solo lectura'
+        : esAusentes && padron != null
+            ? 'Toque para modificar · Padrón del recinto: $padron'
+            : 'Toque para modificar';
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(
@@ -1477,7 +1511,7 @@ class _VotacionScreenState extends State<VotacionScreen> {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () => _editarNulosBlanco(esNulos),
+        onTap: () => _editarConteo(tipo),
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Row(
@@ -1489,24 +1523,18 @@ class _VotacionScreenState extends State<VotacionScreen> {
                   color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                    esNulos
-                        ? Icons.cancel_outlined
-                        : Icons.check_circle_outline,
-                    color: color,
-                    size: 22),
+                child: Icon(icono, color: color, size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(esNulos ? 'Votos Nulos' : 'Votos en Blanco',
+                    Text(titulo,
                         style: const TextStyle(
                             fontWeight: FontWeight.w600, fontSize: 14)),
                     const SizedBox(height: 2),
-                    Text('Toque para modificar',
-                        style: AppTextStyles.bodySmall),
+                    Text(subtitulo, style: AppTextStyles.bodySmall),
                   ],
                 ),
               ),
@@ -1532,12 +1560,36 @@ class _VotacionScreenState extends State<VotacionScreen> {
     );
   }
 
-  Future<void> _editarNulosBlanco(bool esNulos) async {
+  Future<void> _editarConteo(int tipo) async {
     final provider = context.read<AppProvider>();
     final messenger = ScaffoldMessenger.of(context);
-    final color = esNulos ? AppColors.error : AppColors.gray;
-    final ctrl = TextEditingController(
-        text: '${esNulos ? provider.votosNulos : provider.votosBlanco}');
+    if (provider.mesaActual?.aprobada == true) {
+      messenger.showSnackBar(const SnackBar(
+        content: Text('El acta de esta mesa ya fue aprobada y no admite cambios'),
+      ));
+      return;
+    }
+
+    final esNulos = tipo == 0;
+    final esBlanco = tipo == 1;
+    final esAusentes = tipo == 2;
+    final color = esNulos
+        ? AppColors.error
+        : esBlanco
+            ? AppColors.gray
+            : AppColors.warning;
+    final titulo = esNulos
+        ? 'Votos Nulos'
+        : esBlanco
+            ? 'Votos en Blanco'
+            : 'Ausentes';
+    final valorActual = esNulos
+        ? provider.votosNulos
+        : esBlanco
+            ? provider.votosBlanco
+            : provider.ausentes;
+    final ctrl = TextEditingController(text: '$valorActual');
+    final padron = provider.recintoActual?.electoresRegistrados;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -1566,12 +1618,13 @@ class _VotacionScreenState extends State<VotacionScreen> {
                       Icon(
                           esNulos
                               ? Icons.cancel_outlined
-                              : Icons.check_circle_outline,
+                              : esBlanco
+                                  ? Icons.check_circle_outline
+                                  : Icons.person_off_outlined,
                           color: color,
                           size: 20),
                       const SizedBox(width: 8),
-                      Text(
-                          esNulos ? 'Votos Nulos' : 'Votos en Blanco',
+                      Text(titulo,
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold)),
                     ],
@@ -1579,6 +1632,11 @@ class _VotacionScreenState extends State<VotacionScreen> {
                   const SizedBox(height: 4),
                   Text('Ingrese el total de la mesa',
                       style: AppTextStyles.bodySmall),
+                  if (esAusentes && padron != null) ...[
+                    const SizedBox(height: 4),
+                    Text('Padrón del recinto: $padron',
+                        style: AppTextStyles.bodySmall),
+                  ],
                   const SizedBox(height: 16),
                   Center(
                     child: Row(
@@ -1621,14 +1679,14 @@ class _VotacionScreenState extends State<VotacionScreen> {
                         if (valor < 0) return;
                         if (esNulos) {
                           await provider.actualizarNulos(valor);
-                        } else {
+                        } else if (esBlanco) {
                           await provider.actualizarBlanco(valor);
+                        } else {
+                          await provider.actualizarAusentes(valor);
                         }
                         if (ctx.mounted) Navigator.pop(ctx);
                         messenger.showSnackBar(SnackBar(
-                          content: Text(esNulos
-                              ? 'Votos nulos actualizados'
-                              : 'Votos en blanco actualizados'),
+                          content: Text('$titulo actualizados'),
                           duration: const Duration(seconds: 1),
                         ));
                       },

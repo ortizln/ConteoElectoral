@@ -30,3 +30,22 @@
   text-transform: uppercase;
   color: var(--text-muted, #6c757d);
 }
+
+.conteo-acta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 6px 8px;
+  background: var(--bg-secondary, #f7f9f6);
+  border-radius: 6px;
+}
+
+.conteo-acta span {
+  white-space: nowrap;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+}

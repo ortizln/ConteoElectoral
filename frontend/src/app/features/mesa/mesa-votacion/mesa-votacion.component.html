@@ -476,6 +476,22 @@
           <strong *ngIf="mesaActual?.cerrada" class="voto-count-blanco">{{ blancosCargoSel }}</strong>
         </div>
       </div>
+
+      <div class="nulos-row-panel">
+        <span class="nulos-label"><i class="bi bi-person-x"></i> Ausentes
+          <small *ngIf="mesaActual?.electoresRegistrados != null" class="text-muted">
+            (padrón del recinto: {{ mesaActual?.electoresRegistrados | number }})
+          </small>
+        </span>
+        <div class="nulos-row-control">
+          <div class="nulos-input-group" *ngIf="!mesaActual?.cerrada && !mesaActual?.aprobada">
+            <button class="btn-nulos-minus" (click)="decrementarAusentes()">−</button>
+            <input type="number" class="nulos-input" [(ngModel)]="ausentesMesa" min="0">
+            <button class="btn-nulos-plus" (click)="incrementarAusentes()">+</button>
+          </div>
+          <strong *ngIf="mesaActual?.cerrada || mesaActual?.aprobada" class="voto-count-nulos">{{ ausentesMesa }}</strong>
+        </div>
+      </div>
     </div>
 
     <div class="nulos-totales-line">

@@ -18,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -52,6 +53,35 @@ public class SecurityConfig {
                     .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", "/webjars/**").permitAll()
                     .requestMatchers("/api/download/**").permitAll()
                     .requestMatchers("/ws/**").permitAll()
+
+                    // El dashboard público (/resultados) solo lee: reportes, fotos de acta,
+                    // actas y descargas siguen autenticados.
+                    .requestMatchers(
+                            AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/**/exportar-*"),
+                            AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/**/exportar-acta"))
+                            .authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/reportes/**", "/api/mesas/cerradas",
+                            "/api/mesas/acta-fotos", "/api/mesas/*/acta-fotos/**",
+                            "/api/votos/mesa/**").authenticated()
+
+                    .requestMatchers(HttpMethod.GET,
+                            "/api/elecciones/activas",
+                            "/api/dashboard/eleccion/*",
+                            "/api/dashboard/eleccion/*/filtrar",
+                            "/api/dashboard/eleccion/*/resultados",
+                            "/api/dashboard/geografico/**",
+                            "/api/zonas", "/api/zonas/**",
+                            "/api/provincias", "/api/provincias/**",
+                            "/api/cantones", "/api/cantones/**",
+                            "/api/parroquias", "/api/parroquias/**",
+                            "/api/instituciones", "/api/instituciones/parroquia/*", "/api/instituciones/*",
+                            "/api/cargos", "/api/cargos/**",
+                            "/api/partidos", "/api/partidos/**",
+                            "/api/candidatos", "/api/candidatos/**",
+                            "/api/listas", "/api/listas/**",
+                            "/api/listas-electorales", "/api/listas-electorales/**",
+                            "/api/votos/candidato/*/detalle", "/api/votos/lista/*/detalle",
+                            "/api/mesas/eleccion/*", "/api/mesas/institucion/*").permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .anyRequest().authenticated()
                 )

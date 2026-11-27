@@ -26,7 +26,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 15,
+      version: 16,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -127,7 +127,9 @@ class DatabaseHelper {
         cerrada INTEGER NOT NULL DEFAULT 0,
         usuarioId INTEGER,
         votosNulos INTEGER DEFAULT 0,
-        votosBlanco INTEGER DEFAULT 0
+        votosBlanco INTEGER DEFAULT 0,
+        ausentes INTEGER DEFAULT 0,
+        aprobada INTEGER NOT NULL DEFAULT 0
       )
     ''');
 
@@ -368,6 +370,13 @@ class DatabaseHelper {
     if (oldVersion < 15) {
       // Nombre de la parroquia de la mesa para mostrarlo en el dashboard.
       await _addColumnIfMissing(db, 'mesas', 'parroquiaNombre', 'TEXT');
+    }
+    if (oldVersion < 16) {
+      // Ausentes registrados por mesa y bloqueo por aprobación del supervisor.
+      await _addColumnIfMissing(db, 'mesas', 'ausentes', 'INTEGER DEFAULT 0');
+      await _addColumnIfMissing(db, 'mesas', 'aprobada', 'INTEGER NOT NULL DEFAULT 0');
+      await db.execute('UPDATE mesas SET ausentes = 0 WHERE ausentes IS NULL');
+      await db.execute('UPDATE mesas SET aprobada = 0 WHERE aprobada IS NULL');
     }
   }
 
@@ -703,6 +712,8 @@ class DatabaseHelper {
           'cerrada': mesa.cerrada ? 1 : 0,
           'votosNulos': mesa.votosNulos ?? 0,
           'votosBlanco': mesa.votosBlanco ?? 0,
+          'ausentes': mesa.ausentes ?? 0,
+          'aprobada': mesa.aprobada ? 1 : 0,
         },
         where: 'id = ?',
         whereArgs: [mesa.id],
@@ -721,12 +732,23 @@ class DatabaseHelper {
       'cerrada': 0,
       'votosNulos': 0,
       'votosBlanco': 0,
+      'ausentes': 0,
+      'aprobada': 0,
     });
   }
 
   Future<void> guardarMesas(List<Mesa> mesas) async {
     final db = await database;
     final batch = db.batch();
+    // Si hay un AUSENTES local pendiente, no sobrescribirlo con el valor del
+    // servidor; el estado de aprobación sí se refleja siempre.
+    final pendientes = await db.query(
+      'sync_queue',
+      columns: ['entity_id'],
+      where: "entity_type = 'mesa' AND operation = 'AUSENTES' AND status IN ('PENDING', 'FAILED')",
+    );
+    final conAusentesPendiente =
+        pendientes.map((p) => p['entity_id'] as int).toSet();
     for (var mesa in mesas) {
       // INSERT OR IGNORE: no sobrescribir mesas existentes para preservar estado local pendiente
       // (cerrada, votosNulos, votosBlanco pueden tener cambios no sincronizados)
@@ -744,17 +766,24 @@ class DatabaseHelper {
           'usuarioId': mesa.usuarioId,
           'votosNulos': mesa.votosNulos ?? 0,
           'votosBlanco': mesa.votosBlanco ?? 0,
+          'ausentes': mesa.ausentes ?? 0,
+          'aprobada': mesa.aprobada ? 1 : 0,
         },
         conflictAlgorithm: ConflictAlgorithm.ignore,
       );
       // Los nombres son datos informativos: se actualizan aunque la mesa ya
       // exista (INSERT OR IGNORE preserva cerrada/votos pendientes de sync).
+      final datosActualizar = <String, Object?>{
+        'institucionNombre': mesa.institucionNombre,
+        'parroquiaNombre': mesa.parroquiaNombre,
+        'aprobada': mesa.aprobada ? 1 : 0,
+      };
+      if (!conAusentesPendiente.contains(mesa.id)) {
+        datosActualizar['ausentes'] = mesa.ausentes ?? 0;
+      }
       batch.update(
         'mesas',
-        {
-          'institucionNombre': mesa.institucionNombre,
-          'parroquiaNombre': mesa.parroquiaNombre,
-        },
+        datosActualizar,
         where: 'id = ?',
         whereArgs: [mesa.id],
       );
@@ -781,6 +810,8 @@ class DatabaseHelper {
       usuarioId: m['usuarioId'] as int?,
       votosNulos: m['votosNulos'] as int? ?? 0,
       votosBlanco: m['votosBlanco'] as int? ?? 0,
+      ausentes: m['ausentes'] as int? ?? 0,
+      aprobada: (m['aprobada'] as int?) == 1,
     )).toList();
   }
 
@@ -801,6 +832,8 @@ class DatabaseHelper {
       usuarioId: m['usuarioId'] as int?,
       votosNulos: m['votosNulos'] as int? ?? 0,
       votosBlanco: m['votosBlanco'] as int? ?? 0,
+      ausentes: m['ausentes'] as int? ?? 0,
+      aprobada: (m['aprobada'] as int?) == 1,
     );
   }
 
@@ -1088,16 +1121,43 @@ class DatabaseHelper {
     );
   }
 
-  Future<void> actualizarNulosBlanco(int mesaId, {int? votosNulos, int? votosBlanco}) async {
+  Future<void> actualizarNulosBlanco(int mesaId,
+      {int? votosNulos, int? votosBlanco, int? ausentes}) async {
     final db = await database;
     final data = <String, Object?>{};
     if (votosNulos != null) data['votosNulos'] = votosNulos;
     if (votosBlanco != null) data['votosBlanco'] = votosBlanco;
+    if (ausentes != null) data['ausentes'] = ausentes;
     if (data.isEmpty) return;
     await db.update(
       'mesas',
       data,
       where: 'id = ?',
+      whereArgs: [mesaId],
+    );
+  }
+
+  Future<void> actualizarAusentes(int mesaId, int ausentes) async {
+    await actualizarNulosBlanco(mesaId, ausentes: ausentes);
+  }
+
+  Future<void> actualizarAprobacionMesa(int mesaId, bool aprobada) async {
+    final db = await database;
+    await db.update(
+      'mesas',
+      {'aprobada': aprobada ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [mesaId],
+    );
+  }
+
+  /// Elimina operaciones locales de mesa que ya no deben enviarse porque el
+  /// supervisor aprobó el acta en el servidor.
+  Future<void> cancelarOpsMesaAprobada(int mesaId) async {
+    final db = await database;
+    await db.delete(
+      'sync_queue',
+      where: "entity_type = 'mesa' AND entity_id = ? AND status IN ('PENDING', 'FAILED')",
       whereArgs: [mesaId],
     );
   }

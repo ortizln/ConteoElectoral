@@ -41,6 +41,7 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   totalVotos = 0;
   votosNulos = 0;
   votosBlanco = 0;
+  ausentes = 0;
   nulosBlancosPorCargo: MesaNuloBlancoPorCargo[] = [];
   cargoNuloId: number | null = null;
   private nulosBlancoTimeouts: { [tipo: string]: any } = {};
@@ -189,6 +190,7 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     this.cantidadLista = 1;
     this.votosNulos = mesa.votosNulos ?? 0;
     this.votosBlanco = mesa.votosBlanco ?? 0;
+    this.ausentes = mesa.ausentes ?? 0;
     this.nulosBlancosPorCargo = [];
     this.cargoNuloId = null;
     this.categoriaSel = null;
@@ -694,6 +696,35 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     });
   }
 
+  get ausentesMesa(): number { return this.ausentes; }
+  set ausentesMesa(valor: number) {
+    this.ausentes = Math.max(0, Number(valor) || 0);
+    if (this.ausentesTimeout) clearTimeout(this.ausentesTimeout);
+    this.ausentesTimeout = setTimeout(() => this.guardarAusentes(), 400);
+  }
+  private ausentesTimeout: any = null;
+
+  incrementarAusentes(): void { this.ausentesMesa = this.ausentes + 1; }
+  decrementarAusentes(): void {
+    if (this.ausentes > 0) this.ausentesMesa = this.ausentes - 1;
+  }
+
+  guardarAusentes(): void {
+    if (!this.mesaActual) return;
+    if (this.mesaActual.aprobada) {
+      this.errorMensaje = 'El acta de esta mesa ya fue aprobada y no admite cambios';
+      return;
+    }
+    this.api.actualizarAusentes(this.mesaActual.id, this.ausentes).subscribe({
+      next: (m) => {
+        if (this.mesaActual) this.mesaActual.ausentes = m.ausentes ?? 0;
+      },
+      error: (err) => {
+        this.errorMensaje = err?.error?.message || 'No se pudo guardar el número de ausentes';
+      }
+    });
+  }
+
   siglaDe(partidoNombre?: string | null): string {
     if (!partidoNombre) return '—';
     const partido = this.partidos.find(p => p.nombre === partidoNombre);
@@ -704,7 +735,7 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   }
 
   registrarVoto(): void {
-    if (!this.mesaActual || !this.candidatoSeleccionado || this.mesaActual.cerrada) return;
+    if (!this.mesaActual || !this.candidatoSeleccionado || this.mesaActual.cerrada || this.mesaActual.aprobada) return;
     const cant = Number(this.cantidadVotos);
     if (!Number.isInteger(cant) || cant < 1) {
       this.errorMensaje = 'La cantidad de votos debe ser al menos 1';
@@ -806,7 +837,7 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   }
 
   cerrarMesa(): void {
-    if (!this.mesaActual || this.mesaActual.cerrada) return;
+    if (!this.mesaActual || this.mesaActual.cerrada || this.mesaActual.aprobada) return;
     const mesaId = this.mesaActual.id;
     // Igual que la APK: se exige al menos una foto del acta para cerrar.
     this.liberarFotosActa();
@@ -939,7 +970,7 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   }
 
   registrarVotoLista(): void {
-    if (!this.mesaActual || !this.listaSeleccionada || this.mesaActual.cerrada) return;
+    if (!this.mesaActual || !this.listaSeleccionada || this.mesaActual.cerrada || this.mesaActual.aprobada) return;
     const cant = Number(this.cantidadLista);
     if (!Number.isInteger(cant) || cant < 1) {
       this.errorMensaje = 'La cantidad de votos debe ser al menos 1';

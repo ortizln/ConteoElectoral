@@ -4,6 +4,7 @@ import com.electoral.dto.DashboardResponse;
 import com.electoral.dto.ResultadoCandidato;
 import com.electoral.dto.ResultadoDetalleVoto;
 import com.electoral.dto.ResultadoLista;
+import com.electoral.dto.ResultadoMesa;
 import com.electoral.dto.SyncPushRequest;
 import com.electoral.dto.SyncPushResponse;
 import com.electoral.dto.VotoResponse;
@@ -102,8 +103,15 @@ public class DashboardController {
         rowsTotales.add(new String[]{"Total Votos", String.valueOf(data.getTotalVotos())});
         rowsTotales.add(new String[]{"Votos Nulos", String.valueOf(data.getTotalVotosNulos())});
         rowsTotales.add(new String[]{"Votos en Blanco", String.valueOf(data.getTotalVotosBlanco())});
-        rowsTotales.add(new String[]{"Total General", String.valueOf(data.getTotalVotos()
-                + data.getTotalVotosNulos() + data.getTotalVotosBlanco())});
+        rowsTotales.add(new String[]{"Ausentes", String.valueOf(data.getTotalAusentes())});
+        long totalVotantes = (data.getTotalVotos() == null ? 0L : data.getTotalVotos())
+                + (data.getTotalVotosNulos() == null ? 0L : data.getTotalVotosNulos())
+                + (data.getTotalVotosBlanco() == null ? 0L : data.getTotalVotosBlanco());
+        rowsTotales.add(new String[]{"Total General", String.valueOf(totalVotantes)});
+        rowsTotales.add(new String[]{"Electores registrados (padrón)",
+                String.valueOf(data.getTotalElectoresRegistrados())});
+        rowsTotales.add(new String[]{"Votaron + ausentes",
+                String.valueOf(totalVotantes + (data.getTotalAusentes() == null ? 0L : data.getTotalAusentes()))});
         rowsTotales.add(new String[]{"Total Mesas", String.valueOf(data.getTotalMesas())});
         rowsTotales.add(new String[]{"Mesas Cerradas", String.valueOf(data.getMesasCerradas())});
         rowsTotales.add(new String[]{"Mesas Abiertas", String.valueOf(data.getMesasAbiertas())});
@@ -166,6 +174,31 @@ public class DashboardController {
         excel = excelExportService.appendSheetToExcel(excel, "Detalle por Mesa",
                 new String[]{"Categoría", "Cantón", "Parroquia", "Recinto", "Mesa",
                         "Postulación", "Partido", "Votos"}, rowsDetalle);
+
+        // ── Control de ausentes por mesa ────────────────────────────────
+        List<String[]> rowsControl = new ArrayList<>();
+        if (data.getResultadosMesa() != null) {
+            for (ResultadoMesa m : data.getResultadosMesa()) {
+                long total = m.getTotalVotos() == null ? 0L : m.getTotalVotos();
+                long ausentes = m.getAusentes() == null ? 0L : m.getAusentes();
+                Integer padron = m.getElectoresRegistrados();
+                rowsControl.add(new String[]{
+                        m.getMesaNumero(),
+                        m.getInstitucionNombre() != null ? m.getInstitucionNombre() : "",
+                        Boolean.TRUE.equals(m.getCerrada()) ? "Cerrada" : "Abierta",
+                        String.valueOf(total),
+                        String.valueOf(m.getVotosNulos() == null ? 0L : m.getVotosNulos()),
+                        String.valueOf(m.getVotosBlanco() == null ? 0L : m.getVotosBlanco()),
+                        String.valueOf(ausentes),
+                        padron == null ? "" : String.valueOf(padron),
+                        padron == null ? "" : String.valueOf(padron - total - ausentes)
+                });
+            }
+        }
+        excel = excelExportService.appendSheetToExcel(excel, "Control por Mesa",
+                new String[]{"Mesa", "Recinto", "Estado", "Votos", "Nulos", "Blancos",
+                        "Ausentes", "Electores registrados", "Padrón - (votos + ausentes)"},
+                rowsControl);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);

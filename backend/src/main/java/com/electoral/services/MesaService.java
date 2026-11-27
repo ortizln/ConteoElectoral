@@ -4,6 +4,7 @@ import com.electoral.dto.*;
 import com.electoral.entities.*;
 import com.electoral.exception.DuplicateEntityException;
 import com.electoral.exception.RecursoNoEncontradoException;
+import com.electoral.exception.ValidacionException;
 import com.electoral.repositories.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class MesaService {
     private final VotoRepository votoRepository;
     private final MesaNuloBlancoRepository mesaNuloBlancoRepository;
     private final CargoRepository cargoRepository;
+    private final ListaElectoralRepository listaElectoralRepository;
     private final MesaActaFotoRepository mesaActaFotoRepository;
 
     @Transactional(readOnly = true)
@@ -85,28 +87,38 @@ public class MesaService {
         Mesa mesa = mesaRepository.findByIdWithAll(mesaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + mesaId));
 
-        List<com.electoral.dto.VotoResponse> votos = votoRepository.findByMesaId(mesaId).stream()
-                .map(v -> com.electoral.dto.VotoResponse.builder()
-                        .id(v.getId())
-                        .candidatoId(v.getCandidato().getId())
-                        .candidatoNombre(v.getCandidato().getNombre())
-                        .candidatoApellido(v.getCandidato().getApellido())
-                        .partidoNombre(v.getCandidato().getPartido() != null
-                                ? v.getCandidato().getPartido().getNombre() : "Independiente")
-                        .mesaId(v.getMesa().getId())
-                        .mesaNumero(v.getMesa().getNumero())
-                        .cantidadVotos(v.getCantidadVotos())
-                        .eleccionesId(v.getElecciones().getId())
-                        .fechaRegistro(v.getCreatedAt() != null ? v.getCreatedAt().toString() : null)
-                        .build())
-                .collect(Collectors.toList());
+        Map<Long, ListaElectoral> listasPorId = new HashMap<>();
+        if (mesa.getElecciones() != null) {
+            for (ListaElectoral lista : listaElectoralRepository.findByEleccionId(mesa.getElecciones().getId())) {
+                listasPorId.put(lista.getId(), lista);
+            }
+        }
 
-        Long totalVotos = votos.stream().mapToLong(com.electoral.dto.VotoResponse::getCantidadVotos).sum();
-
-        List<String[]> resultados = votos.stream()
-                .map(v -> new String[]{v.getCandidatoNombre() + " " + v.getCandidatoApellido(),
-                        v.getPartidoNombre(), " ", String.valueOf(v.getCantidadVotos())})
-                .collect(Collectors.toList());
+        // El acta debe reflejar tanto votos individuales como votos por lista.
+        List<String[]> resultados = new ArrayList<>();
+        long totalVotos = 0L;
+        for (Voto voto : votoRepository.findByMesaId(mesaId)) {
+            String nombre;
+            String partido;
+            String cargo;
+            if (voto.getCandidato() != null) {
+                nombre = voto.getCandidato().getNombreCompleto();
+                partido = voto.getCandidato().getPartido() != null
+                        ? voto.getCandidato().getPartido().getNombre() : "Independiente";
+                cargo = voto.getCandidato().getCargo() != null
+                        ? voto.getCandidato().getCargo().getNombre() : "";
+            } else if (voto.getListaId() != null && listasPorId.containsKey(voto.getListaId())) {
+                ListaElectoral lista = listasPorId.get(voto.getListaId());
+                nombre = lista.getNombre();
+                partido = lista.getPartido() != null ? lista.getPartido().getNombre() : "Independiente";
+                cargo = lista.getCargo() != null ? lista.getCargo().getNombre() : "";
+            } else {
+                continue;
+            }
+            resultados.add(new String[]{nombre, partido, cargo,
+                    String.valueOf(voto.getCantidadVotos())});
+            totalVotos += voto.getCantidadVotos() == null ? 0L : voto.getCantidadVotos();
+        }
 
         String institucionNombre = mesa.getInstitucion() != null ? mesa.getInstitucion().getNombre() : "";
         String parroquiaNombre = mesa.getInstitucion() != null && mesa.getInstitucion().getParroquia() != null
@@ -210,11 +222,30 @@ public class MesaService {
         mesaRepository.deleteById(id);
     }
 
+    /**
+     * ADMIN/SUPERVISOR pueden corregir mesas cerradas; MIEMBRO_MESA solo mientras
+     * la mesa esté abierta y el acta no haya sido aprobada.
+     */
+    public void validarEdicionConteo(Mesa mesa) {
+        Usuario usuario = securityUtil.getCurrentUser();
+        boolean privilegiado = usuario != null && usuario.getRol() != null
+                && ("ADMIN".equals(usuario.getRol().getNombre())
+                || "SUPERVISOR".equals(usuario.getRol().getNombre()));
+        if (privilegiado) return;
+        if (Boolean.TRUE.equals(mesa.getCerrada())) {
+            throw new IllegalStateException("La mesa está cerrada");
+        }
+        if (Boolean.TRUE.equals(mesa.getAprobada())) {
+            throw new ValidacionException("El acta de esta mesa ya fue aprobada y no admite cambios");
+        }
+    }
+
     @Transactional
     public MesaResponse actualizarVotosNulos(Long id, Integer votosNulos) {
         Mesa mesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
-        int total = votosNulos != null ? votosNulos : 0;
+        validarEdicionConteo(mesa);
+        int total = votosNulos != null ? Math.max(0, votosNulos) : 0;
         mesa.setVotosNulos(total);
         sincronizarDesgloseNulosBlancos(id, MesaNuloBlanco.Tipo.NULO.name(), total);
         MesaResponse response = mapToResponse(mesaRepository.save(mesa));
@@ -226,7 +257,8 @@ public class MesaService {
     public MesaResponse actualizarVotosBlanco(Long id, Integer votosBlanco) {
         Mesa mesa = mesaRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
-        int total = votosBlanco != null ? votosBlanco : 0;
+        validarEdicionConteo(mesa);
+        int total = votosBlanco != null ? Math.max(0, votosBlanco) : 0;
         mesa.setVotosBlanco(total);
         sincronizarDesgloseNulosBlancos(id, MesaNuloBlanco.Tipo.BLANCO.name(), total);
         MesaResponse response = mapToResponse(mesaRepository.save(mesa));
@@ -301,9 +333,7 @@ public class MesaService {
     public MesaResponse actualizarNulosBlancos(Long mesaId, MesaNuloBlancoRequest request) {
         Mesa mesa = mesaRepository.findById(mesaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + mesaId));
-        if (mesa.getCerrada()) {
-            throw new IllegalStateException("La mesa está cerrada");
-        }
+        validarEdicionConteo(mesa);
         String tipo = request.getTipo() != null ? request.getTipo().toUpperCase() : "";
         if (!MesaNuloBlanco.Tipo.NULO.name().equals(tipo) && !MesaNuloBlanco.Tipo.BLANCO.name().equals(tipo)) {
             throw new IllegalArgumentException("Tipo inválido (debe ser NULO o BLANCO)");
@@ -343,6 +373,91 @@ public class MesaService {
         return response;
     }
 
+    /** Ausentes se registran manualmente por mesa, igual que nulos/blanco. */
+    @Transactional
+    public MesaResponse actualizarAusentes(Long id, Integer ausentes) {
+        Mesa mesa = mesaRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
+        validarEdicionConteo(mesa);
+        mesa.setAusentes(ausentes != null ? Math.max(0, ausentes) : 0);
+        MesaResponse response = mapToResponse(mesaRepository.save(mesa));
+        notifyDataChanged(mesa.getElecciones().getId());
+        return response;
+    }
+
+    /** Corrección integral del acta por ADMIN/SUPERVISOR, incluso con la mesa cerrada. */
+    @Transactional
+    public MesaResponse corregirActa(Long mesaId, ActaCorreccionRequest request) {
+        Mesa mesa = mesaRepository.findById(mesaId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + mesaId));
+        if (Boolean.TRUE.equals(mesa.getAprobada())) {
+            throw new ValidacionException("El acta ya fue aprobada; debe desaprobarla antes de corregirla");
+        }
+        if (request.getVotosNulos() != null) mesa.setVotosNulos(Math.max(0, request.getVotosNulos()));
+        if (request.getVotosBlanco() != null) mesa.setVotosBlanco(Math.max(0, request.getVotosBlanco()));
+        if (request.getAusentes() != null) mesa.setAusentes(Math.max(0, request.getAusentes()));
+        if (request.getVotos() != null) {
+            for (ActaCorreccionRequest.VotoCorreccion vc : request.getVotos()) {
+                if (vc.getVotoId() == null || vc.getCantidadVotos() == null) continue;
+                Voto voto = votoRepository.findById(vc.getVotoId())
+                        .orElseThrow(() -> new RecursoNoEncontradoException("Voto no encontrado con ID: " + vc.getVotoId()));
+                if (voto.getMesa() == null || !voto.getMesa().getId().equals(mesaId)) {
+                    throw new ValidacionException("El voto " + vc.getVotoId() + " no pertenece a la mesa " + mesaId);
+                }
+                voto.setCantidadVotos(Math.max(0, vc.getCantidadVotos()));
+                votoRepository.save(voto);
+            }
+        }
+        MesaResponse response = mapToResponse(mesaRepository.save(mesa));
+        auditoriaService.registrarAccion(
+                securityUtil.getCurrentUserId(),
+                Auditoria.TipoAccion.UPDATE,
+                "Mesa",
+                mesaId,
+                Map.of("votosNulos", mesa.getVotosNulos() != null ? mesa.getVotosNulos() : 0,
+                        "votosBlanco", mesa.getVotosBlanco() != null ? mesa.getVotosBlanco() : 0,
+                        "ausentes", mesa.getAusentes() != null ? mesa.getAusentes() : 0),
+                Map.of("correccion", true)
+        );
+        notifyDataChanged(mesa.getElecciones().getId());
+        return response;
+    }
+
+    @Transactional
+    public MesaResponse aprobarMesa(Long id) {
+        Mesa mesa = mesaRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
+        if (!Boolean.TRUE.equals(mesa.getCerrada())) {
+            throw new ValidacionException("Solo se puede aprobar un acta de una mesa cerrada");
+        }
+        mesa.setAprobada(true);
+        MesaResponse response = mapToResponse(mesaRepository.save(mesa));
+        auditoriaService.registrarAccion(
+                securityUtil.getCurrentUserId(),
+                Auditoria.TipoAccion.UPDATE,
+                "Mesa",
+                id,
+                Map.of("aprobada", false), Map.of("aprobada", true));
+        notifyDataChanged(mesa.getElecciones().getId());
+        return response;
+    }
+
+    @Transactional
+    public MesaResponse desaprobarMesa(Long id) {
+        Mesa mesa = mesaRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
+        mesa.setAprobada(false);
+        MesaResponse response = mapToResponse(mesaRepository.save(mesa));
+        auditoriaService.registrarAccion(
+                securityUtil.getCurrentUserId(),
+                Auditoria.TipoAccion.UPDATE,
+                "Mesa",
+                id,
+                Map.of("aprobada", true), Map.of("aprobada", false));
+        notifyDataChanged(mesa.getElecciones().getId());
+        return response;
+    }
+
     @Transactional
     public MesaResponse cerrarMesa(Long id) {
         Mesa mesa = mesaRepository.findById(id)
@@ -351,6 +466,7 @@ public class MesaService {
         if (mesa.getCerrada()) {
             throw new IllegalStateException("La mesa ya está cerrada");
         }
+        validarEdicionConteo(mesa);
 
         // Obligatorio: respaldo fotográfico del acta antes de cerrar (vía REST/web).
         // La app móvil captura la foto antes de encolar el cierre y la sube al
@@ -466,6 +582,9 @@ public class MesaService {
                 .cerrada(mesa.getCerrada())
                 .votosNulos(mesa.getVotosNulos())
                 .votosBlanco(mesa.getVotosBlanco())
+                .ausentes(mesa.getAusentes())
+                .aprobada(mesa.getAprobada())
+                .electoresRegistrados(inst != null ? inst.getElectoresRegistrados() : null)
                 .usuarioId(usuarioId)
                 .usuarioNombre(usuarioNombre)
                 .build();

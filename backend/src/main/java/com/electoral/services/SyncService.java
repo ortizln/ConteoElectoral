@@ -4,6 +4,7 @@ import com.electoral.dto.*;
 import com.electoral.entities.*;
 import com.electoral.repositories.*;
 import com.electoral.exception.MesaCerradaException;
+import com.electoral.exception.ValidacionException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -127,6 +128,7 @@ public class SyncService {
                 if (Boolean.TRUE.equals(mesa.getCerrada())) {
                     throw new MesaCerradaException("No se puede registrar votos en mesa cerrada: " + mesaId);
                 }
+                validarMesaAprobada(mesa);
 
                 // Guard: usuario asignado a la mesa
                 if (!mesaService.usuarioPerteneceAMesa(usuarioId, mesaId)) {
@@ -222,6 +224,7 @@ public class SyncService {
                 if (Boolean.TRUE.equals(voto.getMesa().getCerrada())) {
                     throw new MesaCerradaException("No se puede modificar votos en mesa cerrada: " + voto.getMesa().getId());
                 }
+                validarMesaAprobada(voto.getMesa());
 
                 // Guard: usuario asignado
                 if (!mesaService.usuarioPerteneceAMesa(usuarioId, voto.getMesa().getId())) {
@@ -268,6 +271,7 @@ public class SyncService {
                 if (Boolean.TRUE.equals(voto.getMesa().getCerrada())) {
                     throw new MesaCerradaException("No se puede eliminar votos en mesa cerrada: " + voto.getMesa().getId());
                 }
+                validarMesaAprobada(voto.getMesa());
 
                 // Guard: usuario asignado
                 if (!mesaService.usuarioPerteneceAMesa(usuarioId, voto.getMesa().getId())) {
@@ -307,6 +311,8 @@ public class SyncService {
                     .error("Usuario no asignado a la mesa " + mesaId)
                     .build();
         }
+
+        validarMesaAprobada(mesa);
 
         switch (op.getAction()) {
             case "CERRAR": {
@@ -356,10 +362,31 @@ public class SyncService {
                         .operationId(op.getOperationId()).success(true)
                         .serverId(mesaId).build();
             }
+            case "AUSENTES": {
+                Integer ausentes = data.containsKey("ausentes")
+                        ? Integer.valueOf(data.get("ausentes").toString()) : 0;
+                Integer prev = mesa.getAusentes();
+                mesa.setAusentes(Math.max(0, ausentes));
+                mesaRepository.save(mesa);
+                auditoriaService.registrarAccion(usuarioId, Auditoria.TipoAccion.UPDATE,
+                        "mesa_sync", mesaId,
+                        Map.of("ausentes", prev != null ? prev : 0),
+                        Map.of("ausentes", ausentes));
+                return SyncResultDTO.builder()
+                        .operationId(op.getOperationId()).success(true)
+                        .serverId(mesaId).build();
+            }
             default:
                 return SyncResultDTO.builder()
                         .operationId(op.getOperationId()).success(false)
                         .error("Unknown mesa action: " + op.getAction()).build();
+        }
+    }
+
+    /** El acta aprobada por supervisor bloquea cualquier cambio desde la APK. */
+    private void validarMesaAprobada(Mesa mesa) {
+        if (Boolean.TRUE.equals(mesa.getAprobada())) {
+            throw new ValidacionException("El acta de esta mesa ya fue aprobada y no admite cambios");
         }
     }
 
@@ -413,15 +440,19 @@ public class SyncService {
             // Solo incluir mesas con estado no-default o si es el primer pull (since muy antiguo)
             boolean isFirstPull = since.isBefore(LocalDateTime.now().minusDays(7));
             boolean hasState = Boolean.TRUE.equals(m.getCerrada())
+                    || Boolean.TRUE.equals(m.getAprobada())
                     || (m.getVotosNulos() != null && m.getVotosNulos() > 0)
-                    || (m.getVotosBlanco() != null && m.getVotosBlanco() > 0);
+                    || (m.getVotosBlanco() != null && m.getVotosBlanco() > 0)
+                    || (m.getAusentes() != null && m.getAusentes() > 0);
             if (!isFirstPull && !hasState) continue;
 
             Map<String, Object> data = new HashMap<>();
             data.put("id", m.getId());
             data.put("votosNulos", m.getVotosNulos());
             data.put("votosBlanco", m.getVotosBlanco());
+            data.put("ausentes", m.getAusentes());
             data.put("cerrada", m.getCerrada());
+            data.put("aprobada", m.getAprobada());
             data.put("eleccionesId", m.getElecciones() != null ? m.getElecciones().getId() : null);
 
             operations.add(SyncOperationDTO.builder()

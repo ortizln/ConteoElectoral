@@ -48,6 +48,7 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
   Timer? _retryTimer;
   Timer? _nulosDebounce;
   Timer? _blancoDebounce;
+  Timer? _ausentesDebounce;
 
   /// Evita que un doble tap (o dos llamadas simultáneas) registre el mismo voto dos veces.
   bool _registrandoVoto = false;
@@ -59,6 +60,7 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
   int _totalVotos = 0;
   int _votosNulos = 0;
   int _votosBlanco = 0;
+  int _ausentes = 0;
 
   Usuario? get usuario => _usuario;
   Eleccion? get eleccionActual => _eleccionActual;
@@ -184,6 +186,7 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
   int get totalVotos => _totalVotos;
   int get votosNulos => _votosNulos;
   int get votosBlanco => _votosBlanco;
+  int get ausentes => _ausentes;
 
   Future<void> init() async {
     WidgetsBinding.instance.addObserver(this);
@@ -388,6 +391,7 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     _retryTimer?.cancel();
     _nulosDebounce?.cancel();
     _blancoDebounce?.cancel();
+    _ausentesDebounce?.cancel();
     _connectivitySub?.cancel();
     _stompSyncSub?.cancel();
     _stompDataSub?.cancel();
@@ -583,6 +587,7 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     _totalVotos = _votosMesa.fold(0, (sum, v) => sum + v.cantidadVotos);
     _votosNulos = mesa.votosNulos ?? 0;
     _votosBlanco = mesa.votosBlanco ?? 0;
+    _ausentes = mesa.ausentes ?? 0;
     notifyListeners();
   }
 
@@ -590,6 +595,11 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     // Un doble tap puede disparar dos llamadas antes de que _recargarVotos()
     // actualice la caché; el candado evita crear dos filas locales.
     if (_registrandoVoto || _mesaActual == null) return;
+    if (_mesaActual!.aprobada) {
+      _error = 'El acta de esta mesa ya fue aprobada y no admite cambios';
+      notifyListeners();
+      return;
+    }
     _registrandoVoto = true;
     try {
       final isListaCargo = listaId != null || _isCargoLista(candidato.cargoId);
@@ -679,6 +689,11 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> registrarVotosLista(int listaId, List<Candidato> candidatos, int cantidad) async {
     if (_registrandoVoto || _mesaActual == null) return;
+    if (_mesaActual!.aprobada) {
+      _error = 'El acta de esta mesa ya fue aprobada y no admite cambios';
+      notifyListeners();
+      return;
+    }
     _registrandoVoto = true;
     try {
       await _registrarVotoLista(listaId, cantidad);
@@ -693,8 +708,10 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     _totalVotos = _votosMesa.fold(0, (sum, v) => sum + v.cantidadVotos);
     final mesa = await _db.getMesa(_mesaActual!.id);
     if (mesa != null) {
+      _mesaActual = mesa;
       _votosNulos = mesa.votosNulos ?? 0;
       _votosBlanco = mesa.votosBlanco ?? 0;
+      _ausentes = mesa.ausentes ?? 0;
     }
     notifyListeners();
   }
@@ -863,6 +880,11 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> actualizarNulos(int valor) async {
     if (_mesaActual == null) return;
+    if (_mesaActual!.aprobada) {
+      _error = 'El acta de esta mesa ya fue aprobada y no admite cambios';
+      notifyListeners();
+      return;
+    }
     _votosNulos = valor < 0 ? 0 : valor;
     await _db.actualizarNulosBlanco(_mesaActual!.id, votosNulos: _votosNulos, votosBlanco: _votosBlanco);
     notifyListeners();
@@ -881,6 +903,11 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
 
   Future<void> actualizarBlanco(int valor) async {
     if (_mesaActual == null) return;
+    if (_mesaActual!.aprobada) {
+      _error = 'El acta de esta mesa ya fue aprobada y no admite cambios';
+      notifyListeners();
+      return;
+    }
     _votosBlanco = valor < 0 ? 0 : valor;
     await _db.actualizarNulosBlanco(_mesaActual!.id, votosNulos: _votosNulos, votosBlanco: _votosBlanco);
     notifyListeners();
@@ -896,8 +923,33 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     });
   }
 
+  Future<void> actualizarAusentes(int valor) async {
+    if (_mesaActual == null) return;
+    if (_mesaActual!.aprobada) {
+      _error = 'El acta de esta mesa ya fue aprobada y no admite cambios';
+      notifyListeners();
+      return;
+    }
+    _ausentes = valor < 0 ? 0 : valor;
+    await _db.actualizarAusentes(_mesaActual!.id, _ausentes);
+    final mesa = _mesaActual!;
+    final ausentes = _ausentes;
+    await _sync.enqueueAusentes(mesa.id, mesa.eleccionesId, ausentes);
+    await _refreshSyncCounts();
+    notifyListeners();
+    _ausentesDebounce?.cancel();
+    _ausentesDebounce = Timer(const Duration(milliseconds: 500), () {
+      if (_isOnline) unawaited(sincronizarVotos());
+    });
+  }
+
   Future<void> cerrarActa() async {
     if (_mesaActual == null) return;
+    if (_mesaActual!.aprobada) {
+      _error = 'El acta de esta mesa ya fue aprobada y no admite cambios';
+      notifyListeners();
+      return;
+    }
 
     _isLoading = true;
     notifyListeners();
@@ -906,9 +958,11 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     // por created_at ASC); cancelar debounces y re-afirmar los valores finales
     _nulosDebounce?.cancel();
     _blancoDebounce?.cancel();
+    _ausentesDebounce?.cancel();
     final mesa = _mesaActual!;
     await _sync.enqueueNulos(mesa.id, mesa.eleccionesId, _votosNulos);
     await _sync.enqueueBlanco(mesa.id, mesa.eleccionesId, _votosBlanco);
+    await _sync.enqueueAusentes(mesa.id, mesa.eleccionesId, _ausentes);
     await _sync.enqueueCerrarMesa(mesa.id, mesa.eleccionesId);
     await _db.cerrarMesaLocal(mesa.id);
 

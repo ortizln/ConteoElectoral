@@ -11,6 +11,10 @@ class Mesa {
   final int? usuarioId;
   final int? votosNulos;
   final int? votosBlanco;
+  /// Ausentes registrados manualmente para esta mesa.
+  final int? ausentes;
+  /// El acta fue aprobada por ADMIN/SUPERVISOR: bloquea edición local.
+  final bool aprobada;
 
   Mesa({
     required this.id,
@@ -24,6 +28,8 @@ class Mesa {
     this.usuarioId,
     this.votosNulos,
     this.votosBlanco,
+    this.ausentes,
+    this.aprobada = false,
   });
 
   factory Mesa.fromJson(Map<String, dynamic> json) {
@@ -39,6 +45,8 @@ class Mesa {
       usuarioId: json['usuarioId'],
       votosNulos: json['votosNulos'] ?? 0,
       votosBlanco: json['votosBlanco'] ?? 0,
+      ausentes: json['ausentes'] ?? 0,
+      aprobada: json['aprobada'] == true || json['aprobada'] == 1,
     );
   }
 
@@ -55,6 +63,8 @@ class Mesa {
       'usuarioId': usuarioId,
       'votosNulos': votosNulos,
       'votosBlanco': votosBlanco,
+      'ausentes': ausentes,
+      'aprobada': aprobada,
     };
   }
 }

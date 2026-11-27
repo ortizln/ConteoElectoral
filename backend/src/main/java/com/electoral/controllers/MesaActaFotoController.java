@@ -137,6 +137,11 @@ public class MesaActaFotoController {
                     .provinciaId(provincia != null ? provincia.getId() : null)
                     .provinciaNombre(provincia != null ? provincia.getNombre() : null)
                     .cerrada(mesa.getCerrada())
+                    .votosNulos(mesa.getVotosNulos())
+                    .votosBlanco(mesa.getVotosBlanco())
+                    .ausentes(mesa.getAusentes())
+                    .aprobada(mesa.getAprobada())
+                    .electoresRegistrados(institucion != null ? institucion.getElectoresRegistrados() : null)
                     .fotos(fotos)
                     .build());
         }

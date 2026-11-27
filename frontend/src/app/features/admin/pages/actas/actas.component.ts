@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
 import {
-  Eleccion, MesaActaFotosDeMesa, MesaActaFoto,
-  Provincia, Canton, Parroquia, InstitucionEducativa
+  ActaCorreccionRequest, Eleccion, MesaActaFotosDeMesa, MesaActaFoto,
+  Provincia, Canton, Parroquia, InstitucionEducativa, Voto
 } from '../../../../core/models';
 
 /**
@@ -41,6 +41,18 @@ export class ActasComponent implements OnInit, OnDestroy {
 
   visorUrl: string | null = null;
   visorInfo = '';
+
+  // Corrección / aprobación del acta por ADMIN/SUPERVISOR
+  correccionMesa: MesaActaFotosDeMesa | null = null;
+  correccionVotos: Voto[] = [];
+  correccionNulos = 0;
+  correccionBlanco = 0;
+  correccionAusentes = 0;
+  correccionCargando = false;
+  correccionGuardando = false;
+  correccionError = '';
+  correccionSuccess = '';
+  nombresListas = new Map<number, string>();
 
   private thumbCache = new Map<number, string>();
 
@@ -118,6 +130,7 @@ export class ActasComponent implements OnInit, OnDestroy {
 
   onEleccionChange(): void {
     this.limpiarThumbs();
+    this.cerrarCorreccion();
     this.load();
   }
 
@@ -205,6 +218,155 @@ export class ActasComponent implements OnInit, OnDestroy {
       this.visorUrl = null;
       this.visorInfo = '';
     }
+  }
+
+  // ===== Corrección y aprobación del acta =====
+
+  abrirCorreccion(mesa: MesaActaFotosDeMesa): void {
+    if (mesa.aprobada) {
+      this.correccionError = 'El acta ya fue aprobada; debe desaprobarla antes de corregirla.';
+      return;
+    }
+    this.cerrarVisor();
+    this.correccionMesa = mesa;
+    this.correccionVotos = [];
+    this.correccionNulos = mesa.votosNulos ?? 0;
+    this.correccionBlanco = mesa.votosBlanco ?? 0;
+    this.correccionAusentes = mesa.ausentes ?? 0;
+    this.correccionError = '';
+    this.correccionSuccess = '';
+    this.correccionCargando = true;
+    this.api.getVotosByMesa(mesa.mesaId).subscribe({
+      next: (votos) => {
+        this.correccionVotos = (votos || []).map(v => ({ ...v, cantidadVotos: Number(v.cantidadVotos) || 0 }));
+        this.correccionCargando = false;
+      },
+      error: (err) => {
+        this.correccionError = err?.error?.message || 'No se pudieron cargar los votos de esta mesa.';
+        this.correccionCargando = false;
+      }
+    });
+    if (this.selectedEleccionId && this.nombresListas.size === 0) {
+      this.api.getListasByEleccion(this.selectedEleccionId).subscribe({
+        next: (listas) => {
+          for (const l of listas || []) {
+            const id = Number(l.id ?? l.listaId);
+            const nombre = l.nombre ?? l.nombreLista ?? l.listaNombre;
+            if (id && nombre) this.nombresListas.set(id, String(nombre));
+          }
+        },
+        error: () => {}
+      });
+    }
+  }
+
+  cerrarCorreccion(): void {
+    this.correccionMesa = null;
+    this.correccionVotos = [];
+    this.correccionError = '';
+    this.correccionSuccess = '';
+    this.correccionCargando = false;
+    this.correccionGuardando = false;
+  }
+
+  nombreVoto(voto: Voto): string {
+    const candidato = `${voto.candidatoApellido || ''} ${voto.candidatoNombre || ''}`.trim();
+    if (candidato) return candidato;
+    if (voto.listaId != null) {
+      return this.nombresListas.get(voto.listaId) || `Lista #${voto.listaId}`;
+    }
+    return `Voto #${voto.id}`;
+  }
+
+  private actualizarMesaEnLista(respuesta: {
+    id: number; cerrada?: boolean | null; aprobada?: boolean | null;
+    votosNulos?: number | null; votosBlanco?: number | null; ausentes?: number | null;
+  }): void {
+    const idx = this.mesas.findIndex(m => m.mesaId === respuesta.id);
+    if (idx < 0) return;
+    const mesa = this.mesas[idx];
+    this.mesas = [
+      ...this.mesas.slice(0, idx),
+      {
+        ...mesa,
+        cerrada: respuesta.cerrada ?? mesa.cerrada,
+        aprobada: respuesta.aprobada ?? mesa.aprobada,
+        votosNulos: respuesta.votosNulos ?? mesa.votosNulos,
+        votosBlanco: respuesta.votosBlanco ?? mesa.votosBlanco,
+        ausentes: respuesta.ausentes ?? mesa.ausentes
+      },
+      ...this.mesas.slice(idx + 1)
+    ];
+    if (this.correccionMesa?.mesaId === respuesta.id) {
+      this.correccionMesa = this.mesas.find(m => m.mesaId === respuesta.id) || this.correccionMesa;
+    }
+  }
+
+  guardarCorreccion(): void {
+    if (!this.correccionMesa || this.correccionGuardando) return;
+    if (this.correccionMesa.aprobada) {
+      this.correccionError = 'El acta ya fue aprobada; debe desaprobarla antes de corregirla.';
+      return;
+    }
+    this.correccionError = '';
+    this.correccionSuccess = '';
+    this.correccionGuardando = true;
+    const data: ActaCorreccionRequest = {
+      votosNulos: Math.max(0, Number(this.correccionNulos) || 0),
+      votosBlanco: Math.max(0, Number(this.correccionBlanco) || 0),
+      ausentes: Math.max(0, Number(this.correccionAusentes) || 0),
+      votos: this.correccionVotos.map(v => ({
+        votoId: v.id,
+        cantidadVotos: Math.max(0, Number(v.cantidadVotos) || 0)
+      }))
+    };
+    this.api.corregirActa(this.correccionMesa.mesaId, data).subscribe({
+      next: (respuesta) => {
+        this.actualizarMesaEnLista(respuesta);
+        this.correccionGuardando = false;
+        this.correccionSuccess = 'Corrección guardada correctamente.';
+      },
+      error: (err) => {
+        this.correccionError = err?.error?.message || 'No se pudo guardar la corrección del acta.';
+        this.correccionGuardando = false;
+      }
+    });
+  }
+
+  aprobar(mesa: MesaActaFotosDeMesa): void {
+    if (!confirm(`¿Aprobar el acta de la mesa ${mesa.mesaNumero}? El miembro de mesa no podrá volver a editarla.`)) return;
+    this.api.aprobarMesa(mesa.mesaId).subscribe({
+      next: (respuesta) => {
+        this.actualizarMesaEnLista(respuesta);
+        if (this.correccionMesa?.mesaId === mesa.mesaId) {
+          this.correccionError = '';
+          this.correccionSuccess = 'Acta aprobada. Para corregirla, desapruebe el acta primero.';
+        }
+      },
+      error: (err) => {
+        if (this.correccionMesa?.mesaId === mesa.mesaId) {
+          this.correccionError = err?.error?.message || 'No se pudo aprobar el acta.';
+        }
+      }
+    });
+  }
+
+  desaprobar(mesa: MesaActaFotosDeMesa): void {
+    if (!confirm(`¿Desaprobar el acta de la mesa ${mesa.mesaNumero}? Se permitirán nuevas correcciones.`)) return;
+    this.api.desaprobarMesa(mesa.mesaId).subscribe({
+      next: (respuesta) => {
+        this.actualizarMesaEnLista(respuesta);
+        if (this.correccionMesa?.mesaId === mesa.mesaId) {
+          this.correccionError = '';
+          this.correccionSuccess = 'Acta desaprobada. Ya puede corregir los datos.';
+        }
+      },
+      error: (err) => {
+        if (this.correccionMesa?.mesaId === mesa.mesaId) {
+          this.correccionError = err?.error?.message || 'No se pudo desaprobar el acta.';
+        }
+      }
+    });
   }
 
   private limpiarThumbs(): void {

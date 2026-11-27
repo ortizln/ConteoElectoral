@@ -170,6 +170,9 @@ export interface Mesa {
   cerrada: boolean;
   votosNulos: number;
   votosBlanco: number;
+  ausentes?: number;
+  aprobada?: boolean;
+  electoresRegistrados?: number | null;
   usuarioId: number | null;
   usuarioNombre: string | null;
 }
@@ -198,7 +201,19 @@ export interface MesaActaFotosDeMesa {
   provinciaId?: number | null;
   provinciaNombre?: string;
   cerrada?: boolean;
+  votosNulos?: number;
+  votosBlanco?: number;
+  ausentes?: number;
+  aprobada?: boolean;
+  electoresRegistrados?: number | null;
   fotos: MesaActaFoto[];
+}
+
+export interface ActaCorreccionRequest {
+  votosNulos?: number;
+  votosBlanco?: number;
+  ausentes?: number;
+  votos?: { votoId: number; cantidadVotos: number }[];
 }
 
 export interface MesaNuloBlancoPorCargo {
@@ -239,6 +254,8 @@ export interface DashboardData {
   totalVotos: number;
   totalVotosNulos: number;
   totalVotosBlanco: number;
+  totalAusentes?: number;
+  totalElectoresRegistrados?: number;
   totalMesas: number;
   mesasCerradas: number;
   mesasAbiertas: number;
@@ -255,6 +272,8 @@ export interface ResultadoRecinto {
   recintoId: number;
   recintoNombre: string;
   totalVotos: number;
+  ausentes?: number;
+  electoresRegistrados?: number | null;
   porcentaje: number;
 }
 
@@ -268,6 +287,8 @@ export interface ResultadoMesa {
   votosCandidatos: number;
   votosNulos: number;
   votosBlanco: number;
+  ausentes?: number;
+  electoresRegistrados?: number | null;
   totalVotos: number;
   porcentaje: number;
 }

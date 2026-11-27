@@ -87,6 +87,21 @@ class SyncService {
     }
   }
 
+  Future<void> enqueueAusentes(int mesaId, int eleccionId, int ausentes) async {
+    final existingId = await _findPendingEntity('mesa', mesaId, 'AUSENTES');
+    if (existingId != null) {
+      final db = await _db.database;
+      await db.update(
+        'sync_queue',
+        {'payload': jsonEncode({'ausentes': ausentes}), 'created_at': DateTime.now().toIso8601String(), 'retry_count': 0},
+        where: 'id = ?',
+        whereArgs: [existingId],
+      );
+    } else {
+      await _db.enqueueSync('mesa', mesaId, 'AUSENTES', {'ausentes': ausentes}, eleccionId: eleccionId);
+    }
+  }
+
   // B5: incluir FAILED para no duplicar ops al re-encolar una entidad con error
   Future<int?> _findPendingEntity(String entityType, int entityId, String operation) async {
     final db = await _db.database;
@@ -282,11 +297,16 @@ class SyncService {
         // No pisar valores con operaciones locales aún no sincronizadas
         final nulosPendientes = await _findPendingEntity('mesa', mesaId, 'NULOS');
         final blancoPendientes = await _findPendingEntity('mesa', mesaId, 'BLANCO');
+        final ausentesPendientes = await _findPendingEntity('mesa', mesaId, 'AUSENTES');
         await _db.actualizarNulosBlanco(
           mesaId,
           votosNulos: nulosPendientes != null ? null : payload['votosNulos'] as int?,
           votosBlanco: blancoPendientes != null ? null : payload['votosBlanco'] as int?,
+          ausentes: ausentesPendientes != null ? null : payload['ausentes'] as int?,
         );
+        final aprobada = payload['aprobada'] == true || payload['aprobada'] == 1;
+        await _db.actualizarAprobacionMesa(mesaId, aprobada);
+        if (aprobada) await _db.cancelarOpsMesaAprobada(mesaId);
         final cerrada = payload['cerrada'] as bool? ?? false;
         if (cerrada) await _db.cerrarMesaLocal(mesaId);
       }

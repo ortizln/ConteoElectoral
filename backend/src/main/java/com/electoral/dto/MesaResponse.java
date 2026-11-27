@@ -25,6 +25,10 @@ public class MesaResponse {
     private Boolean cerrada;
     private Integer votosNulos;
     private Integer votosBlanco;
+    private Integer ausentes;
+    private Boolean aprobada;
+    /** Electores del padrón del recinto/institución (para comparar con ausentes). */
+    private Integer electoresRegistrados;
     private Long usuarioId;
     private String usuarioNombre;
 }

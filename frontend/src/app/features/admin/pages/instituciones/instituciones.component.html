@@ -19,15 +19,34 @@
 
   <app-filtros-panel titulo="Filtros de búsqueda" clave="instituciones">
     <div class="filter-item">
-      <label>Parroquia:</label>
-      <select class="form-select" [(ngModel)]="filterParroquiaId" (change)="filtrarPorParroquia()">
+      <label>Provincia:</label>
+      <select class="form-select" [(ngModel)]="filterProvinciaId" (ngModelChange)="onProvinciaChange()">
         <option [ngValue]="null">Todas</option>
-        <option *ngFor="let p of parroquias" [value]="p.id">{{ p.nombre }}</option>
+        <option *ngFor="let p of provincias" [ngValue]="p.id">{{ p.nombre }}</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label>Cantón:</label>
+      <select class="form-select" [(ngModel)]="filterCantonId" (ngModelChange)="onCantonChange()">
+        <option [ngValue]="null">Todos</option>
+        <option *ngFor="let c of cantonesDisponibles" [ngValue]="c.id">{{ c.nombre }}</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label>Parroquia:</label>
+      <select class="form-select" [(ngModel)]="filterParroquiaId" (ngModelChange)="filtrarPorParroquia()">
+        <option [ngValue]="null">Todas</option>
+        <option *ngFor="let p of parroquiasDisponibles" [ngValue]="p.id">{{ p.nombre }}</option>
       </select>
     </div>
     <div class="filter-item">
       <label>Buscar:</label>
       <input type="text" class="form-control" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
+    </div>
+    <div class="filter-item d-flex align-items-end">
+      <button type="button" class="btn btn-outline-secondary" (click)="limpiarFiltros()">
+        <i class="bi bi-x-circle"></i> Limpiar filtros
+      </button>
     </div>
   </app-filtros-panel>
 
@@ -175,7 +194,7 @@
             <label>Parroquia:</label>
             <select class="form-select" [(ngModel)]="form.parroquiaId">
               <option [ngValue]="null">Seleccione...</option>
-              <option *ngFor="let p of parroquias" [value]="p.id">{{ p.nombre }}</option>
+              <option *ngFor="let p of parroquias" [ngValue]="p.id">{{ p.nombre }}</option>
             </select>
           </div>
           <div class="mb-3">

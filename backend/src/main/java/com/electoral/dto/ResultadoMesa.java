@@ -23,6 +23,8 @@ public class ResultadoMesa {
     private Long votosCandidatos;
     private Long votosNulos;
     private Long votosBlanco;
+    private Long ausentes;
+    private Integer electoresRegistrados;
     private Long totalVotos;
     private Double porcentaje;
 }

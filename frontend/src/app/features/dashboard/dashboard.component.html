@@ -14,8 +14,8 @@
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn btn-excel" (click)="exportarExcel()" title="Exportar a Excel"><i class="bi bi-file-earmark-spreadsheet"></i> Excel</button>
-      <button class="btn btn-pdf" (click)="exportarPdf()" title="Exportar a PDF"><i class="bi bi-filetype-pdf"></i> PDF</button>
+      <button *ngIf="!publico" class="btn btn-excel" (click)="exportarExcel()" title="Exportar a Excel"><i class="bi bi-file-earmark-spreadsheet"></i> Excel</button>
+      <button *ngIf="!publico" class="btn btn-pdf" (click)="exportarPdf()" title="Exportar a PDF"><i class="bi bi-filetype-pdf"></i> PDF</button>
       <button class="btn btn-refresh" (click)="recargarSilencioso()"><i class="bi bi-arrow-clockwise"></i></button>
     </div>
   </div>
@@ -140,6 +140,16 @@
         <span class="stat-value">{{ dashboard.totalVotosBlanco | number }}</span>
       </div>
     </div>
+    <div class="stat-card stat-ausentes">
+      <div class="stat-icon"><i class="bi bi-person-x-fill"></i></div>
+      <div class="stat-info">
+        <span class="stat-label">Ausentes</span>
+        <span class="stat-value">{{ dashboard.totalAusentes || 0 | number }}</span>
+        <small class="stat-sub" *ngIf="dashboard.totalElectoresRegistrados != null">
+          de {{ dashboard.totalElectoresRegistrados | number }} electores registrados
+        </small>
+      </div>
+    </div>
     <div class="stat-card stat-mesas">
       <div class="stat-icon"><i class="bi bi-clipboard-data"></i></div>
       <div class="stat-info">
@@ -147,8 +157,8 @@
         <span class="stat-value">{{ dashboard.totalMesas }}</span>
       </div>
     </div>
-    <div class="stat-card stat-cerradas" style="cursor:pointer;" (click)="verMesasCerradas()"
-      title="Ver detalle de mesas cerradas">
+    <div class="stat-card stat-cerradas" [style.cursor]="publico ? 'default' : 'pointer'"
+      (click)="verMesasCerradas()" [title]="publico ? '' : 'Ver detalle de mesas cerradas'">
       <div class="stat-icon"><i class="bi bi-lock-fill"></i></div>
       <div class="stat-info">
         <span class="stat-label">Mesas Cerradas</span>
@@ -481,6 +491,7 @@
               <th class="text-right">Candidatos</th>
               <th class="text-right">Nulos</th>
               <th class="text-right">Blancos</th>
+              <th class="text-right">Ausentes</th>
               <th class="text-right">Total</th>
               <th class="text-right">%</th>
               <th></th>
@@ -499,6 +510,7 @@
               <td class="text-right">{{ m.votosCandidatos | number }}</td>
               <td class="text-right">{{ m.votosNulos | number }}</td>
               <td class="text-right">{{ m.votosBlanco | number }}</td>
+              <td class="text-right" [title]="m.electoresRegistrados != null ? ('Padrón del recinto: ' + m.electoresRegistrados) : ''">{{ m.ausentes || 0 | number }}</td>
               <td class="text-right"><strong>{{ m.totalVotos | number }}</strong></td>
               <td class="text-right"><span class="porcentaje-badge">{{ m.porcentaje | number:'1.1-1' }}%</span></td>
               <td class="text-right"><i class="bi bi-chevron-right text-muted"></i></td>
@@ -586,6 +598,7 @@
             </tbody>
           </table>
 
+          <ng-container *ngIf="!publico">
           <h6 class="section-title mt-4"><i class="bi bi-camera-fill"></i> Fotos del acta</h6>
           <div *ngIf="drillMesaFotosLoading" class="text-muted">Cargando fotos...</div>
           <div *ngIf="!drillMesaFotosLoading && drillMesaFotos.length === 0" class="text-muted">
@@ -600,6 +613,7 @@
               <div class="small text-muted text-center">{{ f.createdAt | date:'dd/MM HH:mm' }}</div>
             </div>
           </div>
+          </ng-container>
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" (click)="cerrarDrillMesa()">Cerrar</button>

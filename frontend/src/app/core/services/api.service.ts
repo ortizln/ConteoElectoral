@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApkVersionItem, Eleccion, Partido, Cargo, Candidato, Mesa, MesaActaFoto, MesaActaFotosDeMesa, MesaNuloBlancoPorCargo, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse, ReglaNegocio, Circunscripcion, ResultadoDHondt, Reconteo, Impugnacion, Observacion, Resolucion, EscrutinioResumen, GeoResumen, DatoGeografico, ReporteResumen, ReporteCandidato, ReportePartido, ReporteLista, RecuperarPasswordRequest, RecuperarPasswordResponse } from '../models';
+import { ApkVersionItem, Eleccion, Partido, Cargo, Candidato, Mesa, MesaActaFoto, MesaActaFotosDeMesa, MesaNuloBlancoPorCargo, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse, ReglaNegocio, Circunscripcion, ResultadoDHondt, Reconteo, Impugnacion, Observacion, Resolucion, EscrutinioResumen, GeoResumen, DatoGeografico, ReporteResumen, ReporteCandidato, ReportePartido, ReporteLista, RecuperarPasswordRequest, RecuperarPasswordResponse, ActaCorreccionRequest } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -303,6 +303,22 @@ export class ApiService {
 
   actualizarVotosBlanco(mesaId: number, votosBlanco: number): Observable<Mesa> {
     return this.http.put<Mesa>(`${this.API_URL}/mesas/${mesaId}/votos-blanco`, { votosBlanco });
+  }
+
+  actualizarAusentes(mesaId: number, ausentes: number): Observable<Mesa> {
+    return this.http.put<Mesa>(`${this.API_URL}/mesas/${mesaId}/ausentes`, { ausentes });
+  }
+
+  corregirActa(mesaId: number, data: ActaCorreccionRequest): Observable<Mesa> {
+    return this.http.put<Mesa>(`${this.API_URL}/mesas/${mesaId}/corregir`, data);
+  }
+
+  aprobarMesa(mesaId: number): Observable<Mesa> {
+    return this.http.post<Mesa>(`${this.API_URL}/mesas/${mesaId}/aprobar`, {});
+  }
+
+  desaprobarMesa(mesaId: number): Observable<Mesa> {
+    return this.http.post<Mesa>(`${this.API_URL}/mesas/${mesaId}/desaprobar`, {});
   }
 
   getNulosBlancosPorCargo(mesaId: number): Observable<MesaNuloBlancoPorCargo[]> {

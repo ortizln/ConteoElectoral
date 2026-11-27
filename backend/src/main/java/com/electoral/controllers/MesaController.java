@@ -91,6 +91,31 @@ public class MesaController {
         return ResponseEntity.ok(mesaService.actualizarVotosBlanco(id, body.get("votosBlanco")));
     }
 
+    @PutMapping("/{id}/ausentes")
+    @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<MesaResponse> actualizarAusentes(@PathVariable Long id, @RequestBody Map<String, Integer> body) {
+        return ResponseEntity.ok(mesaService.actualizarAusentes(id, body.get("ausentes")));
+    }
+
+    @PutMapping("/{id}/corregir")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<MesaResponse> corregirActa(@PathVariable Long id,
+            @Valid @RequestBody ActaCorreccionRequest request) {
+        return ResponseEntity.ok(mesaService.corregirActa(id, request));
+    }
+
+    @PostMapping("/{id}/aprobar")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<MesaResponse> aprobarMesa(@PathVariable Long id) {
+        return ResponseEntity.ok(mesaService.aprobarMesa(id));
+    }
+
+    @PostMapping("/{id}/desaprobar")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<MesaResponse> desaprobarMesa(@PathVariable Long id) {
+        return ResponseEntity.ok(mesaService.desaprobarMesa(id));
+    }
+
     @GetMapping("/{id}/nulos-blancos")
     public ResponseEntity<List<MesaNuloBlancoPorCargoResponse>> getNulosBlancosPorCargo(@PathVariable Long id) {
         return ResponseEntity.ok(mesaService.getNulosBlancosPorCargo(id));

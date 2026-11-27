@@ -16,6 +16,9 @@ public class DashboardResponse {
     private Long totalVotos;
     private Long totalVotosNulos;
     private Long totalVotosBlanco;
+    private Long totalAusentes;
+    /** Electores del padrón de los recintos considerados (para comparar con ausentes). */
+    private Long totalElectoresRegistrados;
     private Long totalMesas;
     private Long mesasCerradas;
     private Long mesasAbiertas;

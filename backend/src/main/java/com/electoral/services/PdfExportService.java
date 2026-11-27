@@ -314,6 +314,18 @@ public class PdfExportService {
         row2.addCell(statCell("% Escrutinio", String.format("%.1f%%",
                 data.getPorcentajeMesasCerradas() == null ? 0 : data.getPorcentajeMesasCerradas()), C_PRIMARY));
         doc.add(row2);
+
+        long ausentes = valueOf(data.getTotalAusentes());
+        long padron = valueOf(data.getTotalElectoresRegistrados());
+        Table row3 = new Table(UnitValue.createPercentArray(new float[]{1, 1, 1, 1}));
+        configurarTabla(row3);
+        row3.addCell(statCell("Ausentes", String.format("%,d", ausentes), C_WARNING));
+        row3.addCell(statCell("Electores registrados", String.format("%,d", padron), C_INFO));
+        row3.addCell(statCell("% Ausentes", String.format("%.1f%%",
+                padron > 0 ? ausentes * 100.0 / padron : 0), C_WARNING));
+        row3.addCell(statCell("Total votantes",
+                String.format("%,d", totalVotos + nulos + blanco + ausentes), C_SUCCESS));
+        doc.add(row3);
     }
 
     private static long valueOf(Number n) {
@@ -628,12 +640,13 @@ public class PdfExportService {
 
     private void addMesaTable(Document doc, DashboardResponse data) {
         addSectionTitle(doc, "Resultados por Mesa",
-                "Incluye nulos y blancos registrados en cada mesa.");
+                "Incluye nulos, blancos y ausentes registrados en cada mesa.");
 
         Table t = new Table(UnitValue.createPercentArray(
-                new float[]{0.4f, 0.9f, 3f, 0.7f, 1.2f, 1f, 1f, 1.1f, 0.9f}));
+                new float[]{0.35f, 0.75f, 2.8f, 0.6f, 0.9f, 0.8f, 0.85f, 0.8f, 0.9f, 0.8f, 0.75f}));
         configurarTabla(t);
-        String[] hd = {"#", "Mesa", "Recinto", "Est.", "Votos", "Nulos", "Blancos", "Total", "%"};
+        String[] hd = {"#", "Mesa", "Recinto", "Est.", "Votos", "Nulos", "Blancos",
+                "Aus.", "Padrón", "Total", "%"};
         for (String h : hd) {
             t.addHeaderCell(th(h));
         }
@@ -648,6 +661,9 @@ public class PdfExportService {
             t.addCell(td(String.format("%,d", valueOf(r.getVotosCandidatos())), odd, TextAlignment.RIGHT));
             t.addCell(td(String.format("%,d", valueOf(r.getVotosNulos())), odd, TextAlignment.RIGHT));
             t.addCell(td(String.format("%,d", valueOf(r.getVotosBlanco())), odd, TextAlignment.RIGHT));
+            t.addCell(td(String.format("%,d", valueOf(r.getAusentes())), odd, TextAlignment.RIGHT));
+            t.addCell(td(r.getElectoresRegistrados() == null ? "—"
+                    : String.format("%,d", r.getElectoresRegistrados()), odd, TextAlignment.RIGHT));
             t.addCell(td(String.format("%,d", valueOf(r.getTotalVotos())), odd, TextAlignment.RIGHT));
             t.addCell(td(String.format("%.1f%%", r.getPorcentaje() == null ? 0 : r.getPorcentaje()),
                     odd, TextAlignment.RIGHT));
@@ -697,6 +713,9 @@ public class PdfExportService {
              Document doc = new Document(pdf)) {
 
             configurarDocumento(pdf, doc, "ACTA DE CIERRE DE MESA");
+            // La línea de acento se dibuja directamente sobre la primera página,
+            // así que la página debe existir antes de pedirla al PdfDocument.
+            pdf.addNewPage();
 
             // ── Top accent line ──
             PdfCanvas cv = new PdfCanvas(pdf.getFirstPage().newContentStreamBefore(), pdf.getFirstPage().getResources(), pdf);
@@ -748,10 +767,10 @@ public class PdfExportService {
             doc.add(resHeader);
 
             // Results table
-            float[] colW = {0.5f, 3.5f, 2.5f, 1.5f};
+            float[] colW = {0.4f, 3f, 2f, 2f, 1.2f};
             Table resTable = new Table(UnitValue.createPercentArray(colW));
             resTable.setWidth(UnitValue.createPercentValue(100));
-            String[] hdrs = {"#", "Candidato", "Partido", "Votos"};
+            String[] hdrs = {"#", "Postulación", "Partido", "Cargo", "Votos"};
             for (String h : hdrs) {
                 Cell hc = new Cell().add(new Paragraph(h).setBold().setFontSize(8).setFontColor(C_WHITE));
                 hc.setBackgroundColor(C_HEADER_BG); hc.setPadding(6); hc.setTextAlignment(TextAlignment.CENTER);
@@ -764,10 +783,32 @@ public class PdfExportService {
                     resTable.addCell(td(String.valueOf(i + 1), odd, TextAlignment.CENTER));
                     resTable.addCell(td(row[0], odd, TextAlignment.LEFT));
                     resTable.addCell(td(row[1], odd, TextAlignment.LEFT));
+                    resTable.addCell(td(row[2] != null ? row[2] : "", odd, TextAlignment.LEFT));
                     resTable.addCell(td(row[3], odd, TextAlignment.RIGHT));
                 }
             }
             doc.add(resTable);
+            doc.add(new Paragraph(" ").setFontSize(10));
+
+            // ── Control de votos nulos, blancos y ausentes ───────────────
+            Table control = new Table(UnitValue.createPercentArray(new float[]{1, 1, 1, 1}));
+            control.setWidth(UnitValue.createPercentValue(100));
+            control.setBackgroundColor(C_LIGHT_BG);
+            int ausentesMesa = mesa.getAusentes() == null ? 0 : mesa.getAusentes();
+            Integer electores = mesa.getInstitucion() != null
+                    ? mesa.getInstitucion().getElectoresRegistrados() : null;
+            control.addCell(infoCell("Votos a candidatos/listas", String.valueOf(totalVotos)));
+            control.addCell(infoCell("Votos nulos", String.valueOf(
+                    mesa.getVotosNulos() == null ? 0 : mesa.getVotosNulos())));
+            control.addCell(infoCell("Votos en blanco", String.valueOf(
+                    mesa.getVotosBlanco() == null ? 0 : mesa.getVotosBlanco())));
+            control.addCell(infoCell("Ausentes", String.valueOf(ausentesMesa)));
+            doc.add(control);
+            if (electores != null) {
+                doc.add(new Paragraph("Padrón del recinto: " + electores
+                                + " · Votaron + ausentes: " + (totalVotos + ausentesMesa))
+                        .setFontSize(9).setFontColor(C_GRAY).setMarginTop(6));
+            }
             doc.add(new Paragraph(" ").setFontSize(10));
 
             // ── Signature section ──
