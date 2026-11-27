@@ -23,6 +23,26 @@ body {
   line-height: 1.6;
 }
 
+/* Marca de agua ALANTEK global: una sola imagen centrada en toda la app. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 1030;
+  pointer-events: none;
+  background-image: url('assets/icons/icon-192x192.png');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: min(46vw, 520px);
+  opacity: 0.06;
+  mix-blend-mode: multiply;
+}
+
+[data-theme="dark"] body::after {
+  opacity: 0.1;
+  mix-blend-mode: screen;
+}
+
 .card {
   border: none;
   border-radius: 12px;
