@@ -287,7 +287,7 @@
         </div>
         <div class="modal-footer">
           <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="cancelarDeleteVoto()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
-          <button aria-label="Eliminar" title="Eliminar" class="btn btn-danger btn-xs btn-labeled" (click)="ejecutarDeleteVoto()" [disabled]="deleteCargando"><span *ngIf="deleteCargando" class="spinner-border spinner-border-sm"></span><i *ngIf="!deleteCargando" class="bi bi-trash"></i><span class="btn-label">Eliminar</span></button>
+          <button aria-label="Eliminar" title="Eliminar" class="btn btn-danger btn-xs icon-only" (click)="ejecutarDeleteVoto()" [disabled]="deleteCargando"><span *ngIf="deleteCargando" class="spinner-border spinner-border-sm"></span><i *ngIf="!deleteCargando" class="bi bi-trash"></i></button>
         </div>
       </div>
     </div>
@@ -388,7 +388,7 @@
             <td><span class="partido-tag" [title]="partidoDeVoto(v)">{{ siglaDe(partidoDeVoto(v)) }}</span></td>
             <td class="text-right"><strong class="voto-count">{{ v.cantidadVotos }}</strong></td>
             <td *ngIf="!mesaActual?.cerrada" class="text-right">
-              <button aria-label="Eliminar" title="Eliminar" class="btn btn-eliminar btn-xs btn-labeled" (click)="eliminarVoto(v.id)"><i class="bi bi-trash"></i><span class="btn-label">Eliminar</span></button>
+              <button aria-label="Eliminar" title="Eliminar" class="btn btn-eliminar btn-xs icon-only" (click)="eliminarVoto(v.id)"><i class="bi bi-trash"></i></button>
             </td>
           </tr>
           <tr *ngIf="votosFiltrados.length === 0">
