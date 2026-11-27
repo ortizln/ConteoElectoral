@@ -107,7 +107,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5>{{ editingUser ? 'Editar' : 'Nuevo' }} Usuario</h5>
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs btn-labeled" (click)="closeModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs icon-only" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="modal-body">
           <div class="mb-3" *ngIf="errorMessage">
@@ -160,7 +160,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="closeModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
           <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="save()"><i class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
         </div>
       </div>
@@ -173,7 +173,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5>Reset Password - {{ resetUser?.username }}</h5>
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs btn-labeled" (click)="closeResetModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs icon-only" (click)="closeResetModal()"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="modal-body">
           <div class="mb-3">
@@ -186,7 +186,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="closeResetModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeResetModal()"><i class="bi bi-x-lg"></i></button>
           <button aria-label="Restablecer" title="Restablecer" class="btn btn-primary btn-xs btn-labeled" (click)="resetPassword()"><i class="bi bi-arrow-counterclockwise"></i><span class="btn-label">Restablecer</span></button>
         </div>
       </div>
@@ -199,7 +199,7 @@
       <div class="modal-content">
         <div class="modal-header bg-light">
           <h5 class="modal-title">Información del Usuario</h5>
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs btn-labeled" (click)="cerrarViewModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs icon-only" (click)="cerrarViewModal()"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="modal-body">
           <div *ngIf="viewUser" class="row g-3 mb-4">
@@ -281,7 +281,7 @@
           </ng-template>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="cerrarViewModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="cerrarViewModal()"><i class="bi bi-x-lg"></i></button>
         </div>
       </div>
     </div>

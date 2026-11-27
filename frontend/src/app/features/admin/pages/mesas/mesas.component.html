@@ -151,7 +151,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5>{{ editMode ? 'Editar' : 'Nueva' }} Mesa</h5>
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs btn-labeled" (click)="closeModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs icon-only" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="modal-body">
           <div class="mb-3" *ngIf="errorMessage">
@@ -251,7 +251,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="closeModal()" [disabled]="creandoRango"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeModal()" [disabled]="creandoRango"><i class="bi bi-x-lg"></i></button>
           <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="save()" [disabled]="creandoRango"><span *ngIf="creandoRango" class="spinner-border spinner-border-sm"></span><i *ngIf="!creandoRango" class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
         </div>
       </div>

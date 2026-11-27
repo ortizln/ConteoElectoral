@@ -68,7 +68,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">{{ editing ? 'Editar' : 'Nueva' }} Regla de Negocio</h5>
-        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="showModal = false"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs icon-only" (click)="showModal = false"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="modal-body">
         <div class="row">
@@ -129,7 +129,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-secondary btn-xs btn-labeled" (click)="showModal = false"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-secondary btn-xs icon-only" (click)="showModal = false"><i class="bi bi-x-lg"></i></button>
         <button aria-label="Guardar" title="Guardar" type="button" class="btn btn-primary btn-xs btn-labeled" (click)="save()" [disabled]="!selectedRegla.nombre || !validateCondicion()"><span *ngIf="editing" class="spinner-border spinner-border-sm"></span><i *ngIf="!editing" class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
       </div>
     </div>

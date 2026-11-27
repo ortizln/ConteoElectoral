@@ -52,7 +52,7 @@
           </div>
           <div *ngIf="editingId === img.id" class="btn-group">
             <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="saveEdit(img.id)"><i class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
-            <button aria-label="Cerrar" title="Cerrar" class="btn btn-outline-secondary btn-xs btn-labeled" (click)="cancelEdit()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+            <button aria-label="Cerrar" title="Cerrar" class="btn btn-outline-secondary btn-xs icon-only" (click)="cancelEdit()"><i class="bi bi-x-lg"></i></button>
           </div>
         </div>
       </div>

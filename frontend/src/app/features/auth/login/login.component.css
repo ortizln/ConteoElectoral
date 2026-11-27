@@ -180,10 +180,11 @@
 }
 .password-wrapper { position: relative; display: flex; align-items: center; }
 .password-wrapper .form-control { padding-right: 44px; }
-.btn-eye {
+.password-wrapper .btn-eye {
   position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  z-index: 2;
   display: flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px; border: none; background: transparent;
+  width: 36px; height: 36px; min-width: 36px; border: none; background: transparent;
   border-radius: 8px; cursor: pointer; color: var(--alantek-text-muted);
   transition: background-color 0.15s, color 0.15s; padding: 0;
 }

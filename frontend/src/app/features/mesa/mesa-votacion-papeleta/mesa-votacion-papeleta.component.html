@@ -140,7 +140,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5><i class="bi bi-camera-fill"></i> Foto del acta (obligatoria)</h5>
-        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="cerrarFotoActaModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs icon-only" (click)="cerrarFotoActaModal()"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="modal-body">
         <p class="text-muted">Antes de cerrar debe registrar al menos una foto del acta física como respaldo del conteo. Puede agregar varias fotos.</p>
@@ -171,7 +171,7 @@
         <div *ngIf="fotoActaError" class="text-danger small">{{ fotoActaError }}</div>
       </div>
       <div class="modal-footer">
-        <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="cerrarFotoActaModal()" [disabled]="fotoActaSubiendo"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+        <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="cerrarFotoActaModal()" [disabled]="fotoActaSubiendo"><i class="bi bi-x-lg"></i></button>
         <button aria-label="Cerrar acta" title="Cerrar acta" class="btn btn-danger btn-xs btn-labeled" (click)="confirmarCerrarConFoto()"
                 [disabled]="fotoActaSubiendo || (fotoActaFiles.length + fotoActaExistentes.length === 0)"><span *ngIf="fotoActaSubiendo" class="spinner-border spinner-border-sm"></span><i *ngIf="!fotoActaSubiendo" class="bi bi-lock-fill"></i><span class="btn-label">Cerrar acta</span></button>
       </div>

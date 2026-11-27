@@ -104,7 +104,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5><i class="bi bi-box-arrow-in-down"></i> Importar Parroquias desde Excel</h5>
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs btn-labeled" (click)="closeImportModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs icon-only" (click)="closeImportModal()"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="modal-body">
           <p class="text-muted mb-3">Selecciona un archivo Excel (.xlsx) con las columnas: <strong>nombre</strong>, <strong>canton</strong>, <strong>tipoParroquia</strong> (URBANA o RURAL).</p>
@@ -136,7 +136,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="closeImportModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeImportModal()"><i class="bi bi-x-lg"></i></button>
           <button aria-label="Importar" title="Importar" class="btn btn-primary btn-xs btn-labeled" (click)="importar()" [disabled]="!importPreview || importPreview.length === 0 || importing"><span *ngIf="importing" class="spinner-border spinner-border-sm"></span><i *ngIf="!importing" class="bi bi-box-arrow-in-down"></i><span class="btn-label">Importar</span></button>
         </div>
       </div>
@@ -148,7 +148,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5>{{ editMode ? 'Editar' : 'Nueva' }} Parroquia</h5>
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs btn-labeled" (click)="closeModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs icon-only" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="modal-body">
           <div class="mb-3" *ngIf="errorMessage">
@@ -178,7 +178,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="closeModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
           <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="save()"><i class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
         </div>
       </div>

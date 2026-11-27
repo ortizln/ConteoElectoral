@@ -101,7 +101,7 @@
   <div class="recovery-modal" role="dialog" aria-modal="true" aria-labelledby="recovery-title">
     <div class="recovery-header">
       <h3 id="recovery-title">Recuperar la contraseña</h3>
-      <button title="Cerrar" type="button" class="btn recovery-close btn-xs btn-labeled" aria-label="Cerrar" (click)="closeRecoveryModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+      <button title="Cerrar" type="button" class="btn recovery-close btn-xs icon-only" aria-label="Cerrar" (click)="closeRecoveryModal()"><i class="bi bi-x-lg"></i></button>
     </div>
     <p class="recovery-hint">Ingrese su usuario y cédula. Enviaremos una contraseña temporal por WhatsApp al celular que indique. Si ya tiene un celular registrado, debe ingresar ese mismo número.</p>
     <div class="form-group">
@@ -122,7 +122,7 @@
     <div *ngIf="recuperarError" class="alert alert-danger">{{ recuperarError }}</div>
     <div *ngIf="recuperarSuccess" class="alert alert-success">{{ recuperarSuccess }}</div>
     <div class="recovery-actions">
-      <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-secondary btn-xs btn-labeled" (click)="closeRecoveryModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+      <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-secondary btn-xs icon-only" (click)="closeRecoveryModal()"><i class="bi bi-x-lg"></i></button>
       <button aria-label="Enviar por WhatsApp" title="Enviar por WhatsApp" type="button" class="btn btn-login btn-xs btn-labeled" [disabled]="recuperando" (click)="submitRecovery()"><span *ngIf="recuperando" class="spinner-border spinner-border-sm"></span><i *ngIf="!recuperando" class="bi bi-whatsapp"></i><span class="btn-label">Enviar por WhatsApp</span></button>
     </div>
   </div>

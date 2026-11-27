@@ -247,7 +247,7 @@
       <div class="modal-content border-0 shadow">
         <div class="modal-header bg-white border-bottom">
           <h5 class="modal-title">{{ editando ? 'Editar Lista #' + listaDetalle.numeroLista : 'Nueva Lista Electoral' }}</h5>
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs btn-labeled" (click)="cerrarForm()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs icon-only" (click)="cerrarForm()"><i class="bi bi-x-lg"></i></button>
         </div>
         <div class="modal-body">
           <div class="row g-3">
@@ -313,7 +313,7 @@
           </div>
         </div>
         <div class="modal-footer border-top">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-light btn-xs btn-labeled" (click)="cerrarForm()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-light btn-xs icon-only" (click)="cerrarForm()"><i class="bi bi-x-lg"></i></button>
           <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="guardarLista()"><span *ngIf="editando" class="spinner-border spinner-border-sm"></span><i *ngIf="!editando" class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
         </div>
       </div>
