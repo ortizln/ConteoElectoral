@@ -79,11 +79,12 @@ public class RecuperacionPasswordService {
                 .build();
     }
 
+    /** Clave temporal de 8 caracteres: fácil de copiar y escribir en la APK. */
     private String generarPasswordTemporal() {
-        StringBuilder sb = new StringBuilder(12);
+        StringBuilder sb = new StringBuilder(8);
         sb.append(MAYUSCULAS.charAt(RANDOM.nextInt(MAYUSCULAS.length())));
         sb.append(DIGITOS.charAt(RANDOM.nextInt(DIGITOS.length())));
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 6; i++) {
             sb.append(ALFABETO.charAt(RANDOM.nextInt(ALFABETO.length())));
         }
         return sb.toString();
