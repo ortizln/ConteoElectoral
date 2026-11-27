@@ -65,6 +65,62 @@ class ApiService {
     }
   }
 
+  /// Recuperación de contraseña: valida usuario + cédula y envía una clave
+  /// temporal por WhatsApp al celular indicado. El celular NO se valida contra
+  /// la BD: es solo el destino del mensaje (y se guarda en el usuario).
+  Future<RecuperarPasswordResult> recuperarPassword({
+    required String username,
+    required String identificacion,
+    required String celular,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/auth/recuperar-password'),
+            headers: _headers(),
+            body: jsonEncode({
+              'username': username.trim(),
+              'identificacion': identificacion.trim(),
+              'celular': celular.trim(),
+            }),
+          )
+          // El envío por WhatsApp puede tardar varios segundos en el servidor.
+          .timeout(const Duration(seconds: 60));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return RecuperarPasswordResult(
+          success: true,
+          mensaje: (data['mensaje'] ?? 'Contraseña temporal enviada por WhatsApp.')
+              .toString(),
+          enviadoA: data['enviadoA']?.toString(),
+        );
+      }
+
+      return RecuperarPasswordResult(
+        success: false,
+        error: _extraerMensajeError(response.body, response.statusCode),
+      );
+    } catch (e) {
+      return const RecuperarPasswordResult(
+        success: false,
+        error: 'No se pudo conectar con el servidor. Intente nuevamente.',
+      );
+    }
+  }
+
+  static String _extraerMensajeError(String body, int statusCode) {
+    try {
+      final data = jsonDecode(body);
+      final msg = data['message'] ?? data['mensaje'];
+      if (msg != null && msg.toString().isNotEmpty) return msg.toString();
+    } catch (_) {}
+    if (statusCode == 408 || statusCode == 504) {
+      return 'El servidor tardó demasiado en responder. Intente nuevamente.';
+    }
+    return 'No se pudo recuperar la contraseña (HTTP $statusCode).';
+  }
+
   // Zonas
   Future<List<Zona>> getZonas() async {
     try {
@@ -1108,6 +1164,27 @@ class ApiService {
     } catch (e) {
       return {'success': false, 'message': 'No se pudo conectar: $e'};
     }
+  }
+}
+
+/// Resultado de POST /auth/recuperar-password.
+class RecuperarPasswordResult {
+  final bool success;
+  final String mensaje;
+  final String? enviadoA;
+  final String? error;
+
+  const RecuperarPasswordResult({
+    required this.success,
+    this.mensaje = '',
+    this.enviadoA,
+    this.error,
+  });
+
+  String get mensajeParaMostrar {
+    final destino =
+        (enviadoA != null && enviadoA!.isNotEmpty) ? ' Enviado al $enviadoA.' : '';
+    return '$mensaje$destino';
   }
 }
 

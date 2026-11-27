@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/recuperar_password_dialog.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -37,6 +38,17 @@ class _LoginScreenState extends State<LoginScreen>
     _passwordController.dispose();
     _animController.dispose();
     super.dispose();
+  }
+
+  Future<void> _abrirRecuperacion() async {
+    final provider = context.read<AppProvider>();
+    await showDialog<void>(
+      context: context,
+      builder: (_) => RecuperarPasswordDialog(
+        api: provider.api,
+        usuarioInicial: _usernameController.text.trim(),
+      ),
+    );
   }
 
   Future<void> _login() async {
@@ -214,6 +226,20 @@ class _LoginScreenState extends State<LoginScreen>
                                         style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.w600)),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            TextButton(
+                              onPressed: _abrirRecuperacion,
+                              child: const Text(
+                                '¿Olvidó su contraseña? Recupérela por WhatsApp',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                ),
                               ),
                             ),
                           ],

@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.util.Objects;
 
-/** Recuperación de contraseña validando usuario + cédula y enviando una clave temporal al celular indicado. */
+/** Recuperación de contraseña validando usuario + cédula y, si ya hay celular registrado, también el celular. */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -35,12 +35,17 @@ public class RecuperacionPasswordService {
         String celular = OpenWaService.normalizarNumeroWhatsapp(request.getCelular());
 
         Usuario usuario = usuarioRepository.findByUsername(username).orElse(null);
-        // El celular NO se valida contra la BD: muchos usuarios no lo tienen
-        // registrado. Se usa solo como destino del mensaje y se guarda después.
+        // Si el usuario ya tiene celular registrado, el número ingresado debe
+        // coincidir (se comparan normalizados). Si está vacío, se acepta el
+        // ingresado y se guarda como destino del mensaje.
+        String celularRegistrado =
+                OpenWaService.normalizarNumeroWhatsapp(usuario == null ? null : usuario.getCelular());
+        boolean celularValido = celularRegistrado.isEmpty() || celularRegistrado.equals(celular);
         boolean datosValidos = usuario != null
                 && Boolean.TRUE.equals(usuario.getActivo())
                 && Objects.equals(usuario.getIdentificacion(), identificacion)
-                && !celular.isEmpty();
+                && !celular.isEmpty()
+                && celularValido;
 
         if (!datosValidos) {
             // Mensaje genérico para no revelar si el usuario existe.
