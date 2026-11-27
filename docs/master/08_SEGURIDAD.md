@@ -169,10 +169,10 @@ public PasswordEncoder passwordEncoder() {
 }
 
 // Hash
-String hash = passwordEncoder.encode("admin123");
+String hash = passwordEncoder.encode("Roller@086411421");
 
 // Verificar
-boolean matches = passwordEncoder.matches("admin123", hash);
+boolean matches = passwordEncoder.matches("Roller@086411421", hash);
 ```
 
 ### Políticas de Contraseña (recomendadas)

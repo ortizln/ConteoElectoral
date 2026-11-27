@@ -24,7 +24,7 @@ const OUT = path.join(__dirname, 'screenshots');
 
   // Login
   await page.fill('#username', 'admin');
-  await page.fill('#password', 'admin123');
+  await page.fill('#password', 'Roller@086411421');
   await page.click('button[type="submit"]');
   await page.waitForURL(/\/admin|\/dashboard/, { timeout: 15000 });
   await page.waitForTimeout(1500);

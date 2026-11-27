@@ -6,7 +6,7 @@ let eleccionId;
 
 test.beforeAll(async ({ request }) => {
   const res = await request.post(`${API_URL}/auth/login`, {
-    data: { username: 'admin', password: 'admin123' },
+    data: { username: 'admin', password: 'Roller@086411421' },
   });
   token = (await res.json()).token;
 });

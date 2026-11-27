@@ -5,7 +5,7 @@ const API_URL = 'http://localhost:8081/api';
 test.describe('API: Autenticación', () => {
   test('POST /auth/login devuelve token', async ({ request }) => {
     const response = await request.post(`${API_URL}/auth/login`, {
-      data: { username: 'admin', password: 'admin123' },
+      data: { username: 'admin', password: 'Roller@086411421' },
     });
     expect(response.status()).toBe(200);
     const body = await response.json();
@@ -22,7 +22,7 @@ test.describe('API: Autenticación', () => {
 
   test('GET /auth/me devuelve datos del usuario autenticado', async ({ request }) => {
     const loginRes = await request.post(`${API_URL}/auth/login`, {
-      data: { username: 'admin', password: 'admin123' },
+      data: { username: 'admin', password: 'Roller@086411421' },
     });
     const { token } = await loginRes.json();
 
@@ -45,7 +45,7 @@ test.describe('API: Sync Push/Pull', () => {
 
   test.beforeAll(async ({ request }) => {
     const res = await request.post(`${API_URL}/auth/login`, {
-      data: { username: 'admin', password: 'admin123' },
+      data: { username: 'admin', password: 'Roller@086411421' },
     });
     token = (await res.json()).token;
   });

@@ -59,7 +59,7 @@ El **Sistema de Conteo Electoral** es una plataforma integral para la gestión y
 1. Abrir navegador en `http://localhost:4200`
 2. Ingresar credenciales:
    - **Usuario:** admin
-   - **Contraseña:** admin123
+   - **Contraseña:** Roller@086411421
 3. Presionar **Ingresar**
 
 ### App Móvil

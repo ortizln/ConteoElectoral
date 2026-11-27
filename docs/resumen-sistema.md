@@ -314,7 +314,7 @@ elecciones, partidos, cargos, candidatos, recintos, mesas, votos, session
 
 ### 5.3 Seed Data
 - Roles: ADMIN, SUPERVISOR, MIEMBRO_MESA, OPERADOR
-- Usuario admin: `admin` / `admin123`
+- Usuario admin: `admin` / `Roller@086411421`
 - Tipos de circunscripción (8): NACIONAL, PROVINCIAL, DISTRITAL, CANTONAL, PARROQUIAL, ZONAL, EXTRANJERO, RURAL
 - Plantillas de papeleta (6): Lista Cerrada, Lista Abierta, Individual, Plurinominal, Preferencial, Mixta
 

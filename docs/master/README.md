@@ -110,7 +110,7 @@ docs/master/
 | Swagger | `http://localhost:8081/swagger-ui.html` |
 | PostgreSQL | `192.168.1.43:5432` |
 | BD name | `conteo_electoral` |
-| Login admin | `admin / admin123` |
+| Login admin | `admin / Roller@086411421` |
 
 ---
 

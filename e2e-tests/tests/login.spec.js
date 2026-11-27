@@ -11,7 +11,7 @@ test.describe('Login y Autenticación', () => {
   });
 
   test('T02: Login con credenciales válidas redirige según rol ADMIN', async ({ page }) => {
-    await login(page, 'admin', 'admin123');
+    await login(page, 'admin', 'Roller@086411421');
     await expect(page).toHaveURL(/\/admin/);
     const token = await page.evaluate(() => localStorage.getItem('electoral_token'));
     expect(token).toBeTruthy();

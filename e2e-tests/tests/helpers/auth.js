@@ -1,5 +1,5 @@
 const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'admin123';
+const ADMIN_PASS = 'Roller@086411421';
 
 async function login(page, username = ADMIN_USER, password = ADMIN_PASS) {
   await page.goto('/login');

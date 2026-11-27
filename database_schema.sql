@@ -251,9 +251,9 @@ INSERT INTO roles (nombre, descripcion) VALUES
 ON CONFLICT (nombre) DO NOTHING;
 
 -- 5.2. Usuario administrador por defecto
--- Password: admin123 (BCrypt hashed)
+-- Password: Roller@086411421 (BCrypt hashed)
 INSERT INTO usuarios (username, password, nombre, apellido, email, activo, rol_id)
-SELECT 'admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+SELECT 'admin', '$2a$10$wNFq/aP98dn8gEx0gv2Wn.k8bxgo5onZW5xayiSgRqveCxv9cOWZe',
        'Administrador', 'Sistema', 'admin@sistema.com', TRUE, id
 FROM roles WHERE nombre = 'ADMIN'
 ON CONFLICT (username) DO NOTHING;

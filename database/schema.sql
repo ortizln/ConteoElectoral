@@ -307,10 +307,10 @@ GROUP BY e.id, e.nombre;
 
 -- =====================================================
 -- USUARIO ADMINISTRADOR POR DEFECTO
--- Password: admin123 (BCrypt hash generado para "admin123")
+-- Password: Roller@086411421 (BCrypt hash generado para "Roller@086411421")
 -- =====================================================
 INSERT INTO usuarios (username, password, nombre, apellido, email, rol_id, activo)
-VALUES ('admin', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 
+VALUES ('admin', '$2a$10$wNFq/aP98dn8gEx0gv2Wn.k8bxgo5onZW5xayiSgRqveCxv9cOWZe', 
         'Administrador', 'Sistema', 'admin@electoral.gob', 1, true);
 
 -- =====================================================

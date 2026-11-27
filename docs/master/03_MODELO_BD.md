@@ -504,7 +504,7 @@ INSERT INTO roles (nombre, descripcion) VALUES
   ('MIEMBRO_MESA', 'Miembro de mesa electoral'),
   ('OPERADOR', 'Operador de registro');
 
--- Admin user (password: admin123 con BCrypt)
+-- Admin user (password: Roller@086411421 con BCrypt)
 INSERT INTO usuarios (rol_id, username, password_hash, nombres, apellidos, activo)
 VALUES (1, 'admin', '$2a$10$..., 'Admin', 'Sistema', true);
 

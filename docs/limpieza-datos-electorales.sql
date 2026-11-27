@@ -16,7 +16,7 @@
 --     tipo_circunscripcion -> catálogo usado por cargos/candidatos
 --
 --   SISTEMA / LOGIN / CONFIGURACIÓN:
---     usuarios, roles, rol_permisos   (login admin/admin123)
+--     usuarios, roles, rol_permisos   (login admin/Roller@086411421)
 --     configuracion_sistema           (logo y APK del sistema)
 --     apk_versions                    (versión APK publicada)
 --     carousel_images                 (imágenes del login)

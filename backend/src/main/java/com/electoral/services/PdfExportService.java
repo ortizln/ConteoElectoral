@@ -29,6 +29,7 @@ import com.itextpdf.kernel.pdf.xobject.PdfFormXObject;
 import com.itextpdf.layout.Canvas;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
+import com.itextpdf.layout.borders.SolidBorder;
 import com.itextpdf.layout.element.AreaBreak;
 import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.Image;
@@ -74,25 +75,28 @@ public class PdfExportService {
     private static final DeviceRgb C_BORDER = new DeviceRgb(226, 232, 240);
     private static final DeviceRgb C_HEADER_BG = new DeviceRgb(30, 41, 59);
     private static final DeviceRgb C_SUBTLE = new DeviceRgb(148, 163, 184);
+    private static final DeviceRgb C_BRAND = new DeviceRgb(72, 86, 60);
+    private static final DeviceRgb C_BRAND_DARK = new DeviceRgb(44, 54, 38);
+    private static final DeviceRgb C_ACCENT = new DeviceRgb(217, 119, 50);
 
     // ── Headers & Footers ──────────────────────────────────────────────
 
     private void configurarDocumento(PdfDocument pdf, Document document, String titulo) {
-        document.setMargins(65, 36, 50, 36);
+        document.setMargins(92, 36, 52, 36);
         pdf.addEventHandler(PdfDocumentEvent.END_PAGE, new PdfFooterEventHandler());
         // El logo se reduce una sola vez para no repetir una imagen pesada en cada página.
         ImageData logoData = prepararLogo(AlantekLogoUtil.logoBytes());
         pdf.addEventHandler(PdfDocumentEvent.START_PAGE, new PdfHeaderEventHandler(titulo, logoData));
     }
 
-    /** Logo reducido a 160x160 px; si no se puede procesar, se omite. */
+    /** Logo reducido a 256x256 px; si no se puede procesar, se omite. */
     private static ImageData prepararLogo(byte[] logoBytes) {
         if (logoBytes == null || logoBytes.length == 0) return null;
         try {
             java.awt.image.BufferedImage src =
                     javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(logoBytes));
             if (src == null) return null;
-            int max = 160;
+            int max = 256;
             double escala = Math.min(max / (double) src.getWidth(), max / (double) src.getHeight());
             int w = Math.max(1, (int) Math.round(src.getWidth() * escala));
             int h = Math.max(1, (int) Math.round(src.getHeight() * escala));
@@ -130,27 +134,38 @@ public class PdfExportService {
 
             float left = ps.getLeft() + 36;
             float right = ps.getRight() - 36;
+            float logoSize = 64f;
             float brandX = left;
+
             if (logoData != null) {
                 try {
-                    Image logo = new Image(logoData);
-                    logo.scaleToFit(38, 38);
-                    try (Canvas lc = new Canvas(canvas, new Rectangle(left, ps.getTop() - 55, 42, 42))) {
-                        lc.add(logo.setFixedPosition(left, ps.getTop() - 49, 38));
-                    }
-                    brandX = left + 44;
+                    // Rectangle fija el tamaño en puntos, sin depender del DPI del PNG.
+                    canvas.addImageFittedIntoRectangle(logoData,
+                            new Rectangle(left, ps.getTop() - 86, logoSize, logoSize), true);
+                    brandX = left + logoSize + 14f;
                 } catch (Exception e) { /* se conserva solo el texto */ }
             }
 
-            try (Canvas hc = new Canvas(canvas, new Rectangle(brandX, ps.getTop() - 55, right - brandX, 45))) {
-                hc.add(new Paragraph("ALANTEK").setFontSize(14).setBold().setFontColor(C_DARK));
+            try (Canvas hc = new Canvas(canvas, new Rectangle(brandX, ps.getTop() - 84, right - brandX, 70))) {
+                hc.add(new Paragraph("ALANTEK")
+                        .setFontSize(21).setBold().setFontColor(C_BRAND_DARK).setMarginBottom(0));
+                hc.add(new Paragraph("SISTEMA DE CONTEO ELECTORAL")
+                        .setFontSize(8).setBold().setFontColor(C_BRAND).setMarginTop(0));
                 if (titulo != null && !titulo.isBlank()) {
-                    hc.add(new Paragraph(titulo).setFontSize(8).setFontColor(C_GRAY));
+                    hc.add(new Paragraph(titulo).setFontSize(9).setFontColor(C_GRAY)
+                            .setTextAlignment(TextAlignment.RIGHT).setMarginTop(4));
                 }
             }
-            canvas.setStrokeColor(ColorConstants.LIGHT_GRAY);
-            canvas.moveTo(left, ps.getTop() - 60);
-            canvas.lineTo(right, ps.getTop() - 60);
+
+            // Doble línea: acento ALANTEK + separator institucional.
+            canvas.setLineWidth(1.4f);
+            canvas.setStrokeColor(C_ACCENT);
+            canvas.moveTo(left, ps.getTop() - 92);
+            canvas.lineTo(left + 150, ps.getTop() - 92);
+            canvas.stroke();
+            canvas.setStrokeColor(C_BRAND);
+            canvas.moveTo(left + 150, ps.getTop() - 92);
+            canvas.lineTo(right, ps.getTop() - 92);
             canvas.stroke();
         }
     }
@@ -164,24 +179,27 @@ public class PdfExportService {
             Rectangle ps = page.getPageSize();
             PdfCanvas canvas = new PdfCanvas(page.newContentStreamBefore(), page.getResources(), pdf);
 
-            canvas.setStrokeColor(ColorConstants.LIGHT_GRAY);
-            canvas.moveTo(ps.getLeft() + 36, ps.getBottom() + 40);
-            canvas.lineTo(ps.getRight() - 36, ps.getBottom() + 40);
+            canvas.setLineWidth(0.8f);
+            canvas.setStrokeColor(C_BRAND);
+            canvas.moveTo(ps.getLeft() + 36, ps.getBottom() + 42);
+            canvas.lineTo(ps.getRight() - 36, ps.getBottom() + 42);
             canvas.stroke();
 
-            try (Canvas fc = new Canvas(canvas, new Rectangle(ps.getLeft() + 36, ps.getBottom() + 10, ps.getWidth() - 72, 25))) {
+            try (Canvas fc = new Canvas(canvas,
+                    new Rectangle(ps.getLeft() + 36, ps.getBottom() + 10, ps.getWidth() - 72, 26))) {
                 float cw = (ps.getWidth() - 72) / 3;
                 String now = LocalDateTime.now().format(DATE_FMT);
-                fc.add(new Paragraph("Impreso: " + now).setFontSize(7).setFontColor(ColorConstants.GRAY)
-                        .setFixedPosition(ps.getLeft() + 36, ps.getBottom() + 12, cw));
+                fc.add(new Paragraph("ALANTEK  ·  Sistema de Conteo Electoral")
+                        .setFontSize(7.5f).setFontColor(C_GRAY)
+                        .setFixedPosition(ps.getLeft() + 36, ps.getBottom() + 14, cw));
                 // En END_PAGE el total aún puede crecer (saltos de página),
                 // por eso se muestra solo el número de la página actual.
-                String pn = "Pag. " + pdf.getPageNumber(page);
-                fc.add(new Paragraph(pn).setFontSize(7).setFontColor(ColorConstants.GRAY).setTextAlignment(TextAlignment.CENTER)
-                        .setFixedPosition(ps.getLeft() + 36 + cw, ps.getBottom() + 12, cw));
-                fc.add(new Paragraph("Sistema de Conteo Electoral").setFontSize(7).setFontColor(ColorConstants.GRAY)
-                        .setTextAlignment(TextAlignment.RIGHT)
-                        .setFixedPosition(ps.getLeft() + 36 + cw * 2, ps.getBottom() + 12, cw));
+                fc.add(new Paragraph("Página " + pdf.getPageNumber(page))
+                        .setFontSize(7.5f).setFontColor(C_GRAY).setTextAlignment(TextAlignment.CENTER)
+                        .setFixedPosition(ps.getLeft() + 36 + cw, ps.getBottom() + 14, cw));
+                fc.add(new Paragraph("Emitido: " + now)
+                        .setFontSize(7.5f).setFontColor(C_GRAY).setTextAlignment(TextAlignment.RIGHT)
+                        .setFixedPosition(ps.getLeft() + 36 + cw * 2, ps.getBottom() + 14, cw));
             }
         }
     }
@@ -242,15 +260,35 @@ public class PdfExportService {
     // ── Title ─────────────────────────────────────────────────────────
 
     private void addTitle(Document doc, DashboardResponse data) {
-        doc.add(new Paragraph("INFORME DE RESULTADOS ELECTORALES")
-                .setFontSize(22).setBold().setTextAlignment(TextAlignment.CENTER)
-                .setFontColor(C_DARK));
+        doc.add(new Paragraph("INFORME EJECUTIVO")
+                .setFontSize(9).setBold().setTextAlignment(TextAlignment.CENTER)
+                .setFontColor(C_BRAND).setMarginBottom(2));
+        doc.add(new Paragraph("RESULTADOS ELECTORALES")
+                .setFontSize(26).setBold().setTextAlignment(TextAlignment.CENTER)
+                .setFontColor(C_BRAND_DARK).setMarginBottom(2));
         doc.add(new Paragraph(data.getEleccionNombre())
-                .setFontSize(15).setTextAlignment(TextAlignment.CENTER)
-                .setFontColor(C_GRAY));
+                .setFontSize(14).setTextAlignment(TextAlignment.CENTER)
+                .setFontColor(C_DARK).setMarginBottom(3));
         doc.add(new Paragraph("Generado: " + LocalDateTime.now().format(DATE_FMT))
                 .setFontSize(8).setTextAlignment(TextAlignment.CENTER)
                 .setFontColor(C_SUBTLE));
+        doc.add(new Paragraph(" ").setFontSize(2));
+    }
+
+    /** Título de sección con barra lateral ALANTEK. */
+    private void addSectionTitle(Document doc, String title, String subtitle) {
+        Table head = new Table(UnitValue.createPercentArray(new float[]{0.35f, 9.65f}));
+        configurarTabla(head);
+        Cell bar = new Cell().setBorder(Border.NO_BORDER).setBackgroundColor(C_ACCENT).setHeight(30);
+        head.addCell(bar);
+        Cell txt = new Cell().setBorder(Border.NO_BORDER).setPaddingLeft(9).setPaddingBottom(4);
+        txt.add(new Paragraph(title).setFontSize(15).setBold().setFontColor(C_BRAND_DARK).setMarginBottom(0));
+        if (subtitle != null && !subtitle.isBlank()) {
+            txt.add(new Paragraph(subtitle).setFontSize(8).setFontColor(C_GRAY).setMarginTop(0));
+        }
+        head.addCell(txt);
+        doc.add(head);
+        doc.add(new Paragraph(" ").setFontSize(4));
     }
 
     // ── Stat Cards ────────────────────────────────────────────────────
@@ -291,14 +329,18 @@ public class PdfExportService {
     private Cell th(String texto) {
         Cell c = new Cell().add(new Paragraph(texto).setBold().setFontSize(10).setFontColor(C_WHITE));
         c.setBackgroundColor(C_HEADER_BG);
-        c.setPadding(4);
+        c.setPadding(6);
+        c.setBorder(Border.NO_BORDER);
+        c.setBorderBottom(new SolidBorder(C_BRAND_DARK, 0.8f));
         c.setTextAlignment(TextAlignment.CENTER);
         return c;
     }
 
     private Cell categoriaCell(String categoria, int columnas) {
         return new Cell(1, columnas).setBorder(Border.NO_BORDER)
-                .add(new Paragraph(categoria).setBold().setFontSize(10).setFontColor(C_PRIMARY));
+                .setBorderBottom(new SolidBorder(C_BORDER, 0.5f))
+                .setPadding(6)
+                .add(new Paragraph(categoria).setBold().setFontSize(10).setFontColor(C_BRAND));
     }
 
     private static String tituloVotos(List<ResultadoCandidato> resultados) {
@@ -313,11 +355,14 @@ public class PdfExportService {
     private Cell statCell(String label, String value, Color accent) {
         Cell c = new Cell();
         c.setBorder(Border.NO_BORDER);
+        c.setBorderTop(new SolidBorder(accent, 3f));
         c.setBackgroundColor(C_LIGHT_BG);
-        c.setPadding(10);
+        c.setPadding(13);
         c.setVerticalAlignment(VerticalAlignment.MIDDLE);
-        c.add(new Paragraph(label).setFontSize(9).setFontColor(C_GRAY).setTextAlignment(TextAlignment.CENTER));
-        c.add(new Paragraph(value).setFontSize(18).setBold().setFontColor(accent).setTextAlignment(TextAlignment.CENTER));
+        c.add(new Paragraph(label).setFontSize(9).setFontColor(C_GRAY)
+                .setTextAlignment(TextAlignment.CENTER).setMarginBottom(2));
+        c.add(new Paragraph(value).setFontSize(20).setBold().setFontColor(accent)
+                .setTextAlignment(TextAlignment.CENTER));
         return c;
     }
 
@@ -325,8 +370,7 @@ public class PdfExportService {
 
     private void addBarChart(Document doc, PdfDocument pdf, List<ResultadoCandidato> resultados) {
         if (resultados == null || resultados.isEmpty()) return;
-        doc.add(new Paragraph(tituloVotos(resultados))
-                .setFontSize(13).setBold().setFontColor(C_DARK));
+        addSectionTitle(doc, tituloVotos(resultados), null);
 
         List<ResultadoCandidato> top = resultados.size() > 10 ? resultados.subList(0, 10) : resultados;
         long maxV = top.stream().mapToLong(ResultadoCandidato::getTotalVotos).max().orElse(1);
@@ -375,15 +419,15 @@ public class PdfExportService {
         }
         ctx.close();
 
-        doc.add(new Image(xo).setWidth(UnitValue.createPercentValue(100)));
+        doc.add(new Image(xo).setWidth(UnitValue.createPercentValue(100))
+                .setBorder(new SolidBorder(C_BORDER, 0.5f)));
     }
 
     // ── Pie Chart ─────────────────────────────────────────────────────
 
     private void addPieChart(Document doc, PdfDocument pdf, List<ResultadoCandidato> resultados) {
         if (resultados == null || resultados.isEmpty()) return;
-        doc.add(new Paragraph(tituloVotos(resultados))
-                .setFontSize(13).setBold().setFontColor(C_DARK));
+        addSectionTitle(doc, tituloVotos(resultados), null);
 
         long total = resultados.stream().mapToLong(ResultadoCandidato::getTotalVotos).sum();
         if (total == 0) return;
@@ -449,14 +493,14 @@ public class PdfExportService {
         }
         ctx.close();
 
-        doc.add(new Image(xo).setWidth(UnitValue.createPercentValue(100)));
+        doc.add(new Image(xo).setWidth(UnitValue.createPercentValue(100))
+                .setBorder(new SolidBorder(C_BORDER, 0.5f)));
     }
 
     // ── Detail Table ──────────────────────────────────────────────────
 
     private void addDetailTable(Document doc, DashboardResponse data) {
-        doc.add(new Paragraph("Detalle de Resultados por Cargo")
-                .setFontSize(14).setBold().setFontColor(C_DARK));
+        addSectionTitle(doc, "Detalle de Resultados por Cargo", null);
 
         String etiqueta = "Postulación";
         if (data.getResultados() != null && !data.getResultados().isEmpty()) {
@@ -492,8 +536,7 @@ public class PdfExportService {
     }
 
     private void addListasTable(Document doc, DashboardResponse data) {
-        doc.add(new Paragraph("Resultados por Cargo")
-                .setFontSize(14).setBold().setFontColor(C_DARK));
+        addSectionTitle(doc, "Resultados por Cargo", null);
 
         Table t = new Table(UnitValue.createPercentArray(new float[]{0.5f, 3f, 1f, 2f, 2f, 1.5f, 1.5f}));
         configurarTabla(t);
@@ -527,7 +570,10 @@ public class PdfExportService {
     private Cell td(String text, boolean odd, TextAlignment align) {
         Cell c = new Cell().add(new Paragraph(text == null ? "" : text)
                 .setFontSize(10).setFontColor(C_DARK));
-        c.setTextAlignment(align); c.setPadding(4);
+        c.setTextAlignment(align);
+        c.setPadding(6);
+        c.setBorder(Border.NO_BORDER);
+        c.setBorderBottom(new SolidBorder(C_BORDER, 0.4f));
         if (odd) c.setBackgroundColor(C_MUTED);
         return c;
     }
@@ -535,7 +581,7 @@ public class PdfExportService {
     // ── Geo Table (Provincia / Parroquia) ────────────────────────────
 
     private void addGeoTable(Document doc, String title, List<ResultadoGeo> items) {
-        doc.add(new Paragraph(title).setFontSize(14).setBold().setFontColor(C_DARK));
+        addSectionTitle(doc, title, null);
 
         Table t = new Table(UnitValue.createPercentArray(new float[]{0.5f, 4f, 1.5f, 1.5f}));
         configurarTabla(t);
@@ -557,8 +603,7 @@ public class PdfExportService {
     // ── Recinto Table ─────────────────────────────────────────────────
 
     private void addRecintoTable(Document doc, DashboardResponse data) {
-        doc.add(new Paragraph("Resultados por Institucion")
-                .setFontSize(14).setBold().setFontColor(C_DARK));
+        addSectionTitle(doc, "Resultados por Recinto", null);
 
         Table t = new Table(UnitValue.createPercentArray(new float[]{0.5f, 4f, 1.5f, 1.5f}));
         configurarTabla(t);
@@ -582,10 +627,8 @@ public class PdfExportService {
     // ── Mesa Table ─────────────────────────────────────────────────────
 
     private void addMesaTable(Document doc, DashboardResponse data) {
-        doc.add(new Paragraph("Resultados por Mesa")
-                .setFontSize(14).setBold().setFontColor(C_DARK));
-        doc.add(new Paragraph("Incluye nulos y blancos registrados en cada mesa.")
-                .setFontSize(8).setFontColor(C_GRAY));
+        addSectionTitle(doc, "Resultados por Mesa",
+                "Incluye nulos y blancos registrados en cada mesa.");
 
         Table t = new Table(UnitValue.createPercentArray(
                 new float[]{0.4f, 0.9f, 3f, 0.7f, 1.2f, 1f, 1f, 1.1f, 0.9f}));
