@@ -39,9 +39,9 @@
   <div class="mesa-selector-card" *ngIf="mesasDisponibles.length > 1">
     <div class="selector-header">
       <div class="selector-label"><i class="bi bi-pin-map"></i> Selecciona una mesa para trabajar:</div>
-      <button aria-label="Mostrar u ocultar" type="button" class="btn selector-toggle btn-xs btn-labeled" (click)="toggleSelector()"
+      <button aria-label="Mostrar u ocultar" type="button" class="btn selector-toggle btn-xs icon-only" (click)="toggleSelector()"
               [attr.aria-expanded]="!selectorColapsado"
-              [title]="selectorColapsado ? 'Mostrar mesas' : 'Minimizar'"><i class="bi bi-chevron-up"></i><span class="btn-label">Mostrar u ocultar</span></button>
+              [title]="selectorColapsado ? 'Mostrar mesas' : 'Minimizar'"><i class="bi bi-chevron-up"></i></button>
     </div>
     <div class="mesa-opciones" *ngIf="!selectorColapsado">
       <button aria-label="Seleccionar mesa" title="Seleccionar mesa" *ngFor="let m of mesasDisponibles"
@@ -108,7 +108,7 @@
             {{ c.nombre }}{{ c.tipoVotacion === 'LISTA' ? ' (por lista)' : '' }}
           </option>
         </select>
-        <button aria-label="Limpiar" title="Limpiar" class="btn btn-clean btn-xs btn-labeled" (click)="limpiarFiltro()"><i class="bi bi-brush"></i><span class="btn-label">Limpiar</span></button>
+        <button aria-label="Limpiar" title="Limpiar" class="btn btn-clean btn-xs icon-only" (click)="limpiarFiltro()"><i class="bi bi-brush"></i></button>
       </div>
 
       <div class="table-wrapper">

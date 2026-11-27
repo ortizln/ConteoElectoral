@@ -16,7 +16,7 @@
       </div>
       <input type="text" class="form-control form-control-sm sm" style="width:220px;"
              placeholder="Buscar mesa, recinto, parroquia..." [(ngModel)]="searchText">
-      <button aria-label="Recargar" class="btn btn-outline-secondary btn-xs btn-labeled" (click)="load()" title="Recargar"><i class="bi bi-arrow-clockwise"></i><span class="btn-label">Recargar</span></button>
+      <button aria-label="Recargar" class="btn btn-outline-secondary btn-xs icon-only" (click)="load()" title="Recargar"><i class="bi bi-arrow-clockwise"></i></button>
     </div>
   </div>
 
@@ -51,8 +51,8 @@
       </select>
     </div>
     <div class="col-12 col-md-1 d-flex align-items-end">
-      <button aria-label="Limpiar" type="button" class="btn btn-outline-secondary w-100 btn-xs btn-labeled" (click)="limpiarFiltros()"
-              title="Limpiar todos los filtros"><i class="bi bi-brush"></i><span class="btn-label">Limpiar</span></button>
+      <button aria-label="Limpiar" type="button" class="btn btn-outline-secondary w-100 btn-xs icon-only" (click)="limpiarFiltros()"
+              title="Limpiar todos los filtros"><i class="bi bi-brush"></i></button>
     </div>
   </div>
 
