@@ -102,7 +102,7 @@
       <h3 id="recovery-title">Recuperar la contraseña</h3>
       <button type="button" class="recovery-close" aria-label="Cerrar" (click)="closeRecoveryModal()">&times;</button>
     </div>
-    <p class="recovery-hint">Ingrese sus datos. Enviaremos una contraseña temporal por WhatsApp al celular registrado.</p>
+    <p class="recovery-hint">Ingrese su usuario y cédula. Enviaremos una contraseña temporal por WhatsApp al celular que indique.</p>
     <div class="form-group">
       <label for="rec-username">Usuario</label>
       <input id="rec-username" type="text" class="form-control" [(ngModel)]="recuperarForm.username" name="recUsername"
@@ -114,7 +114,7 @@
         placeholder="Ingrese su cédula" autocomplete="off" />
     </div>
     <div class="form-group">
-      <label for="rec-celular">Celular de WhatsApp</label>
+      <label for="rec-celular">Celular de WhatsApp (destino del mensaje)</label>
       <input id="rec-celular" type="tel" class="form-control" [(ngModel)]="recuperarForm.celular" name="recCelular"
         placeholder="Ej. 593987269948" autocomplete="off" />
     </div>

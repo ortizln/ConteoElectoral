@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.util.Objects;
 
-/** Recuperación de contraseña validando usuario + cédula + celular y enviando una clave temporal por WhatsApp. */
+/** Recuperación de contraseña validando usuario + cédula y enviando una clave temporal al celular indicado. */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -35,10 +35,11 @@ public class RecuperacionPasswordService {
         String celular = UsuarioService.normalizarCelular(request.getCelular());
 
         Usuario usuario = usuarioRepository.findByUsername(username).orElse(null);
+        // El celular NO se valida contra la BD: muchos usuarios no lo tienen
+        // registrado. Se usa solo como destino del mensaje y se guarda después.
         boolean datosValidos = usuario != null
                 && Boolean.TRUE.equals(usuario.getActivo())
                 && Objects.equals(usuario.getIdentificacion(), identificacion)
-                && Objects.equals(usuario.getCelular(), celular)
                 && celular != null;
 
         if (!datosValidos) {
@@ -48,6 +49,7 @@ public class RecuperacionPasswordService {
 
         String passwordTemporal = generarPasswordTemporal();
         usuario.setPassword(passwordEncoder.encode(passwordTemporal));
+        usuario.setCelular(celular);
         usuarioRepository.save(usuario);
 
         String mensaje = "ALANTEK - Sistema de Conteo Electoral\n"
