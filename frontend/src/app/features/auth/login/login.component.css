@@ -289,6 +289,21 @@
 .dot.active { background: var(--alantek-accent); border-color: var(--alantek-accent); box-shadow: 0 0 8px rgba(217, 119, 50, 0.5); }
 .dot:hover { border-color: #f6f0e5; }
 
+.public-results-link {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; margin-top: 20px; padding: 12px 18px;
+  border: 1px solid rgba(246, 240, 229, 0.28); border-radius: 10px;
+  background: rgba(246, 240, 229, 0.08); color: #f6f0e5;
+  font-size: 14px; font-weight: 600; text-decoration: none;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+}
+.public-results-link:hover {
+  background: rgba(217, 119, 50, 0.18); border-color: var(--alantek-accent);
+  color: #fff; transform: translateY(-2px); text-decoration: none;
+}
+.public-results-link i:first-child { color: var(--alantek-accent); font-size: 18px; }
+.public-results-link i:last-child { font-size: 14px; opacity: 0.8; }
+
 /* Accesibilidad: movimiento reducido */
 @media (prefers-reduced-motion: reduce) {
   .stars-small, .stars-medium, .stars-large, .shooting-star { animation: none !important; }

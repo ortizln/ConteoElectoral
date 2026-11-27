@@ -86,6 +86,12 @@
         <button aria-label="Ir a la imagen" title="Ir a la imagen" *ngFor="let img of images; let i = index" class="dot btn-xs"
           [class.active]="i === currentIndex" (click)="goToSlide(i)"></button>
       </div>
+
+      <a routerLink="/resultados" class="public-results-link" title="Ver dashboard de resultados públicos">
+        <i class="bi bi-bar-chart-line"></i>
+        <span>Ver dashboard de resultados</span>
+        <i class="bi bi-arrow-right"></i>
+      </a>
     </div>
   </div>
 </div>
