@@ -10,10 +10,10 @@
           <span class="sidebar-subtitle">Sistema de Votación</span>
         </div>
       </div>
-      <button aria-label="Página anterior" type="button" class="sidebar-collapse-btn btn-xs icon-only" (click)="toggleCollapse()"
+      <button aria-label="Página anterior" type="button" class="btn sidebar-collapse-btn btn-xs btn-labeled" (click)="toggleCollapse()"
         [title]="sidebarCollapsed ? 'Expandir menú' : 'Contraer menú'"
         [attr.aria-label]="sidebarCollapsed ? 'Expandir menú' : 'Contraer menú'"
-        [attr.aria-expanded]="!sidebarCollapsed"><i class="bi bi-chevron-left"></i></button>
+        [attr.aria-expanded]="!sidebarCollapsed"><i class="bi bi-chevron-left"></i><span class="btn-label">Página anterior</span></button>
     </div>
 
     <nav class="sidebar-nav">
@@ -39,7 +39,7 @@
   <div class="content-wrapper">
     <header class="top-header">
       <div class="header-left">
-        <button title="Opciones" (click)="toggleSidebar()" class="sidebar-toggle btn-xs icon-only" aria-label="Mostrar u ocultar menú"><i class="bi bi-list"></i></button>
+        <button title="Opciones" (click)="toggleSidebar()" class="btn sidebar-toggle btn-xs btn-labeled" aria-label="Mostrar u ocultar menú"><i class="bi bi-list"></i><span class="btn-label">Opciones</span></button>
         <span class="header-brand">Conteo Electoral</span>
       </div>
       <div class="header-right">
@@ -50,9 +50,9 @@
             {{ userRole === 'ADMIN' ? 'Administrador' : 'Supervisor' }}
           </span>
         </div>
-        <button (click)="toggleTheme()" class="theme-toggle btn-xs icon-only" [title]="isDark ? 'Modo claro' : 'Modo oscuro'"
-          [attr.aria-label]="isDark ? 'Activar modo claro' : 'Activar modo oscuro'"><i class="bi bi-sun"></i></button>
-        <button aria-label="Salir" title="Salir" (click)="logout()" class="btn btn-outline-light header-logout btn-xs icon-only"><i class="bi bi-box-arrow-right"></i></button>
+        <button (click)="toggleTheme()" class="btn theme-toggle btn-xs btn-labeled" [title]="isDark ? 'Modo claro' : 'Modo oscuro'"
+          [attr.aria-label]="isDark ? 'Activar modo claro' : 'Activar modo oscuro'"><i class="bi bi-sun"></i><span class="btn-label">Modo claro</span></button>
+        <button aria-label="Salir" title="Salir" (click)="logout()" class="btn btn-outline-light header-logout btn-xs btn-labeled"><i class="bi bi-box-arrow-right"></i><span class="btn-label">Salir</span></button>
       </div>
     </header>
 

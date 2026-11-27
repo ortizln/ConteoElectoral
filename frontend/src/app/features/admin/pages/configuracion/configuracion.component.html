@@ -14,22 +14,22 @@
 
   <!-- Tabs -->
   <div class="tabs" *ngIf="!loading">
-    <button aria-label="Configuración" title="Configuración" class="tab btn-xs" [class.active]="activeTab === 'config'" (click)="activeTab = 'config'">
+    <button aria-label="Configuración" title="Configuración" class="btn tab btn-xs btn-labeled" [class.active]="activeTab === 'config'" (click)="activeTab = 'config'">
       <span><i class="bi bi-gear"></i></span> Configuración
     </button>
-    <button aria-label="Carrusel" title="Carrusel" class="tab btn-xs" [class.active]="activeTab === 'carousel'" (click)="activeTab = 'carousel'">
+    <button aria-label="Carrusel" title="Carrusel" class="btn tab btn-xs btn-labeled" [class.active]="activeTab === 'carousel'" (click)="activeTab = 'carousel'">
       <span><i class="bi bi-camera"></i></span> Carrusel
     </button>
-    <button aria-label="Versiones APK" title="Versiones APK" class="tab btn-xs" [class.active]="activeTab === 'apk'" (click)="loadApkVersions(); activeTab = 'apk'">
+    <button aria-label="Versiones APK" title="Versiones APK" class="btn tab btn-xs btn-labeled" [class.active]="activeTab === 'apk'" (click)="loadApkVersions(); activeTab = 'apk'">
       <span><i class="bi bi-phone"></i></span> Versiones APK
     </button>
-    <button aria-label="Usuarios" title="Usuarios" class="tab btn-xs" [class.active]="activeTab === 'usuarios'" (click)="activeTab = 'usuarios'">
+    <button aria-label="Usuarios" title="Usuarios" class="btn tab btn-xs btn-labeled" [class.active]="activeTab === 'usuarios'" (click)="activeTab = 'usuarios'">
       <span><i class="bi bi-people"></i></span> Usuarios
     </button>
-    <button aria-label="Importar Datos" title="Importar Datos" class="tab btn-xs" [class.active]="activeTab === 'importar'" (click)="activeTab = 'importar'">
+    <button aria-label="Importar Datos" title="Importar Datos" class="btn tab btn-xs btn-labeled" [class.active]="activeTab === 'importar'" (click)="activeTab = 'importar'">
       <span><i class="bi bi-box-arrow-in-down"></i></span> Importar Datos
     </button>
-    <button aria-label="Permisos" title="Permisos" class="tab btn-xs" [class.active]="activeTab === 'permisos'" (click)="activeTab = 'permisos'">
+    <button aria-label="Permisos" title="Permisos" class="btn tab btn-xs btn-labeled" [class.active]="activeTab === 'permisos'" (click)="activeTab = 'permisos'">
       <span><i class="bi bi-shield-lock"></i></span> Permisos
     </button>
   </div>
@@ -48,21 +48,21 @@
         <textarea id="descripcion" class="form-control sm form-control-sm" autocomplete="off" rows="3" [(ngModel)]="config.descripcion"
           placeholder="Descripción breve del partido"></textarea>
       </div>
-      <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="saveConfig()" [disabled]="saving"><span *ngIf="saving" class="spinner-border spinner-border-sm"></span><i *ngIf="!saving" class="bi bi-save"></i></button>
+      <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="saveConfig()" [disabled]="saving"><span *ngIf="saving" class="spinner-border spinner-border-sm"></span><i *ngIf="!saving" class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
     </div>
     <div class="card">
       <h5><span><i class="bi bi-image"></i></span> Logo del Partido</h5>
       <div class="logo-preview">
         <div *ngIf="logoUrl" class="logo-display">
           <img [src]="logoUrl" class="logo-img" alt="Logo del partido" />
-          <button aria-label="Eliminar" title="Eliminar" class="btn btn-outline-danger btn-sm btn-xs icon-only" (click)="deleteLogo()" [disabled]="uploading"><i class="bi bi-trash"></i></button>
+          <button aria-label="Eliminar" title="Eliminar" class="btn btn-outline-danger btn-sm btn-xs btn-labeled" (click)="deleteLogo()" [disabled]="uploading"><i class="bi bi-trash"></i><span class="btn-label">Eliminar</span></button>
         </div>
         <div *ngIf="!logoUrl" class="logo-placeholder"><span>Sin logo</span></div>
       </div>
       <div class="upload-section">
         <input class="sm" type="file" autocomplete="off" (change)="onLogoSelected($event)" accept="image/png,image/jpeg,image/webp" id="logoInput" />
         <label for="logoInput" class="file-label sm">{{ selectedLogo ? selectedLogo.name : 'Seleccionar imagen...' }}</label>
-        <button aria-label="Subir" title="Subir" class="btn btn-primary btn-xs icon-only" (click)="uploadLogo()" [disabled]="!selectedLogo || uploading"><span *ngIf="uploading" class="spinner-border spinner-border-sm"></span><i *ngIf="!uploading" class="bi bi-cloud-upload"></i></button>
+        <button aria-label="Subir" title="Subir" class="btn btn-primary btn-xs btn-labeled" (click)="uploadLogo()" [disabled]="!selectedLogo || uploading"><span *ngIf="uploading" class="spinner-border spinner-border-sm"></span><i *ngIf="!uploading" class="bi bi-cloud-upload"></i><span class="btn-label">Subir</span></button>
       </div>
     </div>
     <div class="card">
@@ -98,14 +98,14 @@
             <span class="drop-preview-name">{{ carouselFile.name }}</span>
             <span class="drop-preview-size">{{ (carouselFile.size / 1024 / 1024).toFixed(1) }} MB</span>
           </div>
-          <button aria-label="Quitar archivo" title="Quitar archivo" class="btn-clear-file btn-xs icon-only" (click)="clearCarouselFile(); $event.preventDefault()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Quitar archivo" title="Quitar archivo" class="btn btn-clear-file btn-xs btn-labeled" (click)="clearCarouselFile(); $event.preventDefault()"><i class="bi bi-x-lg"></i><span class="btn-label">Quitar archivo</span></button>
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <input type="text" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="carouselCaption" placeholder="Descripción de la imagen" />
         </div>
-        <button aria-label="Subir" title="Subir" class="btn btn-primary btn-xs icon-only" (click)="uploadCarouselImage()" [disabled]="!carouselFile || !carouselCaption.trim() || uploading"><span *ngIf="uploading" class="spinner-border spinner-border-sm"></span><i *ngIf="!uploading" class="bi bi-cloud-upload"></i></button>
+        <button aria-label="Subir" title="Subir" class="btn btn-primary btn-xs btn-labeled" (click)="uploadCarouselImage()" [disabled]="!carouselFile || !carouselCaption.trim() || uploading"><span *ngIf="uploading" class="spinner-border spinner-border-sm"></span><i *ngIf="!uploading" class="bi bi-cloud-upload"></i><span class="btn-label">Subir</span></button>
       </div>
     </div>
 
@@ -131,12 +131,12 @@
           </div>
           <div class="carousel-img-actions">
             <div *ngIf="editingCarouselId !== img.id" class="btn-group">
-              <button aria-label="Editar" title="Editar" class="btn btn-outline-primary btn-xs icon-only" (click)="startEditCarousel(img)"><i class="bi bi-pencil-square"></i></button>
-              <button aria-label="Eliminar" title="Eliminar" class="btn btn-outline-danger btn-xs icon-only" (click)="deleteCarouselImage(img.id)"><i class="bi bi-trash"></i></button>
+              <button aria-label="Editar" title="Editar" class="btn btn-outline-primary btn-xs btn-labeled" (click)="startEditCarousel(img)"><i class="bi bi-pencil-square"></i><span class="btn-label">Editar</span></button>
+              <button aria-label="Eliminar" title="Eliminar" class="btn btn-outline-danger btn-xs btn-labeled" (click)="deleteCarouselImage(img.id)"><i class="bi bi-trash"></i><span class="btn-label">Eliminar</span></button>
             </div>
             <div *ngIf="editingCarouselId === img.id" class="btn-group">
-              <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="saveCarouselEdit(img.id)"><i class="bi bi-save"></i></button>
-              <button aria-label="Cerrar" title="Cerrar" class="btn btn-outline-secondary btn-xs icon-only" (click)="cancelEditCarousel()"><i class="bi bi-x-lg"></i></button>
+              <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="saveCarouselEdit(img.id)"><i class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
+              <button aria-label="Cerrar" title="Cerrar" class="btn btn-outline-secondary btn-xs btn-labeled" (click)="cancelEditCarousel()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
             </div>
           </div>
         </div>
@@ -162,7 +162,7 @@
             </div>
           </div>
           <div class="col-md-4">
-            <button aria-label="Subir" title="Subir" class="btn btn-primary w-100 btn-xs icon-only" (click)="uploadNewApkVersion()" [disabled]="!apkVersionFile || !apkVersionUploadVersion.trim() || apkVersionUploading"><span *ngIf="apkVersionUploading" class="spinner-border spinner-border-sm"></span><i *ngIf="!apkVersionUploading" class="bi bi-cloud-upload"></i></button>
+            <button aria-label="Subir" title="Subir" class="btn btn-primary w-100 btn-xs btn-labeled" (click)="uploadNewApkVersion()" [disabled]="!apkVersionFile || !apkVersionUploadVersion.trim() || apkVersionUploading"><span *ngIf="apkVersionUploading" class="spinner-border spinner-border-sm"></span><i *ngIf="!apkVersionUploading" class="bi bi-cloud-upload"></i><span class="btn-label">Subir</span></button>
           </div>
         </div>
       </div>
@@ -185,7 +185,7 @@
             <p class="card-text small text-muted mb-3 flex-grow-1">{{ v.nombreArchivo }}</p>
             <div class="d-flex gap-2">
               <a [href]="getApkVersionDownloadUrl(v.id)" class="btn btn-sm btn-success" download>Descargar</a>
-              <button aria-label="Eliminar" title="Eliminar" class="btn btn-outline-danger btn-xs icon-only" (click)="deleteApkVersionItem(v.id)"><i class="bi bi-trash"></i></button>
+              <button aria-label="Eliminar" title="Eliminar" class="btn btn-outline-danger btn-xs btn-labeled" (click)="deleteApkVersionItem(v.id)"><i class="bi bi-trash"></i><span class="btn-label">Eliminar</span></button>
             </div>
           </div>
         </div>
@@ -247,7 +247,7 @@
         </table>
       </div>
       <div class="permisos-actions">
-        <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="savePermisos()" [disabled]="permisosSaving"><span *ngIf="permisosSaving" class="spinner-border spinner-border-sm"></span><i *ngIf="!permisosSaving" class="bi bi-save"></i></button>
+        <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="savePermisos()" [disabled]="permisosSaving"><span *ngIf="permisosSaving" class="spinner-border spinner-border-sm"></span><i *ngIf="!permisosSaving" class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
       </div>
     </div>
   </div>

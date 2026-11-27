@@ -857,8 +857,9 @@ export class ApiService {
   }
 
   // Dashboard
-  getDashboard(eleccionId: number): Observable<any> {
-    return this.http.get<any>(`${this.API_URL}/dashboard/eleccion/${eleccionId}`);
+  getDashboard(eleccionId: number, publico = false): Observable<any> {
+    const qs = publico ? '?publico=true' : '';
+    return this.http.get<any>(`${this.API_URL}/dashboard/eleccion/${eleccionId}${qs}`);
   }
 
   // Dashboard Geográfico
@@ -906,10 +907,12 @@ export class ApiService {
     cantonId?: number,
     parroquiaId?: number,
     institucionId?: number,
-    mesaId?: number
+    mesaId?: number,
+    publico = false
   ): Observable<any> {
     let url = `${this.API_URL}/dashboard/eleccion/${eleccionId}/filtrar`;
     const params = new URLSearchParams();
+    if (publico) params.set('publico', 'true');
     if (cargoId !== undefined) params.set('cargoId', cargoId.toString());
     if (partidoId !== undefined) params.set('partidoId', partidoId.toString());
     if (zonaId !== undefined) params.set('zonaId', zonaId.toString());

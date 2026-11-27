@@ -21,7 +21,7 @@
           <input id="newCaption" type="text" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="newCaption" placeholder="Texto que se muestra en el carrusel" />
         </div>
       </div>
-      <button aria-label="Subir" title="Subir" class="btn btn-primary btn-xs icon-only" (click)="uploadImage()" [disabled]="!selectedFile || uploading"><span *ngIf="uploading" class="spinner-border spinner-border-sm"></span><i *ngIf="!uploading" class="bi bi-cloud-upload"></i></button>
+      <button aria-label="Subir" title="Subir" class="btn btn-primary btn-xs btn-labeled" (click)="uploadImage()" [disabled]="!selectedFile || uploading"><span *ngIf="uploading" class="spinner-border spinner-border-sm"></span><i *ngIf="!uploading" class="bi bi-cloud-upload"></i><span class="btn-label">Subir</span></button>
     </div>
   </div>
 
@@ -47,12 +47,12 @@
         </div>
         <div class="img-actions">
           <div *ngIf="editingId !== img.id" class="btn-group">
-            <button aria-label="Editar" title="Editar" class="btn btn-outline-primary btn-xs icon-only" (click)="startEdit(img)"><i class="bi bi-pencil-square"></i></button>
-            <button aria-label="Eliminar" title="Eliminar" class="btn btn-outline-danger btn-xs icon-only" (click)="deleteImage(img.id)"><i class="bi bi-trash"></i></button>
+            <button aria-label="Editar" title="Editar" class="btn btn-outline-primary btn-xs btn-labeled" (click)="startEdit(img)"><i class="bi bi-pencil-square"></i><span class="btn-label">Editar</span></button>
+            <button aria-label="Eliminar" title="Eliminar" class="btn btn-outline-danger btn-xs btn-labeled" (click)="deleteImage(img.id)"><i class="bi bi-trash"></i><span class="btn-label">Eliminar</span></button>
           </div>
           <div *ngIf="editingId === img.id" class="btn-group">
-            <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="saveEdit(img.id)"><i class="bi bi-save"></i></button>
-            <button aria-label="Cerrar" title="Cerrar" class="btn btn-outline-secondary btn-xs icon-only" (click)="cancelEdit()"><i class="bi bi-x-lg"></i></button>
+            <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="saveEdit(img.id)"><i class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
+            <button aria-label="Cerrar" title="Cerrar" class="btn btn-outline-secondary btn-xs btn-labeled" (click)="cancelEdit()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
           </div>
         </div>
       </div>

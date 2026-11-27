@@ -2,15 +2,15 @@
   <div class="page-header">
     <h2>Gestión de Instituciones Educativas</h2>
     <div class="dropdown">
-      <button aria-label="Opciones" title="Opciones" class="btn btn-primary dropdown-toggle btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
+      <button aria-label="Opciones" title="Opciones" class="btn btn-primary dropdown-toggle btn-xs btn-labeled" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i><span class="btn-label">Opciones</span></button>
       <ul class="dropdown-menu dropdown-menu-end">
-        <li *ngIf="isAdmin"><button aria-label="Nuevo" title="Nuevo" class="dropdown-item fw-bold btn-xs icon-only" (click)="openModal()"><i class="bi bi-plus-lg"></i></button></li>
+        <li *ngIf="isAdmin"><button aria-label="Nuevo" title="Nuevo" class="btn dropdown-item fw-bold btn-xs btn-labeled" (click)="openModal()"><i class="bi bi-plus-lg"></i><span class="btn-label">Nuevo</span></button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><button aria-label="Descargar plantilla" title="Descargar plantilla" class="dropdown-item btn-xs icon-only" (click)="descargarTemplate()"><i class="bi bi-file-earmark-arrow-down"></i></button></li>
-        <li><button aria-label="Importar" title="Importar" class="dropdown-item btn-xs icon-only" (click)="openImportModal()"><i class="bi bi-box-arrow-in-down"></i></button></li>
+        <li><button aria-label="Descargar plantilla" title="Descargar plantilla" class="btn dropdown-item btn-xs btn-labeled" (click)="descargarTemplate()"><i class="bi bi-file-earmark-arrow-down"></i><span class="btn-label">Descargar plantilla</span></button></li>
+        <li><button aria-label="Importar" title="Importar" class="btn dropdown-item btn-xs btn-labeled" (click)="openImportModal()"><i class="bi bi-box-arrow-in-down"></i><span class="btn-label">Importar</span></button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportInstitucionesPdf()"><i class="bi bi-download"></i></button></li>
-        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportInstitucionesExcel()"><i class="bi bi-download"></i></button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="btn dropdown-item btn-xs btn-labeled" (click)="api.exportInstitucionesPdf()"><i class="bi bi-download"></i><span class="btn-label">Descargar</span></button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="btn dropdown-item btn-xs btn-labeled" (click)="api.exportInstitucionesExcel()"><i class="bi bi-download"></i><span class="btn-label">Descargar</span></button></li>
       </ul>
     </div>
   </div>
@@ -42,7 +42,7 @@
       <input type="text" class="form-control sm form-control-sm" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
     </div>
     <div class="filter-item d-flex align-items-end">
-      <button aria-label="Limpiar" title="Limpiar" type="button" class="btn btn-outline-secondary btn-xs icon-only" (click)="limpiarFiltros()"><i class="bi bi-brush"></i></button>
+      <button aria-label="Limpiar" title="Limpiar" type="button" class="btn btn-outline-secondary btn-xs btn-labeled" (click)="limpiarFiltros()"><i class="bi bi-brush"></i><span class="btn-label">Limpiar</span></button>
     </div>
   </app-filtros-panel>
 
@@ -81,11 +81,11 @@
         </td>
         <td>
           <div class="dropdown">
-            <button aria-label="Opciones" title="Opciones" class="btn btn-outline-secondary border-0 btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
+            <button aria-label="Opciones" title="Opciones" class="btn btn-outline-secondary border-0 btn-xs btn-labeled" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i><span class="btn-label">Opciones</span></button>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li *ngIf="isAdmin"><button aria-label="Editar" title="Editar" class="dropdown-item btn-xs icon-only" (click)="edit(i)"><i class="bi bi-pencil-square"></i></button></li>
+              <li *ngIf="isAdmin"><button aria-label="Editar" title="Editar" class="btn dropdown-item btn-xs btn-labeled" (click)="edit(i)"><i class="bi bi-pencil-square"></i><span class="btn-label">Editar</span></button></li>
               <li><hr class="dropdown-divider" *ngIf="isAdmin"></li>
-              <li *ngIf="isAdmin"><button aria-label="Eliminar" title="Eliminar" class="dropdown-item text-danger btn-xs icon-only" (click)="delete(i.id)"><i class="bi bi-trash"></i></button></li>
+              <li *ngIf="isAdmin"><button aria-label="Eliminar" title="Eliminar" class="btn dropdown-item text-danger btn-xs btn-labeled" (click)="delete(i.id)"><i class="bi bi-trash"></i><span class="btn-label">Eliminar</span></button></li>
             </ul>
           </div>
         </td>
@@ -101,13 +101,13 @@
       Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, institucionesFiltradas.length) }} de {{ institucionesFiltradas.length }} registros
     </div>
     <div class="pagination-controls">
-      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="goToPage(1)" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
-      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="prevPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs btn-labeled" (click)="goToPage(1)" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i><span class="btn-label">Primera página</span></button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs btn-labeled" (click)="prevPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i><span class="btn-label">Primera página</span></button>
       <span *ngFor="let p of pages">
-        <button class="btn btn-xs" aria-label="Acción" title="Acción" (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
+        <button class="btn btn-xs btn-labeled" aria-label="Acción" title="Acción" (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
       </span>
-      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
-      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs btn-labeled" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i><span class="btn-label">Última página</span></button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs btn-labeled" (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i><span class="btn-label">Última página</span></button>
     </div>
     <div class="pagination-size">
       <label class="sm">Filas:</label>
@@ -123,7 +123,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5><i class="bi bi-box-arrow-in-down"></i> Importar Instituciones desde Excel</h5>
-          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="closeImportModal()">×</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs btn-labeled" (click)="closeImportModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
         <div class="modal-body">
           <p class="text-muted mb-3">Selecciona un archivo Excel (.xlsx) con las columnas: <strong>nombre</strong>, <strong>parroquia</strong> y (opcional) las de juntas: <strong>junfem</strong>, <strong>junmas</strong>, <strong>juninif</strong>, <strong>junfinf</strong>, <strong>juninim</strong>, <strong>junfinm</strong>.</p>
@@ -160,8 +160,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeImportModal()"><i class="bi bi-x-lg"></i></button>
-          <button aria-label="Importar" title="Importar" class="btn btn-primary btn-xs icon-only" (click)="importar()" [disabled]="!importPreview || importPreview.length === 0 || importing" *ngIf="isAdmin"><span *ngIf="importing" class="spinner-border spinner-border-sm"></span><i *ngIf="!importing" class="bi bi-box-arrow-in-down"></i></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="closeImportModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Importar" title="Importar" class="btn btn-primary btn-xs btn-labeled" (click)="importar()" [disabled]="!importPreview || importPreview.length === 0 || importing" *ngIf="isAdmin"><span *ngIf="importing" class="spinner-border spinner-border-sm"></span><i *ngIf="!importing" class="bi bi-box-arrow-in-down"></i><span class="btn-label">Importar</span></button>
         </div>
       </div>
     </div>
@@ -172,7 +172,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5>{{ editMode ? 'Editar' : 'Nueva' }} Institución</h5>
-          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="closeModal()">×</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs btn-labeled" (click)="closeModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
         <div class="modal-body">
           <div class="mb-3" *ngIf="errorMessage">
@@ -290,8 +290,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
-          <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="save()"><i class="bi bi-save"></i></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="closeModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="save()"><i class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
         </div>
       </div>
     </div>

@@ -22,8 +22,8 @@
         </div>
       </div>
       <div class="mesa-actual-actions">
-        <button aria-label="Imprimir" title="Imprimir" *ngIf="mesaActual?.cerrada" class="btn btn-acta btn-xs icon-only" (click)="imprimirActa()"><i class="bi bi-printer"></i></button>
-        <button aria-label="Cerrar acta" title="Cerrar acta" *ngIf="!mesaActual?.cerrada" class="btn btn-cerrar btn-xs icon-only" (click)="cerrarMesa()"><i class="bi bi-lock-fill"></i></button>
+        <button aria-label="Imprimir" title="Imprimir" *ngIf="mesaActual?.cerrada" class="btn btn-acta btn-xs btn-labeled" (click)="imprimirActa()"><i class="bi bi-printer"></i><span class="btn-label">Imprimir</span></button>
+        <button aria-label="Cerrar acta" title="Cerrar acta" *ngIf="!mesaActual?.cerrada" class="btn btn-cerrar btn-xs btn-labeled" (click)="cerrarMesa()"><i class="bi bi-lock-fill"></i><span class="btn-label">Cerrar acta</span></button>
       </div>
     </div>
   </div>
@@ -39,13 +39,13 @@
   <div class="mesa-selector-card" *ngIf="mesasDisponibles.length > 1">
     <div class="selector-header">
       <div class="selector-label"><i class="bi bi-pin-map"></i> Selecciona una mesa para trabajar:</div>
-      <button aria-label="Mostrar u ocultar" type="button" class="selector-toggle btn-xs icon-only" (click)="toggleSelector()"
+      <button aria-label="Mostrar u ocultar" type="button" class="btn selector-toggle btn-xs btn-labeled" (click)="toggleSelector()"
               [attr.aria-expanded]="!selectorColapsado"
-              [title]="selectorColapsado ? 'Mostrar mesas' : 'Minimizar'"><i class="bi bi-chevron-up"></i></button>
+              [title]="selectorColapsado ? 'Mostrar mesas' : 'Minimizar'"><i class="bi bi-chevron-up"></i><span class="btn-label">Mostrar u ocultar</span></button>
     </div>
     <div class="mesa-opciones" *ngIf="!selectorColapsado">
       <button aria-label="Seleccionar mesa" title="Seleccionar mesa" *ngFor="let m of mesasDisponibles"
-              class="mesa-opcion btn-xs"
+              class="btn mesa-opcion btn-xs btn-labeled"
               [class.active]="m.id === mesaActual?.id"
               [class.cerrada]="m.cerrada"
               (click)="seleccionarMesa(m)">
@@ -88,7 +88,7 @@
       <!-- Pestañas de los cargos que tiene esta mesa. Al elegir uno se fija
            también el cargo de nulos/blanco más abajo. -->
       <div class="modo-votacion" *ngIf="categoriasMesa.length > 0">
-        <button aria-label="Acción" title="Acción" *ngFor="let cat of categoriasMesa" type="button" class="modo-btn btn-xs"
+        <button aria-label="Acción" title="Acción" *ngFor="let cat of categoriasMesa" type="button" class="btn modo-btn btn-xs btn-labeled"
                 [class.active]="categoriaSel === cat.etiqueta"
                 (click)="seleccionarCategoria(cat)">
           <i class="bi" [ngClass]="cat.esLista ? 'bi-list-ul' : 'bi-person'"></i>
@@ -108,7 +108,7 @@
             {{ c.nombre }}{{ c.tipoVotacion === 'LISTA' ? ' (por lista)' : '' }}
           </option>
         </select>
-        <button aria-label="Limpiar" title="Limpiar" class="btn btn-clean btn-xs icon-only" (click)="limpiarFiltro()"><i class="bi bi-brush"></i></button>
+        <button aria-label="Limpiar" title="Limpiar" class="btn btn-clean btn-xs btn-labeled" (click)="limpiarFiltro()"><i class="bi bi-brush"></i><span class="btn-label">Limpiar</span></button>
       </div>
 
       <div class="table-wrapper">
@@ -155,13 +155,13 @@
                       <input type="number" class="voto-input sm" #cantidadListaInput
                              [(ngModel)]="cantidadLista" min="1"
                              (keyup.enter)="registrarVotoLista()">
-                      <button aria-label="Registrar" title="Registrar" class="btn btn-registrar btn-xs icon-only" (click)="registrarVotoLista()"><i class="bi bi-check-circle"></i></button>
-                      <button aria-label="Cancelar" title="Cancelar" class="btn btn-cancelar btn-xs icon-only" (click)="cancelarSeleccionLista()"><i class="bi bi-x-lg"></i></button>
+                      <button aria-label="Registrar" title="Registrar" class="btn btn-registrar btn-xs btn-labeled" (click)="registrarVotoLista()"><i class="bi bi-check-circle"></i><span class="btn-label">Registrar</span></button>
+                      <button aria-label="Cancelar" title="Cancelar" class="btn btn-cancelar btn-xs btn-labeled" (click)="cancelarSeleccionLista()"><i class="bi bi-x-lg"></i><span class="btn-label">Cancelar</span></button>
                     </div>
                     <ng-template #accionesLista>
                       <div class="acciones-lista">
-                        <button aria-label="Registrar" title="Registrar" class="btn btn-seleccionar btn-xs icon-only" (click)="seleccionarLista(l)"><i class="bi bi-check-circle"></i></button>
-                        <button aria-label="Ver" title="Ver" class="btn btn-ver btn-xs icon-only" (click)="abrirListaModal(l)"><i class="bi bi-eye"></i></button>
+                        <button aria-label="Registrar" title="Registrar" class="btn btn-seleccionar btn-xs btn-labeled" (click)="seleccionarLista(l)"><i class="bi bi-check-circle"></i><span class="btn-label">Registrar</span></button>
+                        <button aria-label="Ver" title="Ver" class="btn btn-ver btn-xs btn-labeled" (click)="abrirListaModal(l)"><i class="bi bi-eye"></i><span class="btn-label">Ver</span></button>
                       </div>
                     </ng-template>
                   </ng-container>
@@ -197,11 +197,11 @@
                     <input type="number" class="voto-input sm" #cantidadInput
                            [(ngModel)]="cantidadVotos" min="1"
                            (keyup.enter)="registrarVoto()">
-                    <button aria-label="Registrar" title="Registrar" class="btn btn-registrar btn-xs icon-only" (click)="registrarVoto()" [disabled]="animando"><span *ngIf="animando" class="spinner-border spinner-border-sm"></span><i *ngIf="!animando" class="bi bi-check-circle"></i></button>
-                    <button aria-label="Cancelar" title="Cancelar" class="btn btn-cancelar btn-xs icon-only" (click)="cancelarSeleccion()"><i class="bi bi-x-lg"></i></button>
+                    <button aria-label="Registrar" title="Registrar" class="btn btn-registrar btn-xs btn-labeled" (click)="registrarVoto()" [disabled]="animando"><span *ngIf="animando" class="spinner-border spinner-border-sm"></span><i *ngIf="!animando" class="bi bi-check-circle"></i><span class="btn-label">Registrar</span></button>
+                    <button aria-label="Cancelar" title="Cancelar" class="btn btn-cancelar btn-xs btn-labeled" (click)="cancelarSeleccion()"><i class="bi bi-x-lg"></i><span class="btn-label">Cancelar</span></button>
                   </div>
                   <button aria-label="Registrar" title="Registrar" *ngIf="candidatoSeleccionado?.id !== c.id && !mesaActual?.cerrada"
-                          class="btn btn-seleccionar btn-xs icon-only" (click)="seleccionarCandidato(c)"><i class="bi bi-check-circle"></i></button>
+                          class="btn btn-seleccionar btn-xs btn-labeled" (click)="seleccionarCandidato(c)"><i class="bi bi-check-circle"></i><span class="btn-label">Registrar</span></button>
                 </td>
               </tr>
               <tr *ngIf="candidatosFiltrados.length === 0">
@@ -238,7 +238,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5><i class="bi bi-clipboard-data"></i> {{ listaLlamada?.nombre || 'Lista' }}</h5>
-          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn-close btn-xs" (click)="cerrarListaModal()"></button>
+          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="cerrarListaModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
         <div class="modal-body">
           <div class="lista-info-bar" *ngIf="listaLlamada">
@@ -277,7 +277,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5><i class="bi bi-trash3"></i> Eliminar voto</h5>
-          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn-close btn-xs" (click)="cancelarDeleteVoto()"></button>
+          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="cancelarDeleteVoto()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
         <div class="modal-body">
           <p>Ingrese su contraseña para confirmar la eliminación:</p>
@@ -286,8 +286,8 @@
           <div *ngIf="deleteError" class="text-danger mt-2 small">{{ deleteError }}</div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="cancelarDeleteVoto()"><i class="bi bi-x-lg"></i></button>
-          <button aria-label="Eliminar" title="Eliminar" class="btn btn-danger btn-xs icon-only" (click)="ejecutarDeleteVoto()" [disabled]="deleteCargando"><span *ngIf="deleteCargando" class="spinner-border spinner-border-sm"></span><i *ngIf="!deleteCargando" class="bi bi-trash"></i></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="cancelarDeleteVoto()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Eliminar" title="Eliminar" class="btn btn-danger btn-xs btn-labeled" (click)="ejecutarDeleteVoto()" [disabled]="deleteCargando"><span *ngIf="deleteCargando" class="spinner-border spinner-border-sm"></span><i *ngIf="!deleteCargando" class="bi bi-trash"></i><span class="btn-label">Eliminar</span></button>
         </div>
       </div>
     </div>
@@ -300,7 +300,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5><i class="bi bi-camera-fill"></i> Foto del acta (obligatoria)</h5>
-          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn-close btn-xs" (click)="cerrarFotoActaModal()"></button>
+          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="cerrarFotoActaModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
         <div class="modal-body">
           <p class="text-muted">Antes de cerrar debe registrar al menos una foto del acta física como respaldo del conteo. Puede agregar varias fotos.</p>
@@ -324,16 +324,16 @@
               <div class="foto-item" *ngFor="let f of fotoActaPreviews; let i = index">
                 <img [src]="f.url" [alt]="f.nombre" [title]="f.nombre">
                 <span class="foto-tag pendiente">Pendiente</span>
-                <button aria-label="Quitar foto" title="Quitar foto" type="button" class="foto-quitar btn-xs icon-only" (click)="quitarFotoActa(i)"><i class="bi bi-x"></i></button>
+                <button aria-label="Quitar foto" title="Quitar foto" type="button" class="btn foto-quitar btn-xs btn-labeled" (click)="quitarFotoActa(i)"><i class="bi bi-x"></i><span class="btn-label">Quitar foto</span></button>
               </div>
             </div>
           </div>
           <div *ngIf="fotoActaError" class="text-danger small">{{ fotoActaError }}</div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="cerrarFotoActaModal()" [disabled]="fotoActaSubiendo"><i class="bi bi-x-lg"></i></button>
-          <button aria-label="Cerrar acta" title="Cerrar acta" class="btn btn-danger btn-xs icon-only" (click)="confirmarCerrarConFoto()"
-                  [disabled]="fotoActaSubiendo || (fotoActaFiles.length + fotoActaExistentes.length === 0)"><span *ngIf="fotoActaSubiendo" class="spinner-border spinner-border-sm"></span><i *ngIf="!fotoActaSubiendo" class="bi bi-lock-fill"></i></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="cerrarFotoActaModal()" [disabled]="fotoActaSubiendo"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Cerrar acta" title="Cerrar acta" class="btn btn-danger btn-xs btn-labeled" (click)="confirmarCerrarConFoto()"
+                  [disabled]="fotoActaSubiendo || (fotoActaFiles.length + fotoActaExistentes.length === 0)"><span *ngIf="fotoActaSubiendo" class="spinner-border spinner-border-sm"></span><i *ngIf="!fotoActaSubiendo" class="bi bi-lock-fill"></i><span class="btn-label">Cerrar acta</span></button>
         </div>
       </div>
     </div>
@@ -346,7 +346,7 @@
       <h3><i class="bi bi-clipboard-data"></i> Votos Registrados</h3>
       <small class="cargo-contexto" *ngIf="categoriaSel">{{ categoriaSel }}</small>
       <span class="total-votos-badge">Total: <strong>{{ totalVotosFiltrados }}</strong></span>
-      <button title="Cerrar" class="drawer-close btn-xs icon-only" (click)="showVotosPanel = false" aria-label="Cerrar"><i class="bi bi-x-lg"></i></button>
+      <button title="Cerrar" class="btn drawer-close btn-xs btn-labeled" (click)="showVotosPanel = false" aria-label="Cerrar"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
     </div>
     <div class="drawer-body">
       <ng-container *ngTemplateOutlet="votosTableTpl"></ng-container>
@@ -354,7 +354,7 @@
   </div>
 
   <!-- FAB info de votos registrados (solo mobile) -->
-  <button class="votos-fab btn-xs" *ngIf="mesaActual" (click)="toggleVotosPanel()"
+  <button class="btn votos-fab btn-xs btn-labeled" *ngIf="mesaActual" (click)="toggleVotosPanel()"
           [title]="showVotosPanel ? 'Ocultar votos registrados' : 'Ver votos registrados'"
           [attr.aria-label]="'Ver votos registrados, total ' + totalVotos"
           [attr.aria-expanded]="showVotosPanel">
@@ -388,7 +388,7 @@
             <td><span class="partido-tag" [title]="partidoDeVoto(v)">{{ siglaDe(partidoDeVoto(v)) }}</span></td>
             <td class="text-right"><strong class="voto-count">{{ v.cantidadVotos }}</strong></td>
             <td *ngIf="!mesaActual?.cerrada" class="text-right">
-              <button aria-label="Eliminar" title="Eliminar" class="btn btn-eliminar btn-xs icon-only" (click)="eliminarVoto(v.id)"><i class="bi bi-trash"></i></button>
+              <button aria-label="Eliminar" title="Eliminar" class="btn btn-eliminar btn-xs btn-labeled" (click)="eliminarVoto(v.id)"><i class="bi bi-trash"></i><span class="btn-label">Eliminar</span></button>
             </td>
           </tr>
           <tr *ngIf="votosFiltrados.length === 0">
@@ -438,9 +438,9 @@
         <span class="nulos-label"><i class="bi bi-check2-square"></i> Votos Nulos</span>
         <div class="nulos-row-control">
           <div class="nulos-input-group" *ngIf="!mesaActual?.cerrada">
-            <button aria-label="−" title="−" aria-label="Decrementar" title="Decrementar" class="btn-nulos-minus btn-xs" (click)="decrementarNulos()"><i class="bi bi-dash-lg"></i></button>
+            <button aria-label="−" title="−" aria-label="Decrementar" title="Decrementar" class="btn btn-nulos-minus btn-xs btn-labeled" (click)="decrementarNulos()"><i class="bi bi-dash-lg"></i><span class="btn-label">−</span></button>
             <input type="number" class="nulos-input sm" [(ngModel)]="nulosCargoSel" min="0">
-            <button aria-label="+" title="+" aria-label="Incrementar" title="Incrementar" class="btn-nulos-plus btn-xs" (click)="incrementarNulos()"><i class="bi bi-plus-lg"></i></button>
+            <button aria-label="+" title="+" aria-label="Incrementar" title="Incrementar" class="btn btn-nulos-plus btn-xs btn-labeled" (click)="incrementarNulos()"><i class="bi bi-plus-lg"></i><span class="btn-label">+</span></button>
           </div>
           <strong *ngIf="mesaActual?.cerrada" class="voto-count-nulos">{{ nulosCargoSel }}</strong>
         </div>
@@ -450,9 +450,9 @@
         <span class="blanco-label"><i class="bi bi-square"></i> Votos en Blanco</span>
         <div class="nulos-row-control">
           <div class="nulos-input-group" *ngIf="!mesaActual?.cerrada">
-            <button aria-label="−" title="−" aria-label="Decrementar" title="Decrementar" class="btn-nulos-minus btn-xs" (click)="decrementarBlanco()"><i class="bi bi-dash-lg"></i></button>
+            <button aria-label="−" title="−" aria-label="Decrementar" title="Decrementar" class="btn btn-nulos-minus btn-xs btn-labeled" (click)="decrementarBlanco()"><i class="bi bi-dash-lg"></i><span class="btn-label">−</span></button>
             <input type="number" class="nulos-input sm" [(ngModel)]="blancosCargoSel" min="0">
-            <button aria-label="+" title="+" aria-label="Incrementar" title="Incrementar" class="btn-nulos-plus btn-xs" (click)="incrementarBlanco()"><i class="bi bi-plus-lg"></i></button>
+            <button aria-label="+" title="+" aria-label="Incrementar" title="Incrementar" class="btn btn-nulos-plus btn-xs btn-labeled" (click)="incrementarBlanco()"><i class="bi bi-plus-lg"></i><span class="btn-label">+</span></button>
           </div>
           <strong *ngIf="mesaActual?.cerrada" class="voto-count-blanco">{{ blancosCargoSel }}</strong>
         </div>
@@ -466,9 +466,9 @@
         </span>
         <div class="nulos-row-control">
           <div class="nulos-input-group" *ngIf="!mesaActual?.cerrada && !mesaActual?.aprobada">
-            <button aria-label="−" title="−" aria-label="Decrementar" title="Decrementar" class="btn-nulos-minus btn-xs" (click)="decrementarAusentes()"><i class="bi bi-dash-lg"></i></button>
+            <button aria-label="−" title="−" aria-label="Decrementar" title="Decrementar" class="btn btn-nulos-minus btn-xs btn-labeled" (click)="decrementarAusentes()"><i class="bi bi-dash-lg"></i><span class="btn-label">−</span></button>
             <input type="number" class="nulos-input sm" [(ngModel)]="ausentesMesa" min="0">
-            <button aria-label="+" title="+" aria-label="Incrementar" title="Incrementar" class="btn-nulos-plus btn-xs" (click)="incrementarAusentes()"><i class="bi bi-plus-lg"></i></button>
+            <button aria-label="+" title="+" aria-label="Incrementar" title="Incrementar" class="btn btn-nulos-plus btn-xs btn-labeled" (click)="incrementarAusentes()"><i class="bi bi-plus-lg"></i><span class="btn-label">+</span></button>
           </div>
           <strong *ngIf="mesaActual?.cerrada || mesaActual?.aprobada" class="voto-count-nulos">{{ ausentesMesa }}</strong>
         </div>

@@ -24,8 +24,8 @@
       </label>
     </div>
     <div class="upload-actions">
-      <button aria-label="Descargar plantilla" title="Descargar plantilla" class="btn btn-success btn-xs icon-only" (click)="descargarTemplate()"><i class="bi bi-file-earmark-arrow-down"></i></button>
-      <button aria-label="Importar" title="Importar" class="btn btn-primary btn-xs icon-only" (click)="importar()" [disabled]="!selectedFile || importing"><span *ngIf="importing" class="spinner-border spinner-border-sm"></span><i *ngIf="!importing" class="bi bi-box-arrow-in-down"></i></button>
+      <button aria-label="Descargar plantilla" title="Descargar plantilla" class="btn btn-success btn-xs btn-labeled" (click)="descargarTemplate()"><i class="bi bi-file-earmark-arrow-down"></i><span class="btn-label">Descargar plantilla</span></button>
+      <button aria-label="Importar" title="Importar" class="btn btn-primary btn-xs btn-labeled" (click)="importar()" [disabled]="!selectedFile || importing"><span *ngIf="importing" class="spinner-border spinner-border-sm"></span><i *ngIf="!importing" class="bi bi-box-arrow-in-down"></i><span class="btn-label">Importar</span></button>
     </div>
   </div>
 

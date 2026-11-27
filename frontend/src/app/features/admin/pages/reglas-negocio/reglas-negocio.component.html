@@ -1,7 +1,7 @@
 <div class="page-container">
   <div class="page-header">
     <h2>Reglas de Negocio</h2>
-    <button aria-label="Nuevo" title="Nuevo" class="btn btn-primary btn-xs icon-only" (click)="openCreate()"><i class="bi bi-plus-lg"></i></button>
+    <button aria-label="Nuevo" title="Nuevo" class="btn btn-primary btn-xs btn-labeled" (click)="openCreate()"><i class="bi bi-plus-lg"></i><span class="btn-label">Nuevo</span></button>
   </div>
 
   <app-filtros-panel titulo="Filtros de búsqueda" clave="reglas-negocio">
@@ -47,7 +47,7 @@
           </td>
           <td>
             <div class="dropdown">
-              <button aria-label="Opciones" title="Opciones" class="btn btn-outline-secondary dropdown-toggle btn-xs icon-only" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
+              <button aria-label="Opciones" title="Opciones" class="btn btn-outline-secondary dropdown-toggle btn-xs btn-labeled" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i><span class="btn-label">Opciones</span></button>
               <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="#" (click)="$event.preventDefault(); openEdit(regla)">Editar</a></li>
                 <li><a class="dropdown-item text-danger" href="#" (click)="$event.preventDefault(); delete(regla.id)">Eliminar</a></li>
@@ -68,7 +68,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">{{ editing ? 'Editar' : 'Nueva' }} Regla de Negocio</h5>
-        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn-close btn-xs" (click)="showModal = false"></button>
+        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="showModal = false"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
       </div>
       <div class="modal-body">
         <div class="row">
@@ -129,8 +129,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-secondary btn-xs icon-only" (click)="showModal = false"><i class="bi bi-x-lg"></i></button>
-        <button aria-label="Guardar" title="Guardar" type="button" class="btn btn-primary btn-xs icon-only" (click)="save()" [disabled]="!selectedRegla.nombre || !validateCondicion()"><span *ngIf="editing" class="spinner-border spinner-border-sm"></span><i *ngIf="!editing" class="bi bi-save"></i></button>
+        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-secondary btn-xs btn-labeled" (click)="showModal = false"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+        <button aria-label="Guardar" title="Guardar" type="button" class="btn btn-primary btn-xs btn-labeled" (click)="save()" [disabled]="!selectedRegla.nombre || !validateCondicion()"><span *ngIf="editing" class="spinner-border spinner-border-sm"></span><i *ngIf="!editing" class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
       </div>
     </div>
   </div>

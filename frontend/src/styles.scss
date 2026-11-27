@@ -1376,3 +1376,22 @@ textarea.sm,
   font-size: 0.8125rem;
   padding: 0.25rem 0.5rem;
 }
+
+/* Botones con icono + texto legible. */
+.btn.btn-labeled {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.btn.btn-labeled.btn-xs {
+  padding: 0.2rem 0.45rem;
+}
+
+.btn-label {
+  line-height: 1;
+}

@@ -45,7 +45,7 @@
              [(ngModel)]="filtroTexto" autocomplete="off" />
     </div>
     <div class="filter-item filter-item-acciones" *ngIf="hayFiltrosActivos">
-      <button aria-label="Limpiar" title="Limpiar" class="btn btn-outline-secondary btn-xs icon-only" (click)="limpiarFiltros()" type="button"><i class="bi bi-brush"></i></button>
+      <button aria-label="Limpiar" title="Limpiar" class="btn btn-outline-secondary btn-xs btn-labeled" (click)="limpiarFiltros()" type="button"><i class="bi bi-brush"></i><span class="btn-label">Limpiar</span></button>
     </div>
   </app-filtros-panel>
 
@@ -87,7 +87,7 @@
                 <td>{{ m.parroquiaNombre || '-' }}</td>
                 <td>{{ m.cantonNombre || '-' }}</td>
                 <td>
-                  <button aria-label="Asignar" class="btn btn-primary btn-icon-only btn-xs" (click)="asignarMesa(m)" title="Asignar"><i class="bi bi-person-plus"></i></button>
+                  <button aria-label="Asignar" class="btn btn-primary btn-xs btn-labeled" (click)="asignarMesa(m)" title="Asignar"><i class="bi bi-person-plus"></i><span class="btn-label">Asignar</span></button>
                 </td>
               </tr>
               <tr *ngIf="disponiblesFiltradas.length === 0">
@@ -127,7 +127,7 @@
                 <td>{{ m.parroquiaNombre || '-' }}</td>
                 <td>{{ m.cantonNombre || '-' }}</td>
                 <td>
-                  <button aria-label="Desasignar" title="Desasignar" class="btn btn-danger btn-icon-only btn-xs" (click)="desasignarMesa(m)"><i class="bi bi-person-plus"></i></button>
+                  <button aria-label="Desasignar" title="Desasignar" class="btn btn-danger btn-xs btn-labeled" (click)="desasignarMesa(m)"><i class="bi bi-person-dash"></i><span class="btn-label">Desasignar</span></button>
                 </td>
               </tr>
               <tr *ngIf="asignadasFiltradas.length === 0">

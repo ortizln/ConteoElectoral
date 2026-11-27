@@ -10,7 +10,7 @@
       </small>
     </div>
     <div class="d-flex gap-2">
-      <button aria-label="Salir" title="Salir" class="btn btn-outline-secondary btn-xs icon-only" (click)="logout()"><i class="bi bi-box-arrow-right"></i></button>
+      <button aria-label="Salir" title="Salir" class="btn btn-outline-secondary btn-xs btn-labeled" (click)="logout()"><i class="bi bi-box-arrow-right"></i><span class="btn-label">Salir</span></button>
     </div>
   </div>
 
@@ -25,7 +25,7 @@
   <div class="mb-3" *ngIf="mesasDisponibles.length > 1">
     <div class="btn-group flex-wrap">
       <button aria-label="Mesa" title="Mesa" *ngFor="let m of mesasDisponibles"
-        class="btn btn-sm btn-xs" [class.btn-primary]="m.id === mesaActual.id" [class.btn-outline-secondary]="m.id !== mesaActual.id"
+        class="btn btn-sm btn-xs btn-labeled" [class.btn-primary]="m.id === mesaActual.id" [class.btn-outline-secondary]="m.id !== mesaActual.id"
         (click)="seleccionarMesa(m)">Mesa {{ m.numeroMesa }}</button>
     </div>
   </div>
@@ -36,7 +36,7 @@
         <div class="card-header p-0">
           <ul class="nav nav-tabs card-header-tabs">
             <li class="nav-item" *ngFor="let p of papeletas">
-              <button aria-label="Acción" title="Acción" class="nav-link btn-xs" [class.active]="papeletaActual?.id === p.id"
+              <button aria-label="Acción" title="Acción" class="btn nav-link btn-xs btn-labeled" [class.active]="papeletaActual?.id === p.id"
                 (click)="seleccionarPapeleta(p)">{{ p.titulo }}</button>
             </li>
           </ul>
@@ -83,8 +83,8 @@
         <div class="card-body d-flex align-items-center gap-3 flex-wrap">
           <span class="fw-bold">Votos para: {{ opcionSeleccionada.etiqueta }}</span>
           <input type="number" class="form-control w-auto sm form-control-sm" min="0" [(ngModel)]="cantidadInput" style="max-width: 100px;">
-          <button aria-label="Registrar" title="Registrar" class="btn btn-primary btn-xs icon-only" (click)="registrarVoto()" [disabled]="cantidadInput <= 0"><i class="bi bi-check-circle"></i></button>
-          <button aria-label="Cancelar" title="Cancelar" class="btn btn-outline-secondary btn-xs icon-only" (click)="opcionSeleccionada = null; cantidadInput = 0"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Registrar" title="Registrar" class="btn btn-primary btn-xs btn-labeled" (click)="registrarVoto()" [disabled]="cantidadInput <= 0"><i class="bi bi-check-circle"></i><span class="btn-label">Registrar</span></button>
+          <button aria-label="Cancelar" title="Cancelar" class="btn btn-outline-secondary btn-xs btn-labeled" (click)="opcionSeleccionada = null; cantidadInput = 0"><i class="bi bi-x-lg"></i><span class="btn-label">Cancelar</span></button>
         </div>
       </div>
     </div>
@@ -113,7 +113,7 @@
           </table>
         </div>
         <div class="card-footer" *ngIf="!cerrada">
-          <button aria-label="Cerrar acta" title="Cerrar acta" class="btn btn-danger w-100 btn-xs icon-only" (click)="cerrarMesa()"><i class="bi bi-lock-fill"></i></button>
+          <button aria-label="Cerrar acta" title="Cerrar acta" class="btn btn-danger w-100 btn-xs btn-labeled" (click)="cerrarMesa()"><i class="bi bi-lock-fill"></i><span class="btn-label">Cerrar acta</span></button>
         </div>
       </div>
     </div>
@@ -124,7 +124,7 @@
   <h4><i class="bi bi-check2-square"></i> Votación por Papeletas</h4>
   <div class="row g-2 mt-2">
     <div class="col-auto" *ngFor="let m of mesasDisponibles">
-      <button aria-label="Mesa" title="Mesa" class="btn btn-outline-primary btn-lg btn-xs" (click)="seleccionarMesa(m)">Mesa {{ m.numeroMesa }}</button>
+      <button aria-label="Mesa" title="Mesa" class="btn btn-outline-primary btn-lg btn-xs btn-labeled" (click)="seleccionarMesa(m)">Mesa {{ m.numeroMesa }}</button>
     </div>
   </div>
 </div>
@@ -140,7 +140,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5><i class="bi bi-camera-fill"></i> Foto del acta (obligatoria)</h5>
-        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn-close btn-xs" (click)="cerrarFotoActaModal()"></button>
+        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="cerrarFotoActaModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
       </div>
       <div class="modal-body">
         <p class="text-muted">Antes de cerrar debe registrar al menos una foto del acta física como respaldo del conteo. Puede agregar varias fotos.</p>
@@ -164,16 +164,16 @@
             <div class="foto-item" *ngFor="let f of fotoActaPreviews; let i = index">
               <img [src]="f.url" [alt]="f.nombre" [title]="f.nombre">
               <span class="foto-tag pendiente">Pendiente</span>
-              <button aria-label="Quitar foto" title="Quitar foto" type="button" class="foto-quitar btn-xs icon-only" (click)="quitarFotoActa(i)"><i class="bi bi-x"></i></button>
+              <button aria-label="Quitar foto" title="Quitar foto" type="button" class="btn foto-quitar btn-xs btn-labeled" (click)="quitarFotoActa(i)"><i class="bi bi-x"></i><span class="btn-label">Quitar foto</span></button>
             </div>
           </div>
         </div>
         <div *ngIf="fotoActaError" class="text-danger small">{{ fotoActaError }}</div>
       </div>
       <div class="modal-footer">
-        <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="cerrarFotoActaModal()" [disabled]="fotoActaSubiendo"><i class="bi bi-x-lg"></i></button>
-        <button aria-label="Cerrar acta" title="Cerrar acta" class="btn btn-danger btn-xs icon-only" (click)="confirmarCerrarConFoto()"
-                [disabled]="fotoActaSubiendo || (fotoActaFiles.length + fotoActaExistentes.length === 0)"><span *ngIf="fotoActaSubiendo" class="spinner-border spinner-border-sm"></span><i *ngIf="!fotoActaSubiendo" class="bi bi-lock-fill"></i></button>
+        <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="cerrarFotoActaModal()" [disabled]="fotoActaSubiendo"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+        <button aria-label="Cerrar acta" title="Cerrar acta" class="btn btn-danger btn-xs btn-labeled" (click)="confirmarCerrarConFoto()"
+                [disabled]="fotoActaSubiendo || (fotoActaFiles.length + fotoActaExistentes.length === 0)"><span *ngIf="fotoActaSubiendo" class="spinner-border spinner-border-sm"></span><i *ngIf="!fotoActaSubiendo" class="bi bi-lock-fill"></i><span class="btn-label">Cerrar acta</span></button>
       </div>
     </div>
   </div>

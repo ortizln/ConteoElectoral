@@ -40,8 +40,10 @@ public class DashboardController {
     private final ExcelExportService excelExportService;
 
     @GetMapping("/eleccion/{eleccionesId}")
-    public ResponseEntity<DashboardResponse> getDashboard(@PathVariable Long eleccionesId) {
-        return ResponseEntity.ok(votoService.getDashboardData(eleccionesId));
+    public ResponseEntity<DashboardResponse> getDashboard(
+            @PathVariable Long eleccionesId,
+            @RequestParam(defaultValue = "false") boolean publico) {
+        return ResponseEntity.ok(votoService.getDashboardData(eleccionesId, publico));
     }
 
     @GetMapping("/eleccion/{eleccionesId}/filtrar")
@@ -54,9 +56,10 @@ public class DashboardController {
             @RequestParam(required = false) Long cantonId,
             @RequestParam(required = false) Long parroquiaId,
             @RequestParam(required = false) Long institucionId,
-            @RequestParam(required = false) Long mesaId) {
+            @RequestParam(required = false) Long mesaId,
+            @RequestParam(defaultValue = "false") boolean publico) {
         return ResponseEntity.ok(votoService.getDashboardDataConFiltros(eleccionesId, cargoId, partidoId, 
-                zonaId, provinciaId, cantonId, parroquiaId, institucionId, mesaId));
+                zonaId, provinciaId, cantonId, parroquiaId, institucionId, mesaId, publico));
     }
 
     @GetMapping("/eleccion/{eleccionesId}/resultados")

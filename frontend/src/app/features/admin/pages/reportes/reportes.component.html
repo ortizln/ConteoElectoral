@@ -5,7 +5,7 @@
       <select [(ngModel)]="selectedEleccionId" (change)="cargarReportes()" class="form-select sm form-select-sm">
         <option *ngFor="let e of elecciones" [value]="e.id">{{ e.nombre }}</option>
       </select>
-      <button aria-label="Descargar / exportar" title="Descargar / exportar" (click)="exportarCsv()" class="btn btn-success btn-xs icon-only" [disabled]="!selectedEleccionId"><i class="bi bi-download"></i></button>
+      <button aria-label="Descargar / exportar" title="Descargar / exportar" (click)="exportarCsv()" class="btn btn-success btn-xs btn-labeled" [disabled]="!selectedEleccionId"><i class="bi bi-download"></i><span class="btn-label">Descargar</span></button>
     </div>
   </div>
 
@@ -127,7 +127,7 @@
 
   <div class="table-card" *ngIf="listas.length > 0">
     <h3>Resultados por Lista</h3>
-    <button aria-label="Ver" title="Ver" class="btn btn-outline float-right btn-xs icon-only" (click)="openListasModal()"><i class="bi bi-eye"></i></button>
+    <button aria-label="Ver" title="Ver" class="btn btn-outline float-right btn-xs btn-labeled" (click)="openListasModal()"><i class="bi bi-eye"></i><span class="btn-label">Ver</span></button>
     <table class="table">
       <thead>
         <tr>
@@ -158,7 +158,7 @@
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>{{ modalTitle }}</h3>
-      <button aria-label="Cerrar" title="Cerrar" class="modal-close btn-xs icon-only" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+      <button aria-label="Cerrar" title="Cerrar" class="btn modal-close btn-xs btn-labeled" (click)="closeModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
     </div>
     <div class="modal-body">
       <!-- Mesas Cerradas / Nulos -->

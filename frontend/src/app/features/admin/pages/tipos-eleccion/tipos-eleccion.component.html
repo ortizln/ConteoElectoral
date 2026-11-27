@@ -1,7 +1,7 @@
 <div class="container-fluid mt-3">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">Tipos de Elección</h4>
-    <button aria-label="Nuevo" title="Nuevo" class="btn btn-primary btn-xs icon-only" (click)="showNuevoTipo = !showNuevoTipo"><i class="bi bi-plus-lg"></i></button>
+    <button aria-label="Nuevo" title="Nuevo" class="btn btn-primary btn-xs btn-labeled" (click)="showNuevoTipo = !showNuevoTipo"><i class="bi bi-plus-lg"></i><span class="btn-label">Nuevo</span></button>
   </div>
 
   <div class="card" *ngIf="showNuevoTipo">
@@ -14,7 +14,7 @@
           <input class="form-control sm form-control-sm" placeholder="Descripción" [(ngModel)]="nuevoTipo.descripcion">
         </div>
         <div class="col-md-2">
-          <button aria-label="Crear tipo" title="Crear tipo" class="btn btn-success w-100 btn-xs icon-only" (click)="crearTipo()"><i class="bi bi-plus-lg"></i></button>
+          <button aria-label="Crear tipo" title="Crear tipo" class="btn btn-success w-100 btn-xs btn-labeled" (click)="crearTipo()"><i class="bi bi-plus-lg"></i><span class="btn-label">Crear tipo</span></button>
         </div>
       </div>
     </div>
@@ -25,7 +25,7 @@
       <div class="card">
         <div class="list-group list-group-flush">
           <button aria-label="Acción" title="Acción" *ngFor="let t of tipos"
-            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center btn-xs"
+            class="btn list-group-item list-group-item-action d-flex justify-content-between align-items-center btn-xs btn-labeled"
             [class.active]="selectedTipo?.id === t.id"
             (click)="selectTipo(t)">
             {{ t.nombre }}
@@ -43,8 +43,8 @@
         <div class="card-header d-flex justify-content-between align-items-center">
           <span><strong>{{ selectedTipo.nombre }}</strong> — Cargos asignados</span>
           <div>
-            <button aria-label="Editar" class="btn btn-outline-secondary me-1 btn-xs icon-only" (click)="openEditarTipo()" title="Editar tipo"><i class="bi bi-pencil-square"></i></button>
-            <button aria-label="Asignar" title="Asignar" class="btn btn-outline-primary btn-xs icon-only" (click)="openAsignarCargo()"><i class="bi bi-person-plus"></i></button>
+            <button aria-label="Editar" class="btn btn-outline-secondary me-1 btn-xs btn-labeled" (click)="openEditarTipo()" title="Editar tipo"><i class="bi bi-pencil-square"></i><span class="btn-label">Editar</span></button>
+            <button aria-label="Asignar" title="Asignar" class="btn btn-outline-primary btn-xs btn-labeled" (click)="openAsignarCargo()"><i class="bi bi-person-plus"></i><span class="btn-label">Asignar</span></button>
           </div>
         </div>
         <div class="card-body p-0">
@@ -61,25 +61,25 @@
               <tr *ngFor="let ca of cargosAsignados">
                 <td>{{ ca.cargoNombre }}</td>
                 <td class="text-center">
-                  <button aria-label="Información" class="btn btn-outline-info btn-xs icon-only"
+                  <button aria-label="Información" class="btn btn-outline-info btn-xs btn-labeled"
                     (click)="selectedCargoInfo = selectedCargoInfo === ca.cargoId ? null : ca.cargoId"
-                    title="Ver información del cargo"><i class="bi bi-info-circle"></i></button>
+                    title="Ver información del cargo"><i class="bi bi-info-circle"></i><span class="btn-label">Información</span></button>
                 </td>
                 <td class="text-center">
                   <ng-container *ngIf="editandoOrdenId !== ca.id; else editandoOrden">
                     {{ ca.orden }}
-                    <button aria-label="Editar" class="btn btn-outline-secondary ms-1 btn-xs icon-only" (click)="startEditarOrden(ca)" title="Editar orden"><i class="bi bi-pencil-square"></i></button>
+                    <button aria-label="Editar" class="btn btn-outline-secondary ms-1 btn-xs btn-labeled" (click)="startEditarOrden(ca)" title="Editar orden"><i class="bi bi-pencil-square"></i><span class="btn-label">Editar</span></button>
                   </ng-container>
                   <ng-template #editandoOrden>
                     <div class="d-inline-flex align-items-center gap-1">
                       <input type="number" class="form-control form-control-sm sm" style="width:70px" [(ngModel)]="nuevoOrden">
-                      <button aria-label="Guardar" title="Guardar" class="btn btn-success btn-xs icon-only" (click)="guardarOrden(ca.id)"><i class="bi bi-save"></i></button>
-                      <button aria-label="Cancelar" title="Cancelar" class="btn btn-secondary btn-xs icon-only" (click)="cancelarEditarOrden()"><i class="bi bi-pencil-square"></i></button>
+                      <button aria-label="Guardar" title="Guardar" class="btn btn-success btn-xs btn-labeled" (click)="guardarOrden(ca.id)"><i class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
+                      <button aria-label="Cancelar" title="Cancelar" class="btn btn-secondary btn-xs btn-labeled" (click)="cancelarEditarOrden()"><i class="bi bi-pencil-square"></i><span class="btn-label">Cancelar</span></button>
                     </div>
                   </ng-template>
                 </td>
                 <td class="text-center">
-                  <button aria-label="Eliminar" title="Eliminar" class="btn btn-outline-danger btn-xs icon-only" (click)="removerCargo(ca.id)"><i class="bi bi-trash"></i></button>
+                  <button aria-label="Eliminar" title="Eliminar" class="btn btn-outline-danger btn-xs btn-labeled" (click)="removerCargo(ca.id)"><i class="bi bi-trash"></i><span class="btn-label">Eliminar</span></button>
                 </td>
               </tr>
               <tr *ngIf="cargosAsignados.length === 0">
@@ -114,7 +114,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Editar {{ editTipoForm.nombre }}</h5>
-        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn-close btn-xs" (click)="showEditarTipo = false"></button>
+        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="showEditarTipo = false"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
       </div>
       <div class="modal-body">
         <div class="mb-3">
@@ -127,8 +127,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="showEditarTipo = false"><i class="bi bi-x-lg"></i></button>
-        <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="guardarEditarTipo()"><i class="bi bi-save"></i></button>
+        <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="showEditarTipo = false"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+        <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="guardarEditarTipo()"><i class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
       </div>
     </div>
   </div>
@@ -139,7 +139,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Asignar Cargo a {{ selectedTipo?.nombre }}</h5>
-        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn-close btn-xs" (click)="showAsignarCargo = false"></button>
+        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="showAsignarCargo = false"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
       </div>
       <div class="modal-body">
         <div class="mb-3">
@@ -157,8 +157,8 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="showAsignarCargo = false"><i class="bi bi-x-lg"></i></button>
-        <button aria-label="Asignar" title="Asignar" class="btn btn-primary btn-xs icon-only" (click)="asignarCargo()"><i class="bi bi-person-plus"></i></button>
+        <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="showAsignarCargo = false"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+        <button aria-label="Asignar" title="Asignar" class="btn btn-primary btn-xs btn-labeled" (click)="asignarCargo()"><i class="bi bi-person-plus"></i><span class="btn-label">Asignar</span></button>
       </div>
     </div>
   </div>

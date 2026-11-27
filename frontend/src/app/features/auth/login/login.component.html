@@ -20,7 +20,7 @@
             <input id="password" [type]="showPassword ? 'text' : 'password'" class="form-control sm form-control-sm"
               [(ngModel)]="password" name="password" placeholder="Ingrese su contraseña"
               required autocomplete="new-password" />
-            <button type="button" class="btn-eye btn-xs icon-only" title="Mostrar u ocultar contraseña" (click)="showPassword = !showPassword"
+            <button type="button" class="btn btn-eye btn-xs btn-labeled" title="Mostrar u ocultar contraseña" (click)="showPassword = !showPassword"
               [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
@@ -29,14 +29,14 @@
                 <path *ngIf="showPassword" d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
                 <line *ngIf="showPassword" x1="1" y1="1" x2="23" y2="23"/>
               </svg>
-            </button>
+            <span class="btn-label">Contraseña</span></button>
           </div>
         </div>
 
         <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
-        <button aria-label="Ingresar" title="Ingresar" type="submit" class="btn btn-login btn-xs icon-only" [disabled]="loading"><span *ngIf="loading" class="spinner-border spinner-border-sm"></span><i *ngIf="!loading" class="bi bi-box-arrow-in-right"></i></button>
-        <button aria-label="Recuperar contraseña" title="Recuperar contraseña" type="button" class="btn-recover btn-xs icon-only" (click)="openRecoveryModal()"><i class="bi bi-question-circle"></i></button>
+        <button aria-label="Ingresar" title="Ingresar" type="submit" class="btn btn-login btn-xs btn-labeled" [disabled]="loading"><span *ngIf="loading" class="spinner-border spinner-border-sm"></span><i *ngIf="!loading" class="bi bi-box-arrow-in-right"></i><span class="btn-label">Ingresar</span></button>
+        <button aria-label="Recuperar contraseña" title="Recuperar contraseña" type="button" class="btn btn-recover btn-xs btn-labeled" (click)="openRecoveryModal()"><i class="bi bi-question-circle"></i><span class="btn-label">Recuperar contraseña</span></button>
       </form>
 
       <div class="download-apk">
@@ -83,8 +83,8 @@
       </div>
 
       <div *ngIf="images.length > 1" class="carousel-dots">
-        <button aria-label="Ir a la imagen" title="Ir a la imagen" *ngFor="let img of images; let i = index" class="dot btn-xs"
-          [class.active]="i === currentIndex" (click)="goToSlide(i)"></button>
+        <button aria-label="Ir a la imagen" title="Ir a la imagen" *ngFor="let img of images; let i = index" class="btn dot btn-xs btn-labeled"
+          [class.active]="i === currentIndex" (click)="goToSlide(i)"><span class="btn-label">Imagen</span></button>
       </div>
 
       <a routerLink="/resultados" class="public-results-link" title="Ver dashboard de resultados públicos">
@@ -102,7 +102,7 @@
   <div class="recovery-modal" role="dialog" aria-modal="true" aria-labelledby="recovery-title">
     <div class="recovery-header">
       <h3 id="recovery-title">Recuperar la contraseña</h3>
-      <button title="Cerrar" type="button" class="recovery-close btn-xs icon-only" aria-label="Cerrar" (click)="closeRecoveryModal()"><i class="bi bi-x-lg"></i></button>
+      <button title="Cerrar" type="button" class="btn recovery-close btn-xs btn-labeled" aria-label="Cerrar" (click)="closeRecoveryModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
     </div>
     <p class="recovery-hint">Ingrese su usuario y cédula. Enviaremos una contraseña temporal por WhatsApp al celular que indique. Si ya tiene un celular registrado, debe ingresar ese mismo número.</p>
     <div class="form-group">
@@ -123,8 +123,8 @@
     <div *ngIf="recuperarError" class="alert alert-danger">{{ recuperarError }}</div>
     <div *ngIf="recuperarSuccess" class="alert alert-success">{{ recuperarSuccess }}</div>
     <div class="recovery-actions">
-      <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-secondary btn-xs icon-only" (click)="closeRecoveryModal()"><i class="bi bi-x-lg"></i></button>
-      <button aria-label="Enviar por WhatsApp" title="Enviar por WhatsApp" type="button" class="btn btn-login btn-xs icon-only" [disabled]="recuperando" (click)="submitRecovery()"><span *ngIf="recuperando" class="spinner-border spinner-border-sm"></span><i *ngIf="!recuperando" class="bi bi-whatsapp"></i></button>
+      <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-secondary btn-xs btn-labeled" (click)="closeRecoveryModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+      <button aria-label="Enviar por WhatsApp" title="Enviar por WhatsApp" type="button" class="btn btn-login btn-xs btn-labeled" [disabled]="recuperando" (click)="submitRecovery()"><span *ngIf="recuperando" class="spinner-border spinner-border-sm"></span><i *ngIf="!recuperando" class="bi bi-whatsapp"></i><span class="btn-label">Enviar por WhatsApp</span></button>
     </div>
   </div>
 </div>

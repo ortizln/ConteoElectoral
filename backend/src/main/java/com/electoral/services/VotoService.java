@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -322,13 +323,22 @@ public class VotoService {
 
     @Transactional(readOnly = true)
     public DashboardResponse getDashboardData(Long eleccionId) {
-        return getDashboardDataConFiltros(eleccionId, null, null, null, null, null, null, null, null);
+        return getDashboardData(eleccionId, false);
+    }
+
+    @Transactional(readOnly = true)
+    public DashboardResponse getDashboardData(Long eleccionId, boolean publico) {
+        return getDashboardDataConFiltros(eleccionId, null, null, null, null, null, null, null, null, publico);
     }
 
     /** Mesas que aplican a un conjunto de filtros geográficos / de mesa. */
     private List<Mesa> filtrarMesas(Long eleccionId, Long zonaId, Long provinciaId,
-            Long cantonId, Long parroquiaId, Long institucionId, Long mesaId) {
+            Long cantonId, Long parroquiaId, Long institucionId, Long mesaId, boolean publico) {
         List<Mesa> mesas = mesaRepository.findByEleccionesId(eleccionId);
+
+        // El supervisor con mesas asignadas solo ve su alcance en el dashboard privado.
+        // La vista pública (/resultados) y el administrador conservan todas las mesas.
+        mesas = limitarMesasAsignadasAlSupervisor(mesas, eleccionId, publico);
 
         if (mesaId != null) {
             mesas = mesas.stream().filter(m -> m.getId().equals(mesaId)).collect(Collectors.toList());
@@ -363,6 +373,24 @@ public class VotoService {
         return mesas;
     }
 
+    /**
+     * Si el usuario autenticado es SUPERVISOR y tiene mesas asignadas en la elección,
+     * el dashboard privado se calcula únicamente sobre ese conjunto. Si no tiene
+     * asignaciones (o es ADMIN / vista pública), se conserva el total general.
+     */
+    private List<Mesa> limitarMesasAsignadasAlSupervisor(List<Mesa> mesas, Long eleccionId, boolean publico) {
+        if (publico || mesas.isEmpty()) return mesas;
+        Usuario usuario = securityUtil.getCurrentUser();
+        if (usuario == null || usuario.getRol() == null
+                || !"SUPERVISOR".equals(usuario.getRol().getNombre())) {
+            return mesas;
+        }
+        List<Mesa> asignadas = mesaService.getMesasAsignadas(usuario.getId(), eleccionId);
+        if (asignadas == null || asignadas.isEmpty()) return mesas;
+        Set<Long> idsAsignadas = asignadas.stream().map(Mesa::getId).collect(Collectors.toSet());
+        return mesas.stream().filter(m -> idsAsignadas.contains(m.getId())).collect(Collectors.toList());
+    }
+
     private static String claveVoto(Long id, Long mesaId) {
         return id + ":" + mesaId;
     }
@@ -389,7 +417,7 @@ public class VotoService {
             Long provinciaId, Long cantonId, Long parroquiaId,
             Long institucionId, Long mesaId) {
         List<Mesa> mesas = filtrarMesas(eleccionId, zonaId, provinciaId, cantonId,
-                parroquiaId, institucionId, mesaId);
+                parroquiaId, institucionId, mesaId, false);
         if (mesas.isEmpty()) return List.of();
 
         List<Long> mesaIds = mesas.stream().map(Mesa::getId).collect(Collectors.toList());
@@ -489,10 +517,18 @@ public class VotoService {
     @Transactional(readOnly = true)
     public DashboardResponse getDashboardDataConFiltros(Long eleccionId, Long cargoId, Long partidoId,
             Long zonaId, Long provinciaId, Long cantonId, Long parroquiaId, Long institucionId, Long mesaId) {
+        return getDashboardDataConFiltros(eleccionId, cargoId, partidoId, zonaId, provinciaId,
+                cantonId, parroquiaId, institucionId, mesaId, false);
+    }
+
+    @Transactional(readOnly = true)
+    public DashboardResponse getDashboardDataConFiltros(Long eleccionId, Long cargoId, Long partidoId,
+            Long zonaId, Long provinciaId, Long cantonId, Long parroquiaId, Long institucionId, Long mesaId,
+            boolean publico) {
         Eleccion eleccion = eleccionService.getEleccionEntityById(eleccionId);
 
         List<Mesa> mesas = filtrarMesas(eleccionId, zonaId, provinciaId, cantonId,
-                parroquiaId, institucionId, mesaId);
+                parroquiaId, institucionId, mesaId, publico);
 
         List<Long> mesaIds = mesas.stream().map(Mesa::getId).collect(Collectors.toList());
 

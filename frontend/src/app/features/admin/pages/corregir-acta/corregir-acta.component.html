@@ -85,7 +85,7 @@
 
             <ul class="nav nav-tabs correccion-tabs mb-2" role="tablist">
               <li class="nav-item" *ngFor="let tab of tabs">
-                <button aria-label="Acción" title="Acción" type="button" class="nav-link btn-xs" role="tab"
+                <button aria-label="Acción" title="Acción" type="button" class="btn nav-link btn-xs btn-labeled" role="tab"
                         [class.active]="tabActiva === tab.label"
                         [attr.aria-selected]="tabActiva === tab.label"
                         (click)="tabActiva = tab.label">
@@ -124,13 +124,13 @@
           </div>
 
           <div class="card-footer d-flex flex-wrap gap-2 bg-transparent">
-            <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-secondary btn-xs icon-only" (click)="volver()"><i class="bi bi-x-lg"></i></button>
-            <button aria-label="Desaprobar / reabrir" title="Desaprobar / reabrir" type="button" class="btn btn-outline-warning btn-xs icon-only"
-                    *ngIf="mesa.aprobada" (click)="desaprobar()"><i class="bi bi-unlock"></i></button>
-            <button aria-label="Aprobar" title="Aprobar" type="button" class="btn btn-success btn-xs icon-only"
-                    *ngIf="!mesa.aprobada && mesa.cerrada" (click)="aprobar()"><i class="bi bi-check-circle"></i></button>
-            <button aria-label="Guardar" title="Guardar" type="button" class="btn btn-primary ms-auto btn-xs icon-only" (click)="guardar()"
-                    [disabled]="cargando || guardando || mesa.aprobada === true"><span *ngIf="guardando" class="spinner-border spinner-border-sm"></span><i *ngIf="!guardando" class="bi bi-save"></i></button>
+            <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-secondary btn-xs btn-labeled" (click)="volver()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+            <button aria-label="Desaprobar / reabrir" title="Desaprobar / reabrir" type="button" class="btn btn-outline-warning btn-xs btn-labeled"
+                    *ngIf="mesa.aprobada" (click)="desaprobar()"><i class="bi bi-unlock"></i><span class="btn-label">Reabrir</span></button>
+            <button aria-label="Aprobar" title="Aprobar" type="button" class="btn btn-success btn-xs btn-labeled"
+                    *ngIf="!mesa.aprobada && mesa.cerrada" (click)="aprobar()"><i class="bi bi-check-circle"></i><span class="btn-label">Aprobar</span></button>
+            <button aria-label="Guardar" title="Guardar" type="button" class="btn btn-primary ms-auto btn-xs btn-labeled" (click)="guardar()"
+                    [disabled]="cargando || guardando || mesa.aprobada === true"><span *ngIf="guardando" class="spinner-border spinner-border-sm"></span><i *ngIf="!guardando" class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
           </div>
         </div>
       </div>
@@ -142,16 +142,16 @@
             <i class="bi bi-images"></i>
             <strong>Imagen del acta</strong>
             <div class="ms-auto d-flex align-items-center gap-1">
-              <button type="button" class="btn btn-xs btn-outline-secondary icon-only"
+              <button type="button" class="btn btn-xs btn-outline-secondary btn-labeled"
                       title="Alejar" aria-label="Alejar"
-                      (click)="zoomOut()" [disabled]="!puedeAlejar"><i class="bi bi-zoom-out"></i></button>
-              <button type="button" class="btn btn-xs btn-outline-secondary icon-only"
+                      (click)="zoomOut()" [disabled]="!puedeAlejar"><i class="bi bi-zoom-out"></i><span class="btn-label">Alejar</span></button>
+              <button type="button" class="btn btn-xs btn-outline-secondary btn-labeled"
                       title="Restablecer zoom" aria-label="Restablecer zoom"
-                      (click)="resetZoom()"><i class="bi bi-arrow-counterclockwise"></i></button>
+                      (click)="resetZoom()"><i class="bi bi-arrow-counterclockwise"></i><span class="btn-label">Restablecer zoom</span></button>
               <span class="small text-muted">{{ zoom * 100 }}%</span>
-              <button type="button" class="btn btn-xs btn-outline-secondary icon-only"
+              <button type="button" class="btn btn-xs btn-outline-secondary btn-labeled"
                       title="Acercar" aria-label="Acercar"
-                      (click)="zoomIn()" [disabled]="!puedeAcercar"><i class="bi bi-zoom-in"></i></button>
+                      (click)="zoomIn()" [disabled]="!puedeAcercar"><i class="bi bi-zoom-in"></i><span class="btn-label">Acercar</span></button>
             </div>
             <span class="badge bg-light text-dark border">{{ fotos.length }} foto(s)</span>
           </div>
@@ -179,13 +179,13 @@
             </div>
 
             <div class="miniaturas d-flex gap-2 overflow-auto" *ngIf="fotos.length > 1">
-              <button aria-label="Ver foto" type="button" class="miniatura btn-xs" *ngFor="let item of fotos"
+              <button aria-label="Ver foto" type="button" class="btn miniatura btn-xs btn-labeled" *ngFor="let item of fotos"
                       [class.active]="esFotoActiva(item)"
                       (click)="seleccionarFoto(item)"
                       [title]="item.foto.createdAt || 'Ver foto'">
                 <img *ngIf="item.url" [src]="item.url" alt="Miniatura del acta">
                 <span *ngIf="!item.url" class="spinner-border spinner-border-sm"></span>
-              </button>
+              <span class="btn-label">Ver foto</span></button>
             </div>
           </div>
         </div>

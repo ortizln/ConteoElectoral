@@ -1,13 +1,13 @@
   <div class="page-header">
     <h2>Gestión de Usuarios</h2>
     <div class="dropdown">
-      <button aria-label="Opciones" title="Opciones" class="btn btn-primary dropdown-toggle btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
+      <button aria-label="Opciones" title="Opciones" class="btn btn-primary dropdown-toggle btn-xs btn-labeled" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i><span class="btn-label">Opciones</span></button>
       <ul class="dropdown-menu dropdown-menu-end">
-        <li><button aria-label="Nuevo" title="Nuevo" class="dropdown-item fw-bold btn-xs icon-only" (click)="openModal()"><i class="bi bi-plus-lg"></i></button></li>
+        <li><button aria-label="Nuevo" title="Nuevo" class="btn dropdown-item fw-bold btn-xs btn-labeled" (click)="openModal()"><i class="bi bi-plus-lg"></i><span class="btn-label">Nuevo</span></button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportUsuariosPdf()"><i class="bi bi-download"></i></button></li>
-        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportUsuariosExcel()"><i class="bi bi-download"></i></button></li>
-        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item fw-bold btn-xs icon-only" (click)="exportarUsuariosMesasExcel()"><i class="bi bi-download"></i></button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="btn dropdown-item btn-xs btn-labeled" (click)="api.exportUsuariosPdf()"><i class="bi bi-download"></i><span class="btn-label">Descargar</span></button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="btn dropdown-item btn-xs btn-labeled" (click)="api.exportUsuariosExcel()"><i class="bi bi-download"></i><span class="btn-label">Descargar</span></button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="btn dropdown-item fw-bold btn-xs btn-labeled" (click)="exportarUsuariosMesasExcel()"><i class="bi bi-download"></i><span class="btn-label">Descargar</span></button></li>
       </ul>
     </div>
   </div>
@@ -63,13 +63,13 @@
         </td>
         <td>
           <div class="dropdown">
-            <button aria-label="Opciones" title="Opciones" class="btn btn-outline-secondary border-0 btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
+            <button aria-label="Opciones" title="Opciones" class="btn btn-outline-secondary border-0 btn-xs btn-labeled" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i><span class="btn-label">Opciones</span></button>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li><button aria-label="Ver" title="Ver" class="dropdown-item btn-xs icon-only" (click)="verUsuario(u)"><i class="bi bi-eye"></i></button></li>
-              <li><button aria-label="Editar" title="Editar" class="dropdown-item btn-xs icon-only" (click)="openEditModal(u)"><i class="bi bi-pencil-square"></i></button></li>
-              <li><button aria-label="Restablecer" title="Restablecer" class="dropdown-item btn-xs icon-only" (click)="openResetPasswordModal(u)"><i class="bi bi-arrow-counterclockwise"></i></button></li>
+              <li><button aria-label="Ver" title="Ver" class="btn dropdown-item btn-xs btn-labeled" (click)="verUsuario(u)"><i class="bi bi-eye"></i><span class="btn-label">Ver</span></button></li>
+              <li><button aria-label="Editar" title="Editar" class="btn dropdown-item btn-xs btn-labeled" (click)="openEditModal(u)"><i class="bi bi-pencil-square"></i><span class="btn-label">Editar</span></button></li>
+              <li><button aria-label="Restablecer" title="Restablecer" class="btn dropdown-item btn-xs btn-labeled" (click)="openResetPasswordModal(u)"><i class="bi bi-arrow-counterclockwise"></i><span class="btn-label">Restablecer</span></button></li>
               <li><hr class="dropdown-divider"></li>
-              <li><button aria-label="Eliminar" title="Eliminar" class="dropdown-item text-danger btn-xs icon-only" (click)="deleteUsuario(u)"><i class="bi bi-trash"></i></button></li>
+              <li><button aria-label="Eliminar" title="Eliminar" class="btn dropdown-item text-danger btn-xs btn-labeled" (click)="deleteUsuario(u)"><i class="bi bi-trash"></i><span class="btn-label">Eliminar</span></button></li>
             </ul>
           </div>
         </td>
@@ -85,13 +85,13 @@
       Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, usuariosFiltrados.length) }} de {{ usuariosFiltrados.length }} registros
     </div>
     <div class="pagination-controls">
-      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="goToPage(1)" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
-      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="prevPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs btn-labeled" (click)="goToPage(1)" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i><span class="btn-label">Primera página</span></button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs btn-labeled" (click)="prevPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i><span class="btn-label">Primera página</span></button>
       <span *ngFor="let p of pages">
-        <button class="btn btn-xs" aria-label="Acción" title="Acción" (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
+        <button class="btn btn-xs btn-labeled" aria-label="Acción" title="Acción" (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
       </span>
-      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
-      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs btn-labeled" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i><span class="btn-label">Última página</span></button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs btn-labeled" (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i><span class="btn-label">Última página</span></button>
     </div>
     <div class="pagination-size">
       <label class="sm">Filas:</label>
@@ -107,7 +107,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5>{{ editingUser ? 'Editar' : 'Nuevo' }} Usuario</h5>
-          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="closeModal()">×</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs btn-labeled" (click)="closeModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
         <div class="modal-body">
           <div class="mb-3" *ngIf="errorMessage">
@@ -160,8 +160,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
-          <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="save()"><i class="bi bi-save"></i></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="closeModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="save()"><i class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
         </div>
       </div>
     </div>
@@ -173,7 +173,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5>Reset Password - {{ resetUser?.username }}</h5>
-          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="closeResetModal()">×</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs btn-labeled" (click)="closeResetModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
         <div class="modal-body">
           <div class="mb-3">
@@ -186,8 +186,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeResetModal()"><i class="bi bi-x-lg"></i></button>
-          <button aria-label="Restablecer" title="Restablecer" class="btn btn-primary btn-xs icon-only" (click)="resetPassword()"><i class="bi bi-arrow-counterclockwise"></i></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="closeResetModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Restablecer" title="Restablecer" class="btn btn-primary btn-xs btn-labeled" (click)="resetPassword()"><i class="bi bi-arrow-counterclockwise"></i><span class="btn-label">Restablecer</span></button>
         </div>
       </div>
     </div>
@@ -199,7 +199,7 @@
       <div class="modal-content">
         <div class="modal-header bg-light">
           <h5 class="modal-title">Información del Usuario</h5>
-          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="cerrarViewModal()"></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-xs btn-labeled" (click)="cerrarViewModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
         <div class="modal-body">
           <div *ngIf="viewUser" class="row g-3 mb-4">
@@ -281,7 +281,7 @@
           </ng-template>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="cerrarViewModal()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="cerrarViewModal()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
       </div>
     </div>

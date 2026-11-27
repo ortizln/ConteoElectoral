@@ -8,7 +8,7 @@
 
   <div class="roles-tabs">
     <button aria-label="Acción" title="Acción" *ngFor="let r of roles"
-      class="tab-btn btn-xs"
+      class="btn tab-btn btn-xs btn-labeled"
       [class.active]="selectedRolId === r.id"
       (click)="selectRol(r.id)">
       {{ r.nombre }}
@@ -32,16 +32,16 @@
         <tr *ngFor="let p of permisos">
           <td>{{ p.modulo }}</td>
           <td class="text-center">
-            <button aria-label="Permiso" title="Permiso" class="toggle-btn btn-xs icon-only" [class.active]="p.puedeVer" (click)="togglePermiso(p, 'puedeVer')" [disabled]="saving"><i class="bi bi-check-lg"></i></button>
+            <button aria-label="Permiso" title="Permiso" class="btn toggle-btn btn-xs btn-labeled" [class.active]="p.puedeVer" (click)="togglePermiso(p, 'puedeVer')" [disabled]="saving"><i class="bi bi-check-lg"></i><span class="btn-label">Permiso</span></button>
           </td>
           <td class="text-center">
-            <button aria-label="Permiso" title="Permiso" class="toggle-btn btn-xs icon-only" [class.active]="p.puedeCrear" (click)="togglePermiso(p, 'puedeCrear')" [disabled]="saving"><i class="bi bi-check-lg"></i></button>
+            <button aria-label="Permiso" title="Permiso" class="btn toggle-btn btn-xs btn-labeled" [class.active]="p.puedeCrear" (click)="togglePermiso(p, 'puedeCrear')" [disabled]="saving"><i class="bi bi-check-lg"></i><span class="btn-label">Permiso</span></button>
           </td>
           <td class="text-center">
-            <button aria-label="Permiso" title="Permiso" class="toggle-btn btn-xs icon-only" [class.active]="p.puedeEditar" (click)="togglePermiso(p, 'puedeEditar')" [disabled]="saving"><i class="bi bi-check-lg"></i></button>
+            <button aria-label="Permiso" title="Permiso" class="btn toggle-btn btn-xs btn-labeled" [class.active]="p.puedeEditar" (click)="togglePermiso(p, 'puedeEditar')" [disabled]="saving"><i class="bi bi-check-lg"></i><span class="btn-label">Permiso</span></button>
           </td>
           <td class="text-center">
-            <button aria-label="Permiso" title="Permiso" class="toggle-btn btn-xs icon-only" [class.active]="p.puedeEliminar" (click)="togglePermiso(p, 'puedeEliminar')" [disabled]="saving"><i class="bi bi-check-lg"></i></button>
+            <button aria-label="Permiso" title="Permiso" class="btn toggle-btn btn-xs btn-labeled" [class.active]="p.puedeEliminar" (click)="togglePermiso(p, 'puedeEliminar')" [disabled]="saving"><i class="bi bi-check-lg"></i><span class="btn-label">Permiso</span></button>
           </td>
         </tr>
       </tbody>

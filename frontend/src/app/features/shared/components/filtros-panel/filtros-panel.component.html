@@ -1,6 +1,6 @@
 <div class="filtros-panel" [class.abierto]="abierto">
-  <button aria-label="Filtros" type="button" class="filtros-panel-cabecera btn-xs icon-only" (click)="toggle()"
-          [attr.aria-expanded]="abierto" title="Mostrar u ocultar filtros"><i class="bi bi-funnel"></i></button>
+  <button aria-label="Filtros" type="button" class="btn filtros-panel-cabecera btn-xs btn-labeled" (click)="toggle()"
+          [attr.aria-expanded]="abierto" title="Mostrar u ocultar filtros"><i class="bi bi-funnel"></i><span class="btn-label">Filtros</span></button>
   <div class="filtros-panel-cuerpo">
     <div class="filtros-panel-contenido">
       <ng-content></ng-content>

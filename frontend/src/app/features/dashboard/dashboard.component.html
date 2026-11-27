@@ -14,9 +14,9 @@
       </div>
     </div>
     <div class="header-actions">
-      <button aria-label="Descargar / exportar" *ngIf="!publico" class="btn btn-excel btn-xs icon-only" (click)="exportarExcel()" title="Exportar a Excel"><i class="bi bi-download"></i></button>
-      <button aria-label="Descargar / exportar" *ngIf="!publico" class="btn btn-pdf btn-xs icon-only" (click)="exportarPdf()" title="Exportar a PDF"><i class="bi bi-download"></i></button>
-      <button aria-label="Recargar" title="Recargar" class="btn btn-refresh btn-xs icon-only" (click)="recargarSilencioso()"><i class="bi bi-arrow-clockwise"></i></button>
+      <button aria-label="Descargar / exportar" *ngIf="!publico" class="btn btn-excel btn-xs btn-labeled" (click)="exportarExcel()" title="Exportar a Excel"><i class="bi bi-download"></i><span class="btn-label">Descargar</span></button>
+      <button aria-label="Descargar / exportar" *ngIf="!publico" class="btn btn-pdf btn-xs btn-labeled" (click)="exportarPdf()" title="Exportar a PDF"><i class="bi bi-download"></i><span class="btn-label">Descargar</span></button>
+      <button aria-label="Recargar" title="Recargar" class="btn btn-refresh btn-xs btn-labeled" (click)="recargarSilencioso()"><i class="bi bi-arrow-clockwise"></i><span class="btn-label">Recargar</span></button>
     </div>
   </div>
 
@@ -27,9 +27,9 @@
         <h3><i class="bi bi-search"></i> Filtros de Búsqueda</h3>
       </div>
       <div class="card-buttons">
-        <button aria-label="Limpiar" title="Limpiar" class="btn btn-clean btn-xs icon-only" (click)="limpiarFiltros()"><i class="bi bi-brush"></i></button>
-        <button aria-label="Minimizar / expandir" class="btn-card-action btn-xs icon-only" (click)="filtrosMinimized = !filtrosMinimized"
-          [title]="filtrosMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i></button>
+        <button aria-label="Limpiar" title="Limpiar" class="btn btn-clean btn-xs btn-labeled" (click)="limpiarFiltros()"><i class="bi bi-brush"></i><span class="btn-label">Limpiar</span></button>
+        <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs btn-labeled" (click)="filtrosMinimized = !filtrosMinimized"
+          [title]="filtrosMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i><span class="btn-label">Minimizar</span></button>
       </div>
     </div>
     <div class="filtros-grid" *ngIf="!filtrosMinimized">
@@ -103,13 +103,18 @@
   <div *ngIf="alcanceActivo" class="alert alert-info d-flex align-items-center gap-2 py-2 mb-3">
     <i class="bi bi-funnel-fill"></i>
     <span>Alcance: <strong>{{ alcanceActivo }}</strong></span>
-    <button aria-label="Cerrar" title="Cerrar" class="btn btn-outline-secondary ms-auto btn-xs icon-only" (click)="limpiarAlcance()"><i class="bi bi-x-lg"></i></button>
+    <button aria-label="Cerrar" title="Cerrar" class="btn btn-outline-secondary ms-auto btn-xs btn-labeled" (click)="limpiarAlcance()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
   </div>
 
   <div *ngIf="dashboard" class="stats-section-header">
-    <h3><i class="bi bi-clipboard-data"></i> Resumen General</h3>
-    <button aria-label="Minimizar / expandir" class="btn-card-action btn-xs icon-only" (click)="toggleMinimize('stats')"
-      [title]="statsMinimized ? 'Expandir' : 'Ocultar'"><i class="bi bi-plus"></i></button>
+    <h3>
+      <i class="bi bi-clipboard-data"></i> Resumen General
+      <small class="stats-scope-note" *ngIf="mesasAsignadasActivas">
+        <i class="bi bi-person-check"></i> Calculado sobre sus mesas asignadas
+      </small>
+    </h3>
+    <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleMinimize('stats')"
+      [title]="statsMinimized ? 'Expandir' : 'Ocultar'"><i class="bi bi-plus"></i><span class="btn-label">Minimizar</span></button>
   </div>
 
   <div *ngIf="dashboard" class="stats-grid" [class.hidden]="statsMinimized">
@@ -147,7 +152,7 @@
     <div class="stat-card stat-mesas">
       <div class="stat-icon"><i class="bi bi-clipboard-data"></i></div>
       <div class="stat-info">
-        <span class="stat-label">Mesas Totales</span>
+        <span class="stat-label">{{ mesasAsignadasActivas ? 'Mesas Asignadas' : 'Mesas Totales' }}</span>
         <span class="stat-value">{{ dashboard.totalMesas }}</span>
       </div>
     </div>
@@ -180,9 +185,9 @@
       <div class="card-header-actions">
         <h3><i class="bi bi-bar-chart-fill"></i> Votos por Candidato</h3>
         <div class="card-buttons">
-          <button aria-label="Minimizar / expandir" class="btn-card-action btn-xs icon-only" (click)="toggleMinimize('barChart')"
-            [title]="barChartMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i></button>
-          <button aria-label="Pantalla completa" class="btn-card-action btn-xs icon-only" (click)="toggleFullscreen('barChart')" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i></button>
+          <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleMinimize('barChart')"
+            [title]="barChartMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i><span class="btn-label">Minimizar</span></button>
+          <button aria-label="Pantalla completa" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleFullscreen('barChart')" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i><span class="btn-label">Pantalla completa</span></button>
         </div>
       </div>
       <div class="card-body" [class.hidden]="barChartMinimized">
@@ -194,9 +199,9 @@
       <div class="card-header-actions">
         <h3><i class="bi bi-pie-chart"></i> Distribución de Votos</h3>
         <div class="card-buttons">
-          <button aria-label="Minimizar / expandir" class="btn-card-action btn-xs icon-only" (click)="toggleMinimize('pieChart')"
-            [title]="pieChartMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i></button>
-          <button aria-label="Pantalla completa" class="btn-card-action btn-xs icon-only" (click)="toggleFullscreen('pieChart')" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i></button>
+          <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleMinimize('pieChart')"
+            [title]="pieChartMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i><span class="btn-label">Minimizar</span></button>
+          <button aria-label="Pantalla completa" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleFullscreen('pieChart')" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i><span class="btn-label">Pantalla completa</span></button>
         </div>
       </div>
       <div class="card-body" [class.hidden]="pieChartMinimized">
@@ -217,9 +222,9 @@
         <h3><i [class]="'bi ' + cat.icono"></i> {{ cat.titulo }}</h3>
         <div class="card-buttons">
           <span class="table-count">{{ cat.totalVotos | number }} votos</span>
-          <button aria-label="Minimizar / expandir" class="btn-card-action btn-xs icon-only" (click)="toggleMinimize(cat.clave)"
-            [title]="categoriaChartMinimized[cat.clave] ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i></button>
-          <button aria-label="Pantalla completa" class="btn-card-action btn-xs icon-only" (click)="toggleFullscreen(cat.clave)" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i></button>
+          <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleMinimize(cat.clave)"
+            [title]="categoriaChartMinimized[cat.clave] ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i><span class="btn-label">Minimizar</span></button>
+          <button aria-label="Pantalla completa" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleFullscreen(cat.clave)" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i><span class="btn-label">Pantalla completa</span></button>
         </div>
       </div>
       <div class="card-body" [class.hidden]="categoriaChartMinimized[cat.clave]">
@@ -253,9 +258,9 @@
       <h3><i class="bi bi-clipboard-data"></i> Resultados</h3>
       <div class="card-buttons">
         <span class="table-count">{{ tabCountLabel }}</span>
-        <button aria-label="Minimizar / expandir" class="btn-card-action btn-xs icon-only" (click)="toggleMinimize('resultados')"
-          [title]="resultadosMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i></button>
-        <button aria-label="Pantalla completa" class="btn-card-action btn-xs icon-only" (click)="toggleFullscreen('resultados')" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i></button>
+        <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleMinimize('resultados')"
+          [title]="resultadosMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i><span class="btn-label">Minimizar</span></button>
+        <button aria-label="Pantalla completa" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleFullscreen('resultados')" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i><span class="btn-label">Pantalla completa</span></button>
       </div>
     </div>
     <div class="table-wrapper" [class.hidden]="resultadosMinimized">
@@ -523,7 +528,7 @@
             <i class="bi bi-grid-3x3-gap"></i> Mesa {{ drillMesaSeleccionada.mesaNumero }}
             <small class="text-muted">— {{ drillMesaSeleccionada.institucionNombre || '' }}</small>
           </h5>
-          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn-close btn-xs" (click)="cerrarDrillMesa()"></button>
+          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="cerrarDrillMesa()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
         <div class="modal-body">
           <div *ngIf="drillMesaSeleccionada" class="row mb-3">
@@ -602,7 +607,7 @@
           </ng-container>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="cerrarDrillMesa()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="cerrarDrillMesa()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
       </div>
     </div>
@@ -615,7 +620,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 *ngIf="recintoResumen"><i class="bi bi-building"></i> {{ recintoResumen.recintoNombre }}</h5>
-          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn-close btn-xs" (click)="cerrarResumenRecinto()"></button>
+          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="cerrarResumenRecinto()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
         <div class="modal-body">
           <div *ngIf="recintoResumenLoading" class="text-center py-4">
@@ -723,8 +728,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="cerrarResumenRecinto()"><i class="bi bi-x-lg"></i></button>
-          <button aria-label="Ver" title="Ver" class="btn btn-primary btn-xs icon-only" *ngIf="recintoResumenData" (click)="aplicarRecintoDesdeResumen()"><i class="bi bi-eye"></i></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="cerrarResumenRecinto()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Ver" title="Ver" class="btn btn-primary btn-xs btn-labeled" *ngIf="recintoResumenData" (click)="aplicarRecintoDesdeResumen()"><i class="bi bi-eye"></i><span class="btn-label">Ver</span></button>
         </div>
       </div>
     </div>
@@ -737,7 +742,7 @@
     <div class="modal-dialog modal-xl modal-dialog-centered">
       <div class="modal-content" style="background:transparent; border:none;">
         <div class="text-end">
-          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-light btn-sm btn-xs icon-only" (click)="cerrarFotoVisor()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-light btn-sm btn-xs btn-labeled" (click)="cerrarFotoVisor()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
         <img [src]="drillMesaFotoVisor" alt="Foto del acta"
           style="max-width:100%; max-height:80vh; margin:0 auto; display:block; border-radius:8px;">
@@ -757,7 +762,7 @@
             <i class="bi bi-bar-chart-fill"></i> {{ detalleCandidato.nombreCompleto }}
             <small class="text-muted" *ngIf="detalleCandidato.listaId">(Lista)</small>
           </h5>
-          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn-close btn-xs" (click)="cerrarDetalle()"></button>
+          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="cerrarDetalle()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
         <div class="modal-body">
           <div *ngIf="detalleLoading" class="text-center py-4">
@@ -826,7 +831,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="cerrarDetalle()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="cerrarDetalle()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
       </div>
     </div>
@@ -839,7 +844,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5><i class="bi bi-lock-fill"></i> Mesas Cerradas</h5>
-          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn-close btn-xs" (click)="cerrarMesasCerradas()"></button>
+          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="cerrarMesasCerradas()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
         <div class="modal-body">
           <div *ngIf="mesasCerradasLoading" class="text-center py-4">
@@ -872,10 +877,10 @@
                   <td class="col-text-wrap" [title]="m.parroquiaNombre">{{ m.parroquiaNombre }}</td>
                   <td class="text-right"><strong>{{ m.totalVotos | number }}</strong></td>
                   <td class="text-center">
-                    <button aria-label="Descargar" class="btn-card-action btn-xs icon-only" (click)="descargarActa(m.id)" title="Descargar acta"><i class="bi bi-download"></i></button>
+                    <button aria-label="Descargar" class="btn btn-card-action btn-xs btn-labeled" (click)="descargarActa(m.id)" title="Descargar acta"><i class="bi bi-download"></i><span class="btn-label">Descargar</span></button>
                   </td>
                   <td class="text-center">
-                    <button aria-label="Desaprobar / reabrir" class="btn-reabrir btn-xs icon-only" (click)="confirmarReabrirMesa(m)" title="Reabrir mesa"><i class="bi bi-unlock"></i></button>
+                    <button aria-label="Desaprobar / reabrir" class="btn btn-reabrir btn-xs btn-labeled" (click)="confirmarReabrirMesa(m)" title="Reabrir mesa"><i class="bi bi-unlock"></i><span class="btn-label">Reabrir</span></button>
                   </td>
                 </tr>
               </tbody>
@@ -883,7 +888,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="cerrarMesasCerradas()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="cerrarMesasCerradas()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
       </div>
     </div>
@@ -896,7 +901,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5>Confirmar contraseña</h5>
-          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn-close btn-xs" (click)="cancelarReabrir()"></button>
+          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="cancelarReabrir()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
         <div class="modal-body">
           <p>Ingrese su contraseña para reabrir la mesa <strong>#{{ reabrirMesaSeleccionada?.numero }}</strong>:</p>
@@ -905,8 +910,8 @@
           <div *ngIf="reabrirError" class="text-danger mt-2 small">{{ reabrirError }}</div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="cancelarReabrir()"><i class="bi bi-x-lg"></i></button>
-          <button aria-label="Desaprobar / reabrir" title="Desaprobar / reabrir" class="btn btn-warning btn-xs icon-only" (click)="ejecutarReabrir()" [disabled]="reabrirCargando"><span *ngIf="reabrirCargando" class="spinner-border spinner-border-sm"></span><i *ngIf="!reabrirCargando" class="bi bi-unlock"></i></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="cancelarReabrir()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+          <button aria-label="Desaprobar / reabrir" title="Desaprobar / reabrir" class="btn btn-warning btn-xs btn-labeled" (click)="ejecutarReabrir()" [disabled]="reabrirCargando"><span *ngIf="reabrirCargando" class="spinner-border spinner-border-sm"></span><i *ngIf="!reabrirCargando" class="bi bi-unlock"></i><span class="btn-label">Reabrir</span></button>
         </div>
       </div>
     </div>
@@ -919,7 +924,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5><i class="bi" [ngClass]="nulosBlancoTipo === 'nulos' ? 'bi-x-circle-fill' : 'bi-square'"></i> Votos {{ nulosBlancoTipo === 'nulos' ? 'Nulos' : 'en Blanco' }} por Mesa</h5>
-          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn-close btn-xs" (click)="cerrarNulosBlancoDetalle()"></button>
+          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="cerrarNulosBlancoDetalle()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
         <div class="modal-body">
           <div *ngIf="nulosBlancoLoading" class="text-center py-4">
@@ -952,7 +957,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="cerrarNulosBlancoDetalle()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="cerrarNulosBlancoDetalle()"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
         </div>
       </div>
     </div>

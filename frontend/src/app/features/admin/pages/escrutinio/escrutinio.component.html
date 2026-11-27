@@ -17,7 +17,7 @@
   <!-- RECONTEO -->
   <div *ngIf="activeTab === 'reconteos'">
     <div class="mb-2">
-      <button aria-label="Nuevo" title="Nuevo" class="btn btn-primary btn-sm btn-xs icon-only" (click)="openReconteo()"><i class="bi bi-plus-lg"></i></button>
+      <button aria-label="Nuevo" title="Nuevo" class="btn btn-primary btn-sm btn-xs btn-labeled" (click)="openReconteo()"><i class="bi bi-plus-lg"></i><span class="btn-label">Nuevo</span></button>
     </div>
     <div class="table-container">
       <table class="table">
@@ -47,7 +47,7 @@
   <!-- IMPUGNACIONES -->
   <div *ngIf="activeTab === 'impugnaciones'">
     <div class="mb-2">
-      <button aria-label="Nuevo" title="Nuevo" class="btn btn-primary btn-sm btn-xs icon-only" (click)="openImpugnacion()"><i class="bi bi-plus-lg"></i></button>
+      <button aria-label="Nuevo" title="Nuevo" class="btn btn-primary btn-sm btn-xs btn-labeled" (click)="openImpugnacion()"><i class="bi bi-plus-lg"></i><span class="btn-label">Nuevo</span></button>
     </div>
     <div class="table-container">
       <table class="table">
@@ -77,7 +77,7 @@
   <!-- OBSERVACIONES -->
   <div *ngIf="activeTab === 'observaciones'">
     <div class="mb-2">
-      <button aria-label="Nuevo" title="Nuevo" class="btn btn-primary btn-sm btn-xs icon-only" (click)="openObservacion()"><i class="bi bi-plus-lg"></i></button>
+      <button aria-label="Nuevo" title="Nuevo" class="btn btn-primary btn-sm btn-xs btn-labeled" (click)="openObservacion()"><i class="bi bi-plus-lg"></i><span class="btn-label">Nuevo</span></button>
     </div>
     <div class="table-container">
       <table class="table">
@@ -99,7 +99,7 @@
   <!-- RESOLUCIONES -->
   <div *ngIf="activeTab === 'resoluciones'">
     <div class="mb-2">
-      <button aria-label="Nuevo" title="Nuevo" class="btn btn-primary btn-sm btn-xs icon-only" (click)="openResolucion()"><i class="bi bi-plus-lg"></i></button>
+      <button aria-label="Nuevo" title="Nuevo" class="btn btn-primary btn-sm btn-xs btn-labeled" (click)="openResolucion()"><i class="bi bi-plus-lg"></i><span class="btn-label">Nuevo</span></button>
     </div>
     <div class="table-container">
       <table class="table">
@@ -129,7 +129,7 @@
           {{ modalType === 'observacion' ? 'Nueva Observación' : '' }}
           {{ modalType === 'resolucion' ? 'Nueva Resolución' : '' }}
         </h5>
-        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn-close btn-xs" (click)="showModal = false"></button>
+        <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-xs btn-labeled" (click)="showModal = false"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
       </div>
       <div class="modal-body">
         <div *ngIf="modalType === 'reconteo'">
@@ -166,11 +166,11 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="showModal = false"><i class="bi bi-x-lg"></i></button>
-        <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="saveReconteo()" *ngIf="modalType === 'reconteo'" [disabled]="!reconteoForm.motivo || !reconteoForm.solicitadoPor"><i class="bi bi-save"></i></button>
-        <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="saveImpugnacion()" *ngIf="modalType === 'impugnacion'" [disabled]="!impugnacionForm.descripcion || !impugnacionForm.solicitante"><i class="bi bi-save"></i></button>
-        <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="saveObservacion()" *ngIf="modalType === 'observacion'" [disabled]="!observacionForm.descripcion"><i class="bi bi-save"></i></button>
-        <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="saveResolucion()" *ngIf="modalType === 'resolucion'" [disabled]="!resolucionForm.codigo || !resolucionForm.titulo || !resolucionForm.resueltoPor"><i class="bi bi-save"></i></button>
+        <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs btn-labeled" (click)="showModal = false"><i class="bi bi-x-lg"></i><span class="btn-label">Cerrar</span></button>
+        <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="saveReconteo()" *ngIf="modalType === 'reconteo'" [disabled]="!reconteoForm.motivo || !reconteoForm.solicitadoPor"><i class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
+        <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="saveImpugnacion()" *ngIf="modalType === 'impugnacion'" [disabled]="!impugnacionForm.descripcion || !impugnacionForm.solicitante"><i class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
+        <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="saveObservacion()" *ngIf="modalType === 'observacion'" [disabled]="!observacionForm.descripcion"><i class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
+        <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="saveResolucion()" *ngIf="modalType === 'resolucion'" [disabled]="!resolucionForm.codigo || !resolucionForm.titulo || !resolucionForm.resueltoPor"><i class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
       </div>
     </div>
   </div>

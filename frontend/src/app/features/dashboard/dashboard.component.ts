@@ -104,6 +104,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   mesas: Mesa[] = [];
   userRole: string = '';
+  /** El supervisor con mesas asignadas trabaja solo sobre ese alcance. */
+  mesasAsignadasActivas = false;
 
   ultimaActualizacion = '';
   filtrosMinimized = true;
@@ -353,8 +355,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.filtroCantonId ?? undefined,
       this.filtroParroquiaId ?? undefined,
       this.filtroInstitucionId ?? undefined,
-      this.filtroMesaId ?? undefined
-    ) : this.api.getDashboard(this.selectedEleccionId);
+      this.filtroMesaId ?? undefined,
+      this.publico
+    ) : this.api.getDashboard(this.selectedEleccionId, this.publico);
 
     obs.subscribe((data: DashboardData) => {
       this.dashboard = data;
@@ -460,7 +463,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
 
   loadDashboard(): void {
     if (!this.selectedEleccionId) return;
-    this.api.getDashboard(this.selectedEleccionId).subscribe((data: DashboardData) => {
+    this.api.getDashboard(this.selectedEleccionId, this.publico).subscribe((data: DashboardData) => {
       this.dashboard = data;
       this.procesarResultados(data);
       this.ordenarResultados();
@@ -475,10 +478,21 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   loadMesas(): void {
-    if (!this.selectedEleccionId) return;
-    // Todas las mesas de la elección (drill-down del supervisor)
-    this.api.getMesasByEleccion(this.selectedEleccionId).subscribe((data: Mesa[]) => {
-      this.mesas = data;
+    if (!this.selectedEleccionId || this.publico) return;
+    // El supervisor solo puede explorar las mesas que tiene asignadas; el ADMIN ve todas.
+    const soloAsignadas = this.userRole === 'SUPERVISOR';
+    const obs = soloAsignadas
+      ? this.api.getMesasByCurrentUser(this.selectedEleccionId)
+      : this.api.getMesasByEleccion(this.selectedEleccionId);
+    obs.subscribe({
+      next: (data: Mesa[]) => {
+        this.mesas = data || [];
+        this.mesasAsignadasActivas = soloAsignadas && this.mesas.length > 0;
+      },
+      error: () => {
+        this.mesas = [];
+        this.mesasAsignadasActivas = false;
+      }
     });
   }
 
@@ -654,8 +668,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.showRecintoResumen = true;
     this.api.getDashboardConFiltros(
       this.selectedEleccionId,
-      undefined, undefined, undefined, undefined, undefined, undefined,
-      r.recintoId
+      undefined, undefined, undefined, undefined, undefined, undefined, undefined,
+      r.recintoId, this.publico
     ).subscribe({
       next: (data: DashboardData) => {
         this.recintoResumenData = data;
@@ -861,7 +875,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
       this.filtroCantonId ?? undefined,
       this.filtroParroquiaId ?? undefined,
       this.filtroInstitucionId ?? undefined,
-      this.filtroMesaId ?? undefined
+      this.filtroMesaId ?? undefined,
+      this.publico
     ).subscribe((data: DashboardData) => {
       this.dashboard = data;
       this.procesarResultados(data);
