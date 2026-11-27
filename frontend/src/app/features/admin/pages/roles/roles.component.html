@@ -7,8 +7,8 @@
   <div *ngIf="success" class="alert alert-success">{{ success }}</div>
 
   <div class="roles-tabs">
-    <button *ngFor="let r of roles"
-      class="tab-btn"
+    <button aria-label="Acción" title="Acción" *ngFor="let r of roles"
+      class="tab-btn btn-xs"
       [class.active]="selectedRolId === r.id"
       (click)="selectRol(r.id)">
       {{ r.nombre }}
@@ -32,24 +32,16 @@
         <tr *ngFor="let p of permisos">
           <td>{{ p.modulo }}</td>
           <td class="text-center">
-            <button class="toggle-btn" [class.active]="p.puedeVer" (click)="togglePermiso(p, 'puedeVer')" [disabled]="saving">
-              <i class="bi" [ngClass]="p.puedeVer ? 'bi-check-lg' : 'bi-x-lg'"></i>
-            </button>
+            <button aria-label="Permiso" title="Permiso" class="toggle-btn btn-xs icon-only" [class.active]="p.puedeVer" (click)="togglePermiso(p, 'puedeVer')" [disabled]="saving"><i class="bi bi-check-lg"></i></button>
           </td>
           <td class="text-center">
-            <button class="toggle-btn" [class.active]="p.puedeCrear" (click)="togglePermiso(p, 'puedeCrear')" [disabled]="saving">
-              <i class="bi" [ngClass]="p.puedeCrear ? 'bi-check-lg' : 'bi-x-lg'"></i>
-            </button>
+            <button aria-label="Permiso" title="Permiso" class="toggle-btn btn-xs icon-only" [class.active]="p.puedeCrear" (click)="togglePermiso(p, 'puedeCrear')" [disabled]="saving"><i class="bi bi-check-lg"></i></button>
           </td>
           <td class="text-center">
-            <button class="toggle-btn" [class.active]="p.puedeEditar" (click)="togglePermiso(p, 'puedeEditar')" [disabled]="saving">
-              <i class="bi" [ngClass]="p.puedeEditar ? 'bi-check-lg' : 'bi-x-lg'"></i>
-            </button>
+            <button aria-label="Permiso" title="Permiso" class="toggle-btn btn-xs icon-only" [class.active]="p.puedeEditar" (click)="togglePermiso(p, 'puedeEditar')" [disabled]="saving"><i class="bi bi-check-lg"></i></button>
           </td>
           <td class="text-center">
-            <button class="toggle-btn" [class.active]="p.puedeEliminar" (click)="togglePermiso(p, 'puedeEliminar')" [disabled]="saving">
-              <i class="bi" [ngClass]="p.puedeEliminar ? 'bi-check-lg' : 'bi-x-lg'"></i>
-            </button>
+            <button aria-label="Permiso" title="Permiso" class="toggle-btn btn-xs icon-only" [class.active]="p.puedeEliminar" (click)="togglePermiso(p, 'puedeEliminar')" [disabled]="saving"><i class="bi bi-check-lg"></i></button>
           </td>
         </tr>
       </tbody>

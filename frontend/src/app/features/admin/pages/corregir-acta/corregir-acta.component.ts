@@ -50,6 +50,11 @@ export class CorregirActaComponent implements OnInit, OnDestroy {
 
   fotos: FotoActaVista[] = [];
   fotoSeleccionadaId: number | null = null;
+  zoom = 1;
+
+  private readonly zoomMin = 0.5;
+  private readonly zoomMax = 4;
+  private readonly zoomPaso = 0.25;
 
   private listasCargadas = false;
   private objectUrls: string[] = [];
@@ -199,6 +204,27 @@ export class CorregirActaComponent implements OnInit, OnDestroy {
 
   seleccionarFoto(item: FotoActaVista): void {
     this.fotoSeleccionadaId = item.foto.id;
+    this.zoom = 1;
+  }
+
+  zoomIn(): void {
+    this.zoom = Math.min(this.zoomMax, Math.round((this.zoom + this.zoomPaso) * 100) / 100);
+  }
+
+  zoomOut(): void {
+    this.zoom = Math.max(this.zoomMin, Math.round((this.zoom - this.zoomPaso) * 100) / 100);
+  }
+
+  resetZoom(): void {
+    this.zoom = 1;
+  }
+
+  get puedeAlejar(): boolean {
+    return this.zoom > this.zoomMin;
+  }
+
+  get puedeAcercar(): boolean {
+    return this.zoom < this.zoomMax;
   }
 
   esFotoActiva(item: FotoActaVista): boolean {

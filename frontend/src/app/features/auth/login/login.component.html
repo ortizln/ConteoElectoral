@@ -9,18 +9,18 @@
 
       <form (ngSubmit)="onSubmit()" class="login-form">
         <div class="form-group">
-          <label for="username">Usuario</label>
-          <input id="username" type="text" class="form-control" [(ngModel)]="username" name="username"
+          <label class="sm" for="username">Usuario</label>
+          <input id="username" type="text" class="form-control sm form-control-sm" [(ngModel)]="username" name="username"
             placeholder="Ingrese su usuario" required autocomplete="off" />
         </div>
 
         <div class="form-group">
-          <label for="password">Contraseña</label>
+          <label class="sm" for="password">Contraseña</label>
           <div class="password-wrapper">
-            <input id="password" [type]="showPassword ? 'text' : 'password'" class="form-control"
+            <input id="password" [type]="showPassword ? 'text' : 'password'" class="form-control sm form-control-sm"
               [(ngModel)]="password" name="password" placeholder="Ingrese su contraseña"
               required autocomplete="new-password" />
-            <button type="button" class="btn-eye" (click)="showPassword = !showPassword"
+            <button type="button" class="btn-eye btn-xs icon-only" title="Mostrar u ocultar contraseña" (click)="showPassword = !showPassword"
               [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
@@ -35,12 +35,8 @@
 
         <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
-        <button type="submit" class="btn btn-login" [disabled]="loading">
-          {{ loading ? 'Ingresando...' : 'Ingresar' }}
-        </button>
-        <button type="button" class="btn-recover" (click)="openRecoveryModal()">
-          Recuperar la contraseña
-        </button>
+        <button aria-label="Ingresar" title="Ingresar" type="submit" class="btn btn-login btn-xs icon-only" [disabled]="loading"><span *ngIf="loading" class="spinner-border spinner-border-sm"></span><i *ngIf="!loading" class="bi bi-box-arrow-in-right"></i></button>
+        <button aria-label="Recuperar contraseña" title="Recuperar contraseña" type="button" class="btn-recover btn-xs icon-only" (click)="openRecoveryModal()"><i class="bi bi-question-circle"></i></button>
       </form>
 
       <div class="download-apk">
@@ -87,7 +83,7 @@
       </div>
 
       <div *ngIf="images.length > 1" class="carousel-dots">
-        <button *ngFor="let img of images; let i = index" class="dot"
+        <button aria-label="Ir a la imagen" title="Ir a la imagen" *ngFor="let img of images; let i = index" class="dot btn-xs"
           [class.active]="i === currentIndex" (click)="goToSlide(i)"></button>
       </div>
     </div>
@@ -100,31 +96,29 @@
   <div class="recovery-modal" role="dialog" aria-modal="true" aria-labelledby="recovery-title">
     <div class="recovery-header">
       <h3 id="recovery-title">Recuperar la contraseña</h3>
-      <button type="button" class="recovery-close" aria-label="Cerrar" (click)="closeRecoveryModal()">&times;</button>
+      <button title="Cerrar" type="button" class="recovery-close btn-xs icon-only" aria-label="Cerrar" (click)="closeRecoveryModal()"><i class="bi bi-x-lg"></i></button>
     </div>
     <p class="recovery-hint">Ingrese su usuario y cédula. Enviaremos una contraseña temporal por WhatsApp al celular que indique. Si ya tiene un celular registrado, debe ingresar ese mismo número.</p>
     <div class="form-group">
-      <label for="rec-username">Usuario</label>
-      <input id="rec-username" type="text" class="form-control" [(ngModel)]="recuperarForm.username" name="recUsername"
+      <label class="sm" for="rec-username">Usuario</label>
+      <input id="rec-username" type="text" class="form-control sm form-control-sm" [(ngModel)]="recuperarForm.username" name="recUsername"
         placeholder="Ingrese su usuario" autocomplete="off" />
     </div>
     <div class="form-group">
-      <label for="rec-identificacion">Identificación (cédula)</label>
-      <input id="rec-identificacion" type="text" class="form-control" [(ngModel)]="recuperarForm.identificacion" name="recIdentificacion"
+      <label class="sm" for="rec-identificacion">Identificación (cédula)</label>
+      <input id="rec-identificacion" type="text" class="form-control sm form-control-sm" [(ngModel)]="recuperarForm.identificacion" name="recIdentificacion"
         placeholder="Ingrese su cédula" autocomplete="off" />
     </div>
     <div class="form-group">
-      <label for="rec-celular">Celular de WhatsApp (destino del mensaje)</label>
-      <input id="rec-celular" type="tel" class="form-control" [(ngModel)]="recuperarForm.celular" name="recCelular"
+      <label class="sm" for="rec-celular">Celular de WhatsApp (destino del mensaje)</label>
+      <input id="rec-celular" type="tel" class="form-control sm form-control-sm" [(ngModel)]="recuperarForm.celular" name="recCelular"
         placeholder="Ej. 593987269948" autocomplete="off" />
     </div>
     <div *ngIf="recuperarError" class="alert alert-danger">{{ recuperarError }}</div>
     <div *ngIf="recuperarSuccess" class="alert alert-success">{{ recuperarSuccess }}</div>
     <div class="recovery-actions">
-      <button type="button" class="btn btn-secondary" (click)="closeRecoveryModal()">Cerrar</button>
-      <button type="button" class="btn btn-login" [disabled]="recuperando" (click)="submitRecovery()">
-        {{ recuperando ? 'Enviando...' : 'Enviar por WhatsApp' }}
-      </button>
+      <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-secondary btn-xs icon-only" (click)="closeRecoveryModal()"><i class="bi bi-x-lg"></i></button>
+      <button aria-label="Enviar por WhatsApp" title="Enviar por WhatsApp" type="button" class="btn btn-login btn-xs icon-only" [disabled]="recuperando" (click)="submitRecovery()"><span *ngIf="recuperando" class="spinner-border spinner-border-sm"></span><i *ngIf="!recuperando" class="bi bi-whatsapp"></i></button>
     </div>
   </div>
 </div>

@@ -17,19 +17,15 @@
 
   <div class="upload-section">
     <div class="file-input-area">
-      <input type="file" autocomplete="off" (change)="onFileSelected($event)" accept=".xlsx,.xls" id="fileInput" />
-      <label for="fileInput" class="file-label">
+      <input class="sm" type="file" autocomplete="off" (change)="onFileSelected($event)" accept=".xlsx,.xls" id="fileInput" />
+      <label for="fileInput" class="file-label sm">
         <span *ngIf="!selectedFile">&#128193; Seleccionar archivo Excel...</span>
         <span *ngIf="selectedFile">&#128196; {{ selectedFile.name }}</span>
       </label>
     </div>
     <div class="upload-actions">
-      <button class="btn btn-success" (click)="descargarTemplate()">
-        &#128229; Descargar Plantilla
-      </button>
-      <button class="btn btn-primary" (click)="importar()" [disabled]="!selectedFile || importing">
-        {{ importing ? 'Importando...' : 'Importar Datos' }}
-      </button>
+      <button aria-label="Descargar plantilla" title="Descargar plantilla" class="btn btn-success btn-xs icon-only" (click)="descargarTemplate()"><i class="bi bi-file-earmark-arrow-down"></i></button>
+      <button aria-label="Importar" title="Importar" class="btn btn-primary btn-xs icon-only" (click)="importar()" [disabled]="!selectedFile || importing"><span *ngIf="importing" class="spinner-border spinner-border-sm"></span><i *ngIf="!importing" class="bi bi-box-arrow-in-down"></i></button>
     </div>
   </div>
 

@@ -1337,3 +1337,42 @@ td .dropdown {
   color: var(--alantek-danger) !important;
   border-color: var(--alantek-danger) !important;
 }
+
+/* ============================================================
+   NORMALIZACIÓN GLOBAL
+   Bootstrap 5 no incluye .btn-xs ni .form-label-sm: se definen aquí
+   junto al estilo de botón que muestra únicamente el icono.
+   ============================================================ */
+.btn-xs {
+  padding: 0.15rem 0.4rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  border-radius: 0.2rem;
+}
+
+.btn.icon-only {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  padding: 0.15rem;
+  line-height: 1;
+  font-size: 0.9rem;
+}
+
+label.sm,
+.form-label.sm {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.form-control.sm,
+.form-select.sm,
+textarea.sm,
+.form-control.form-control-sm,
+.form-select.form-select-sm {
+  font-size: 0.8125rem;
+  padding: 0.25rem 0.5rem;
+}

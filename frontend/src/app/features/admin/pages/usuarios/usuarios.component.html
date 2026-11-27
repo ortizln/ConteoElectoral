@@ -1,30 +1,28 @@
   <div class="page-header">
     <h2>Gestión de Usuarios</h2>
     <div class="dropdown">
-      <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
-        Opciones
-      </button>
+      <button aria-label="Opciones" title="Opciones" class="btn btn-primary dropdown-toggle btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
       <ul class="dropdown-menu dropdown-menu-end">
-        <li><button class="dropdown-item fw-bold" (click)="openModal()">+ Nuevo Usuario</button></li>
+        <li><button aria-label="Nuevo" title="Nuevo" class="dropdown-item fw-bold btn-xs icon-only" (click)="openModal()"><i class="bi bi-plus-lg"></i></button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><button class="dropdown-item" (click)="api.exportUsuariosPdf()"><i class="bi bi-printer"></i> Imprimir PDF</button></li>
-        <li><button class="dropdown-item" (click)="api.exportUsuariosExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> Exportar Excel</button></li>
-        <li><button class="dropdown-item fw-bold" (click)="exportarUsuariosMesasExcel()"><i class="bi bi-people-fill"></i> Reporte Usuarios de Mesas</button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportUsuariosPdf()"><i class="bi bi-download"></i></button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportUsuariosExcel()"><i class="bi bi-download"></i></button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item fw-bold btn-xs icon-only" (click)="exportarUsuariosMesasExcel()"><i class="bi bi-download"></i></button></li>
       </ul>
     </div>
   </div>
 
   <app-filtros-panel titulo="Filtros de búsqueda" clave="usuarios">
     <div class="filter-item">
-      <label>Rol:</label>
-      <select class="form-select" [(ngModel)]="filterRol" (change)="filtrarPorRol()">
+      <label class="sm">Rol:</label>
+      <select class="form-select sm form-select-sm" [(ngModel)]="filterRol" (change)="filtrarPorRol()">
         <option [ngValue]="null">Todos</option>
         <option *ngFor="let r of roles" [value]="r.value">{{ r.label }}</option>
       </select>
     </div>
     <div class="filter-item">
-      <label>Buscar:</label>
-      <input type="text" class="form-control" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
+      <label class="sm">Buscar:</label>
+      <input type="text" class="form-control sm form-control-sm" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
     </div>
   </app-filtros-panel>
 
@@ -65,15 +63,13 @@
         </td>
         <td>
           <div class="dropdown">
-            <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
-              <i class="bi bi-three-dots-vertical"></i>
-            </button>
+            <button aria-label="Opciones" title="Opciones" class="btn btn-outline-secondary border-0 btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li><button class="dropdown-item" (click)="verUsuario(u)">Ver</button></li>
-              <li><button class="dropdown-item" (click)="openEditModal(u)">Editar</button></li>
-              <li><button class="dropdown-item" (click)="openResetPasswordModal(u)">Reset Pass</button></li>
+              <li><button aria-label="Ver" title="Ver" class="dropdown-item btn-xs icon-only" (click)="verUsuario(u)"><i class="bi bi-eye"></i></button></li>
+              <li><button aria-label="Editar" title="Editar" class="dropdown-item btn-xs icon-only" (click)="openEditModal(u)"><i class="bi bi-pencil-square"></i></button></li>
+              <li><button aria-label="Restablecer" title="Restablecer" class="dropdown-item btn-xs icon-only" (click)="openResetPasswordModal(u)"><i class="bi bi-arrow-counterclockwise"></i></button></li>
               <li><hr class="dropdown-divider"></li>
-              <li><button class="dropdown-item text-danger" (click)="deleteUsuario(u)">Eliminar</button></li>
+              <li><button aria-label="Eliminar" title="Eliminar" class="dropdown-item text-danger btn-xs icon-only" (click)="deleteUsuario(u)"><i class="bi bi-trash"></i></button></li>
             </ul>
           </div>
         </td>
@@ -89,17 +85,17 @@
       Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, usuariosFiltrados.length) }} de {{ usuariosFiltrados.length }} registros
     </div>
     <div class="pagination-controls">
-      <button (click)="goToPage(1)" [disabled]="currentPage === 1">&laquo;&laquo;</button>
-      <button (click)="prevPage()" [disabled]="currentPage === 1">&laquo;</button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="goToPage(1)" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="prevPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
       <span *ngFor="let p of pages">
-        <button (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
+        <button class="btn btn-xs" aria-label="Acción" title="Acción" (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
       </span>
-      <button (click)="nextPage()" [disabled]="currentPage === totalPages">&raquo;</button>
-      <button (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages">&raquo;&raquo;</button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
     </div>
     <div class="pagination-size">
-      <label>Filas:</label>
-      <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+      <label class="sm">Filas:</label>
+      <select class="sm" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
         <option *ngFor="let s of pageSizes" [value]="s">{{ s }}</option>
       </select>
     </div>
@@ -111,61 +107,61 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5>{{ editingUser ? 'Editar' : 'Nuevo' }} Usuario</h5>
-          <button class="btn-close" (click)="closeModal()">×</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="closeModal()">×</button>
         </div>
         <div class="modal-body">
           <div class="mb-3" *ngIf="errorMessage">
             <div class="alert alert-danger">{{ errorMessage }}</div>
           </div>
           <div class="mb-3" *ngIf="!editingUser">
-            <label>Username:</label>
-            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.username" />
+            <label class="sm">Username:</label>
+            <input type="text" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.username" />
           </div>
           <div class="mb-3" *ngIf="editingUser">
-            <label>Username:</label>
-            <input type="text" class="form-control" [value]="form.username" disabled />
+            <label class="sm">Username:</label>
+            <input type="text" class="form-control sm form-control-sm" [value]="form.username" disabled />
           </div>
           <div class="mb-3" *ngIf="!editingUser">
-            <label>Password:</label>
-            <input type="password" class="form-control" autocomplete="new-password" [(ngModel)]="form.password" />
+            <label class="sm">Password:</label>
+            <input type="password" class="form-control sm form-control-sm" autocomplete="new-password" [(ngModel)]="form.password" />
           </div>
           <div class="mb-3">
-            <label>Nombre:</label>
-            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
+            <label class="sm">Nombre:</label>
+            <input type="text" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
           </div>
           <div class="mb-3">
-            <label>Apellido:</label>
-            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.apellido" (input)="toUpper(form, 'apellido')" />
+            <label class="sm">Apellido:</label>
+            <input type="text" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.apellido" (input)="toUpper(form, 'apellido')" />
           </div>
           <div class="mb-3">
-            <label>Identificación (cédula):</label>
-            <input type="text" class="form-control" autocomplete="off" maxlength="20" placeholder="Ej. 1712345678" [(ngModel)]="form.identificacion" />
+            <label class="sm">Identificación (cédula):</label>
+            <input type="text" class="form-control sm form-control-sm" autocomplete="off" maxlength="20" placeholder="Ej. 1712345678" [(ngModel)]="form.identificacion" />
           </div>
           <div class="mb-3">
-            <label>Celular (WhatsApp):</label>
-            <input type="tel" class="form-control" autocomplete="off" maxlength="20" placeholder="Ej. 593987269948" [(ngModel)]="form.celular" />
+            <label class="sm">Celular (WhatsApp):</label>
+            <input type="tel" class="form-control sm form-control-sm" autocomplete="off" maxlength="20" placeholder="Ej. 593987269948" [(ngModel)]="form.celular" />
           </div>
           <div class="mb-3">
-            <label>Email:</label>
-            <input type="email" class="form-control" autocomplete="off" [(ngModel)]="form.email"  />
+            <label class="sm">Email:</label>
+            <input type="email" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.email"  />
           </div>
           <div class="mb-3">
-            <label>Rol:</label>
-            <select class="form-select" [(ngModel)]="form.rolId">
+            <label class="sm">Rol:</label>
+            <select class="form-select sm form-select-sm" [(ngModel)]="form.rolId">
               <option [ngValue]="1">ADMIN</option>
               <option [ngValue]="2">SUPERVISOR</option>
               <option [ngValue]="3">MIEMBRO_MESA</option>
             </select>
           </div>
           <div class="mb-3">
-            <label>
-              <input type="checkbox" [(ngModel)]="form.activo" /> Activo
+            <label class="sm">
+              <input class="sm" type="checkbox" [(ngModel)]="form.activo" /> Activo
             </label>
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
-          <button class="btn btn-primary" (click)="save()">Guardar</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="save()"><i class="bi bi-save"></i></button>
         </div>
       </div>
     </div>
@@ -177,21 +173,21 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5>Reset Password - {{ resetUser?.username }}</h5>
-          <button class="btn-close" (click)="closeResetModal()">×</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="closeResetModal()">×</button>
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label>Nueva Password:</label>
-            <input type="password" class="form-control" autocomplete="new-password" [(ngModel)]="newPassword" />
+            <label class="sm">Nueva Password:</label>
+            <input type="password" class="form-control sm form-control-sm" autocomplete="new-password" [(ngModel)]="newPassword" />
           </div>
           <div class="mb-3">
-            <label>Confirmar Password:</label>
-            <input type="password" class="form-control" autocomplete="new-password" [(ngModel)]="confirmPassword" />
+            <label class="sm">Confirmar Password:</label>
+            <input type="password" class="form-control sm form-control-sm" autocomplete="new-password" [(ngModel)]="confirmPassword" />
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeResetModal()">Cancelar</button>
-          <button class="btn btn-primary" (click)="resetPassword()">Resetear</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeResetModal()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Restablecer" title="Restablecer" class="btn btn-primary btn-xs icon-only" (click)="resetPassword()"><i class="bi bi-arrow-counterclockwise"></i></button>
         </div>
       </div>
     </div>
@@ -203,38 +199,38 @@
       <div class="modal-content">
         <div class="modal-header bg-light">
           <h5 class="modal-title">Información del Usuario</h5>
-          <button class="btn-close" (click)="cerrarViewModal()"></button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="cerrarViewModal()"></button>
         </div>
         <div class="modal-body">
           <div *ngIf="viewUser" class="row g-3 mb-4">
             <div class="col-md-6">
-              <label class="form-label fw-bold text-uppercase small">Username</label>
+              <label class="form-label fw-bold text-uppercase small sm">Username</label>
               <div class="form-control readonly bg-white">{{ viewUser.username }}</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-bold text-uppercase small">Nombre completo</label>
+              <label class="form-label fw-bold text-uppercase small sm">Nombre completo</label>
               <div class="form-control readonly bg-white">{{ viewUser.nombre }} {{ viewUser.apellido }}</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-bold text-uppercase small">Identificación (cédula)</label>
+              <label class="form-label fw-bold text-uppercase small sm">Identificación (cédula)</label>
               <div class="form-control readonly bg-white">{{ viewUser.identificacion || '—' }}</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-bold text-uppercase small">Celular (WhatsApp)</label>
+              <label class="form-label fw-bold text-uppercase small sm">Celular (WhatsApp)</label>
               <div class="form-control readonly bg-white">{{ viewUser.celular || '—' }}</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-bold text-uppercase small">Email</label>
+              <label class="form-label fw-bold text-uppercase small sm">Email</label>
               <div class="form-control readonly bg-white">{{ viewUser.email }}</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-bold text-uppercase small">Rol</label>
+              <label class="form-label fw-bold text-uppercase small sm">Rol</label>
               <span class="badge" [class]="viewUser.rol === 'ADMIN' ? 'bg-danger' : viewUser.rol === 'SUPERVISOR' ? 'bg-warning' : 'bg-info'">
                 {{ viewUser.rol }}
               </span>
             </div>
             <div class="col-md-6">
-              <label class="form-label fw-bold text-uppercase small">Estado</label>
+              <label class="form-label fw-bold text-uppercase small sm">Estado</label>
               <span class="estado-icon" [class]="viewUser.activo ? 'bi bi-check-circle-fill text-success' : 'bi bi-x-circle-fill text-secondary'"
                     [title]="viewUser.activo ? 'Activo' : 'Inactivo'"></span>
             </div>
@@ -285,7 +281,7 @@
           </ng-template>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="cerrarViewModal()">Cerrar</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="cerrarViewModal()"><i class="bi bi-x-lg"></i></button>
         </div>
       </div>
     </div>

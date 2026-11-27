@@ -2,32 +2,30 @@
   <div class="page-header">
     <h2>Gestión de Candidatos</h2>
     <div class="dropdown">
-      <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
-        Opciones
-      </button>
+      <button aria-label="Opciones" title="Opciones" class="btn btn-primary dropdown-toggle btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
       <ul class="dropdown-menu dropdown-menu-end">
-        <li *ngIf="isAdmin"><button class="dropdown-item fw-bold" (click)="openModal()">+ Nuevo Candidato</button></li>
+        <li *ngIf="isAdmin"><button aria-label="Nuevo" title="Nuevo" class="dropdown-item fw-bold btn-xs icon-only" (click)="openModal()"><i class="bi bi-plus-lg"></i></button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><button class="dropdown-item" (click)="descargarTemplate()"><i class="bi bi-file-earmark-arrow-down"></i> Descargar Plantilla</button></li>
-        <li><button class="dropdown-item" (click)="openImportModal()"><i class="bi bi-box-arrow-in-down"></i> Importar desde Excel</button></li>
+        <li><button aria-label="Descargar plantilla" title="Descargar plantilla" class="dropdown-item btn-xs icon-only" (click)="descargarTemplate()"><i class="bi bi-file-earmark-arrow-down"></i></button></li>
+        <li><button aria-label="Importar" title="Importar" class="dropdown-item btn-xs icon-only" (click)="openImportModal()"><i class="bi bi-box-arrow-in-down"></i></button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><button class="dropdown-item" (click)="api.exportCandidatosPdf()"><i class="bi bi-printer"></i> Imprimir PDF</button></li>
-        <li><button class="dropdown-item" (click)="api.exportCandidatosExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> Exportar Excel</button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportCandidatosPdf()"><i class="bi bi-download"></i></button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportCandidatosExcel()"><i class="bi bi-download"></i></button></li>
       </ul>
     </div>
   </div>
 
   <app-filtros-panel titulo="Filtros de búsqueda" clave="candidatos">
     <div class="filter-item">
-      <label>Elección:</label>
-      <select class="form-select" (change)="load(form.eleccionesId); currentPage = 1" [(ngModel)]="form.eleccionesId">
+      <label class="sm">Elección:</label>
+      <select class="form-select sm form-select-sm" (change)="load(form.eleccionesId); currentPage = 1" [(ngModel)]="form.eleccionesId">
         <option [ngValue]="null">Seleccione...</option>
         <option *ngFor="let e of elecciones" [value]="e.id">{{ e.nombre }}</option>
       </select>
     </div>
     <div class="filter-item">
-      <label>Buscar:</label>
-      <input type="text" class="form-control" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
+      <label class="sm">Buscar:</label>
+      <input type="text" class="form-control sm form-control-sm" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
     </div>
   </app-filtros-panel>
 
@@ -59,13 +57,11 @@
         <td>{{ c.cargoNombre }}</td>
         <td>
           <div class="dropdown">
-            <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
-              <i class="bi bi-three-dots-vertical"></i>
-            </button>
+            <button aria-label="Opciones" title="Opciones" class="btn btn-outline-secondary border-0 btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li *ngIf="isAdmin"><button class="dropdown-item" (click)="edit(c)">Editar</button></li>
+              <li *ngIf="isAdmin"><button aria-label="Editar" title="Editar" class="dropdown-item btn-xs icon-only" (click)="edit(c)"><i class="bi bi-pencil-square"></i></button></li>
               <li><hr class="dropdown-divider" *ngIf="isAdmin"></li>
-              <li *ngIf="isAdmin"><button class="dropdown-item text-danger" (click)="delete(c.id)">Eliminar</button></li>
+              <li *ngIf="isAdmin"><button aria-label="Eliminar" title="Eliminar" class="dropdown-item text-danger btn-xs icon-only" (click)="delete(c.id)"><i class="bi bi-trash"></i></button></li>
             </ul>
           </div>
         </td>
@@ -81,17 +77,17 @@
       Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, candidatosFiltrados.length) }} de {{ candidatosFiltrados.length }} registros
     </div>
     <div class="pagination-controls">
-      <button (click)="goToPage(1)" [disabled]="currentPage === 1">&laquo;&laquo;</button>
-      <button (click)="prevPage()" [disabled]="currentPage === 1">&laquo;</button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="goToPage(1)" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="prevPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
       <span *ngFor="let p of pages">
-        <button (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
+        <button class="btn btn-xs" aria-label="Acción" title="Acción" (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
       </span>
-      <button (click)="nextPage()" [disabled]="currentPage === totalPages">&raquo;</button>
-      <button (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages">&raquo;&raquo;</button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
     </div>
     <div class="pagination-size">
-      <label>Filas:</label>
-      <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+      <label class="sm">Filas:</label>
+      <select class="sm" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
         <option *ngFor="let s of pageSizes" [value]="s">{{ s }}</option>
       </select>
     </div>
@@ -103,13 +99,13 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5><i class="bi bi-box-arrow-in-down"></i> Importar Candidatos desde Excel</h5>
-          <button class="btn-close" (click)="closeImportModal()">×</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="closeImportModal()">×</button>
         </div>
         <div class="modal-body">
           <p class="text-muted mb-3">Selecciona un archivo Excel (.xlsx) con las columnas: <strong>nombre</strong>, <strong>apellido</strong>, <strong>partido</strong>, <strong>cargo</strong>.</p>
           <div class="upload-section mb-3">
-            <input type="file" autocomplete="off" (change)="onImportFileSelected($event)" accept=".xlsx,.xls" id="importFileInput" />
-            <label for="importFileInput" class="file-label">
+            <input class="sm" type="file" autocomplete="off" (change)="onImportFileSelected($event)" accept=".xlsx,.xls" id="importFileInput" />
+            <label for="importFileInput" class="file-label sm">
               <span *ngIf="!importFile"><i class="bi bi-folder2-open"></i> Seleccionar archivo Excel...</span>
               <span *ngIf="importFile"><i class="bi bi-file-earmark-text"></i> {{ importFile.name }}</span>
             </label>
@@ -134,10 +130,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeImportModal()">Cerrar</button>
-          <button class="btn btn-primary" (click)="importar()" [disabled]="!importPreview || importPreview.length === 0 || importing" *ngIf="isAdmin">
-            {{ importing ? 'Importando...' : 'Importar Datos' }}
-          </button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeImportModal()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Importar" title="Importar" class="btn btn-primary btn-xs icon-only" (click)="importar()" [disabled]="!importPreview || importPreview.length === 0 || importing" *ngIf="isAdmin"><span *ngIf="importing" class="spinner-border spinner-border-sm"></span><i *ngIf="!importing" class="bi bi-box-arrow-in-down"></i></button>
         </div>
       </div>
     </div>
@@ -148,30 +142,30 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5>{{ editMode ? 'Editar' : 'Nuevo' }} Candidato</h5>
-          <button class="btn-close" (click)="closeModal()">×</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="closeModal()">×</button>
         </div>
         <div class="modal-body">
           <div class="mb-3" *ngIf="errorMessage">
             <div class="alert alert-danger">{{ errorMessage }}</div>
           </div>
           <div class="mb-3">
-            <label>Nombre:</label>
-            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
+            <label class="sm">Nombre:</label>
+            <input type="text" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
           </div>
           <div class="mb-3">
-            <label>Apellido:</label>
-            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.apellido" (input)="toUpper(form, 'apellido')" />
+            <label class="sm">Apellido:</label>
+            <input type="text" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.apellido" (input)="toUpper(form, 'apellido')" />
           </div>
           <div class="mb-3">
-            <label>Partido:</label>
-            <select class="form-select" [(ngModel)]="form.partidoId">
+            <label class="sm">Partido:</label>
+            <select class="form-select sm form-select-sm" [(ngModel)]="form.partidoId">
               <option [ngValue]="null">Seleccione...</option>
               <option *ngFor="let p of partidos" [ngValue]="p.id">{{ p.nombre }}</option>
             </select>
           </div>
           <div class="mb-3">
-            <label>Cargo:</label>
-            <select class="form-select" [(ngModel)]="form.cargoId" (ngModelChange)="onCargoChange()">
+            <label class="sm">Cargo:</label>
+            <select class="form-select sm form-select-sm" [(ngModel)]="form.cargoId" (ngModelChange)="onCargoChange()">
               <option [ngValue]="null">Seleccione...</option>
               <option *ngFor="let c of cargos" [ngValue]="c.id">{{ c.nombre }}</option>
             </select>
@@ -179,7 +173,7 @@
 
           <!-- Territorio del candidato (según el territorio asignado al cargo) -->
           <div class="mb-3" *ngIf="territorioCargo === 'PROVINCIA' || territorioCargo === 'CANTON' || territorioCargo === 'PARROQUIA'">
-            <label class="fw-semibold">
+            <label class="fw-semibold sm">
               Territorio —
               <span *ngIf="territorioCargo === 'PROVINCIA'">Provincia (ej. Prefecto)</span>
               <span *ngIf="territorioCargo === 'CANTON'">Cantón (ej. Alcalde / Concejal)</span>
@@ -190,10 +184,10 @@
             <div *ngIf="territorioCargo === 'PROVINCIA'">
               <div class="input-group input-group-sm mb-2">
                 <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control" placeholder="Buscar provincia por nombre..."
+                <input type="text" class="form-control sm form-control-sm" placeholder="Buscar provincia por nombre..."
                        [(ngModel)]="filtroProvinciaTexto" autocomplete="off">
               </div>
-              <select class="form-select" [(ngModel)]="form.provinciaId">
+              <select class="form-select sm form-select-sm" [(ngModel)]="form.provinciaId">
                 <option [ngValue]="null">Seleccione provincia... ({{ provinciasFiltradas.length }})</option>
                 <option *ngFor="let p of provinciasFiltradas" [ngValue]="p.id">{{ p.nombre }}</option>
               </select>
@@ -204,7 +198,7 @@
             <div *ngIf="territorioCargo === 'CANTON'">
               <div class="row g-2 mb-2">
                 <div class="col-5">
-                  <select class="form-select form-select-sm" [(ngModel)]="filtroProvinciaCanton" (ngModelChange)="onFiltroProvinciaChange()">
+                  <select class="form-select form-select-sm sm" [(ngModel)]="filtroProvinciaCanton" (ngModelChange)="onFiltroProvinciaChange()">
                     <option [ngValue]="null">Todas las provincias</option>
                     <option *ngFor="let p of provincias" [ngValue]="p.id">{{ p.nombre }}</option>
                   </select>
@@ -212,12 +206,12 @@
                 <div class="col-7">
                   <div class="input-group input-group-sm">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" class="form-control" placeholder="Buscar cantón por nombre..."
+                    <input type="text" class="form-control sm form-control-sm" placeholder="Buscar cantón por nombre..."
                            [(ngModel)]="filtroCantonTexto" autocomplete="off">
                   </div>
                 </div>
               </div>
-              <select class="form-select" [(ngModel)]="form.cantonId" (ngModelChange)="onCantonChange()">
+              <select class="form-select sm form-select-sm" [(ngModel)]="form.cantonId" (ngModelChange)="onCantonChange()">
                 <option [ngValue]="null">Seleccione cantón... ({{ cantonesFiltrados.length }})</option>
                 <option *ngFor="let c of cantonesFiltrados" [ngValue]="c.id">{{ nombreCanton(c) }}</option>
               </select>
@@ -227,13 +221,13 @@
             <!-- PARROQUIA: filtro de provincia + filtro/búsqueda de parroquia -->
             <div *ngIf="territorioCargo === 'PARROQUIA'" class="row g-2">
               <div class="col-5">
-                <select class="form-select form-select-sm" [(ngModel)]="filtroProvinciaCanton" (ngModelChange)="onFiltroProvinciaChange()">
+                <select class="form-select form-select-sm sm" [(ngModel)]="filtroProvinciaCanton" (ngModelChange)="onFiltroProvinciaChange()">
                   <option [ngValue]="null">Provincia...</option>
                   <option *ngFor="let p of provincias" [ngValue]="p.id">{{ p.nombre }}</option>
                 </select>
               </div>
               <div class="col-7">
-                <select class="form-select form-select-sm" [(ngModel)]="form.cantonId" (ngModelChange)="onCantonChange()"
+                <select class="form-select form-select-sm sm" [(ngModel)]="form.cantonId" (ngModelChange)="onCantonChange()"
                         [disabled]="!filtroProvinciaCanton">
                   <option [ngValue]="null">Cantón...</option>
                   <option *ngFor="let c of cantonesFiltrados" [ngValue]="c.id">{{ c.nombre }}</option>
@@ -242,12 +236,12 @@
               <div class="col-12">
                 <div class="input-group input-group-sm">
                   <span class="input-group-text"><i class="bi bi-search"></i></span>
-                  <input type="text" class="form-control" placeholder="Buscar parroquia por nombre..."
+                  <input type="text" class="form-control sm form-control-sm" placeholder="Buscar parroquia por nombre..."
                          [(ngModel)]="filtroParroquiaTexto" autocomplete="off">
                 </div>
               </div>
               <div class="col-12">
-                <select class="form-select" [(ngModel)]="form.parroquiaId" (ngModelChange)="onParroquiaChange()"
+                <select class="form-select sm form-select-sm" [(ngModel)]="form.parroquiaId" (ngModelChange)="onParroquiaChange()"
                         [disabled]="!form.cantonId">
                   <option [ngValue]="null">Seleccione parroquia... ({{ parroquiasFiltradas.length }})</option>
                   <option *ngFor="let p of parroquiasFiltradas" [ngValue]="p.id">{{ p.nombre }}</option>
@@ -261,7 +255,7 @@
             <small class="text-muted"><i class="bi bi-globe"></i> Cargo nacional: este candidato se verá en todas las mesas.</small>
           </div>
           <div class="mb-3" *ngIf="editMode && selectedId">
-            <label>Foto del candidato (JPG/PNG, máx. 5 MB):</label>
+            <label class="sm">Foto del candidato (JPG/PNG, máx. 5 MB):</label>
             <div class="d-flex align-items-center gap-3">
               <img *ngIf="fotoPreview" [src]="fotoPreview" alt="Foto"
                    style="width:72px; height:72px; object-fit:cover; border-radius:50%; border:2px solid #dee2e6;">
@@ -270,10 +264,10 @@
                 <i class="bi bi-person fs-4"></i>
               </div>
               <div>
-                <input type="file" accept="image/*" class="form-control form-control-sm"
+                <input type="file" accept="image/*" class="form-control form-control-sm sm"
                        (change)="onFotoSelected($event)" [disabled]="fotoUploading">
-                <button *ngIf="fotoPreview" class="btn btn-link btn-sm text-danger p-0 mt-1"
-                        (click)="eliminarFoto()">Quitar imagen</button>
+                <button aria-label="Eliminar foto" title="Eliminar foto" *ngIf="fotoPreview" class="btn btn-link text-danger p-0 mt-1 btn-xs icon-only"
+                        (click)="eliminarFoto()"><i class="bi bi-x-lg"></i></button>
               </div>
             </div>
             <div *ngIf="fotoUploading" class="small text-muted mt-1">
@@ -282,8 +276,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
-          <button class="btn btn-primary" (click)="save()">Guardar</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="save()"><i class="bi bi-save"></i></button>
         </div>
       </div>
     </div>

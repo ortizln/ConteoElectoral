@@ -2,12 +2,8 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">Papeletas</h4>
     <div *ngIf="selectedEleccion">
-      <button class="btn btn-success me-2" (click)="generar()" [disabled]="generando">
-        <i class="bi bi-plus-circle"></i> {{ generando ? 'Generando...' : 'Generar Papeletas' }}
-      </button>
-      <button class="btn btn-warning" (click)="regenerar()" [disabled]="generando">
-        <i class="bi bi-arrow-clockwise"></i> Regenerar
-      </button>
+      <button aria-label="Generar" title="Generar" class="btn btn-success me-2 btn-xs icon-only" (click)="generar()" [disabled]="generando"><span *ngIf="generando" class="spinner-border spinner-border-sm"></span><i *ngIf="!generando" class="bi bi-plus-circle"></i></button>
+      <button aria-label="Regenerar" title="Regenerar" class="btn btn-warning btn-xs icon-only" (click)="regenerar()" [disabled]="generando"><i class="bi bi-arrow-clockwise"></i></button>
     </div>
   </div>
 
@@ -16,8 +12,8 @@
       <div class="card">
         <div class="card-header"><strong>Elecciones</strong></div>
         <div class="list-group list-group-flush">
-          <button *ngFor="let e of elecciones"
-            class="list-group-item list-group-item-action"
+          <button aria-label="Acción" title="Acción" *ngFor="let e of elecciones"
+            class="list-group-item list-group-item-action btn-xs"
             [class.active]="selectedEleccion?.id === e.id"
             (click)="selectEleccion(e)">
             {{ e.nombre }}

@@ -2,30 +2,28 @@
   <div class="page-header">
     <h2>Gestión de Mesas</h2>
     <div class="dropdown">
-      <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
-        Opciones
-      </button>
+      <button aria-label="Opciones" title="Opciones" class="btn btn-primary dropdown-toggle btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
       <ul class="dropdown-menu dropdown-menu-end">
-        <li *ngIf="isAdmin"><button class="dropdown-item fw-bold" (click)="openModal()">+ Nueva Mesa</button></li>
+        <li *ngIf="isAdmin"><button aria-label="Nuevo" title="Nuevo" class="dropdown-item fw-bold btn-xs icon-only" (click)="openModal()"><i class="bi bi-plus-lg"></i></button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><button class="dropdown-item" (click)="api.exportMesasPdf()"><i class="bi bi-printer"></i> Imprimir PDF</button></li>
-        <li><button class="dropdown-item" (click)="api.exportMesasExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> Exportar Excel</button></li>
-        <li><button class="dropdown-item fw-bold" (click)="exportarAsignadasExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> Reporte de Asignaciones</button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportMesasPdf()"><i class="bi bi-download"></i></button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportMesasExcel()"><i class="bi bi-download"></i></button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item fw-bold btn-xs icon-only" (click)="exportarAsignadasExcel()"><i class="bi bi-download"></i></button></li>
       </ul>
     </div>
   </div>
 
   <app-filtros-panel titulo="Filtros de búsqueda" clave="mesas">
     <div class="filter-item">
-      <label>Elección:</label>
-      <select class="form-select" (change)="load(form.eleccionesId); currentPage = 1" [(ngModel)]="form.eleccionesId">
+      <label class="sm">Elección:</label>
+      <select class="form-select sm form-select-sm" (change)="load(form.eleccionesId); currentPage = 1" [(ngModel)]="form.eleccionesId">
         <option [ngValue]="null">Seleccione...</option>
         <option *ngFor="let e of elecciones" [ngValue]="e.id">{{ e.nombre }}</option>
       </select>
     </div>
     <div class="filter-item">
-      <label>Institución:</label>
-      <input type="text" class="form-control" list="datalistInstitucionesFiltro" autocomplete="off"
+      <label class="sm">Institución:</label>
+      <input type="text" class="form-control sm form-control-sm" list="datalistInstitucionesFiltro" autocomplete="off"
         placeholder="Escriba nombre de institución..."
         [(ngModel)]="filterInstitucionTexto"
         (input)="onInstitucionFiltroInput($event)"
@@ -35,40 +33,40 @@
       </datalist>
     </div>
     <div class="filter-item">
-      <label>Provincia:</label>
-      <select class="form-select" [(ngModel)]="filterTablaProvinciaId" (change)="onTablaProvinciaChange()">
+      <label class="sm">Provincia:</label>
+      <select class="form-select sm form-select-sm" [(ngModel)]="filterTablaProvinciaId" (change)="onTablaProvinciaChange()">
         <option [ngValue]="null">Todas</option>
         <option *ngFor="let p of provinciasTabla" [ngValue]="p.id">{{ p.nombre }}</option>
       </select>
     </div>
     <div class="filter-item">
-      <label>Cantón:</label>
-      <select class="form-select" [(ngModel)]="filterTablaCantonId" (change)="onTablaCantonChange()" [disabled]="!filterTablaProvinciaId">
+      <label class="sm">Cantón:</label>
+      <select class="form-select sm form-select-sm" [(ngModel)]="filterTablaCantonId" (change)="onTablaCantonChange()" [disabled]="!filterTablaProvinciaId">
         <option [ngValue]="null">Todos</option>
         <option *ngFor="let c of cantonesTablaFiltrados" [ngValue]="c.id">{{ c.nombre }}</option>
       </select>
     </div>
     <div class="filter-item">
-      <label>Parroquia:</label>
-      <select class="form-select" [(ngModel)]="filterTablaParroquiaId" (change)="currentPage = 1" [disabled]="!filterTablaCantonId">
+      <label class="sm">Parroquia:</label>
+      <select class="form-select sm form-select-sm" [(ngModel)]="filterTablaParroquiaId" (change)="currentPage = 1" [disabled]="!filterTablaCantonId">
         <option [ngValue]="null">Todas</option>
         <option *ngFor="let p of parroquiasTablaFiltradas" [ngValue]="p.id">{{ p.nombre }}</option>
       </select>
     </div>
     <div class="filter-item">
-      <label>Buscar:</label>
-      <input type="text" class="form-control" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
+      <label class="sm">Buscar:</label>
+      <input type="text" class="form-control sm form-control-sm" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
     </div>
     <div class="filter-item">
-      <label>Asignación:</label>
+      <label class="sm">Asignación:</label>
       <div class="d-flex flex-column gap-1 mt-1">
         <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="soloAsignadas" [(ngModel)]="soloAsignadas" (change)="currentPage = 1">
-          <label class="form-check-label" for="soloAsignadas">Solo asignadas</label>
+          <input class="form-check-input sm" type="checkbox" id="soloAsignadas" [(ngModel)]="soloAsignadas" (change)="currentPage = 1">
+          <label class="form-check-label sm" for="soloAsignadas">Solo asignadas</label>
         </div>
         <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="soloNoAsignadas" [(ngModel)]="soloNoAsignadas" (change)="currentPage = 1">
-          <label class="form-check-label" for="soloNoAsignadas">Solo no asignadas</label>
+          <input class="form-check-input sm" type="checkbox" id="soloNoAsignadas" [(ngModel)]="soloNoAsignadas" (change)="currentPage = 1">
+          <label class="form-check-label sm" for="soloNoAsignadas">Solo no asignadas</label>
         </div>
       </div>
     </div>
@@ -111,14 +109,12 @@
         </td>
         <td>
           <div class="dropdown">
-            <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
-              <i class="bi bi-three-dots-vertical"></i>
-            </button>
+            <button aria-label="Opciones" title="Opciones" class="btn btn-outline-secondary border-0 btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li *ngIf="isAdmin"><button class="dropdown-item" (click)="edit(m)">Editar</button></li>
-              <li><button class="dropdown-item" (click)="cerrar(m.id)" *ngIf="!m.cerrada">Cerrar</button></li>
+              <li *ngIf="isAdmin"><button aria-label="Editar" title="Editar" class="dropdown-item btn-xs icon-only" (click)="edit(m)"><i class="bi bi-pencil-square"></i></button></li>
+              <li><button aria-label="Cerrar mesa" title="Cerrar mesa" class="dropdown-item btn-xs icon-only" (click)="cerrar(m.id)" *ngIf="!m.cerrada"><i class="bi bi-x-lg"></i></button></li>
               <li><hr class="dropdown-divider" *ngIf="isAdmin"></li>
-              <li *ngIf="isAdmin"><button class="dropdown-item text-danger" (click)="delete(m.id)">Eliminar</button></li>
+              <li *ngIf="isAdmin"><button aria-label="Eliminar" title="Eliminar" class="dropdown-item text-danger btn-xs icon-only" (click)="delete(m.id)"><i class="bi bi-trash"></i></button></li>
             </ul>
           </div>
         </td>
@@ -134,17 +130,17 @@
       Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, mesasFiltradas.length) }} de {{ mesasFiltradas.length }} registros
     </div>
     <div class="pagination-controls">
-      <button (click)="goToPage(1)" [disabled]="currentPage === 1">&laquo;&laquo;</button>
-      <button (click)="prevPage()" [disabled]="currentPage === 1">&laquo;</button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="goToPage(1)" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="prevPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
       <span *ngFor="let p of pages">
-        <button (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
+        <button class="btn btn-xs" aria-label="Acción" title="Acción" (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
       </span>
-      <button (click)="nextPage()" [disabled]="currentPage === totalPages">&raquo;</button>
-      <button (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages">&raquo;&raquo;</button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
     </div>
     <div class="pagination-size">
-      <label>Filas:</label>
-      <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+      <label class="sm">Filas:</label>
+      <select class="sm" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
         <option *ngFor="let s of pageSizes" [value]="s">{{ s }}</option>
       </select>
     </div>
@@ -155,7 +151,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5>{{ editMode ? 'Editar' : 'Nueva' }} Mesa</h5>
-          <button class="btn-close" (click)="closeModal()">×</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="closeModal()">×</button>
         </div>
         <div class="modal-body">
           <div class="mb-3" *ngIf="errorMessage">
@@ -163,8 +159,8 @@
           </div>
 
           <div class="mb-3">
-            <label>Elección:</label>
-            <select class="form-select" [(ngModel)]="form.eleccionesId">
+            <label class="sm">Elección:</label>
+            <select class="form-select sm form-select-sm" [(ngModel)]="form.eleccionesId">
               <option [ngValue]="null">Seleccione...</option>
               <option *ngFor="let e of elecciones" [ngValue]="e.id">{{ e.nombre }}</option>
             </select>
@@ -172,17 +168,17 @@
 
           <!-- Creación: rango de números de mesa -->
           <div class="mb-3" *ngIf="!editMode">
-            <label>Rango de números de mesa:</label>
+            <label class="sm">Rango de números de mesa:</label>
             <div class="row g-2">
               <div class="col-5">
-                <input type="number" min="1" class="form-control" autocomplete="off"
+                <input type="number" min="1" class="form-control sm form-control-sm" autocomplete="off"
                        placeholder="Desde" [(ngModel)]="rangoDesde" />
               </div>
               <div class="col-2 d-flex align-items-center justify-content-center text-muted">
                 a
               </div>
               <div class="col-5">
-                <input type="number" min="1" class="form-control" autocomplete="off"
+                <input type="number" min="1" class="form-control sm form-control-sm" autocomplete="off"
                        placeholder="Hasta" [(ngModel)]="rangoHasta" />
               </div>
             </div>
@@ -194,35 +190,35 @@
 
           <!-- Edición: número único -->
           <div class="mb-3" *ngIf="editMode">
-            <label>Número:</label>
-            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.numero" (input)="toUpper(form, 'numero')" />
+            <label class="sm">Número:</label>
+            <input type="text" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.numero" (input)="toUpper(form, 'numero')" />
           </div>
 
           <div class="filter-grid mb-3">
             <div class="filter-item">
-              <label>Zona:</label>
-              <select class="form-select" [(ngModel)]="filterZonaId" (change)="onModalZonaChange()">
+              <label class="sm">Zona:</label>
+              <select class="form-select sm form-select-sm" [(ngModel)]="filterZonaId" (change)="onModalZonaChange()">
                 <option [ngValue]="null">Todas</option>
                 <option *ngFor="let z of zonas" [ngValue]="z.id">{{ z.nombre }}</option>
               </select>
             </div>
             <div class="filter-item">
-              <label>Provincia:</label>
-              <select class="form-select" [(ngModel)]="filterProvinciaId" (change)="onModalProvinciaChange()" [disabled]="!filterZonaId">
+              <label class="sm">Provincia:</label>
+              <select class="form-select sm form-select-sm" [(ngModel)]="filterProvinciaId" (change)="onModalProvinciaChange()" [disabled]="!filterZonaId">
                 <option [ngValue]="null">Todas</option>
                 <option *ngFor="let p of provinciasDisponibles" [ngValue]="p.id">{{ p.nombre }}</option>
               </select>
             </div>
             <div class="filter-item">
-              <label>Cantón:</label>
-              <select class="form-select" [(ngModel)]="filterCantonId" (change)="onModalCantonChange()" [disabled]="!filterProvinciaId">
+              <label class="sm">Cantón:</label>
+              <select class="form-select sm form-select-sm" [(ngModel)]="filterCantonId" (change)="onModalCantonChange()" [disabled]="!filterProvinciaId">
                 <option [ngValue]="null">Todos</option>
                 <option *ngFor="let c of cantonesDisponibles" [ngValue]="c.id">{{ c.nombre }}</option>
               </select>
             </div>
             <div class="filter-item">
-              <label>Parroquia:</label>
-              <select class="form-select" [(ngModel)]="filterParroquiaId" (change)="onModalParroquiaChange()" [disabled]="!filterCantonId">
+              <label class="sm">Parroquia:</label>
+              <select class="form-select sm form-select-sm" [(ngModel)]="filterParroquiaId" (change)="onModalParroquiaChange()" [disabled]="!filterCantonId">
                 <option [ngValue]="null">Todas</option>
                 <option *ngFor="let p of parroquiasDisponibles" [ngValue]="p.id">{{ p.nombre }}</option>
               </select>
@@ -230,8 +226,8 @@
           </div>
 
           <div class="mb-3">
-            <label>Institución:</label>
-            <input type="text" class="form-control" list="datalistInstitucionesModal" autocomplete="off"
+            <label class="sm">Institución:</label>
+            <input type="text" class="form-control sm form-control-sm" list="datalistInstitucionesModal" autocomplete="off"
               placeholder="Escriba para filtrar y seleccionar..."
               [(ngModel)]="buscarInstitucionText"
               (input)="onInstitucionModalInput($event)"
@@ -246,8 +242,8 @@
           </div>
 
           <div class="mb-3">
-            <label>Sexo:</label>
-            <select class="form-select" [(ngModel)]="form.sexo">
+            <label class="sm">Sexo:</label>
+            <select class="form-select sm form-select-sm" [(ngModel)]="form.sexo">
               <option value="MIXTA">Mixta</option>
               <option value="MASCULINO">Masculino</option>
               <option value="FEMENINO">Femenino</option>
@@ -255,11 +251,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()" [disabled]="creandoRango">Cancelar</button>
-          <button class="btn btn-primary" (click)="save()" [disabled]="creandoRango">
-            <span *ngIf="creandoRango" class="spinner-border spinner-border-sm me-1"></span>
-            {{ creandoRango ? 'Creando...' : (editMode ? 'Guardar' : (mesasARango > 1 ? 'Crear ' + mesasARango + ' mesas' : 'Guardar')) }}
-          </button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeModal()" [disabled]="creandoRango"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="save()" [disabled]="creandoRango"><span *ngIf="creandoRango" class="spinner-border spinner-border-sm"></span><i *ngIf="!creandoRango" class="bi bi-save"></i></button>
         </div>
       </div>
     </div>

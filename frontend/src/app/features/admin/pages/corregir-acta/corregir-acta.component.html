@@ -1,8 +1,6 @@
 <div class="container-fluid corregir-acta-page">
   <div class="page-header d-flex flex-wrap align-items-center gap-2 mb-3">
-    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="volver()">
-      <i class="bi bi-arrow-left"></i> Volver a actas
-    </button>
+    <button aria-label="Volver" title="Volver" type="button" class="btn btn-outline-secondary btn-xs icon-only" (click)="volver()"><i class="bi bi-arrow-left"></i></button>
     <div>
       <h2 class="mb-0">
         <i class="bi bi-pencil-square"></i>
@@ -56,24 +54,24 @@
 
             <div class="row g-3 mb-4">
               <div class="col-12 col-md-4">
-                <label class="form-label small fw-bold">Votos nulos</label>
-                <input type="number" min="0" class="form-control form-control-sm"
+                <label class="form-label small fw-bold sm">Votos nulos</label>
+                <input type="number" min="0" class="form-control form-control-sm sm"
                        [(ngModel)]="nulos" [disabled]="mesa.aprobada === true">
               </div>
               <div class="col-12 col-md-4">
-                <label class="form-label small fw-bold">Votos en blanco</label>
-                <input type="number" min="0" class="form-control form-control-sm"
+                <label class="form-label small fw-bold sm">Votos en blanco</label>
+                <input type="number" min="0" class="form-control form-control-sm sm"
                        [(ngModel)]="blanco" [disabled]="mesa.aprobada === true">
               </div>
               <div class="col-12 col-md-4">
-                <label class="form-label small fw-bold">
+                <label class="form-label small fw-bold sm">
                   Ausentes
                   <small *ngIf="mesa.electoresRegistrados != null"
                          class="text-muted fw-normal">
                     (padrón: {{ mesa.electoresRegistrados }})
                   </small>
                 </label>
-                <input type="number" min="0" class="form-control form-control-sm"
+                <input type="number" min="0" class="form-control form-control-sm sm"
                        [(ngModel)]="ausentes" [disabled]="mesa.aprobada === true">
               </div>
             </div>
@@ -87,7 +85,7 @@
 
             <ul class="nav nav-tabs correccion-tabs mb-2" role="tablist">
               <li class="nav-item" *ngFor="let tab of tabs">
-                <button type="button" class="nav-link" role="tab"
+                <button aria-label="Acción" title="Acción" type="button" class="nav-link btn-xs" role="tab"
                         [class.active]="tabActiva === tab.label"
                         [attr.aria-selected]="tabActiva === tab.label"
                         (click)="tabActiva = tab.label">
@@ -111,7 +109,7 @@
                     <td>{{ nombreVoto(v) }}</td>
                     <td>{{ v.partidoNombre || '—' }}</td>
                     <td class="text-right">
-                      <input type="number" min="0" class="form-control form-control-sm text-end"
+                      <input type="number" min="0" class="form-control form-control-sm text-end sm"
                              [(ngModel)]="v.cantidadVotos" [disabled]="mesa.aprobada === true">
                     </td>
                   </tr>
@@ -126,23 +124,13 @@
           </div>
 
           <div class="card-footer d-flex flex-wrap gap-2 bg-transparent">
-            <button type="button" class="btn btn-secondary" (click)="volver()">
-              <i class="bi bi-x-circle"></i> Cerrar
-            </button>
-            <button type="button" class="btn btn-outline-warning"
-                    *ngIf="mesa.aprobada" (click)="desaprobar()">
-              <i class="bi bi-unlock"></i> Desaprobar
-            </button>
-            <button type="button" class="btn btn-success"
-                    *ngIf="!mesa.aprobada && mesa.cerrada" (click)="aprobar()">
-              <i class="bi bi-check-circle"></i> Aprobar
-            </button>
-            <button type="button" class="btn btn-primary ms-auto" (click)="guardar()"
-                    [disabled]="cargando || guardando || mesa.aprobada === true">
-              <span *ngIf="guardando" class="spinner-border spinner-border-sm me-1"></span>
-              <i *ngIf="!guardando" class="bi bi-save"></i>
-              {{ guardando ? 'Guardando...' : 'Guardar corrección' }}
-            </button>
+            <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-secondary btn-xs icon-only" (click)="volver()"><i class="bi bi-x-lg"></i></button>
+            <button aria-label="Desaprobar / reabrir" title="Desaprobar / reabrir" type="button" class="btn btn-outline-warning btn-xs icon-only"
+                    *ngIf="mesa.aprobada" (click)="desaprobar()"><i class="bi bi-unlock"></i></button>
+            <button aria-label="Aprobar" title="Aprobar" type="button" class="btn btn-success btn-xs icon-only"
+                    *ngIf="!mesa.aprobada && mesa.cerrada" (click)="aprobar()"><i class="bi bi-check-circle"></i></button>
+            <button aria-label="Guardar" title="Guardar" type="button" class="btn btn-primary ms-auto btn-xs icon-only" (click)="guardar()"
+                    [disabled]="cargando || guardando || mesa.aprobada === true"><span *ngIf="guardando" class="spinner-border spinner-border-sm"></span><i *ngIf="!guardando" class="bi bi-save"></i></button>
           </div>
         </div>
       </div>
@@ -150,15 +138,29 @@
       <!-- Visor del acta -->
       <div class="col-12 col-xl-6">
         <div class="card h-100 image-panel">
-          <div class="card-header d-flex align-items-center gap-2">
+          <div class="card-header d-flex flex-wrap align-items-center gap-2">
             <i class="bi bi-images"></i>
             <strong>Imagen del acta</strong>
-            <span class="ms-auto badge bg-light text-dark border">{{ fotos.length }} foto(s)</span>
+            <div class="ms-auto d-flex align-items-center gap-1">
+              <button type="button" class="btn btn-xs btn-outline-secondary icon-only"
+                      title="Alejar" aria-label="Alejar"
+                      (click)="zoomOut()" [disabled]="!puedeAlejar"><i class="bi bi-zoom-out"></i></button>
+              <button type="button" class="btn btn-xs btn-outline-secondary icon-only"
+                      title="Restablecer zoom" aria-label="Restablecer zoom"
+                      (click)="resetZoom()"><i class="bi bi-arrow-counterclockwise"></i></button>
+              <span class="small text-muted">{{ zoom * 100 }}%</span>
+              <button type="button" class="btn btn-xs btn-outline-secondary icon-only"
+                      title="Acercar" aria-label="Acercar"
+                      (click)="zoomIn()" [disabled]="!puedeAcercar"><i class="bi bi-zoom-in"></i></button>
+            </div>
+            <span class="badge bg-light text-dark border">{{ fotos.length }} foto(s)</span>
           </div>
 
           <div class="card-body d-flex flex-column p-2">
             <div class="foto-principal mb-2">
-              <img *ngIf="fotoGrandeUrl" [src]="fotoGrandeUrl" alt="Foto del acta">
+              <div class="foto-scroll" *ngIf="fotoGrandeUrl">
+                <img [src]="fotoGrandeUrl" alt="Foto del acta" [style.width.%]="zoom * 100">
+              </div>
               <div *ngIf="!fotoGrandeUrl && fotos.length > 0" class="text-white-50 small">
                 <div class="spinner-border spinner-border-sm me-2"></div>
                 Cargando imagen...
@@ -177,7 +179,7 @@
             </div>
 
             <div class="miniaturas d-flex gap-2 overflow-auto" *ngIf="fotos.length > 1">
-              <button type="button" class="miniatura" *ngFor="let item of fotos"
+              <button aria-label="Ver foto" type="button" class="miniatura btn-xs" *ngFor="let item of fotos"
                       [class.active]="esFotoActiva(item)"
                       (click)="seleccionarFoto(item)"
                       [title]="item.foto.createdAt || 'Ver foto'">

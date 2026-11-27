@@ -2,22 +2,20 @@
   <div class="page-header">
     <h2>Gestión de Elecciones</h2>
     <div class="dropdown">
-      <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
-        Opciones
-      </button>
+      <button aria-label="Opciones" title="Opciones" class="btn btn-primary dropdown-toggle btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
       <ul class="dropdown-menu dropdown-menu-end">
-        <li *ngIf="isAdmin"><button class="dropdown-item fw-bold" (click)="openModal()">+ Nueva Elección</button></li>
+        <li *ngIf="isAdmin"><button aria-label="Nuevo" title="Nuevo" class="dropdown-item fw-bold btn-xs icon-only" (click)="openModal()"><i class="bi bi-plus-lg"></i></button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><button class="dropdown-item" (click)="api.exportEleccionesPdf()"><i class="bi bi-printer"></i> Imprimir PDF</button></li>
-        <li><button class="dropdown-item" (click)="api.exportEleccionesExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> Exportar Excel</button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportEleccionesPdf()"><i class="bi bi-download"></i></button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportEleccionesExcel()"><i class="bi bi-download"></i></button></li>
       </ul>
     </div>
   </div>
 
   <app-filtros-panel titulo="Filtros de búsqueda" clave="elecciones">
     <div class="filter-item">
-      <label>Buscar:</label>
-      <input type="text" class="form-control" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
+      <label class="sm">Buscar:</label>
+      <input type="text" class="form-control sm form-control-sm" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
     </div>
   </app-filtros-panel>
 
@@ -46,13 +44,11 @@
         </td>
         <td>
           <div class="dropdown">
-            <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
-              <i class="bi bi-three-dots-vertical"></i>
-            </button>
+            <button aria-label="Opciones" title="Opciones" class="btn btn-outline-secondary border-0 btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li *ngIf="isAdmin"><button class="dropdown-item" (click)="edit(e)">Editar</button></li>
+              <li *ngIf="isAdmin"><button aria-label="Editar" title="Editar" class="dropdown-item btn-xs icon-only" (click)="edit(e)"><i class="bi bi-pencil-square"></i></button></li>
               <li><hr class="dropdown-divider" *ngIf="isAdmin"></li>
-              <li *ngIf="isAdmin"><button class="dropdown-item text-danger" (click)="delete(e.id)">Eliminar</button></li>
+              <li *ngIf="isAdmin"><button aria-label="Eliminar" title="Eliminar" class="dropdown-item text-danger btn-xs icon-only" (click)="delete(e.id)"><i class="bi bi-trash"></i></button></li>
             </ul>
           </div>
         </td>
@@ -68,17 +64,17 @@
       Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, eleccionesFiltradas.length) }} de {{ eleccionesFiltradas.length }} registros
     </div>
     <div class="pagination-controls">
-      <button (click)="goToPage(1)" [disabled]="currentPage === 1">&laquo;&laquo;</button>
-      <button (click)="prevPage()" [disabled]="currentPage === 1">&laquo;</button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="goToPage(1)" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="prevPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
       <span *ngFor="let p of pages">
-        <button (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
+        <button class="btn btn-xs" aria-label="Acción" title="Acción" (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
       </span>
-      <button (click)="nextPage()" [disabled]="currentPage === totalPages">&raquo;</button>
-      <button (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages">&raquo;&raquo;</button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
     </div>
     <div class="pagination-size">
-      <label>Filas:</label>
-      <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+      <label class="sm">Filas:</label>
+      <select class="sm" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
         <option *ngFor="let s of pageSizes" [value]="s">{{ s }}</option>
       </select>
     </div>
@@ -89,37 +85,37 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5>{{ editMode ? 'Editar' : 'Nueva' }} Elección</h5>
-          <button class="btn-close" (click)="closeModal()">×</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="closeModal()">×</button>
         </div>
         <div class="modal-body">
           <div class="mb-3" *ngIf="errorMessage">
             <div class="alert alert-danger">{{ errorMessage }}</div>
           </div>
           <div class="mb-3">
-            <label>Nombre:</label>
-            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
+            <label class="sm">Nombre:</label>
+            <input type="text" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
           </div>
           <div class="mb-3">
-            <label>Descripción:</label>
-            <textarea class="form-control" autocomplete="off" [(ngModel)]="form.descripcion" (input)="toUpper(form, 'descripcion')"></textarea>
+            <label class="sm">Descripción:</label>
+            <textarea class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.descripcion" (input)="toUpper(form, 'descripcion')"></textarea>
           </div>
           <div class="mb-3">
-            <label>Fecha Inicio:</label>
-            <input type="date" class="form-control" autocomplete="off" [(ngModel)]="form.fechaInicio" />
+            <label class="sm">Fecha Inicio:</label>
+            <input type="date" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.fechaInicio" />
           </div>
           <div class="mb-3">
-            <label>Fecha Fin:</label>
-            <input type="date" class="form-control" autocomplete="off" [(ngModel)]="form.fechaFin" />
+            <label class="sm">Fecha Fin:</label>
+            <input type="date" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.fechaFin" />
           </div>
           <div class="mb-3">
-            <label>
-              <input type="checkbox" [(ngModel)]="form.activa" /> Activa
+            <label class="sm">
+              <input class="sm" type="checkbox" [(ngModel)]="form.activa" /> Activa
             </label>
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
-          <button class="btn btn-primary" (click)="save()">Guardar</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="save()"><i class="bi bi-save"></i></button>
         </div>
       </div>
     </div>

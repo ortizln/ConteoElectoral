@@ -2,51 +2,47 @@
   <div class="page-header">
     <h2>Gestión de Instituciones Educativas</h2>
     <div class="dropdown">
-      <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
-        Opciones
-      </button>
+      <button aria-label="Opciones" title="Opciones" class="btn btn-primary dropdown-toggle btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
       <ul class="dropdown-menu dropdown-menu-end">
-        <li *ngIf="isAdmin"><button class="dropdown-item fw-bold" (click)="openModal()">+ Nueva Institución</button></li>
+        <li *ngIf="isAdmin"><button aria-label="Nuevo" title="Nuevo" class="dropdown-item fw-bold btn-xs icon-only" (click)="openModal()"><i class="bi bi-plus-lg"></i></button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><button class="dropdown-item" (click)="descargarTemplate()"><i class="bi bi-file-earmark-arrow-down"></i> Descargar Plantilla</button></li>
-        <li><button class="dropdown-item" (click)="openImportModal()"><i class="bi bi-box-arrow-in-down"></i> Importar desde Excel</button></li>
+        <li><button aria-label="Descargar plantilla" title="Descargar plantilla" class="dropdown-item btn-xs icon-only" (click)="descargarTemplate()"><i class="bi bi-file-earmark-arrow-down"></i></button></li>
+        <li><button aria-label="Importar" title="Importar" class="dropdown-item btn-xs icon-only" (click)="openImportModal()"><i class="bi bi-box-arrow-in-down"></i></button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><button class="dropdown-item" (click)="api.exportInstitucionesPdf()"><i class="bi bi-printer"></i> Imprimir PDF</button></li>
-        <li><button class="dropdown-item" (click)="api.exportInstitucionesExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> Exportar Excel</button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportInstitucionesPdf()"><i class="bi bi-download"></i></button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportInstitucionesExcel()"><i class="bi bi-download"></i></button></li>
       </ul>
     </div>
   </div>
 
   <app-filtros-panel titulo="Filtros de búsqueda" clave="instituciones">
     <div class="filter-item">
-      <label>Provincia:</label>
-      <select class="form-select" [(ngModel)]="filterProvinciaId" (ngModelChange)="onProvinciaChange()">
+      <label class="sm">Provincia:</label>
+      <select class="form-select sm form-select-sm" [(ngModel)]="filterProvinciaId" (ngModelChange)="onProvinciaChange()">
         <option [ngValue]="null">Todas</option>
         <option *ngFor="let p of provincias" [ngValue]="p.id">{{ p.nombre }}</option>
       </select>
     </div>
     <div class="filter-item">
-      <label>Cantón:</label>
-      <select class="form-select" [(ngModel)]="filterCantonId" (ngModelChange)="onCantonChange()">
+      <label class="sm">Cantón:</label>
+      <select class="form-select sm form-select-sm" [(ngModel)]="filterCantonId" (ngModelChange)="onCantonChange()">
         <option [ngValue]="null">Todos</option>
         <option *ngFor="let c of cantonesDisponibles" [ngValue]="c.id">{{ c.nombre }}</option>
       </select>
     </div>
     <div class="filter-item">
-      <label>Parroquia:</label>
-      <select class="form-select" [(ngModel)]="filterParroquiaId" (ngModelChange)="filtrarPorParroquia()">
+      <label class="sm">Parroquia:</label>
+      <select class="form-select sm form-select-sm" [(ngModel)]="filterParroquiaId" (ngModelChange)="filtrarPorParroquia()">
         <option [ngValue]="null">Todas</option>
         <option *ngFor="let p of parroquiasDisponibles" [ngValue]="p.id">{{ p.nombre }}</option>
       </select>
     </div>
     <div class="filter-item">
-      <label>Buscar:</label>
-      <input type="text" class="form-control" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
+      <label class="sm">Buscar:</label>
+      <input type="text" class="form-control sm form-control-sm" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
     </div>
     <div class="filter-item d-flex align-items-end">
-      <button type="button" class="btn btn-outline-secondary" (click)="limpiarFiltros()">
-        <i class="bi bi-x-circle"></i> Limpiar filtros
-      </button>
+      <button aria-label="Limpiar" title="Limpiar" type="button" class="btn btn-outline-secondary btn-xs icon-only" (click)="limpiarFiltros()"><i class="bi bi-brush"></i></button>
     </div>
   </app-filtros-panel>
 
@@ -85,13 +81,11 @@
         </td>
         <td>
           <div class="dropdown">
-            <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
-              <i class="bi bi-three-dots-vertical"></i>
-            </button>
+            <button aria-label="Opciones" title="Opciones" class="btn btn-outline-secondary border-0 btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li *ngIf="isAdmin"><button class="dropdown-item" (click)="edit(i)">Editar</button></li>
+              <li *ngIf="isAdmin"><button aria-label="Editar" title="Editar" class="dropdown-item btn-xs icon-only" (click)="edit(i)"><i class="bi bi-pencil-square"></i></button></li>
               <li><hr class="dropdown-divider" *ngIf="isAdmin"></li>
-              <li *ngIf="isAdmin"><button class="dropdown-item text-danger" (click)="delete(i.id)">Eliminar</button></li>
+              <li *ngIf="isAdmin"><button aria-label="Eliminar" title="Eliminar" class="dropdown-item text-danger btn-xs icon-only" (click)="delete(i.id)"><i class="bi bi-trash"></i></button></li>
             </ul>
           </div>
         </td>
@@ -107,17 +101,17 @@
       Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, institucionesFiltradas.length) }} de {{ institucionesFiltradas.length }} registros
     </div>
     <div class="pagination-controls">
-      <button (click)="goToPage(1)" [disabled]="currentPage === 1">&laquo;&laquo;</button>
-      <button (click)="prevPage()" [disabled]="currentPage === 1">&laquo;</button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="goToPage(1)" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="prevPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
       <span *ngFor="let p of pages">
-        <button (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
+        <button class="btn btn-xs" aria-label="Acción" title="Acción" (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
       </span>
-      <button (click)="nextPage()" [disabled]="currentPage === totalPages">&raquo;</button>
-      <button (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages">&raquo;&raquo;</button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
     </div>
     <div class="pagination-size">
-      <label>Filas:</label>
-      <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+      <label class="sm">Filas:</label>
+      <select class="sm" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
         <option *ngFor="let s of pageSizes" [value]="s">{{ s }}</option>
       </select>
     </div>
@@ -129,13 +123,13 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5><i class="bi bi-box-arrow-in-down"></i> Importar Instituciones desde Excel</h5>
-          <button class="btn-close" (click)="closeImportModal()">×</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="closeImportModal()">×</button>
         </div>
         <div class="modal-body">
           <p class="text-muted mb-3">Selecciona un archivo Excel (.xlsx) con las columnas: <strong>nombre</strong>, <strong>parroquia</strong> y (opcional) las de juntas: <strong>junfem</strong>, <strong>junmas</strong>, <strong>juninif</strong>, <strong>junfinf</strong>, <strong>juninim</strong>, <strong>junfinm</strong>.</p>
           <div class="upload-section mb-3">
-            <input type="file" autocomplete="off" (change)="onImportFileSelected($event)" accept=".xlsx,.xls" id="importFileInput" />
-            <label for="importFileInput" class="file-label">
+            <input class="sm" type="file" autocomplete="off" (change)="onImportFileSelected($event)" accept=".xlsx,.xls" id="importFileInput" />
+            <label for="importFileInput" class="file-label sm">
               <span *ngIf="!importFile"><i class="bi bi-folder2-open"></i> Seleccionar archivo Excel...</span>
               <span *ngIf="importFile"><i class="bi bi-file-earmark-text"></i> {{ importFile.name }}</span>
             </label>
@@ -166,10 +160,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeImportModal()">Cerrar</button>
-          <button class="btn btn-primary" (click)="importar()" [disabled]="!importPreview || importPreview.length === 0 || importing" *ngIf="isAdmin">
-            {{ importing ? 'Importando...' : 'Importar Datos' }}
-          </button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeImportModal()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Importar" title="Importar" class="btn btn-primary btn-xs icon-only" (click)="importar()" [disabled]="!importPreview || importPreview.length === 0 || importing" *ngIf="isAdmin"><span *ngIf="importing" class="spinner-border spinner-border-sm"></span><i *ngIf="!importing" class="bi bi-box-arrow-in-down"></i></button>
         </div>
       </div>
     </div>
@@ -180,126 +172,126 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5>{{ editMode ? 'Editar' : 'Nueva' }} Institución</h5>
-          <button class="btn-close" (click)="closeModal()">×</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="closeModal()">×</button>
         </div>
         <div class="modal-body">
           <div class="mb-3" *ngIf="errorMessage">
             <div class="alert alert-danger">{{ errorMessage }}</div>
           </div>
           <div class="mb-3">
-            <label>Nombre:</label>
-            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
+            <label class="sm">Nombre:</label>
+            <input type="text" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
           </div>
           <div class="mb-3">
-            <label>Parroquia:</label>
-            <select class="form-select" [(ngModel)]="form.parroquiaId">
+            <label class="sm">Parroquia:</label>
+            <select class="form-select sm form-select-sm" [(ngModel)]="form.parroquiaId">
               <option [ngValue]="null">Seleccione...</option>
               <option *ngFor="let p of parroquias" [ngValue]="p.id">{{ p.nombre }}</option>
             </select>
           </div>
           <div class="mb-3">
-            <label>Dirección:</label>
-            <textarea class="form-control" autocomplete="off" [(ngModel)]="form.direccion" (input)="toUpper(form, 'direccion')"></textarea>
+            <label class="sm">Dirección:</label>
+            <textarea class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.direccion" (input)="toUpper(form, 'direccion')"></textarea>
           </div>
           <div class="mb-3">
-            <label>
+            <label class="sm">
               Código:
               <span class="info-tooltip" title="Código único de identificación de la institución educativa (ej: 17H00160)"><i class="bi bi-info-circle"></i></span>
             </label>
-            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.codigo" (input)="toUpper(form, 'codigo')" />
+            <input type="text" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.codigo" (input)="toUpper(form, 'codigo')" />
           </div>
           <div class="mb-3">
-            <label>
+            <label class="sm">
               Tipo:
               <span class="info-tooltip" title="Tipo de institución educativa (ej: ESCUELA, COLEGIO, INSTITUTO)"><i class="bi bi-info-circle"></i></span>
             </label>
-            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.tipo" (input)="toUpper(form, 'tipo')" />
+            <input type="text" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.tipo" (input)="toUpper(form, 'tipo')" />
           </div>
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label>
+              <label class="sm">
                 Latitud:
                 <span class="info-tooltip" title="Geolocalización del recinto (ej: -0.2201). Dejar vacío si no se conoce."><i class="bi bi-info-circle"></i></span>
               </label>
-              <input type="number" step="any" class="form-control" autocomplete="off" placeholder="-0.2201" [(ngModel)]="form.latitud" />
+              <input type="number" step="any" class="form-control sm form-control-sm" autocomplete="off" placeholder="-0.2201" [(ngModel)]="form.latitud" />
             </div>
             <div class="col-md-6 mb-3">
-              <label>
+              <label class="sm">
                 Longitud:
                 <span class="info-tooltip" title="Geolocalización del recinto (ej: -78.5167). Dejar vacío si no se conoce."><i class="bi bi-info-circle"></i></span>
               </label>
-              <input type="number" step="any" class="form-control" autocomplete="off" placeholder="-78.5167" [(ngModel)]="form.longitud" />
+              <input type="number" step="any" class="form-control sm form-control-sm" autocomplete="off" placeholder="-78.5167" [(ngModel)]="form.longitud" />
             </div>
           </div>
           <div class="mb-3">
-            <label>
+            <label class="sm">
               Electores registrados:
               <span class="info-tooltip" title="Número de personas registradas para votar en este recinto (padrón)"><i class="bi bi-info-circle"></i></span>
             </label>
-            <input type="number" min="0" class="form-control" autocomplete="off" placeholder="Ej: 1250" [(ngModel)]="form.electoresRegistrados" />
+            <input type="number" min="0" class="form-control sm form-control-sm" autocomplete="off" placeholder="Ej: 1250" [(ngModel)]="form.electoresRegistrados" />
           </div>
 
           <hr />
           <h6 class="text-muted mb-3"><i class="bi bi-people-fill"></i> Juntas (mesas)</h6>
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label>
+              <label class="sm">
                 JUNFEM — Nº juntas femeninas:
                 <span class="info-tooltip" title="Cantidad de juntas femeninas en esta institución"><i class="bi bi-info-circle"></i></span>
               </label>
-              <input type="number" min="0" class="form-control" autocomplete="off" placeholder="Ej: 8" [(ngModel)]="form.junfem" />
+              <input type="number" min="0" class="form-control sm form-control-sm" autocomplete="off" placeholder="Ej: 8" [(ngModel)]="form.junfem" />
             </div>
             <div class="col-md-6 mb-3">
-              <label>
+              <label class="sm">
                 JUNMAS — Nº juntas masculinas:
                 <span class="info-tooltip" title="Cantidad de juntas masculinas en esta institución"><i class="bi bi-info-circle"></i></span>
               </label>
-              <input type="number" min="0" class="form-control" autocomplete="off" placeholder="Ej: 7" [(ngModel)]="form.junmas" />
+              <input type="number" min="0" class="form-control sm form-control-sm" autocomplete="off" placeholder="Ej: 7" [(ngModel)]="form.junmas" />
             </div>
           </div>
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label>
+              <label class="sm">
                 JUNINIF — Inicio juntas femeninas:
                 <span class="info-tooltip" title="Número de mesa desde el que inician las juntas femeninas"><i class="bi bi-info-circle"></i></span>
               </label>
-              <input type="number" min="0" class="form-control" autocomplete="off" placeholder="Ej: 1" [(ngModel)]="form.juninif" />
+              <input type="number" min="0" class="form-control sm form-control-sm" autocomplete="off" placeholder="Ej: 1" [(ngModel)]="form.juninif" />
             </div>
             <div class="col-md-6 mb-3">
-              <label>
+              <label class="sm">
                 JUNFINF — Fin juntas femeninas:
                 <span class="info-tooltip" title="Número de mesa hasta el que llegan las juntas femeninas"><i class="bi bi-info-circle"></i></span>
               </label>
-              <input type="number" min="0" class="form-control" autocomplete="off" placeholder="Ej: 8" [(ngModel)]="form.junfinf" />
+              <input type="number" min="0" class="form-control sm form-control-sm" autocomplete="off" placeholder="Ej: 8" [(ngModel)]="form.junfinf" />
             </div>
           </div>
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label>
+              <label class="sm">
                 JUNINIM — Inicio juntas masculinas:
                 <span class="info-tooltip" title="Número de mesa desde el que inician las juntas masculinas"><i class="bi bi-info-circle"></i></span>
               </label>
-              <input type="number" min="0" class="form-control" autocomplete="off" placeholder="Ej: 9" [(ngModel)]="form.juninim" />
+              <input type="number" min="0" class="form-control sm form-control-sm" autocomplete="off" placeholder="Ej: 9" [(ngModel)]="form.juninim" />
             </div>
             <div class="col-md-6 mb-3">
-              <label>
+              <label class="sm">
                 JUNFINM — Fin juntas masculinas:
                 <span class="info-tooltip" title="Número de mesa hasta el que llegan las juntas masculinas"><i class="bi bi-info-circle"></i></span>
               </label>
-              <input type="number" min="0" class="form-control" autocomplete="off" placeholder="Ej: 15" [(ngModel)]="form.junfinm" />
+              <input type="number" min="0" class="form-control sm form-control-sm" autocomplete="off" placeholder="Ej: 15" [(ngModel)]="form.junfinm" />
             </div>
           </div>
           <div class="mb-3">
-            <label>
+            <label class="sm">
               NUMJUN — Total de juntas (calculado):
               <span class="info-tooltip" title="Total de mesas de la institución = JUNFEM + JUNMAS"><i class="bi bi-info-circle"></i></span>
             </label>
-            <input type="number" class="form-control" [value]="numjunFormulario ?? ''" readonly placeholder="JUNFEM + JUNMAS" style="background-color: #e9ecef;" />
+            <input type="number" class="form-control sm form-control-sm" [value]="numjunFormulario ?? ''" readonly placeholder="JUNFEM + JUNMAS" style="background-color: #e9ecef;" />
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
-          <button class="btn btn-primary" (click)="save()">Guardar</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="save()"><i class="bi bi-save"></i></button>
         </div>
       </div>
     </div>

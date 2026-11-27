@@ -2,32 +2,30 @@
   <div class="page-header">
     <h2>Gestión de Cargos</h2>
     <div class="dropdown">
-      <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
-        Opciones
-      </button>
+      <button aria-label="Opciones" title="Opciones" class="btn btn-primary dropdown-toggle btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
       <ul class="dropdown-menu dropdown-menu-end">
-        <li *ngIf="isAdmin"><button class="dropdown-item fw-bold" (click)="openModal()">+ Nuevo Cargo</button></li>
+        <li *ngIf="isAdmin"><button aria-label="Nuevo" title="Nuevo" class="dropdown-item fw-bold btn-xs icon-only" (click)="openModal()"><i class="bi bi-plus-lg"></i></button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><button class="dropdown-item" (click)="descargarTemplate()"><i class="bi bi-file-earmark-arrow-down"></i> Descargar Plantilla</button></li>
-        <li><button class="dropdown-item" (click)="openImportModal()"><i class="bi bi-box-arrow-in-down"></i> Importar desde Excel</button></li>
+        <li><button aria-label="Descargar plantilla" title="Descargar plantilla" class="dropdown-item btn-xs icon-only" (click)="descargarTemplate()"><i class="bi bi-file-earmark-arrow-down"></i></button></li>
+        <li><button aria-label="Importar" title="Importar" class="dropdown-item btn-xs icon-only" (click)="openImportModal()"><i class="bi bi-box-arrow-in-down"></i></button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><button class="dropdown-item" (click)="api.exportCargosPdf()"><i class="bi bi-printer"></i> Imprimir PDF</button></li>
-        <li><button class="dropdown-item" (click)="api.exportCargosExcel()"><i class="bi bi-file-earmark-spreadsheet"></i> Exportar Excel</button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportCargosPdf()"><i class="bi bi-download"></i></button></li>
+        <li><button aria-label="Descargar / exportar" title="Descargar / exportar" class="dropdown-item btn-xs icon-only" (click)="api.exportCargosExcel()"><i class="bi bi-download"></i></button></li>
       </ul>
     </div>
   </div>
 
   <app-filtros-panel titulo="Filtros de búsqueda" clave="cargos">
     <div class="filter-item">
-      <label>Elección:</label>
-      <select class="form-select" (change)="load(form.eleccionesId); currentPage = 1" [(ngModel)]="form.eleccionesId">
+      <label class="sm">Elección:</label>
+      <select class="form-select sm form-select-sm" (change)="load(form.eleccionesId); currentPage = 1" [(ngModel)]="form.eleccionesId">
         <option [ngValue]="null">Seleccione...</option>
         <option *ngFor="let e of elecciones" [value]="e.id">{{ e.nombre }}</option>
       </select>
     </div>
     <div class="filter-item">
-      <label>Buscar:</label>
-      <input type="text" class="form-control" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
+      <label class="sm">Buscar:</label>
+      <input type="text" class="form-control sm form-control-sm" autocomplete="off" placeholder="Buscar en tabla..." [(ngModel)]="searchText" (input)="currentPage = 1" />
     </div>
   </app-filtros-panel>
 
@@ -51,13 +49,11 @@
         <td class="text-center">{{ c.cantidadDignidades || 1 }}</td>
         <td>
           <div class="dropdown">
-            <button class="btn btn-sm btn-outline-secondary border-0" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false">
-              <i class="bi bi-three-dots-vertical"></i>
-            </button>
+            <button aria-label="Opciones" title="Opciones" class="btn btn-outline-secondary border-0 btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i></button>
             <ul class="dropdown-menu dropdown-menu-end">
-              <li *ngIf="isAdmin"><button class="dropdown-item" (click)="edit(c)">Editar</button></li>
+              <li *ngIf="isAdmin"><button aria-label="Editar" title="Editar" class="dropdown-item btn-xs icon-only" (click)="edit(c)"><i class="bi bi-pencil-square"></i></button></li>
               <li><hr class="dropdown-divider" *ngIf="isAdmin"></li>
-              <li *ngIf="isAdmin"><button class="dropdown-item text-danger" (click)="delete(c.id)">Eliminar</button></li>
+              <li *ngIf="isAdmin"><button aria-label="Eliminar" title="Eliminar" class="dropdown-item text-danger btn-xs icon-only" (click)="delete(c.id)"><i class="bi bi-trash"></i></button></li>
             </ul>
           </div>
         </td>
@@ -73,17 +69,17 @@
       Mostrando {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, cargosFiltrados.length) }} de {{ cargosFiltrados.length }} registros
     </div>
     <div class="pagination-controls">
-      <button (click)="goToPage(1)" [disabled]="currentPage === 1">&laquo;&laquo;</button>
-      <button (click)="prevPage()" [disabled]="currentPage === 1">&laquo;</button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="goToPage(1)" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
+      <button aria-label="Primera página" title="Primera página" class="btn btn-xs icon-only" (click)="prevPage()" [disabled]="currentPage === 1"><i class="bi bi-chevron-double-left"></i></button>
       <span *ngFor="let p of pages">
-        <button (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
+        <button class="btn btn-xs" aria-label="Acción" title="Acción" (click)="goToPage(p)" [class.active]="p === currentPage">{{ p }}</button>
       </span>
-      <button (click)="nextPage()" [disabled]="currentPage === totalPages">&raquo;</button>
-      <button (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages">&raquo;&raquo;</button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="nextPage()" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
+      <button aria-label="Última página" title="Última página" class="btn btn-xs icon-only" (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages"><i class="bi bi-chevron-double-right"></i></button>
     </div>
     <div class="pagination-size">
-      <label>Filas:</label>
-      <select [(ngModel)]="pageSize" (change)="onPageSizeChange()">
+      <label class="sm">Filas:</label>
+      <select class="sm" [(ngModel)]="pageSize" (change)="onPageSizeChange()">
         <option *ngFor="let s of pageSizes" [value]="s">{{ s }}</option>
       </select>
     </div>
@@ -95,13 +91,13 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5><i class="bi bi-box-arrow-in-down"></i> Importar Cargos desde Excel</h5>
-          <button class="btn-close" (click)="closeImportModal()">×</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="closeImportModal()">×</button>
         </div>
         <div class="modal-body">
           <p class="text-muted mb-3">Selecciona un archivo Excel (.xlsx) con las columnas: <strong>nombre</strong>, <strong>eleccion</strong>.</p>
           <div class="upload-section mb-3">
-            <input type="file" autocomplete="off" (change)="onImportFileSelected($event)" accept=".xlsx,.xls" id="importFileInput" />
-            <label for="importFileInput" class="file-label">
+            <input class="sm" type="file" autocomplete="off" (change)="onImportFileSelected($event)" accept=".xlsx,.xls" id="importFileInput" />
+            <label for="importFileInput" class="file-label sm">
               <span *ngIf="!importFile"><i class="bi bi-folder2-open"></i> Seleccionar archivo Excel...</span>
               <span *ngIf="importFile"><i class="bi bi-file-earmark-text"></i> {{ importFile.name }}</span>
             </label>
@@ -126,10 +122,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeImportModal()">Cerrar</button>
-          <button class="btn btn-primary" (click)="importar()" [disabled]="!importPreview || importPreview.length === 0 || importing" *ngIf="isAdmin">
-            {{ importing ? 'Importando...' : 'Importar Datos' }}
-          </button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeImportModal()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Importar" title="Importar" class="btn btn-primary btn-xs icon-only" (click)="importar()" [disabled]="!importPreview || importPreview.length === 0 || importing" *ngIf="isAdmin"><span *ngIf="importing" class="spinner-border spinner-border-sm"></span><i *ngIf="!importing" class="bi bi-box-arrow-in-down"></i></button>
         </div>
       </div>
     </div>
@@ -140,23 +134,23 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5>{{ editMode ? 'Editar' : 'Nuevo' }} Cargo</h5>
-          <button class="btn-close" (click)="closeModal()">×</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn-close btn-xs" (click)="closeModal()">×</button>
         </div>
         <div class="modal-body">
           <div class="mb-3" *ngIf="errorMessage">
             <div class="alert alert-danger">{{ errorMessage }}</div>
           </div>
           <div class="mb-3">
-            <label>Nombre:</label>
-            <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
+            <label class="sm">Nombre:</label>
+            <input type="text" class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.nombre" (input)="toUpper(form, 'nombre')" />
           </div>
           <div class="mb-3">
-            <label>Descripción:</label>
-            <textarea class="form-control" autocomplete="off" [(ngModel)]="form.descripcion" (input)="toUpper(form, 'descripcion')"></textarea>
+            <label class="sm">Descripción:</label>
+            <textarea class="form-control sm form-control-sm" autocomplete="off" [(ngModel)]="form.descripcion" (input)="toUpper(form, 'descripcion')"></textarea>
           </div>
           <div class="mb-3">
-            <label>Tipo de Votación:</label>
-            <select class="form-select" [(ngModel)]="form.tipoVotacion">
+            <label class="sm">Tipo de Votación:</label>
+            <select class="form-select sm form-select-sm" [(ngModel)]="form.tipoVotacion">
               <option value="INDIVIDUAL">Individual (un candidato)</option>
               <option value="LISTA">Lista (voto por partido)</option>
               <option value="PLURINOMINAL">Plurinominal</option>
@@ -165,8 +159,8 @@
             </select>
           </div>
           <div class="mb-3">
-            <label>Territorio (nivel geográfico del cargo):</label>
-            <select class="form-select" [(ngModel)]="form.territorio">
+            <label class="sm">Territorio (nivel geográfico del cargo):</label>
+            <select class="form-select sm form-select-sm" [(ngModel)]="form.territorio">
               <option value="NACIONAL">Nacional (todas las mesas)</option>
               <option value="PROVINCIA">Provincia (ej. Prefecto)</option>
               <option value="CANTON">Cantón (ej. Alcalde / Concejal)</option>
@@ -175,26 +169,26 @@
             <small class="text-muted">Determina qué candidatos ve cada mesa según su ubicación.</small>
           </div>
           <div class="mb-3">
-            <label>Circunscripción:</label>
-            <select class="form-select" [(ngModel)]="form.tipoCircunscripcionId">
+            <label class="sm">Circunscripción:</label>
+            <select class="form-select sm form-select-sm" [(ngModel)]="form.tipoCircunscripcionId">
               <option [ngValue]="null">Seleccione...</option>
               <option *ngFor="let tc of tiposCircunscripcion" [value]="tc.id">{{ tc.codigo }} — {{ tc.nombre }}</option>
             </select>
           </div>
           <div class="row g-2">
             <div class="col-6 mb-3">
-              <label>Cant. Dignidades:</label>
-              <input type="number" class="form-control" [(ngModel)]="form.cantidadDignidades" min="1">
+              <label class="sm">Cant. Dignidades:</label>
+              <input type="number" class="form-control sm form-control-sm" [(ngModel)]="form.cantidadDignidades" min="1">
             </div>
             <div class="col-6 mb-3">
-              <label>Max Candidatos/Lista:</label>
-              <input type="number" class="form-control" [(ngModel)]="form.maxCandidatosLista" min="0">
+              <label class="sm">Max Candidatos/Lista:</label>
+              <input type="number" class="form-control sm form-control-sm" [(ngModel)]="form.maxCandidatosLista" min="0">
             </div>
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
-          <button class="btn btn-primary" (click)="save()">Guardar</button>
+          <button aria-label="Cerrar" title="Cerrar" class="btn btn-secondary btn-xs icon-only" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
+          <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs icon-only" (click)="save()"><i class="bi bi-save"></i></button>
         </div>
       </div>
     </div>

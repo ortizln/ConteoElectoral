@@ -2,61 +2,57 @@
   <div class="page-header d-flex flex-wrap align-items-center gap-3">
     <h2><i class="bi bi-camera-fill"></i> Actas — Fotos de respaldo</h2>
     <div class="ms-auto d-flex flex-wrap align-items-center gap-2">
-      <select class="form-select form-select-sm" style="width:auto;"
+      <select class="form-select form-select-sm sm" style="width:auto;"
               [(ngModel)]="selectedEleccionId" (ngModelChange)="onEleccionChange()">
         <option *ngFor="let e of elecciones" [ngValue]="e.id">{{ e.nombre }}</option>
       </select>
       <div class="btn-group btn-group-sm">
-        <button class="btn" [class.btn-primary]="filtro === 'todas'" [class.btn-outline-secondary]="filtro !== 'todas'"
-                (click)="filtro = 'todas'">Todas ({{ mesas.length }})</button>
-        <button class="btn" [class.btn-success]="filtro === 'con-foto'" [class.btn-outline-secondary]="filtro !== 'con-foto'"
-                (click)="filtro = 'con-foto'">Con foto ({{ totalConFoto }})</button>
-        <button class="btn" [class.btn-warning]="filtro === 'sin-foto'" [class.btn-outline-secondary]="filtro !== 'sin-foto'"
-                (click)="filtro = 'sin-foto'">Sin foto ({{ totalSinFoto }})</button>
+        <button aria-label="Acción" title="Acción" class="btn btn-xs icon-only" [class.btn-primary]="filtro === 'todas'" [class.btn-outline-secondary]="filtro !== 'todas'"
+                (click)="filtro = 'todas'"><i class="bi bi-list"></i></button>
+        <button aria-label="Acción" title="Acción" class="btn btn-xs icon-only" [class.btn-success]="filtro === 'con-foto'" [class.btn-outline-secondary]="filtro !== 'con-foto'"
+                (click)="filtro = 'con-foto'"><i class="bi bi-camera-fill"></i></button>
+        <button aria-label="Acción" title="Acción" class="btn btn-xs icon-only" [class.btn-warning]="filtro === 'sin-foto'" [class.btn-outline-secondary]="filtro !== 'sin-foto'"
+                (click)="filtro = 'sin-foto'"><i class="bi bi-exclamation-triangle"></i></button>
       </div>
-      <input type="text" class="form-control form-control-sm" style="width:220px;"
+      <input type="text" class="form-control form-control-sm sm" style="width:220px;"
              placeholder="Buscar mesa, recinto, parroquia..." [(ngModel)]="searchText">
-      <button class="btn btn-sm btn-outline-secondary" (click)="load()" title="Recargar">
-        <i class="bi bi-arrow-clockwise"></i>
-      </button>
+      <button aria-label="Recargar" class="btn btn-outline-secondary btn-xs icon-only" (click)="load()" title="Recargar"><i class="bi bi-arrow-clockwise"></i></button>
     </div>
   </div>
 
   <!-- Filtros territoriales dependientes -->
   <div class="filtros-territoriales row g-2 mb-3">
     <div class="col-6 col-md-3">
-      <label class="form-label small mb-1">Provincia</label>
-      <select class="form-select form-select-sm" [(ngModel)]="provinciaId" (ngModelChange)="onProvinciaChange()">
+      <label class="form-label small mb-1 sm">Provincia</label>
+      <select class="form-select form-select-sm sm" [(ngModel)]="provinciaId" (ngModelChange)="onProvinciaChange()">
         <option [ngValue]="null">Todas las provincias</option>
         <option *ngFor="let p of provincias" [ngValue]="p.id">{{ p.nombre }}</option>
       </select>
     </div>
     <div class="col-6 col-md-3">
-      <label class="form-label small mb-1">Cantón</label>
-      <select class="form-select form-select-sm" [(ngModel)]="cantonId" (ngModelChange)="onCantonChange()">
+      <label class="form-label small mb-1 sm">Cantón</label>
+      <select class="form-select form-select-sm sm" [(ngModel)]="cantonId" (ngModelChange)="onCantonChange()">
         <option [ngValue]="null">Todos los cantones</option>
         <option *ngFor="let c of cantonesDisponibles" [ngValue]="c.id">{{ c.nombre }}</option>
       </select>
     </div>
     <div class="col-6 col-md-3">
-      <label class="form-label small mb-1">Parroquia</label>
-      <select class="form-select form-select-sm" [(ngModel)]="parroquiaId" (ngModelChange)="onParroquiaChange()">
+      <label class="form-label small mb-1 sm">Parroquia</label>
+      <select class="form-select form-select-sm sm" [(ngModel)]="parroquiaId" (ngModelChange)="onParroquiaChange()">
         <option [ngValue]="null">Todas las parroquias</option>
         <option *ngFor="let p of parroquiasDisponibles" [ngValue]="p.id">{{ p.nombre }}</option>
       </select>
     </div>
     <div class="col-6 col-md-2">
-      <label class="form-label small mb-1">Recinto</label>
-      <select class="form-select form-select-sm" [(ngModel)]="recintoId">
+      <label class="form-label small mb-1 sm">Recinto</label>
+      <select class="form-select form-select-sm sm" [(ngModel)]="recintoId">
         <option [ngValue]="null">Todos los recintos</option>
         <option *ngFor="let r of recintosDisponibles" [ngValue]="r.id">{{ r.nombre }}</option>
       </select>
     </div>
     <div class="col-12 col-md-1 d-flex align-items-end">
-      <button type="button" class="btn btn-sm btn-outline-secondary w-100" (click)="limpiarFiltros()"
-              title="Limpiar todos los filtros">
-        <i class="bi bi-x-circle"></i> Limpiar
-      </button>
+      <button aria-label="Limpiar" type="button" class="btn btn-outline-secondary w-100 btn-xs icon-only" (click)="limpiarFiltros()"
+              title="Limpiar todos los filtros"><i class="bi bi-brush"></i></button>
     </div>
   </div>
 
@@ -114,18 +110,12 @@
           </div>
 
           <div class="d-flex flex-wrap gap-2 mb-3">
-            <button type="button" class="btn btn-sm btn-outline-primary" (click)="irACorregir(m)">
-              <i class="bi bi-pencil-square"></i> Corregir
-            </button>
-            <button type="button" class="btn btn-sm btn-success" *ngIf="!m.aprobada"
+            <button aria-label="Corregir" title="Corregir" type="button" class="btn btn-outline-primary btn-xs icon-only" (click)="irACorregir(m)"><i class="bi bi-pencil-square"></i></button>
+            <button aria-label="Aprobar" type="button" class="btn btn-success btn-xs icon-only" *ngIf="!m.aprobada"
                     (click)="aprobar(m)" [disabled]="!m.cerrada"
-                    title="Solo se puede aprobar un acta de una mesa cerrada">
-              <i class="bi bi-check-circle"></i> Aprobar
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-warning" *ngIf="m.aprobada"
-                    (click)="desaprobar(m)">
-              <i class="bi bi-unlock"></i> Desaprobar
-            </button>
+                    title="Solo se puede aprobar un acta de una mesa cerrada"><i class="bi bi-check-circle"></i></button>
+            <button aria-label="Desaprobar / reabrir" title="Desaprobar / reabrir" type="button" class="btn btn-outline-warning btn-xs icon-only" *ngIf="m.aprobada"
+                    (click)="desaprobar(m)"><i class="bi bi-unlock"></i></button>
           </div>
 
           <div class="d-flex flex-wrap gap-2" *ngIf="(m.fotos?.length || 0) > 0">
@@ -149,9 +139,7 @@
       <div class="modal-content" style="background:transparent; border:none;">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <span class="text-white">{{ visorInfo }}</span>
-          <button type="button" class="btn btn-light btn-sm" (click)="cerrarVisor()">
-            <i class="bi bi-x-lg"></i> Cerrar
-          </button>
+          <button aria-label="Cerrar" title="Cerrar" type="button" class="btn btn-light btn-sm btn-xs icon-only" (click)="cerrarVisor()"><i class="bi bi-x-lg"></i></button>
         </div>
         <img [src]="visorUrl" alt="Foto del acta"
              style="max-width:100%; max-height:78vh; margin:0 auto; display:block; border-radius:8px;"

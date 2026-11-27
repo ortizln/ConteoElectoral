@@ -2,10 +2,10 @@
   <div class="geo-header">
     <h1><i class="bi bi-geo-alt"></i> Dashboard Geográfico</h1>
     <div class="geo-controls">
-      <select class="form-select" (change)="onEleccionChange()" [(ngModel)]="selectedEleccionId">
+      <select class="form-select sm form-select-sm" (change)="onEleccionChange()" [(ngModel)]="selectedEleccionId">
         <option *ngFor="let e of elecciones" [ngValue]="e.id">{{ e.nombre }}</option>
       </select>
-      <select class="form-select" (change)="onCandidatoChange()" [(ngModel)]="selectedCandidatoId">
+      <select class="form-select sm form-select-sm" (change)="onCandidatoChange()" [(ngModel)]="selectedCandidatoId">
         <option [ngValue]="null">Todos los candidatos</option>
         <option *ngFor="let c of candidatos" [ngValue]="c.id">{{ c.nombre }} {{ c.apellido }}</option>
       </select>
