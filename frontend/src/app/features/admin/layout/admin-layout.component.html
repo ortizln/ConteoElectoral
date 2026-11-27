@@ -50,8 +50,8 @@
             {{ userRole === 'ADMIN' ? 'Administrador' : 'Supervisor' }}
           </span>
         </div>
-        <button (click)="toggleTheme()" class="btn theme-toggle btn-xs btn-labeled" [title]="isDark ? 'Modo claro' : 'Modo oscuro'"
-          [attr.aria-label]="isDark ? 'Activar modo claro' : 'Activar modo oscuro'"><i class="bi bi-sun"></i><span class="btn-label">Modo claro</span></button>
+        <button (click)="toggleTheme()" class="btn theme-toggle btn-xs icon-only" [title]="isDark ? 'Modo claro' : 'Modo oscuro'"
+          [attr.aria-label]="isDark ? 'Activar modo claro' : 'Activar modo oscuro'"><i class="bi bi-sun"></i></button>
         <button aria-label="Salir" title="Salir" (click)="logout()" class="btn btn-outline-light header-logout btn-xs btn-labeled"><i class="bi bi-box-arrow-right"></i><span class="btn-label">Salir</span></button>
       </div>
     </header>
