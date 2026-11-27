@@ -91,6 +91,10 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () => import('./pages/actas/actas.component').then(m => m.ActasComponent) 
       },
       { 
+        path: 'actas/corregir/:mesaId', 
+        loadComponent: () => import('./pages/corregir-acta/corregir-acta.component').then(m => m.CorregirActaComponent) 
+      },
+      { 
         path: 'usuarios', 
         loadComponent: () => import('./pages/usuarios/usuarios.component').then(m => m.UsuariosComponent) 
       },

@@ -43,38 +43,3 @@
 .conteo-acta span {
   white-space: nowrap;
 }
-
-.section-title {
-  font-size: 1rem;
-  font-weight: 700;
-  margin: 0 0 0.75rem;
-}
-
-.correccion-tabs {
-  flex-wrap: wrap;
-  gap: 2px;
-  border-bottom: 1px solid var(--border-color, #dee2e6);
-}
-
-.correccion-tabs .nav-link {
-  font-size: 0.85rem;
-  padding: 0.35rem 0.6rem;
-  color: var(--text-muted, #6c757d);
-  border: 1px solid transparent;
-  border-radius: 6px 6px 0 0;
-}
-
-.correccion-tabs .nav-link:hover {
-  color: var(--primary-color, #0d6efd);
-  background: var(--bg-secondary, #f7f9f6);
-}
-
-.correccion-tabs .nav-link.active {
-  font-weight: 600;
-  color: var(--primary-color, #0d6efd);
-  border-color: var(--border-color, #dee2e6) var(--border-color, #dee2e6) #fff;
-}
-
-.correccion-tabs .badge {
-  font-size: 0.7rem;
-}

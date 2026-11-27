@@ -37,7 +37,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/admin/layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     children: [
       { 
+        path: 'corregir/:mesaId', 
+        loadComponent: () => import('./features/admin/pages/corregir-acta/corregir-acta.component').then(m => m.CorregirActaComponent) 
+      },
+      { 
         path: '', 
+        pathMatch: 'full',
         loadComponent: () => import('./features/admin/pages/actas/actas.component').then(m => m.ActasComponent) 
       }
     ]

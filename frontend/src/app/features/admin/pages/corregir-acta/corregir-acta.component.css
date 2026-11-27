@@ -1,0 +1,134 @@
+.corregir-acta-page {
+  padding: 1rem 1.25rem 1.5rem;
+}
+
+.page-header h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.form-panel,
+.image-panel {
+  border: 1px solid var(--border-color, #e3e7e0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  min-height: 0;
+}
+
+.form-panel .card-header,
+.image-panel .card-header {
+  background: var(--bg-secondary, #f7f9f6);
+  border-bottom: 1px solid var(--border-color, #e3e7e0);
+}
+
+.form-scroll {
+  max-height: calc(100vh - 250px);
+  overflow-y: auto;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.correccion-tabs {
+  flex-wrap: wrap;
+  gap: 2px;
+  border-bottom: 1px solid var(--border-color, #dee2e6);
+}
+
+.correccion-tabs .nav-link {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.6rem;
+  color: var(--text-muted, #6c757d);
+  border: 1px solid transparent;
+  border-radius: 6px 6px 0 0;
+}
+
+.correccion-tabs .nav-link:hover {
+  color: var(--primary-color, #0d6efd);
+  background: var(--bg-secondary, #f7f9f6);
+}
+
+.correccion-tabs .nav-link.active {
+  font-weight: 600;
+  color: var(--primary-color, #0d6efd);
+  border-color: var(--border-color, #dee2e6) var(--border-color, #dee2e6) #fff;
+}
+
+.correccion-tabs .badge {
+  font-size: 0.7rem;
+}
+
+.image-panel .card-body {
+  height: calc(100vh - 250px);
+  min-height: 0;
+}
+
+.foto-principal {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #1b1b1b;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.foto-principal img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.foto-info {
+  min-height: 1.2rem;
+}
+
+.miniaturas {
+  flex-shrink: 0;
+  padding-bottom: 4px;
+}
+
+.miniatura {
+  width: 88px;
+  height: 88px;
+  flex: 0 0 88px;
+  padding: 2px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.miniatura:hover {
+  border-color: #adb5bd;
+}
+
+.miniatura.active {
+  border-color: var(--primary-color, #0d6efd);
+}
+
+.miniatura img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+@media (max-width: 1199.98px) {
+  .form-scroll {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .image-panel .card-body {
+    height: auto;
+  }
+
+  .foto-principal {
+    height: 60vh;
+  }
+}

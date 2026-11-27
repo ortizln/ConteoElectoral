@@ -60,6 +60,10 @@
     </div>
   </div>
 
+  <div *ngIf="errorAccion" class="alert alert-danger py-2 small">
+    <i class="bi bi-exclamation-triangle-fill"></i> {{ errorAccion }}
+  </div>
+
   <div *ngIf="loading" class="text-center py-5 text-muted">
     <div class="spinner-border mb-2"></div>
     <div>Cargando actas...</div>
@@ -110,7 +114,7 @@
           </div>
 
           <div class="d-flex flex-wrap gap-2 mb-3">
-            <button type="button" class="btn btn-sm btn-outline-primary" (click)="abrirCorreccion(m)">
+            <button type="button" class="btn btn-sm btn-outline-primary" (click)="irACorregir(m)">
               <i class="bi bi-pencil-square"></i> Corregir
             </button>
             <button type="button" class="btn btn-sm btn-success" *ngIf="!m.aprobada"
@@ -155,138 +159,4 @@
       </div>
     </div>
   </div>
-
-  <!-- Modal de corrección/aprobación del acta -->
-  <ng-container *ngIf="correccionMesa">
-    <div class="modal-backdrop show" style="z-index:1055;"></div>
-    <div class="modal show" style="display:block; z-index:1056;" (click)="cerrarCorreccion()">
-      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable"
-           (click)="$event.stopPropagation()">
-        <div class="modal-content">
-          <div class="modal-header">
-            <div>
-              <h5 class="modal-title mb-0">
-                <i class="bi bi-pencil-square"></i> Corregir acta — Mesa {{ correccionMesa.mesaNumero }}
-              </h5>
-              <small class="text-muted">
-                {{ correccionMesa.institucionNombre || '—' }} ·
-                {{ correccionMesa.parroquiaNombre || '—' }}
-              </small>
-            </div>
-            <button type="button" class="btn-close" (click)="cerrarCorreccion()"
-                    aria-label="Cerrar"></button>
-          </div>
-          <div class="modal-body" style="max-height:70vh; overflow-y:auto;">
-            <div *ngIf="correccionCargando" class="text-center py-4 text-muted">
-              <div class="spinner-border mb-2"></div>
-              <div>Cargando votos...</div>
-            </div>
-
-            <div *ngIf="!correccionCargando">
-              <div *ngIf="correccionMesa.aprobada" class="alert alert-warning py-2 small">
-                <i class="bi bi-lock-fill"></i>
-                Esta acta está aprobada. Desapruebe el acta para poder corregirla.
-              </div>
-              <div *ngIf="correccionError" class="alert alert-danger py-2 small">
-                <i class="bi bi-exclamation-triangle-fill"></i> {{ correccionError }}
-              </div>
-              <div *ngIf="correccionSuccess" class="alert alert-success py-2 small">
-                <i class="bi bi-check-circle-fill"></i> {{ correccionSuccess }}
-              </div>
-
-              <div class="row g-3 mb-4">
-                <div class="col-12 col-md-4">
-                  <label class="form-label small fw-bold">Votos nulos</label>
-                  <input type="number" min="0" class="form-control form-control-sm"
-                         [(ngModel)]="correccionNulos" [disabled]="correccionMesa.aprobada === true">
-                </div>
-                <div class="col-12 col-md-4">
-                  <label class="form-label small fw-bold">Votos en blanco</label>
-                  <input type="number" min="0" class="form-control form-control-sm"
-                         [(ngModel)]="correccionBlanco" [disabled]="correccionMesa.aprobada === true">
-                </div>
-                <div class="col-12 col-md-4">
-                  <label class="form-label small fw-bold">
-                    Ausentes
-                    <small *ngIf="correccionMesa.electoresRegistrados != null"
-                           class="text-muted fw-normal">
-                      (padrón: {{ correccionMesa.electoresRegistrados }})
-                    </small>
-                  </label>
-                  <input type="number" min="0" class="form-control form-control-sm"
-                         [(ngModel)]="correccionAusentes" [disabled]="correccionMesa.aprobada === true">
-                </div>
-              </div>
-
-              <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                <h6 class="section-title mb-0"><i class="bi bi-people"></i> Votos por candidato/lista</h6>
-                <span class="badge bg-light text-dark border">
-                  Total {{ correccionTabActiva }}: {{ totalVotosCorreccionVisibles }}
-                </span>
-              </div>
-
-              <ul class="nav nav-tabs correccion-tabs mb-2" role="tablist">
-                <li class="nav-item" *ngFor="let tab of correccionTabs">
-                  <button type="button" class="nav-link" role="tab"
-                          [class.active]="correccionTabActiva === tab.label"
-                          [attr.aria-selected]="correccionTabActiva === tab.label"
-                          (click)="correccionTabActiva = tab.label">
-                    {{ tab.label }}
-                    <span class="badge bg-secondary ms-1">{{ tab.count }}</span>
-                  </button>
-                </li>
-              </ul>
-
-              <div class="table-responsive">
-                <table class="table table-sm table-hover align-middle mb-0">
-                  <thead>
-                    <tr>
-                      <th>Candidato / Lista</th>
-                      <th>Partido</th>
-                      <th style="width:140px;" class="text-right">Votos</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let v of votosCorreccionVisibles">
-                      <td>{{ nombreVoto(v) }}</td>
-                      <td>{{ v.partidoNombre || '—' }}</td>
-                      <td class="text-right">
-                        <input type="number" min="0" class="form-control form-control-sm text-end"
-                               [(ngModel)]="v.cantidadVotos" [disabled]="correccionMesa.aprobada === true">
-                      </td>
-                    </tr>
-                    <tr *ngIf="votosCorreccionVisibles.length === 0">
-                      <td colspan="3" class="text-center text-muted py-3">
-                        No hay votos registrados para {{ correccionTabActiva }}.
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer flex-wrap">
-            <button type="button" class="btn btn-secondary" (click)="cerrarCorreccion()">
-              Cerrar
-            </button>
-            <button type="button" class="btn btn-outline-warning"
-                    *ngIf="correccionMesa?.aprobada" (click)="desaprobar(correccionMesa)">
-              <i class="bi bi-unlock"></i> Desaprobar
-            </button>
-            <button type="button" class="btn btn-success"
-                    *ngIf="!correccionMesa?.aprobada && correccionMesa?.cerrada"
-                    (click)="aprobar(correccionMesa)">
-              <i class="bi bi-check-circle"></i> Aprobar
-            </button>
-            <button type="button" class="btn btn-primary" (click)="guardarCorreccion()"
-                    [disabled]="correccionCargando || correccionGuardando || correccionMesa.aprobada === true">
-              <span *ngIf="correccionGuardando" class="spinner-border spinner-border-sm me-1"></span>
-              <i *ngIf="!correccionGuardando" class="bi bi-save"></i>
-              {{ correccionGuardando ? 'Guardando...' : 'Guardar corrección' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </ng-container>
 </div>
