@@ -43,38 +43,6 @@
         </button>
       </form>
 
-      <div class="recovery-overlay" *ngIf="showRecoveryModal">
-        <div class="recovery-modal" role="dialog" aria-modal="true" aria-labelledby="recovery-title">
-          <div class="recovery-header">
-            <h3 id="recovery-title">Recuperar la contraseña</h3>
-            <button type="button" class="recovery-close" aria-label="Cerrar" (click)="closeRecoveryModal()">&times;</button>
-          </div>
-          <p class="recovery-hint">Ingrese sus datos. Enviaremos una contraseña temporal por WhatsApp al celular registrado.</p>
-          <div class="form-group">
-            <label for="rec-username">Usuario</label>
-            <input id="rec-username" type="text" class="form-control" [(ngModel)]="recuperarForm.username" name="recUsername"
-              placeholder="Ingrese su usuario" autocomplete="off" />
-          </div>
-          <div class="form-group">
-            <label for="rec-identificacion">Identificación (cédula)</label>
-            <input id="rec-identificacion" type="text" class="form-control" [(ngModel)]="recuperarForm.identificacion" name="recIdentificacion"
-              placeholder="Ingrese su cédula" autocomplete="off" />
-          </div>
-          <div class="form-group">
-            <label for="rec-celular">Celular de WhatsApp</label>
-            <input id="rec-celular" type="tel" class="form-control" [(ngModel)]="recuperarForm.celular" name="recCelular"
-              placeholder="Ej. 593987269948" autocomplete="off" />
-          </div>
-          <div *ngIf="recuperarError" class="alert alert-danger">{{ recuperarError }}</div>
-          <div *ngIf="recuperarSuccess" class="alert alert-success">{{ recuperarSuccess }}</div>
-          <div class="recovery-actions">
-            <button type="button" class="btn btn-secondary" (click)="closeRecoveryModal()">Cerrar</button>
-            <button type="button" class="btn btn-login" [disabled]="recuperando" (click)="submitRecovery()">
-              {{ recuperando ? 'Enviando...' : 'Enviar por WhatsApp' }}
-            </button>
-          </div>
-        </div>
-      </div>
       <div class="download-apk">
         <a [href]="apkDownloadUrl" class="apk-card">
           <div class="apk-card-icon">
@@ -122,6 +90,41 @@
         <button *ngFor="let img of images; let i = index" class="dot"
           [class.active]="i === currentIndex" (click)="goToSlide(i)"></button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Fuera de .login-card: si estuviera dentro, su z-index quedaría limitado
+     por el contexto de apilamiento de la tarjeta y el carrusel taparía el modal. -->
+<div class="recovery-overlay" *ngIf="showRecoveryModal">
+  <div class="recovery-modal" role="dialog" aria-modal="true" aria-labelledby="recovery-title">
+    <div class="recovery-header">
+      <h3 id="recovery-title">Recuperar la contraseña</h3>
+      <button type="button" class="recovery-close" aria-label="Cerrar" (click)="closeRecoveryModal()">&times;</button>
+    </div>
+    <p class="recovery-hint">Ingrese sus datos. Enviaremos una contraseña temporal por WhatsApp al celular registrado.</p>
+    <div class="form-group">
+      <label for="rec-username">Usuario</label>
+      <input id="rec-username" type="text" class="form-control" [(ngModel)]="recuperarForm.username" name="recUsername"
+        placeholder="Ingrese su usuario" autocomplete="off" />
+    </div>
+    <div class="form-group">
+      <label for="rec-identificacion">Identificación (cédula)</label>
+      <input id="rec-identificacion" type="text" class="form-control" [(ngModel)]="recuperarForm.identificacion" name="recIdentificacion"
+        placeholder="Ingrese su cédula" autocomplete="off" />
+    </div>
+    <div class="form-group">
+      <label for="rec-celular">Celular de WhatsApp</label>
+      <input id="rec-celular" type="tel" class="form-control" [(ngModel)]="recuperarForm.celular" name="recCelular"
+        placeholder="Ej. 593987269948" autocomplete="off" />
+    </div>
+    <div *ngIf="recuperarError" class="alert alert-danger">{{ recuperarError }}</div>
+    <div *ngIf="recuperarSuccess" class="alert alert-success">{{ recuperarSuccess }}</div>
+    <div class="recovery-actions">
+      <button type="button" class="btn btn-secondary" (click)="closeRecoveryModal()">Cerrar</button>
+      <button type="button" class="btn btn-login" [disabled]="recuperando" (click)="submitRecovery()">
+        {{ recuperando ? 'Enviando...' : 'Enviar por WhatsApp' }}
+      </button>
     </div>
   </div>
 </div>
