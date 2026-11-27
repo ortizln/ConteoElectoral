@@ -32,7 +32,7 @@ public class RecuperacionPasswordService {
     public RecuperarPasswordResponse recuperar(RecuperarPasswordRequest request) {
         String username = request.getUsername() == null ? "" : request.getUsername().trim();
         String identificacion = UsuarioService.normalizarIdentificacion(request.getIdentificacion());
-        String celular = UsuarioService.normalizarCelular(request.getCelular());
+        String celular = OpenWaService.normalizarNumeroWhatsapp(request.getCelular());
 
         Usuario usuario = usuarioRepository.findByUsername(username).orElse(null);
         // El celular NO se valida contra la BD: muchos usuarios no lo tienen
@@ -40,7 +40,7 @@ public class RecuperacionPasswordService {
         boolean datosValidos = usuario != null
                 && Boolean.TRUE.equals(usuario.getActivo())
                 && Objects.equals(usuario.getIdentificacion(), identificacion)
-                && celular != null;
+                && !celular.isEmpty();
 
         if (!datosValidos) {
             // Mensaje genérico para no revelar si el usuario existe.
@@ -48,17 +48,22 @@ public class RecuperacionPasswordService {
         }
 
         String passwordTemporal = generarPasswordTemporal();
+        String mensaje = "Estimado/a usuario/a:\n\n"
+                + "Saludos de parte de ALANTEK. Se ha solicitado la recuperación de su contraseña "
+                + "en el Sistema de Conteo Electoral.\n\n"
+                + "Usuario: " + usuario.getUsername() + "\n"
+                + "Contraseña temporal: " + passwordTemporal + "\n\n"
+                + "ADVERTENCIA: Esta contraseña es temporal y de uso personal. No la comparta con "
+                + "terceros y cámbiela en su primer ingreso. Si usted no solicitó este mensaje, "
+                + "ignórelo y comuníquese con el administrador del sistema.";
+
+        // Enviar primero: si WhatsApp falla, no se cambia la contraseña y el
+        // usuario no recibe una clave que ya no existe por el rollback.
+        openWaService.sendText(celular, mensaje);
+
         usuario.setPassword(passwordEncoder.encode(passwordTemporal));
         usuario.setCelular(celular);
         usuarioRepository.save(usuario);
-
-        String mensaje = "ALANTEK - Sistema de Conteo Electoral\n"
-                + "Recuperación de contraseña\n\n"
-                + "Usuario: " + usuario.getUsername() + "\n"
-                + "Contraseña temporal: " + passwordTemporal + "\n\n"
-                + "Ingrese con estos datos y cambie su contraseña.";
-
-        openWaService.sendText(celular, mensaje);
         log.info("Contraseña temporal generada y enviada por WhatsApp al usuario {} (destino {})",
                 usuario.getUsername(), OpenWaService.enmascarar(celular));
 

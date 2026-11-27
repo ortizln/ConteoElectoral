@@ -42,12 +42,13 @@ public class OpenWaService {
 
         String url = baseUrl.replaceAll("/+$", "")
                 + "/api/sessions/" + sessionId + "/messages/send-text";
-        String chatId = celular + "@c.us";
+        String numero = normalizarNumeroWhatsapp(celular);
+        String chatId = numero + "@c.us";
 
         try {
             String body = objectMapper.writeValueAsString(Map.of("chatId", chatId, "text", text));
             HttpRequest request = HttpRequest.newBuilder(URI.create(url))
-                    .timeout(Duration.ofSeconds(30))
+                    .timeout(Duration.ofSeconds(15))
                     .header("X-API-Key", apiKey)
                     .header("Content-Type", "application/json")
                     .POST(HttpRequest.BodyPublishers.ofString(body))
@@ -66,13 +67,31 @@ public class OpenWaService {
                 throw new IllegalStateException("No se pudo enviar el mensaje por WhatsApp (HTTP "
                         + response.statusCode() + ")");
             }
-            log.info("Mensaje de WhatsApp enviado a {}", enmascarar(celular));
+            log.info("Mensaje de WhatsApp enviado a {}", enmascarar(numero));
         } catch (IllegalStateException e) {
             throw e;
         } catch (Exception e) {
-            log.error("Error al enviar mensaje por WhatsApp a {}: {}", enmascarar(celular), e.getMessage());
+            log.error("Error al enviar mensaje por WhatsApp a {}: {}", enmascarar(numero), e.getMessage());
             throw new IllegalStateException("No se pudo conectar con OpenWA: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Convierte números ecuatorianos al formato internacional que OpenWA espera:
+     * 0987269948 → 593987269948, 987269948 → 593987269948, 593987269948 → igual.
+     */
+    public static String normalizarNumeroWhatsapp(String celular) {
+        if (celular == null) {
+            return "";
+        }
+        String digitos = celular.replaceAll("\\D", "");
+        if (digitos.startsWith("0") && digitos.length() >= 10) {
+            return "593" + digitos.substring(1);
+        }
+        if (digitos.length() == 9) {
+            return "593" + digitos;
+        }
+        return digitos;
     }
 
     public static String enmascarar(String celular) {
