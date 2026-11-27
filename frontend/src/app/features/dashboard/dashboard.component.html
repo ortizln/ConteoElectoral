@@ -28,8 +28,8 @@
       </div>
       <div class="card-buttons">
         <button aria-label="Limpiar" title="Limpiar" class="btn btn-clean btn-xs btn-labeled" (click)="limpiarFiltros()"><i class="bi bi-brush"></i><span class="btn-label">Limpiar</span></button>
-        <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs btn-labeled" (click)="filtrosMinimized = !filtrosMinimized"
-          [title]="filtrosMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i><span class="btn-label">Minimizar</span></button>
+        <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs icon-only" (click)="filtrosMinimized = !filtrosMinimized"
+          [title]="filtrosMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i></button>
       </div>
     </div>
     <div class="filtros-grid" *ngIf="!filtrosMinimized">
@@ -113,8 +113,8 @@
         <i class="bi bi-person-check"></i> Calculado sobre sus mesas asignadas
       </small>
     </h3>
-    <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleMinimize('stats')"
-      [title]="statsMinimized ? 'Expandir' : 'Ocultar'"><i class="bi bi-plus"></i><span class="btn-label">Minimizar</span></button>
+    <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs icon-only" (click)="toggleMinimize('stats')"
+      [title]="statsMinimized ? 'Expandir' : 'Ocultar'"><i class="bi bi-plus"></i></button>
   </div>
 
   <div *ngIf="dashboard" class="stats-grid" [class.hidden]="statsMinimized">
@@ -185,9 +185,9 @@
       <div class="card-header-actions">
         <h3><i class="bi bi-bar-chart-fill"></i> Votos por Candidato</h3>
         <div class="card-buttons">
-          <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleMinimize('barChart')"
-            [title]="barChartMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i><span class="btn-label">Minimizar</span></button>
-          <button aria-label="Pantalla completa" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleFullscreen('barChart')" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i><span class="btn-label">Pantalla completa</span></button>
+          <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs icon-only" (click)="toggleMinimize('barChart')"
+            [title]="barChartMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i></button>
+          <button aria-label="Pantalla completa" class="btn btn-card-action btn-xs icon-only" (click)="toggleFullscreen('barChart')" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i></button>
         </div>
       </div>
       <div class="card-body" [class.hidden]="barChartMinimized">
@@ -199,9 +199,9 @@
       <div class="card-header-actions">
         <h3><i class="bi bi-pie-chart"></i> Distribución de Votos</h3>
         <div class="card-buttons">
-          <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleMinimize('pieChart')"
-            [title]="pieChartMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i><span class="btn-label">Minimizar</span></button>
-          <button aria-label="Pantalla completa" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleFullscreen('pieChart')" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i><span class="btn-label">Pantalla completa</span></button>
+          <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs icon-only" (click)="toggleMinimize('pieChart')"
+            [title]="pieChartMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i></button>
+          <button aria-label="Pantalla completa" class="btn btn-card-action btn-xs icon-only" (click)="toggleFullscreen('pieChart')" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i></button>
         </div>
       </div>
       <div class="card-body" [class.hidden]="pieChartMinimized">
@@ -222,9 +222,9 @@
         <h3><i [class]="'bi ' + cat.icono"></i> {{ cat.titulo }}</h3>
         <div class="card-buttons">
           <span class="table-count">{{ cat.totalVotos | number }} votos</span>
-          <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleMinimize(cat.clave)"
-            [title]="categoriaChartMinimized[cat.clave] ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i><span class="btn-label">Minimizar</span></button>
-          <button aria-label="Pantalla completa" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleFullscreen(cat.clave)" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i><span class="btn-label">Pantalla completa</span></button>
+          <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs icon-only" (click)="toggleMinimize(cat.clave)"
+            [title]="categoriaChartMinimized[cat.clave] ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i></button>
+          <button aria-label="Pantalla completa" class="btn btn-card-action btn-xs icon-only" (click)="toggleFullscreen(cat.clave)" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i></button>
         </div>
       </div>
       <div class="card-body" [class.hidden]="categoriaChartMinimized[cat.clave]">
@@ -258,9 +258,9 @@
       <h3><i class="bi bi-clipboard-data"></i> Resultados</h3>
       <div class="card-buttons">
         <span class="table-count">{{ tabCountLabel }}</span>
-        <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleMinimize('resultados')"
-          [title]="resultadosMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i><span class="btn-label">Minimizar</span></button>
-        <button aria-label="Pantalla completa" class="btn btn-card-action btn-xs btn-labeled" (click)="toggleFullscreen('resultados')" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i><span class="btn-label">Pantalla completa</span></button>
+        <button aria-label="Minimizar / expandir" class="btn btn-card-action btn-xs icon-only" (click)="toggleMinimize('resultados')"
+          [title]="resultadosMinimized ? 'Expandir' : 'Minimizar'"><i class="bi bi-plus"></i></button>
+        <button aria-label="Pantalla completa" class="btn btn-card-action btn-xs icon-only" (click)="toggleFullscreen('resultados')" title="Pantalla completa"><i class="bi bi-arrows-angle-expand"></i></button>
       </div>
     </div>
     <div class="table-wrapper" [class.hidden]="resultadosMinimized">
