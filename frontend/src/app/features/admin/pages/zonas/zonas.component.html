@@ -2,7 +2,7 @@
   <div class="page-header">
     <h2>Gestión de Zonas</h2>
     <div class="dropdown">
-      <button aria-label="Opciones" title="Opciones" class="btn btn-primary dropdown-toggle btn-xs btn-labeled" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i><span class="btn-label">Opciones</span></button>
+      <button aria-label="Opciones" title="Opciones" class="btn btn-primary btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-card-list"></i></button>
       <ul class="dropdown-menu dropdown-menu-end">
         <li><button aria-label="Nuevo" title="Nuevo" class="btn dropdown-item fw-bold btn-xs btn-labeled" (click)="openModal()"><i class="bi bi-plus-lg"></i><span class="btn-label">Nuevo</span></button></li>
         <li><hr class="dropdown-divider"></li>
@@ -38,7 +38,7 @@
         <td>{{ z.descripcion || 'N/A' }}</td>
         <td>
           <div class="dropdown">
-            <button aria-label="Opciones" title="Opciones" class="btn btn-outline-secondary border-0 btn-xs btn-labeled" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-three-dots-vertical"></i><span class="btn-label">Opciones</span></button>
+            <button aria-label="Opciones" title="Opciones" class="btn btn-outline-secondary border-0 btn-xs icon-only" type="button" data-bs-toggle="dropdown" data-bs-popper="false" aria-expanded="false"><i class="bi bi-card-list"></i></button>
             <ul class="dropdown-menu dropdown-menu-end">
               <li><button aria-label="Editar" title="Editar" class="btn dropdown-item btn-xs btn-labeled" (click)="edit(z)"><i class="bi bi-pencil-square"></i><span class="btn-label">Editar</span></button></li>
               <li><hr class="dropdown-divider"></li>

@@ -129,6 +129,12 @@
   justify-content: center;
 }
 
+.permisos-table-card .toggle-btn.icon-only {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+}
+
 .toggle-btn:hover:not(:disabled) {
   border-color: var(--alantek-secondary);
 }

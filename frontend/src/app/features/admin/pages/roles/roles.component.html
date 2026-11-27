@@ -32,16 +32,24 @@
         <tr *ngFor="let p of permisos">
           <td>{{ p.modulo }}</td>
           <td class="text-center">
-            <button aria-label="Permiso" title="Permiso" class="btn toggle-btn btn-xs btn-labeled" [class.active]="p.puedeVer" (click)="togglePermiso(p, 'puedeVer')" [disabled]="saving"><i class="bi bi-check-lg"></i><span class="btn-label">Permiso</span></button>
+            <button [attr.aria-label]="(p.puedeVer ? 'Desactivar' : 'Activar') + ' permiso de ver de ' + p.modulo"
+              [attr.title]="(p.puedeVer ? 'Desactivar' : 'Activar') + ' permiso de ver de ' + p.modulo"
+              class="btn toggle-btn btn-xs icon-only" [class.active]="p.puedeVer" (click)="togglePermiso(p, 'puedeVer')" [disabled]="saving"><i class="bi bi-check-lg"></i></button>
           </td>
           <td class="text-center">
-            <button aria-label="Permiso" title="Permiso" class="btn toggle-btn btn-xs btn-labeled" [class.active]="p.puedeCrear" (click)="togglePermiso(p, 'puedeCrear')" [disabled]="saving"><i class="bi bi-check-lg"></i><span class="btn-label">Permiso</span></button>
+            <button [attr.aria-label]="(p.puedeCrear ? 'Desactivar' : 'Activar') + ' permiso de crear de ' + p.modulo"
+              [attr.title]="(p.puedeCrear ? 'Desactivar' : 'Activar') + ' permiso de crear de ' + p.modulo"
+              class="btn toggle-btn btn-xs icon-only" [class.active]="p.puedeCrear" (click)="togglePermiso(p, 'puedeCrear')" [disabled]="saving"><i class="bi bi-check-lg"></i></button>
           </td>
           <td class="text-center">
-            <button aria-label="Permiso" title="Permiso" class="btn toggle-btn btn-xs btn-labeled" [class.active]="p.puedeEditar" (click)="togglePermiso(p, 'puedeEditar')" [disabled]="saving"><i class="bi bi-check-lg"></i><span class="btn-label">Permiso</span></button>
+            <button [attr.aria-label]="(p.puedeEditar ? 'Desactivar' : 'Activar') + ' permiso de editar de ' + p.modulo"
+              [attr.title]="(p.puedeEditar ? 'Desactivar' : 'Activar') + ' permiso de editar de ' + p.modulo"
+              class="btn toggle-btn btn-xs icon-only" [class.active]="p.puedeEditar" (click)="togglePermiso(p, 'puedeEditar')" [disabled]="saving"><i class="bi bi-check-lg"></i></button>
           </td>
           <td class="text-center">
-            <button aria-label="Permiso" title="Permiso" class="btn toggle-btn btn-xs btn-labeled" [class.active]="p.puedeEliminar" (click)="togglePermiso(p, 'puedeEliminar')" [disabled]="saving"><i class="bi bi-check-lg"></i><span class="btn-label">Permiso</span></button>
+            <button [attr.aria-label]="(p.puedeEliminar ? 'Desactivar' : 'Activar') + ' permiso de eliminar de ' + p.modulo"
+              [attr.title]="(p.puedeEliminar ? 'Desactivar' : 'Activar') + ' permiso de eliminar de ' + p.modulo"
+              class="btn toggle-btn btn-xs icon-only" [class.active]="p.puedeEliminar" (click)="togglePermiso(p, 'puedeEliminar')" [disabled]="saving"><i class="bi bi-check-lg"></i></button>
           </td>
         </tr>
       </tbody>
