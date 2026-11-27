@@ -76,10 +76,11 @@ public class UsuarioController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<byte[]> exportarExcel() {
         List<UsuarioResponse> usuarios = usuarioService.getAllUsuarios();
-        String[] headers = {"ID", "Username", "Nombre", "Apellido", "Email", "Rol", "Activo"};
+        String[] headers = {"ID", "Username", "Nombre", "Apellido", "Email", "Cédula", "Celular", "Rol", "Activo"};
         List<String[]> data = usuarios.stream()
                 .map(u -> new String[]{String.valueOf(u.getId()), u.getUsername(), u.getNombre(),
-                        u.getApellido(), u.getEmail(), u.getRol(), u.getActivo() ? "Si" : "No"})
+                        u.getApellido(), u.getEmail(), u.getIdentificacion(), u.getCelular(),
+                        u.getRol(), u.getActivo() ? "Si" : "No"})
                 .collect(Collectors.toList());
         byte[] excel = excelExportService.exportExcel("Usuarios", headers, data);
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -92,12 +93,14 @@ public class UsuarioController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<byte[]> exportarPdf() {
         List<UsuarioResponse> usuarios = usuarioService.getAllUsuarios();
-        String[] headers = {"ID", "Username", "Nombre", "Apellido", "Email", "Rol", "Activo"};
+        String[] headers = {"ID", "Username", "Nombre", "Apellido", "Email", "Cédula", "Celular", "Rol", "Activo"};
         List<String[]> data = usuarios.stream()
                 .map(u -> new String[]{String.valueOf(u.getId()), u.getUsername(), u.getNombre(),
-                        u.getApellido(), u.getEmail(), u.getRol(), u.getActivo() ? "Si" : "No"})
+                        u.getApellido(), u.getEmail(), u.getIdentificacion(), u.getCelular(),
+                        u.getRol(), u.getActivo() ? "Si" : "No"})
                 .collect(Collectors.toList());
-        byte[] pdf = pdfExportService.exportTablePdf("Usuarios", headers, data, new float[]{1, 2, 2, 2, 2, 1, 1});
+        byte[] pdf = pdfExportService.exportTablePdf("Usuarios", headers, data,
+                new float[]{1, 2, 2, 2, 2, 1.5f, 1.5f, 1, 1});
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_PDF);
         httpHeaders.setContentDispositionFormData("attachment", "usuarios.pdf");

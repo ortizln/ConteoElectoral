@@ -15,6 +15,8 @@ public class UsuarioResponse {
     private String nombre;
     private String apellido;
     private String email;
+    private String identificacion;
+    private String celular;
     private String rol;
     private Boolean activo;
 }

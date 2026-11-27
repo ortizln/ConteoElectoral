@@ -27,6 +27,13 @@ spring:
       max-file-size: 200MB
       max-request-size: 210MB
 
+# OpenWA - gateway de WhatsApp usado para recuperación de contraseñas
+openwa:
+  base-url: ${OPENWA_BASE_URL:http://192.168.1.43:2785}
+  api-key: ${OPENWA_API_KEY:}
+  session-id: ${OPENWA_SESSION_ID:ecbae1a0-8d06-437b-b211-dac91a23ab2b}
+  sender-number: ${OPENWA_SENDER_NUMBER:593985096366}
+
 # JWT Configuration - Base64 encoded secret key (minimum 256 bits)
 jwt:
   secret: bXlTZWNyZXRLZXlGb3JKV1RUb2tlbkdlbmVyYXRpb25hbmRWYWxpZGF0aW9uMjAyNENvbnRlby1FbGVjdG9yYWxTeXN0ZW0=

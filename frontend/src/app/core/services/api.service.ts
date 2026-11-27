@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApkVersionItem, Eleccion, Partido, Cargo, Candidato, Mesa, MesaActaFoto, MesaActaFotosDeMesa, MesaNuloBlancoPorCargo, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse, ReglaNegocio, Circunscripcion, ResultadoDHondt, Reconteo, Impugnacion, Observacion, Resolucion, EscrutinioResumen, GeoResumen, DatoGeografico, ReporteResumen, ReporteCandidato, ReportePartido, ReporteLista } from '../models';
+import { ApkVersionItem, Eleccion, Partido, Cargo, Candidato, Mesa, MesaActaFoto, MesaActaFotosDeMesa, MesaNuloBlancoPorCargo, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse, ReglaNegocio, Circunscripcion, ResultadoDHondt, Reconteo, Impugnacion, Observacion, Resolucion, EscrutinioResumen, GeoResumen, DatoGeografico, ReporteResumen, ReporteCandidato, ReportePartido, ReporteLista, RecuperarPasswordRequest, RecuperarPasswordResponse } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -349,6 +349,10 @@ export class ApiService {
 
   deleteUsuario(id: number): Observable<void> {
     return this.http.delete<void>(`${this.API_URL}/usuarios/${id}`);
+  }
+
+  recuperarPassword(data: RecuperarPasswordRequest): Observable<RecuperarPasswordResponse> {
+    return this.http.post<RecuperarPasswordResponse>(`${this.API_URL}/auth/recuperar-password`, data);
   }
 
   // Votos

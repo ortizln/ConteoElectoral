@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
-import { CarouselImage } from '../../../core/models';
+import { CarouselImage, RecuperarPasswordRequest } from '../../../core/models';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -26,6 +26,12 @@ export class LoginComponent implements OnInit, OnDestroy {
   private readonly API_URL = environment.apiUrl;
   apkDownloadUrl = `${environment.apiUrl}/configuracion/apk`;
   apkVersion = '';
+
+  showRecoveryModal = false;
+  recuperando = false;
+  recuperarForm: RecuperarPasswordRequest = { username: '', identificacion: '', celular: '' };
+  recuperarError = '';
+  recuperarSuccess = '';
 
   constructor(
     private authService: AuthService,
@@ -91,6 +97,40 @@ export class LoginComponent implements OnInit, OnDestroy {
           this.error = err.error?.message || 'Credenciales inválidas';
         }
       });
+  }
+
+  openRecoveryModal(): void {
+    this.recuperarForm = { username: this.username, identificacion: '', celular: '' };
+    this.recuperarError = '';
+    this.recuperarSuccess = '';
+    this.showRecoveryModal = true;
+  }
+
+  closeRecoveryModal(): void {
+    this.showRecoveryModal = false;
+    this.recuperarError = '';
+    this.recuperarSuccess = '';
+  }
+
+  submitRecovery(): void {
+    this.recuperarError = '';
+    this.recuperarSuccess = '';
+    const { username, identificacion, celular } = this.recuperarForm;
+    if (!username.trim() || !identificacion.trim() || !celular.trim()) {
+      this.recuperarError = 'Ingrese el usuario, la identificación y el celular.';
+      return;
+    }
+    this.recuperando = true;
+    this.api.recuperarPassword(this.recuperarForm).subscribe({
+      next: (res) => {
+        this.recuperando = false;
+        this.recuperarSuccess = `${res.mensaje} Enviado al número ${res.enviadoA}.`;
+      },
+      error: (err) => {
+        this.recuperando = false;
+        this.recuperarError = err.error?.message || 'No se pudo recuperar la contraseña. Intente de nuevo.';
+      }
+    });
   }
 
   private redirectByRole(rol: string): void {

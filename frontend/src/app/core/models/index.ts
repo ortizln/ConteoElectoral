@@ -19,8 +19,22 @@ export interface Usuario {
   nombre: string;
   apellido: string;
   email: string;
+  identificacion?: string;
+  celular?: string;
   rol: string;
   activo: boolean;
+}
+
+export interface RecuperarPasswordRequest {
+  username: string;
+  identificacion: string;
+  celular: string;
+}
+
+export interface RecuperarPasswordResponse {
+  mensaje: string;
+  username: string;
+  enviadoA: string;
 }
 
 export interface Eleccion {

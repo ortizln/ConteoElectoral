@@ -61,6 +61,8 @@ public class UsuarioService {
                 .nombre(request.getNombre())
                 .apellido(request.getApellido())
                 .email(request.getEmail())
+                .identificacion(normalizarIdentificacion(request.getIdentificacion()))
+                .celular(normalizarCelular(request.getCelular()))
                 .rol(rol)
                 .activo(request.getActivo())
                 .build();
@@ -73,7 +75,8 @@ public class UsuarioService {
             "Usuario",
             saved.getId(),
             null,
-            Map.of("username", saved.getUsername(), "nombre", saved.getNombre(), "apellido", saved.getApellido(), "email", saved.getEmail())
+            AuditMap.of("username", saved.getUsername(), "nombre", saved.getNombre(), "apellido", saved.getApellido(),
+                    "email", saved.getEmail(), "identificacion", saved.getIdentificacion(), "celular", saved.getCelular())
         );
         return mapToResponse(saved);
     }
@@ -88,10 +91,13 @@ public class UsuarioService {
             throw new DuplicateEntityException("El email '" + request.getEmail() + "' ya existe");
         }
         log.info("Actualizando {} con ID: {}", "Usuario", id);
-        Map<String, Object> datosAnteriores = AuditMap.of("nombre", usuario.getNombre(), "apellido", usuario.getApellido(), "email", usuario.getEmail());
+        Map<String, Object> datosAnteriores = AuditMap.of("nombre", usuario.getNombre(), "apellido", usuario.getApellido(),
+                "email", usuario.getEmail(), "identificacion", usuario.getIdentificacion(), "celular", usuario.getCelular());
         usuario.setNombre(request.getNombre());
         usuario.setApellido(request.getApellido());
         usuario.setEmail(request.getEmail());
+        usuario.setIdentificacion(normalizarIdentificacion(request.getIdentificacion()));
+        usuario.setCelular(normalizarCelular(request.getCelular()));
         usuario.setActivo(request.getActivo());
 
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
@@ -111,7 +117,8 @@ public class UsuarioService {
             "Usuario",
             id,
             datosAnteriores,
-            AuditMap.of("nombre", saved.getNombre(), "apellido", saved.getApellido(), "email", saved.getEmail())
+            AuditMap.of("nombre", saved.getNombre(), "apellido", saved.getApellido(), "email", saved.getEmail(),
+                    "identificacion", saved.getIdentificacion(), "celular", saved.getCelular())
         );
         return mapToResponse(saved);
     }
@@ -153,6 +160,23 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    /** Normaliza la cédula: sin espacios y en mayúsculas. Devuelve null si viene vacía. */
+    public static String normalizarIdentificacion(String identificacion) {
+        if (identificacion == null || identificacion.trim().isEmpty()) {
+            return null;
+        }
+        return identificacion.trim().toUpperCase();
+    }
+
+    /** Normaliza el celular a solo dígitos. Devuelve null si viene vacío. */
+    public static String normalizarCelular(String celular) {
+        if (celular == null || celular.trim().isEmpty()) {
+            return null;
+        }
+        String digitos = celular.replaceAll("\\D", "");
+        return digitos.isEmpty() ? null : digitos;
+    }
+
     private UsuarioResponse mapToResponse(Usuario usuario) {
         return UsuarioResponse.builder()
                 .id(usuario.getId())
@@ -160,6 +184,8 @@ public class UsuarioService {
                 .nombre(usuario.getNombre())
                 .apellido(usuario.getApellido())
                 .email(usuario.getEmail())
+                .identificacion(usuario.getIdentificacion())
+                .celular(usuario.getCelular())
                 .rol(usuario.getRol().getNombre())
                 .activo(usuario.getActivo())
                 .build();

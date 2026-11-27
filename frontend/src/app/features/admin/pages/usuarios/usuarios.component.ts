@@ -26,7 +26,7 @@ export class UsuariosComponent implements OnInit {
   viewMesasLoading = false;
   newPassword = '';
   confirmPassword = '';
-  form: any = { username: '', password: '', nombre: '', apellido: '', email: '', rolId: 3, activo: true };
+  form: any = { username: '', password: '', nombre: '', apellido: '', email: '', identificacion: '', celular: '', rolId: 3, activo: true };
   filterRol: string | null = null;
   sortColumn: string = '';
   sortDirection: string = 'asc';
@@ -174,7 +174,7 @@ export class UsuariosComponent implements OnInit {
 
   openModal(): void {
     this.editingUser = null;
-    this.form = { username: '', password: '', nombre: '', apellido: '', email: '', rolId: 3, activo: true };
+    this.form = { username: '', password: '', nombre: '', apellido: '', email: '', identificacion: '', celular: '', rolId: 3, activo: true };
     this.errorMessage = '';
     this.showModal = true;
   }
@@ -186,9 +186,11 @@ export class UsuariosComponent implements OnInit {
       password: '', 
       nombre: user.nombre, 
       apellido: user.apellido, 
-      email: user.email, 
-      rolId: user.rol === 'ADMIN' ? 1 : user.rol === 'SUPERVISOR' ? 2 : 3, 
-      activo: user.activo 
+      email: user.email,
+      identificacion: user.identificacion || '',
+      celular: user.celular || '',
+      rolId: user.rol === 'ADMIN' ? 1 : user.rol === 'SUPERVISOR' ? 2 : 3,
+      activo: user.activo
     };
     this.errorMessage = '';
     this.showModal = true;

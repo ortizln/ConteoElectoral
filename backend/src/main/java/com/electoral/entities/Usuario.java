@@ -30,6 +30,14 @@ public class Usuario {
     @Column(unique = true, length = 100)
     private String email;
 
+    /** Cédula de identidad del usuario (se usa para validar la recuperación). */
+    @Column(length = 20)
+    private String identificacion;
+
+    /** Número de WhatsApp al que se envía la contraseña temporal. */
+    @Column(length = 20)
+    private String celular;
+
     @Builder.Default
     @Column(nullable = false)
     private Boolean activo = true;

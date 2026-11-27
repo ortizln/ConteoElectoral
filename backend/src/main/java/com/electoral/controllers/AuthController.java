@@ -2,9 +2,12 @@ package com.electoral.controllers;
 
 import com.electoral.dto.LoginRequest;
 import com.electoral.dto.LoginResponse;
+import com.electoral.dto.RecuperarPasswordRequest;
+import com.electoral.dto.RecuperarPasswordResponse;
 import com.electoral.dto.UsuarioResponse;
 import com.electoral.security.CustomUserDetails;
 import com.electoral.config.JwtService;
+import com.electoral.services.RecuperacionPasswordService;
 import com.electoral.services.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,7 @@ import java.util.Map;
 public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UsuarioService usuarioService;
+    private final RecuperacionPasswordService recuperacionPasswordService;
     private final JwtService jwtService;
 
     @PostMapping("/login")
@@ -44,6 +48,12 @@ public class AuthController {
                 .build();
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/recuperar-password")
+    public ResponseEntity<RecuperarPasswordResponse> recuperarPassword(
+            @Valid @RequestBody RecuperarPasswordRequest request) {
+        return ResponseEntity.ok(recuperacionPasswordService.recuperar(request));
     }
 
     @GetMapping("/me")

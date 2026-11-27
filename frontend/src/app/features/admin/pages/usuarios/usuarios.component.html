@@ -35,6 +35,8 @@
         <th class="sortable" (click)="sort('username')">Username {{ sortColumn === 'username' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('nombre')">Nombre {{ sortColumn === 'nombre' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('apellido')">Apellido {{ sortColumn === 'apellido' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
+        <th class="sortable" (click)="sort('identificacion')" title="Cédula de identidad">Cédula {{ sortColumn === 'identificacion' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
+        <th class="sortable" (click)="sort('celular')" title="Celular de WhatsApp">Celular {{ sortColumn === 'celular' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('email')">Email {{ sortColumn === 'email' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('rol')">Rol {{ sortColumn === 'rol' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
         <th class="sortable" (click)="sort('mesas')" title="Cantidad de mesas asignadas en la elección activa">Mesas {{ sortColumn === 'mesas' ? (sortDirection === 'asc' ? '&#9650;' : '&#9660;') : '' }}</th>
@@ -48,6 +50,8 @@
         <td>{{ u.username }}</td>
         <td>{{ u.nombre }}</td>
         <td>{{ u.apellido }}</td>
+        <td><span class="text-truncate d-inline-block" style="max-width: 130px" [title]="u.identificacion || ''">{{ u.identificacion || '—' }}</span></td>
+        <td><span class="text-truncate d-inline-block" style="max-width: 130px" [title]="u.celular || ''">{{ u.celular || '—' }}</span></td>
         <td>{{ u.email }}</td>
         <td><span class="badge" [class]="u.rol === 'ADMIN' ? 'bg-danger' : u.rol === 'SUPERVISOR' ? 'bg-warning' : 'bg-info'">{{ u.rol }}</span></td>
         <td class="text-center">
@@ -75,7 +79,7 @@
         </td>
       </tr>
       <tr *ngIf="usuariosFiltrados.length === 0">
-        <td colspan="9" class="text-center py-3">No se encontraron registros</td>
+        <td colspan="11" class="text-center py-3">No se encontraron registros</td>
       </tr>
     </tbody>
   </table>
@@ -132,6 +136,14 @@
           <div class="mb-3">
             <label>Apellido:</label>
             <input type="text" class="form-control" autocomplete="off" [(ngModel)]="form.apellido" (input)="toUpper(form, 'apellido')" />
+          </div>
+          <div class="mb-3">
+            <label>Identificación (cédula):</label>
+            <input type="text" class="form-control" autocomplete="off" maxlength="20" placeholder="Ej. 1712345678" [(ngModel)]="form.identificacion" />
+          </div>
+          <div class="mb-3">
+            <label>Celular (WhatsApp):</label>
+            <input type="tel" class="form-control" autocomplete="off" maxlength="20" placeholder="Ej. 593987269948" [(ngModel)]="form.celular" />
           </div>
           <div class="mb-3">
             <label>Email:</label>
@@ -202,6 +214,14 @@
             <div class="col-md-6">
               <label class="form-label fw-bold text-uppercase small">Nombre completo</label>
               <div class="form-control readonly bg-white">{{ viewUser.nombre }} {{ viewUser.apellido }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-uppercase small">Identificación (cédula)</label>
+              <div class="form-control readonly bg-white">{{ viewUser.identificacion || '—' }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-bold text-uppercase small">Celular (WhatsApp)</label>
+              <div class="form-control readonly bg-white">{{ viewUser.celular || '—' }}</div>
             </div>
             <div class="col-md-6">
               <label class="form-label fw-bold text-uppercase small">Email</label>

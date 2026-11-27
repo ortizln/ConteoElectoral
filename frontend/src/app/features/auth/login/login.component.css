@@ -199,6 +199,40 @@
 .btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-login:focus-visible { outline: 2px solid var(--alantek-highlight); outline-offset: 2px; }
 
+/* Recuperación de contraseña */
+.btn-recover {
+  display: block; width: 100%; margin-top: 12px; padding: 6px 8px;
+  background: transparent; border: none; cursor: pointer;
+  color: var(--alantek-accent); font-size: 14px; font-weight: 600;
+  text-decoration: underline; text-underline-offset: 3px;
+  transition: color 0.15s;
+}
+.btn-recover:hover { color: var(--alantek-accent-hover); }
+.recovery-overlay {
+  position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center;
+  background: rgba(12, 18, 14, 0.62); padding: 16px;
+}
+.recovery-modal {
+  background: var(--alantek-surface, #fff); border-radius: 14px; padding: 24px;
+  width: 100%; max-width: 420px; box-shadow: var(--alantek-shadow-lg);
+  max-height: 90vh; overflow-y: auto;
+}
+.recovery-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.recovery-header h3 { margin: 0; font-size: 18px; color: var(--alantek-text); }
+.recovery-close {
+  border: none; background: transparent; font-size: 26px; line-height: 1; cursor: pointer;
+  color: var(--alantek-text-muted); padding: 0 4px;
+}
+.recovery-hint { font-size: 13px; color: var(--alantek-text-muted); margin: 0 0 18px; }
+.recovery-modal .form-group { margin-bottom: 14px; }
+.alert-success {
+  background: var(--alantek-muted, #edf5ec); color: var(--alantek-primary-dark, #1b241d);
+  border: 1px solid rgba(72, 86, 60, 0.2);
+}
+.recovery-actions { display: flex; gap: 10px; margin-top: 18px; }
+.recovery-actions .btn { width: auto; flex: 1; font-size: 14px; padding: 10px 12px; }
+.recovery-actions .btn-secondary { background: var(--alantek-muted, #f0f3ee); color: var(--alantek-text); }
+
 /* APK card */
 .download-apk { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--alantek-border); }
 .apk-card {
