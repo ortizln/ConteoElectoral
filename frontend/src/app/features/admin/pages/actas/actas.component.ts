@@ -53,7 +53,18 @@ export class ActasComponent implements OnInit, OnDestroy {
   correccionError = '';
   correccionSuccess = '';
   nombresListas = new Map<number, string>();
+  cargosPorLista = new Map<number, string>();
 
+  // Pestañas del modal de corrección, en el orden solicitado para el conteo.
+  readonly correccionCategorias = [
+    'Alcaldes',
+    'Consejales Rurales',
+    'Consejales Urbanos',
+    'Juntas Parroquiales'
+  ];
+  correccionTabActiva = this.correccionCategorias[0];
+
+  private listasCargadas = false;
   private thumbCache = new Map<number, string>();
 
   constructor(private api: ApiService) {}
@@ -131,6 +142,9 @@ export class ActasComponent implements OnInit, OnDestroy {
   onEleccionChange(): void {
     this.limpiarThumbs();
     this.cerrarCorreccion();
+    this.nombresListas.clear();
+    this.cargosPorLista.clear();
+    this.listasCargadas = false;
     this.load();
   }
 
@@ -230,6 +244,7 @@ export class ActasComponent implements OnInit, OnDestroy {
     this.cerrarVisor();
     this.correccionMesa = mesa;
     this.correccionVotos = [];
+    this.correccionTabActiva = this.correccionCategorias[0];
     this.correccionNulos = mesa.votosNulos ?? 0;
     this.correccionBlanco = mesa.votosBlanco ?? 0;
     this.correccionAusentes = mesa.ausentes ?? 0;
@@ -239,6 +254,7 @@ export class ActasComponent implements OnInit, OnDestroy {
     this.api.getVotosByMesa(mesa.mesaId).subscribe({
       next: (votos) => {
         this.correccionVotos = (votos || []).map(v => ({ ...v, cantidadVotos: Number(v.cantidadVotos) || 0 }));
+        this.seleccionarPrimerTabConVotos();
         this.correccionCargando = false;
       },
       error: (err) => {
@@ -246,16 +262,20 @@ export class ActasComponent implements OnInit, OnDestroy {
         this.correccionCargando = false;
       }
     });
-    if (this.selectedEleccionId && this.nombresListas.size === 0) {
+    if (this.selectedEleccionId && !this.listasCargadas) {
+      this.listasCargadas = true;
       this.api.getListasByEleccion(this.selectedEleccionId).subscribe({
         next: (listas) => {
           for (const l of listas || []) {
             const id = Number(l.id ?? l.listaId);
             const nombre = l.nombre ?? l.nombreLista ?? l.listaNombre;
             if (id && nombre) this.nombresListas.set(id, String(nombre));
+            if (id && l.cargoNombre) this.cargosPorLista.set(id, String(l.cargoNombre));
           }
+          // Si los votos llegaron antes que el catálogo, reevaluar la pestaña activa.
+          if (this.correccionTabActiva === 'Otros') this.seleccionarPrimerTabConVotos();
         },
-        error: () => {}
+        error: () => { this.listasCargadas = false; }
       });
     }
   }
@@ -276,6 +296,65 @@ export class ActasComponent implements OnInit, OnDestroy {
       return this.nombresListas.get(voto.listaId) || `Lista #${voto.listaId}`;
     }
     return `Voto #${voto.id}`;
+  }
+
+  /** Normaliza el cargo a una de las cuatro categorías del conteo. */
+  private categoriaDeNombre(nombre?: string | null): string | null {
+    const original = (nombre || '').trim();
+    if (!original) return null;
+    const n = original.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    if (n.includes('alcalde')) return 'Alcaldes';
+    if ((n.includes('junta') && n.includes('parroqui')) || n.includes('vocal')) {
+      return 'Juntas Parroquiales';
+    }
+    if (n.includes('concejal') || n.includes('consejal') ||
+        n.includes('concejo') || n.includes('consejo')) {
+      if (n.includes('urban')) return 'Consejales Urbanos';
+      if (n.includes('rural')) return 'Consejales Rurales';
+    }
+    return null;
+  }
+
+  /** Cargo de un voto: el backend lo envía; si no, se deduce del catálogo de listas. */
+  categoriaVoto(voto: Voto): string {
+    const nombre = voto.cargoNombre ||
+      (voto.listaId != null ? this.cargosPorLista.get(voto.listaId) : undefined);
+    return this.categoriaDeNombre(nombre) || 'Otros';
+  }
+
+  /** Pestañas disponibles con su cantidad de votos; "Otros" evita ocultar votos sin cargo reconocido. */
+  get correccionTabs(): { label: string; count: number }[] {
+    const conteos = new Map<string, number>(
+      this.correccionCategorias.map(label => [label, 0] as [string, number])
+    );
+    let otros = 0;
+    for (const voto of this.correccionVotos) {
+      const categoria = this.categoriaVoto(voto);
+      if (conteos.has(categoria)) {
+        conteos.set(categoria, (conteos.get(categoria) || 0) + 1);
+      } else {
+        otros++;
+      }
+    }
+    const tabs = this.correccionCategorias.map(label => ({
+      label,
+      count: conteos.get(label) || 0
+    }));
+    if (otros > 0) tabs.push({ label: 'Otros', count: otros });
+    return tabs;
+  }
+
+  get votosCorreccionVisibles(): Voto[] {
+    return this.correccionVotos.filter(v => this.categoriaVoto(v) === this.correccionTabActiva);
+  }
+
+  get totalVotosCorreccionVisibles(): number {
+    return this.votosCorreccionVisibles.reduce((sum, v) => sum + (Number(v.cantidadVotos) || 0), 0);
+  }
+
+  private seleccionarPrimerTabConVotos(): void {
+    const tab = this.correccionTabs.find(t => t.count > 0);
+    this.correccionTabActiva = tab ? tab.label : this.correccionCategorias[0];
   }
 
   private actualizarMesaEnLista(respuesta: {

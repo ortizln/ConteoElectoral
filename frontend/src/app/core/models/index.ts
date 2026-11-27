@@ -234,6 +234,7 @@ export interface Voto {
   cantidadVotos: number;
   eleccionesId: number;
   listaId?: number;
+  cargoNombre?: string;
 }
 
 export interface ResultadoLista {

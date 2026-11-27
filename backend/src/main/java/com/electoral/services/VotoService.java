@@ -673,6 +673,14 @@ public class VotoService {
     }
 
     private VotoResponse mapToResponse(Voto voto) {
+        String cargoNombre = voto.getCandidato() != null && voto.getCandidato().getCargo() != null
+                ? voto.getCandidato().getCargo().getNombre()
+                : null;
+        if (cargoNombre == null && voto.getListaId() != null) {
+            cargoNombre = listaElectoralRepository.findById(voto.getListaId())
+                    .map(lista -> lista.getCargo() != null ? lista.getCargo().getNombre() : null)
+                    .orElse(null);
+        }
         VotoResponse.VotoResponseBuilder builder = VotoResponse.builder()
                 .id(voto.getId())
                 .mesaId(voto.getMesa().getId())
@@ -680,6 +688,7 @@ public class VotoService {
                 .cantidadVotos(voto.getCantidadVotos())
                 .eleccionesId(voto.getElecciones().getId())
                 .listaId(voto.getListaId())
+                .cargoNombre(cargoNombre)
                 .fechaRegistro(voto.getCreatedAt() != null ? voto.getCreatedAt().toString() : null);
         if (voto.getCandidato() != null) {
             builder.candidatoId(voto.getCandidato().getId())

@@ -20,5 +20,7 @@ public class VotoResponse {
     private Integer cantidadVotos;
     private Long eleccionesId;
     private Long listaId;
+    /** Cargo al que pertenece el voto (individual o de lista), para agrupar por categoría. */
+    private String cargoNombre;
     private String fechaRegistro;
 }

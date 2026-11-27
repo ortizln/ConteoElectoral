@@ -218,7 +218,25 @@
                 </div>
               </div>
 
-              <h6 class="section-title"><i class="bi bi-people"></i> Votos por candidato/lista</h6>
+              <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <h6 class="section-title mb-0"><i class="bi bi-people"></i> Votos por candidato/lista</h6>
+                <span class="badge bg-light text-dark border">
+                  Total {{ correccionTabActiva }}: {{ totalVotosCorreccionVisibles }}
+                </span>
+              </div>
+
+              <ul class="nav nav-tabs correccion-tabs mb-2" role="tablist">
+                <li class="nav-item" *ngFor="let tab of correccionTabs">
+                  <button type="button" class="nav-link" role="tab"
+                          [class.active]="correccionTabActiva === tab.label"
+                          [attr.aria-selected]="correccionTabActiva === tab.label"
+                          (click)="correccionTabActiva = tab.label">
+                    {{ tab.label }}
+                    <span class="badge bg-secondary ms-1">{{ tab.count }}</span>
+                  </button>
+                </li>
+              </ul>
+
               <div class="table-responsive">
                 <table class="table table-sm table-hover align-middle mb-0">
                   <thead>
@@ -229,7 +247,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let v of correccionVotos">
+                    <tr *ngFor="let v of votosCorreccionVisibles">
                       <td>{{ nombreVoto(v) }}</td>
                       <td>{{ v.partidoNombre || '—' }}</td>
                       <td class="text-right">
@@ -237,9 +255,9 @@
                                [(ngModel)]="v.cantidadVotos" [disabled]="correccionMesa.aprobada === true">
                       </td>
                     </tr>
-                    <tr *ngIf="correccionVotos.length === 0">
+                    <tr *ngIf="votosCorreccionVisibles.length === 0">
                       <td colspan="3" class="text-center text-muted py-3">
-                        Esta mesa no tiene votos registrados por candidato/lista.
+                        No hay votos registrados para {{ correccionTabActiva }}.
                       </td>
                     </tr>
                   </tbody>
