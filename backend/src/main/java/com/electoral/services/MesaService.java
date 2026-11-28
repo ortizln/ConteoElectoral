@@ -385,6 +385,22 @@ public class MesaService {
         return response;
     }
 
+    /** Observaciones opcionales de la mesa. UTF-8, se guardan tal cual las escribe el usuario. */
+    @Transactional
+    public MesaResponse actualizarObservaciones(Long id, String observaciones) {
+        Mesa mesa = mesaRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mesa no encontrada con ID: " + id));
+        validarEdicionConteo(mesa);
+        String valor = observaciones == null ? "" : observaciones.trim();
+        if (valor.length() > 2000) {
+            throw new ValidacionException("Las observaciones no pueden superar 2000 caracteres");
+        }
+        mesa.setObservaciones(valor.isEmpty() ? null : valor);
+        MesaResponse response = mapToResponse(mesaRepository.save(mesa));
+        notifyDataChanged(mesa.getElecciones().getId());
+        return response;
+    }
+
     /** Corrección integral del acta por ADMIN/SUPERVISOR, incluso con la mesa cerrada. */
     @Transactional
     public MesaResponse corregirActa(Long mesaId, ActaCorreccionRequest request) {
@@ -396,6 +412,10 @@ public class MesaService {
         if (request.getVotosNulos() != null) mesa.setVotosNulos(Math.max(0, request.getVotosNulos()));
         if (request.getVotosBlanco() != null) mesa.setVotosBlanco(Math.max(0, request.getVotosBlanco()));
         if (request.getAusentes() != null) mesa.setAusentes(Math.max(0, request.getAusentes()));
+        if (request.getObservaciones() != null) {
+            String obs = request.getObservaciones().trim();
+            mesa.setObservaciones(obs.isEmpty() ? null : obs);
+        }
         if (request.getVotos() != null) {
             for (ActaCorreccionRequest.VotoCorreccion vc : request.getVotos()) {
                 if (vc.getVotoId() == null || vc.getCantidadVotos() == null) continue;
@@ -584,6 +604,7 @@ public class MesaService {
                 .votosBlanco(mesa.getVotosBlanco())
                 .ausentes(mesa.getAusentes())
                 .aprobada(mesa.getAprobada())
+                .observaciones(mesa.getObservaciones())
                 .electoresRegistrados(inst != null ? inst.getElectoresRegistrados() : null)
                 .usuarioId(usuarioId)
                 .usuarioNombre(usuarioNombre)

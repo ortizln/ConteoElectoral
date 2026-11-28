@@ -3,6 +3,7 @@ package com.electoral.services;
 import com.electoral.dto.ApkVersionResponse;
 import com.electoral.entities.ApkVersion;
 import com.electoral.repositories.ApkVersionRepository;
+import com.electoral.repositories.ApkVersionRepository.ApkVersionMetadata;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +31,13 @@ public class ApkVersionService {
                 .nombreArchivo(nombreArchivo)
                 .data(data)
                 .build();
-        return toResponse(repository.save(apk));
+        ApkVersion saved = repository.save(apk);
+        return ApkVersionResponse.builder()
+                .id(saved.getId())
+                .version(saved.getVersion())
+                .nombreArchivo(saved.getNombreArchivo())
+                .fechaSubida(saved.getFechaSubida() != null ? saved.getFechaSubida().toString() : null)
+                .build();
     }
 
     @Transactional
@@ -50,7 +57,7 @@ public class ApkVersionService {
 
     @Transactional(readOnly = true)
     public Map<String, String> getLatestVersionInfo() {
-        return repository.findTopByOrderByFechaSubidaDesc()
+        return repository.findFirstByOrderByFechaSubidaDesc()
                 .map(apk -> Map.of(
                         "version", apk.getVersion(),
                         "apkNombre", apk.getNombreArchivo()
@@ -67,12 +74,12 @@ public class ApkVersionService {
 
     @Transactional(readOnly = true)
     public String getLatestNombre() {
-        return repository.findTopByOrderByFechaSubidaDesc()
-                .map(ApkVersion::getNombreArchivo)
+        return repository.findFirstByOrderByFechaSubidaDesc()
+                .map(ApkVersionMetadata::getNombreArchivo)
                 .orElse(null);
     }
 
-    private ApkVersionResponse toResponse(ApkVersion apk) {
+    private ApkVersionResponse toResponse(ApkVersionMetadata apk) {
         return ApkVersionResponse.builder()
                 .id(apk.getId())
                 .version(apk.getVersion())

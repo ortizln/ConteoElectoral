@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../core/services/api.service';
 import { environment } from '../../../../../environments/environment';
-import { ApkVersionItem, CarouselImage, Rol, RolPermiso } from '../../../../core/models';
+import { ApkVersionItem, CarouselImage, Rol, RolPermiso, WhatsappEstadoResponse, WhatsappGrupo, WhatsappEnvio } from '../../../../core/models';
 import { UsuariosComponent } from '../usuarios/usuarios.component';
 import { ImportarComponent } from '../importar/importar.component';
 
@@ -15,7 +15,7 @@ import { ImportarComponent } from '../importar/importar.component';
   styleUrl: './configuracion.component.css'
 })
 export class ConfiguracionComponent implements OnInit {
-  activeTab: 'config' | 'carousel' | 'apk' | 'usuarios' | 'importar' | 'permisos' = 'config';
+  activeTab: 'config' | 'carousel' | 'apk' | 'usuarios' | 'importar' | 'permisos' | 'whatsapp' = 'config';
   config: any = { nombrePartido: '', descripcion: '' };
   logoUrl: string | null = null;
   selectedLogo: File | null = null;
@@ -57,6 +57,19 @@ export class ConfiguracionComponent implements OnInit {
   permisos: RolPermiso[] = [];
   permisosLoading = false;
   permisosSaving = false;
+
+  // WhatsApp (OpenWA)
+  wppEstado: WhatsappEstadoResponse | null = null;
+  wppGrupos: WhatsappGrupo[] = [];
+  wppEnvios: WhatsappEnvio[] = [];
+  wppLoading = false;
+  wppSaving = false;
+  wppSessionId = '';
+  wppActivo = true;
+  wppGrupoEditId: number | null = null;
+  wppGrupoChatId = '';
+  wppGrupoNombre = '';
+  wppGrupoActivo = true;
 
   // Modulos disponibles
   readonly MODULOS = [
@@ -405,6 +418,174 @@ export class ConfiguracionComponent implements OnInit {
           if (completed === total) this.permisosSaving = false;
         }
       });
+    });
+  }
+
+  // ---------------- WhatsApp ----------------
+
+  openWhatsappTab(): void {
+    this.activeTab = 'whatsapp';
+    this.successMsg = '';
+    this.errorMsg = '';
+    this.loadWhatsapp();
+  }
+
+  loadWhatsapp(): void {
+    this.wppLoading = true;
+    let restantes = 3;
+    const fin = () => { if (--restantes === 0) this.wppLoading = false; };
+
+    this.api.getWhatsappEstado().subscribe({
+      next: (estado) => {
+        this.wppEstado = estado;
+        this.wppSessionId = estado.sessionId || '';
+        this.wppActivo = estado.activo;
+        fin();
+      },
+      error: (err) => {
+        this.errorMsg = err.error?.message || 'No se pudo consultar el estado de WhatsApp';
+        fin();
+      }
+    });
+
+    this.api.getWhatsappGrupos().subscribe({
+      next: (grupos) => { this.wppGrupos = grupos; fin(); },
+      error: () => { this.errorMsg = 'No se pudieron cargar los grupos de WhatsApp'; fin(); }
+    });
+
+    this.api.getWhatsappEnvios().subscribe({
+      next: (envios) => { this.wppEnvios = envios; fin(); },
+      error: () => { this.errorMsg = 'No se pudo cargar la bandeja de envíos'; fin(); }
+    });
+  }
+
+  guardarWhatsappConfig(): void {
+    this.wppSaving = true;
+    this.successMsg = '';
+    this.errorMsg = '';
+    this.api.updateWhatsappConfig({
+      sessionId: this.wppSessionId.trim() || null,
+      activo: this.wppActivo
+    }).subscribe({
+      next: (estado) => {
+        this.wppEstado = estado;
+        this.wppSessionId = estado.sessionId || '';
+        this.wppActivo = estado.activo;
+        this.wppSaving = false;
+        this.successMsg = estado.ready
+          ? 'Sesión de WhatsApp vinculada y activa'
+          : 'Configuración guardada. ' + (estado.mensaje || 'La sesión aún no está lista');
+        this.loadWhatsapp();
+      },
+      error: (err) => {
+        this.wppSaving = false;
+        this.errorMsg = err.error?.message || 'No se pudo guardar la configuración de WhatsApp';
+      }
+    });
+  }
+
+  editarWhatsappGrupo(grupo: WhatsappGrupo): void {
+    this.wppGrupoEditId = grupo.id ?? null;
+    this.wppGrupoChatId = grupo.chatId;
+    this.wppGrupoNombre = grupo.nombre;
+    this.wppGrupoActivo = grupo.activo;
+    this.successMsg = '';
+    this.errorMsg = '';
+  }
+
+  limpiarFormularioGrupo(): void {
+    this.wppGrupoEditId = null;
+    this.wppGrupoChatId = '';
+    this.wppGrupoNombre = '';
+    this.wppGrupoActivo = true;
+  }
+
+  guardarWhatsappGrupo(): void {
+    const chatId = this.wppGrupoChatId.trim();
+    const nombre = this.wppGrupoNombre.trim();
+    if (!chatId || !nombre) {
+      this.errorMsg = 'El chatId y el nombre del grupo son obligatorios';
+      return;
+    }
+    this.wppSaving = true;
+    this.successMsg = '';
+    this.errorMsg = '';
+    const request = { chatId, nombre, activo: this.wppGrupoActivo };
+    const peticion = this.wppGrupoEditId != null
+      ? this.api.updateWhatsappGrupo(this.wppGrupoEditId, request)
+      : this.api.saveWhatsappGrupo(request);
+    peticion.subscribe({
+      next: () => {
+        this.wppSaving = false;
+        this.successMsg = this.wppGrupoEditId != null
+          ? 'Grupo actualizado correctamente'
+          : 'Grupo agregado correctamente';
+        this.limpiarFormularioGrupo();
+        this.api.getWhatsappGrupos().subscribe((grupos) => { this.wppGrupos = grupos; });
+      },
+      error: (err) => {
+        this.wppSaving = false;
+        this.errorMsg = err.error?.message || 'No se pudo guardar el grupo de WhatsApp';
+      }
+    });
+  }
+
+  toggleWhatsappGrupo(grupo: WhatsappGrupo): void {
+    const activo = !grupo.activo;
+    if (grupo.id == null) {
+      this.editarWhatsappGrupo(grupo);
+      this.wppGrupoActivo = activo;
+      this.guardarWhatsappGrupo();
+      return;
+    }
+    this.api.updateWhatsappGrupo(grupo.id, {
+      chatId: grupo.chatId,
+      nombre: grupo.nombre,
+      activo
+    }).subscribe({
+      next: (actualizado) => {
+        const indice = this.wppGrupos.findIndex(g => g.chatId === grupo.chatId);
+        if (indice >= 0) this.wppGrupos[indice] = actualizado;
+        this.successMsg = activo
+          ? 'Grupo activado: recibirá las fotos del acta'
+          : 'Grupo desactivado';
+        this.errorMsg = '';
+      },
+      error: (err) => {
+        this.errorMsg = err.error?.message || 'No se pudo cambiar el estado del grupo';
+      }
+    });
+  }
+
+  eliminarWhatsappGrupo(grupo: WhatsappGrupo): void {
+    if (grupo.id == null) return;
+    if (!window.confirm(`¿Eliminar el grupo "${grupo.nombre}" de la configuración?`)) return;
+    this.api.deleteWhatsappGrupo(grupo.id).subscribe({
+      next: () => {
+        this.wppGrupos = this.wppGrupos.filter(g => g.chatId !== grupo.chatId);
+        if (this.wppGrupoEditId === grupo.id) this.limpiarFormularioGrupo();
+        this.successMsg = 'Grupo eliminado de la configuración';
+        this.errorMsg = '';
+      },
+      error: (err) => {
+        this.errorMsg = err.error?.message || 'No se pudo eliminar el grupo';
+      }
+    });
+  }
+
+  reenviarWhatsappEnvio(envio: WhatsappEnvio): void {
+    this.api.reenviarWhatsappEnvio(envio.id).subscribe({
+      next: (actualizado) => {
+        const indice = this.wppEnvios.findIndex(e => e.id === envio.id);
+        if (indice >= 0) this.wppEnvios[indice] = actualizado;
+        this.successMsg = actualizado.estado === 'ENVIADO'
+          ? 'Foto reenviada correctamente'
+          : 'El reenvío quedó registrado como ' + actualizado.estado;
+        this.errorMsg = '';
+      },
+      error: (err) => {
+        this.errorMsg = err.error?.message || 'No se pudo reenviar la foto';
+      }
     });
   }
 }

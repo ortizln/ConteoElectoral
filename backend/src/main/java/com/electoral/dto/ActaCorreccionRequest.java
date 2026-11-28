@@ -19,6 +19,8 @@ public class ActaCorreccionRequest {
     private Integer votosNulos;
     private Integer votosBlanco;
     private Integer ausentes;
+    /** Observaciones opcionales de la mesa (UTF-8). */
+    private String observaciones;
     private List<VotoCorreccion> votos;
 
     @Data

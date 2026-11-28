@@ -12,9 +12,11 @@ import com.electoral.exception.RecursoNoEncontradoException;
 import com.electoral.exception.ValidacionException;
 import com.electoral.repositories.MesaActaFotoRepository;
 import com.electoral.repositories.MesaRepository;
+import com.electoral.services.WhatsappService;
 import com.electoral.util.SecurityUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,6 +34,7 @@ import java.util.stream.Collectors;
  * La sube el miembro de mesa (app móvil o web) y las revisa el supervisor
  * (dashboard detalle de mesa y página "Actas").
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/mesas")
 @RequiredArgsConstructor
@@ -42,6 +45,7 @@ public class MesaActaFotoController {
     private final MesaRepository mesaRepository;
     private final MesaActaFotoRepository fotoRepository;
     private final SecurityUtil securityUtil;
+    private final WhatsappService whatsappService;
 
     @PostMapping("/{mesaId}/acta-fotos")
     @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
@@ -59,6 +63,12 @@ public class MesaActaFotoController {
                 .subidoPor(securityUtil.getCurrentUser())
                 .build();
         MesaActaFoto guardada = fotoRepository.save(foto);
+        try {
+            whatsappService.notificarNuevaFoto(guardada);
+        } catch (Exception e) {
+            // El envio a WhatsApp nunca debe impedir que el acta quede guardada.
+            log.warn("No se pudo notificar la foto por WhatsApp: {}", e.getMessage());
+        }
         return ResponseEntity.ok(toResponse(guardada));
     }
 
@@ -141,6 +151,7 @@ public class MesaActaFotoController {
                     .votosBlanco(mesa.getVotosBlanco())
                     .ausentes(mesa.getAusentes())
                     .aprobada(mesa.getAprobada())
+                    .observaciones(mesa.getObservaciones())
                     .electoresRegistrados(institucion != null ? institucion.getElectoresRegistrados() : null)
                     .fotos(fotos)
                     .build());

@@ -146,6 +146,10 @@
 .nulos-totales-line { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--alantek-border); font-size: 12px; color: var(--alantek-text-muted); }
 .nulos-totales-line strong { color: var(--alantek-warning); font-size: 14px; }
 .nulos-totales-line .total-blancos { color: var(--alantek-text-secondary); }
+.observaciones-mesa { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--alantek-border); }
+.observaciones-mesa label { display: block; color: var(--alantek-text-secondary); margin-bottom: 4px; }
+.observaciones-mesa label small { color: var(--alantek-text-muted); font-weight: 400; }
+.observaciones-mesa textarea { width: 100%; min-height: 62px; resize: vertical; box-sizing: border-box; }
 
 /* Nulos/blancos como estadística dentro de Votos Registrados. */
 .stats-nulos-row td, .stats-blanco-row td { background: var(--alantek-background); }

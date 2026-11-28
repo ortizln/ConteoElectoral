@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -30,6 +31,9 @@ class _VotacionScreenState extends State<VotacionScreen> {
   int? _selectedListaId;
   List<Candidato> _selectedListaCandidates = [];
   final _cantidadCtrl = TextEditingController(text: '1');
+  final _observacionesCtrl = TextEditingController();
+  int? _observacionesMesaId;
+  Timer? _observacionesTimer;
   String _filtroPartido = '';
   String _busqueda = '';
   final String _ordenPor = 'cargo';
@@ -129,6 +133,8 @@ class _VotacionScreenState extends State<VotacionScreen> {
   @override
   void dispose() {
     _cantidadCtrl.dispose();
+    _observacionesTimer?.cancel();
+    _observacionesCtrl.dispose();
     super.dispose();
   }
 
@@ -969,12 +975,15 @@ class _VotacionScreenState extends State<VotacionScreen> {
                           : ListView.builder(
                               padding:
                                   const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                              itemCount: _agrupadosPorLista.length + 3,
+                              itemCount: _agrupadosPorLista.length + 4,
                               itemBuilder: (context, index) {
                                 if (index >= _agrupadosPorLista.length) {
-                                  return _nulosBlancoFila(
-                                      index - _agrupadosPorLista.length,
-                                      provider);
+                                  final extra =
+                                      index - _agrupadosPorLista.length;
+                                  if (extra == 3) {
+                                    return _observacionesCard(provider);
+                                  }
+                                  return _nulosBlancoFila(extra, provider);
                                 }
                                 final listaId =
                                     _agrupadosPorLista.keys.elementAt(index);
@@ -1129,12 +1138,15 @@ class _VotacionScreenState extends State<VotacionScreen> {
                           : ListView.builder(
                               padding:
                                   const EdgeInsets.fromLTRB(16, 8, 16, 100),
-                              itemCount: _candidatosFiltrados.length + 3,
+                              itemCount: _candidatosFiltrados.length + 4,
                               itemBuilder: (context, index) {
                                 if (index >= _candidatosFiltrados.length) {
-                                  return _nulosBlancoFila(
-                                      index - _candidatosFiltrados.length,
-                                      provider);
+                                  final extra =
+                                      index - _candidatosFiltrados.length;
+                                  if (extra == 3) {
+                                    return _observacionesCard(provider);
+                                  }
+                                  return _nulosBlancoFila(extra, provider);
                                 }
                                 final c = _candidatosFiltrados[index];
                                 final votos = provider.getVotosCandidato(c);
@@ -1467,6 +1479,73 @@ class _VotacionScreenState extends State<VotacionScreen> {
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, size: 20, color: AppColors.dark),
+      ),
+    );
+  }
+
+  Widget _observacionesCard(AppProvider provider) {
+    final mesa = provider.mesaActual;
+    if (mesa == null) return const SizedBox.shrink();
+    if (_observacionesMesaId != mesa.id) {
+      _observacionesMesaId = mesa.id;
+      _observacionesTimer?.cancel();
+      _observacionesCtrl.text = mesa.observaciones ?? '';
+    }
+    final bloqueado = mesa.aprobada || mesa.cerrada;
+
+    void guardar(String valor) {
+      _observacionesTimer?.cancel();
+      unawaited(provider.actualizarObservaciones(valor));
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: AppColors.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.notes_outlined,
+                    color: AppColors.primary, size: 20),
+                const SizedBox(width: 8),
+                const Text('Observaciones de la mesa',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              bloqueado
+                  ? 'Acta cerrada o aprobada — solo lectura'
+                  : 'Opcional · se guarda automáticamente',
+              style: AppTextStyles.bodySmall,
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _observacionesCtrl,
+              enabled: !bloqueado,
+              maxLines: 3,
+              maxLength: 2000,
+              decoration: InputDecoration(
+                hintText: 'Ej. Se realizó reconteo por dudas en el acta',
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              onChanged: (valor) {
+                _observacionesTimer?.cancel();
+                _observacionesTimer = Timer(const Duration(milliseconds: 700), () {
+                  guardar(valor);
+                });
+              },
+              onEditingComplete: () => guardar(_observacionesCtrl.text),
+            ),
+          ],
+        ),
       ),
     );
   }

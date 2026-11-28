@@ -17,22 +17,39 @@
     </div>
 
     <nav class="sidebar-nav">
-      <ng-container *ngIf="adminNavItemsFiltered.length > 0">
-        <span class="nav-section-title">Administración</span>
-        <a *ngFor="let item of adminNavItemsFiltered" [routerLink]="item.path" routerLinkActive="active" class="nav-item" [title]="item.label" (click)="closeSidebar()">
+      <!-- Rail de solo iconos cuando el sidebar está contraído -->
+      <ng-container *ngIf="sidebarCollapsed; else groupedNav">
+        <span class="nav-section-title">Menú</span>
+        <a *ngFor="let item of allNavItemsFiltered" [routerLink]="item.path" routerLinkActive="active"
+          class="nav-item" [title]="item.label" [attr.aria-label]="item.label" (click)="closeSidebar()">
           <i class="nav-icon bi" [ngClass]="item.icon"></i>
           <span class="nav-text">{{ item.label }}</span>
           <span class="nav-indicator"></span>
         </a>
       </ng-container>
-      <ng-container *ngIf="navItemsFiltered.length > 0">
-        <span class="nav-section-title" style="margin-top: 8px;">Menú Principal</span>
-        <a *ngFor="let item of navItemsFiltered" [routerLink]="item.path" routerLinkActive="active" class="nav-item" [title]="item.label" (click)="closeSidebar()">
-          <i class="nav-icon bi" [ngClass]="item.icon"></i>
-          <span class="nav-text">{{ item.label }}</span>
-          <span class="nav-indicator"></span>
-        </a>
-      </ng-container>
+
+      <!-- Navegación agrupada por flujo de trabajo -->
+      <ng-template #groupedNav>
+        <div class="nav-group" *ngFor="let group of navGroupsFiltered"
+          [class.active]="isGroupActive(group)" [class.expanded]="isGroupExpanded(group.key)">
+          <button type="button" class="nav-group-header" (click)="toggleGroup(group.key)"
+            [attr.aria-expanded]="isGroupExpanded(group.key)"
+            [attr.aria-label]="'Mostrar u ocultar ' + group.label" [title]="group.label">
+            <i class="nav-group-icon bi" [ngClass]="group.icon"></i>
+            <span class="nav-group-text">{{ group.label }}</span>
+            <i class="nav-group-chevron bi"
+              [ngClass]="isGroupExpanded(group.key) ? 'bi-chevron-down' : 'bi-chevron-right'"></i>
+          </button>
+          <div class="nav-group-items" *ngIf="isGroupExpanded(group.key)">
+            <a *ngFor="let item of group.items" [routerLink]="item.path" routerLinkActive="active"
+              class="nav-item nav-subitem" [title]="item.label" (click)="closeSidebar()">
+              <i class="nav-icon bi" [ngClass]="item.icon"></i>
+              <span class="nav-text">{{ item.label }}</span>
+              <span class="nav-indicator"></span>
+            </a>
+          </div>
+        </div>
+      </ng-template>
     </nav>
   </aside>
 

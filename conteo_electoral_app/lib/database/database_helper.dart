@@ -26,7 +26,7 @@ class DatabaseHelper {
     final path = join(dbPath, fileName);
     return await openDatabase(
       path,
-      version: 16,
+      version: 17,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -129,7 +129,8 @@ class DatabaseHelper {
         votosNulos INTEGER DEFAULT 0,
         votosBlanco INTEGER DEFAULT 0,
         ausentes INTEGER DEFAULT 0,
-        aprobada INTEGER NOT NULL DEFAULT 0
+        aprobada INTEGER NOT NULL DEFAULT 0,
+        observaciones TEXT
       )
     ''');
 
@@ -377,6 +378,10 @@ class DatabaseHelper {
       await _addColumnIfMissing(db, 'mesas', 'aprobada', 'INTEGER NOT NULL DEFAULT 0');
       await db.execute('UPDATE mesas SET ausentes = 0 WHERE ausentes IS NULL');
       await db.execute('UPDATE mesas SET aprobada = 0 WHERE aprobada IS NULL');
+    }
+    if (oldVersion < 17) {
+      // Observaciones opcionales de la mesa, sincronizadas como accion OBSERVACIONES.
+      await _addColumnIfMissing(db, 'mesas', 'observaciones', 'TEXT');
     }
   }
 
@@ -714,6 +719,7 @@ class DatabaseHelper {
           'votosBlanco': mesa.votosBlanco ?? 0,
           'ausentes': mesa.ausentes ?? 0,
           'aprobada': mesa.aprobada ? 1 : 0,
+          'observaciones': mesa.observaciones,
         },
         where: 'id = ?',
         whereArgs: [mesa.id],
@@ -734,21 +740,28 @@ class DatabaseHelper {
       'votosBlanco': 0,
       'ausentes': 0,
       'aprobada': 0,
+      'observaciones': null,
     });
   }
 
   Future<void> guardarMesas(List<Mesa> mesas) async {
     final db = await database;
     final batch = db.batch();
-    // Si hay un AUSENTES local pendiente, no sobrescribirlo con el valor del
-    // servidor; el estado de aprobación sí se refleja siempre.
+    // Si hay AUSENTES u OBSERVACIONES locales pendientes, no sobrescribirlos con
+    // los valores del servidor; el estado de aprobación sí se refleja siempre.
     final pendientes = await db.query(
       'sync_queue',
-      columns: ['entity_id'],
-      where: "entity_type = 'mesa' AND operation = 'AUSENTES' AND status IN ('PENDING', 'FAILED')",
+      columns: ['entity_id', 'operation'],
+      where: "entity_type = 'mesa' AND operation IN ('AUSENTES', 'OBSERVACIONES') AND status IN ('PENDING', 'FAILED')",
     );
-    final conAusentesPendiente =
-        pendientes.map((p) => p['entity_id'] as int).toSet();
+    final conAusentesPendiente = pendientes
+        .where((p) => p['operation'] == 'AUSENTES')
+        .map((p) => p['entity_id'] as int)
+        .toSet();
+    final conObservacionesPendiente = pendientes
+        .where((p) => p['operation'] == 'OBSERVACIONES')
+        .map((p) => p['entity_id'] as int)
+        .toSet();
     for (var mesa in mesas) {
       // INSERT OR IGNORE: no sobrescribir mesas existentes para preservar estado local pendiente
       // (cerrada, votosNulos, votosBlanco pueden tener cambios no sincronizados)
@@ -768,6 +781,7 @@ class DatabaseHelper {
           'votosBlanco': mesa.votosBlanco ?? 0,
           'ausentes': mesa.ausentes ?? 0,
           'aprobada': mesa.aprobada ? 1 : 0,
+          'observaciones': mesa.observaciones,
         },
         conflictAlgorithm: ConflictAlgorithm.ignore,
       );
@@ -780,6 +794,9 @@ class DatabaseHelper {
       };
       if (!conAusentesPendiente.contains(mesa.id)) {
         datosActualizar['ausentes'] = mesa.ausentes ?? 0;
+      }
+      if (!conObservacionesPendiente.contains(mesa.id)) {
+        datosActualizar['observaciones'] = mesa.observaciones;
       }
       batch.update(
         'mesas',
@@ -812,6 +829,7 @@ class DatabaseHelper {
       votosBlanco: m['votosBlanco'] as int? ?? 0,
       ausentes: m['ausentes'] as int? ?? 0,
       aprobada: (m['aprobada'] as int?) == 1,
+      observaciones: m['observaciones'] as String?,
     )).toList();
   }
 
@@ -834,6 +852,7 @@ class DatabaseHelper {
       votosBlanco: m['votosBlanco'] as int? ?? 0,
       ausentes: m['ausentes'] as int? ?? 0,
       aprobada: (m['aprobada'] as int?) == 1,
+      observaciones: m['observaciones'] as String?,
     );
   }
 
@@ -1139,6 +1158,16 @@ class DatabaseHelper {
 
   Future<void> actualizarAusentes(int mesaId, int ausentes) async {
     await actualizarNulosBlanco(mesaId, ausentes: ausentes);
+  }
+
+  Future<void> actualizarObservaciones(int mesaId, String? observaciones) async {
+    final db = await database;
+    await db.update(
+      'mesas',
+      {'observaciones': observaciones},
+      where: 'id = ?',
+      whereArgs: [mesaId],
+    );
   }
 
   Future<void> actualizarAprobacionMesa(int mesaId, bool aprobada) async {

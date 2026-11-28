@@ -15,6 +15,8 @@ class Mesa {
   final int? ausentes;
   /// El acta fue aprobada por ADMIN/SUPERVISOR: bloquea edición local.
   final bool aprobada;
+  /// Observaciones opcionales del miembro de mesa (UTF-8).
+  final String? observaciones;
 
   Mesa({
     required this.id,
@@ -30,6 +32,7 @@ class Mesa {
     this.votosBlanco,
     this.ausentes,
     this.aprobada = false,
+    this.observaciones,
   });
 
   factory Mesa.fromJson(Map<String, dynamic> json) {
@@ -47,6 +50,7 @@ class Mesa {
       votosBlanco: json['votosBlanco'] ?? 0,
       ausentes: json['ausentes'] ?? 0,
       aprobada: json['aprobada'] == true || json['aprobada'] == 1,
+      observaciones: json['observaciones'] as String?,
     );
   }
 
@@ -65,6 +69,7 @@ class Mesa {
       'votosBlanco': votosBlanco,
       'ausentes': ausentes,
       'aprobada': aprobada,
+      'observaciones': observaciones,
     };
   }
 }

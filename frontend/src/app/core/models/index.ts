@@ -172,6 +172,7 @@ export interface Mesa {
   votosBlanco: number;
   ausentes?: number;
   aprobada?: boolean;
+  observaciones?: string | null;
   electoresRegistrados?: number | null;
   usuarioId: number | null;
   usuarioNombre: string | null;
@@ -205,6 +206,7 @@ export interface MesaActaFotosDeMesa {
   votosBlanco?: number;
   ausentes?: number;
   aprobada?: boolean;
+  observaciones?: string | null;
   electoresRegistrados?: number | null;
   fotos: MesaActaFoto[];
 }
@@ -213,7 +215,50 @@ export interface ActaCorreccionRequest {
   votosNulos?: number;
   votosBlanco?: number;
   ausentes?: number;
+  observaciones?: string | null;
   votos?: { votoId: number; cantidadVotos: number }[];
+}
+
+/** Estado de la sesion de OpenWA informado por el backend. */
+export interface WhatsappEstadoResponse {
+  sessionId?: string | null;
+  nombreSesion?: string | null;
+  status?: string | null;
+  phone?: string | null;
+  ready: boolean;
+  apiKeyConfigured: boolean;
+  activo: boolean;
+  mensaje?: string | null;
+}
+
+export interface WhatsappConfigRequest {
+  sessionId?: string | null;
+  activo?: boolean;
+}
+
+/** Grupo de WhatsApp configurado (o detectado) para recibir fotos del acta. */
+export interface WhatsappGrupo {
+  id?: number | null;
+  chatId: string;
+  nombre: string;
+  activo: boolean;
+  configurado?: boolean;
+  esGrupo?: boolean;
+}
+
+export interface WhatsappEnvio {
+  id: number;
+  fotoId: number;
+  mesaId: number;
+  mesaNumero?: string | null;
+  grupoId: number;
+  grupoNombre?: string | null;
+  estado: string;
+  messageId?: string | null;
+  error?: string | null;
+  intentos: number;
+  createdAt?: string | null;
+  enviadoAt?: string | null;
 }
 
 export interface MesaNuloBlancoPorCargo {

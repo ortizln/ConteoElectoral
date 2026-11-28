@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { ApkVersionItem, Eleccion, Partido, Cargo, Candidato, Mesa, MesaActaFoto, MesaActaFotosDeMesa, MesaNuloBlancoPorCargo, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse, ReglaNegocio, Circunscripcion, ResultadoDHondt, Reconteo, Impugnacion, Observacion, Resolucion, EscrutinioResumen, GeoResumen, DatoGeografico, ReporteResumen, ReporteCandidato, ReportePartido, ReporteLista, RecuperarPasswordRequest, RecuperarPasswordResponse, ActaCorreccionRequest } from '../models';
+import { ApkVersionItem, Eleccion, Partido, Cargo, Candidato, Mesa, MesaActaFoto, MesaActaFotosDeMesa, MesaNuloBlancoPorCargo, Voto, Usuario, Zona, Provincia, Canton, Parroquia, InstitucionEducativa, CarouselImage, Rol, RolPermiso, CandidatoDetalleResponse, MesaCerradaResponse, ReglaNegocio, Circunscripcion, ResultadoDHondt, Reconteo, Impugnacion, Observacion, Resolucion, EscrutinioResumen, GeoResumen, DatoGeografico, ReporteResumen, ReporteCandidato, ReportePartido, ReporteLista, RecuperarPasswordRequest, RecuperarPasswordResponse, ActaCorreccionRequest, WhatsappEstadoResponse, WhatsappConfigRequest, WhatsappGrupo, WhatsappEnvio } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -309,6 +309,10 @@ export class ApiService {
     return this.http.put<Mesa>(`${this.API_URL}/mesas/${mesaId}/ausentes`, { ausentes });
   }
 
+  actualizarObservacionesMesa(mesaId: number, observaciones: string): Observable<Mesa> {
+    return this.http.put<Mesa>(`${this.API_URL}/mesas/${mesaId}/observaciones`, { observaciones });
+  }
+
   corregirActa(mesaId: number, data: ActaCorreccionRequest): Observable<Mesa> {
     return this.http.put<Mesa>(`${this.API_URL}/mesas/${mesaId}/corregir`, data);
   }
@@ -603,6 +607,39 @@ export class ApiService {
 
   getApkVersionDownloadUrl(id: number): string {
     return `${this.API_URL}/apk-versions/${id}/download`;
+  }
+
+  // WhatsApp (OpenWA): estado, grupos y bandeja de envios del acta
+  getWhatsappEstado(): Observable<WhatsappEstadoResponse> {
+    return this.http.get<WhatsappEstadoResponse>(`${this.API_URL}/whatsapp/estado`);
+  }
+
+  updateWhatsappConfig(data: WhatsappConfigRequest): Observable<WhatsappEstadoResponse> {
+    return this.http.put<WhatsappEstadoResponse>(`${this.API_URL}/whatsapp/config`, data);
+  }
+
+  getWhatsappGrupos(): Observable<WhatsappGrupo[]> {
+    return this.http.get<WhatsappGrupo[]>(`${this.API_URL}/whatsapp/grupos`);
+  }
+
+  saveWhatsappGrupo(data: Partial<WhatsappGrupo>): Observable<WhatsappGrupo> {
+    return this.http.post<WhatsappGrupo>(`${this.API_URL}/whatsapp/grupos`, data);
+  }
+
+  updateWhatsappGrupo(id: number, data: Partial<WhatsappGrupo>): Observable<WhatsappGrupo> {
+    return this.http.put<WhatsappGrupo>(`${this.API_URL}/whatsapp/grupos/${id}`, data);
+  }
+
+  deleteWhatsappGrupo(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/whatsapp/grupos/${id}`);
+  }
+
+  getWhatsappEnvios(): Observable<WhatsappEnvio[]> {
+    return this.http.get<WhatsappEnvio[]>(`${this.API_URL}/whatsapp/envios`);
+  }
+
+  reenviarWhatsappEnvio(id: number): Observable<WhatsappEnvio> {
+    return this.http.post<WhatsappEnvio>(`${this.API_URL}/whatsapp/envios/${id}/reenviar`, {});
   }
 
   // Roles y Permisos

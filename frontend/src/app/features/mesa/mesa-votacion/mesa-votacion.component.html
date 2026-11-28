@@ -479,5 +479,13 @@
       Totales: <strong>{{ nulosCargoSel }}</strong> nulos ·
       <strong class="total-blancos">{{ blancosCargoSel }}</strong> en blanco
     </div>
+
+    <div class="observaciones-mesa">
+      <label class="sm" for="observacionesMesa">Observaciones de la mesa <small>(opcional)</small></label>
+      <textarea id="observacionesMesa" class="form-control sm form-control-sm" rows="2" maxlength="2000"
+        autocomplete="off" placeholder="Ej. Faltó una hoja del acta, se realizó reconteo…"
+        [disabled]="!!(mesaActual?.cerrada || mesaActual?.aprobada)"
+        [(ngModel)]="observacionesMesa"></textarea>
+    </div>
   </ng-template>
 </div>

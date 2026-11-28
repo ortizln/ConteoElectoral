@@ -34,3 +34,4 @@
 }
 .cursor-pointer:hover { box-shadow: var(--alantek-shadow-md); }
 .nav-tabs .nav-link { font-size: .85rem; padding: .4rem .8rem; }
+textarea.form-control.sm { min-height: 62px; resize: vertical; }

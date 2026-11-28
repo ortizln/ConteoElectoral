@@ -28,6 +28,8 @@ public class MesaActaFotosDeMesaResponse {
     private Integer votosBlanco;
     private Integer ausentes;
     private Boolean aprobada;
+    /** Observaciones opcionales registradas por el miembro de mesa (UTF-8). */
+    private String observaciones;
     private Integer electoresRegistrados;
     private List<MesaActaFotoResponse> fotos;
 }

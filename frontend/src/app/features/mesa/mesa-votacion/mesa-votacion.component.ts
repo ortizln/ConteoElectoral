@@ -42,6 +42,8 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
   votosNulos = 0;
   votosBlanco = 0;
   ausentes = 0;
+  observaciones = '';
+  private observacionesTimeout: any = null;
   nulosBlancosPorCargo: MesaNuloBlancoPorCargo[] = [];
   cargoNuloId: number | null = null;
   private nulosBlancoTimeouts: { [tipo: string]: any } = {};
@@ -149,6 +151,7 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.wsSubscription?.unsubscribe();
+    if (this.observacionesTimeout) clearTimeout(this.observacionesTimeout);
   }
 
   loadData(eleccionId: number): void {
@@ -191,6 +194,7 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     this.votosNulos = mesa.votosNulos ?? 0;
     this.votosBlanco = mesa.votosBlanco ?? 0;
     this.ausentes = mesa.ausentes ?? 0;
+    this.observaciones = mesa.observaciones ?? '';
     this.nulosBlancosPorCargo = [];
     this.cargoNuloId = null;
     this.categoriaSel = null;
@@ -725,6 +729,36 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     });
   }
 
+  get observacionesMesa(): string { return this.observaciones; }
+  set observacionesMesa(valor: string) {
+    this.observaciones = valor ?? '';
+    if (this.observacionesTimeout) clearTimeout(this.observacionesTimeout);
+    this.observacionesTimeout = setTimeout(() => this.guardarObservaciones(), 500);
+  }
+
+  /** Guarda las observaciones antes de ejecutar una acción (p.ej. cerrar la mesa). */
+  guardarObservaciones(onDone?: () => void): void {
+    if (this.observacionesTimeout) {
+      clearTimeout(this.observacionesTimeout);
+      this.observacionesTimeout = null;
+    }
+    const continuar = () => onDone?.();
+    if (!this.mesaActual || this.mesaActual.cerrada || this.mesaActual.aprobada) {
+      continuar();
+      return;
+    }
+    this.api.actualizarObservacionesMesa(this.mesaActual.id, this.observaciones).subscribe({
+      next: (m) => {
+        if (this.mesaActual) this.mesaActual.observaciones = m.observaciones ?? null;
+        continuar();
+      },
+      error: (err) => {
+        this.errorMensaje = err?.error?.message || 'No se pudieron guardar las observaciones';
+        continuar();
+      }
+    });
+  }
+
   siglaDe(partidoNombre?: string | null): string {
     if (!partidoNombre) return '—';
     const partido = this.partidos.find(p => p.nombre === partidoNombre);
@@ -904,7 +938,7 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
     const subirSiguiente = (idx: number): void => {
       if (idx >= this.fotoActaFiles.length) {
         this.fotoActaSubiendo = false;
-        this.cerrarMesaBackend(mesaId);
+        this.guardarObservaciones(() => this.cerrarMesaBackend(mesaId));
         return;
       }
       this.api.subirActaFoto(mesaId, this.fotoActaFiles[idx]).subscribe({

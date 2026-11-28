@@ -33,6 +33,8 @@ export class MesaVotacionPapeletaComponent implements OnInit, OnDestroy {
   totalVotos = 0;
   cerrada = false;
   errorMensaje = '';
+  observaciones = '';
+  private observacionesTimeout: any = null;
   private wsSub!: Subscription;
 
   // Foto del acta (obligatoria antes de cerrar) — galería como en la APK
@@ -59,6 +61,7 @@ export class MesaVotacionPapeletaComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.wsSub) this.wsSub.unsubscribe();
+    if (this.observacionesTimeout) clearTimeout(this.observacionesTimeout);
   }
 
   loadMesas() {
@@ -74,6 +77,7 @@ export class MesaVotacionPapeletaComponent implements OnInit, OnDestroy {
     this.mesaActual = mesa;
     this.errorMensaje = '';
     this.cerrada = mesa.cerrada;
+    this.observaciones = mesa.observaciones ?? '';
     this.loadPapeletas();
     this.loadVotos();
     this.suscribirWS();
@@ -239,7 +243,7 @@ export class MesaVotacionPapeletaComponent implements OnInit, OnDestroy {
     const subirSiguiente = (idx: number): void => {
       if (idx >= this.fotoActaFiles.length) {
         this.fotoActaSubiendo = false;
-        this.cerrarMesaBackend(mesaId);
+        this.guardarObservaciones(() => this.cerrarMesaBackend(mesaId));
         return;
       }
       this.api.subirActaFoto(mesaId, this.fotoActaFiles[idx]).subscribe({
@@ -251,6 +255,35 @@ export class MesaVotacionPapeletaComponent implements OnInit, OnDestroy {
       });
     };
     subirSiguiente(0);
+  }
+
+  get observacionesMesa(): string { return this.observaciones; }
+  set observacionesMesa(valor: string) {
+    this.observaciones = valor ?? '';
+    if (this.observacionesTimeout) clearTimeout(this.observacionesTimeout);
+    this.observacionesTimeout = setTimeout(() => this.guardarObservaciones(), 500);
+  }
+
+  guardarObservaciones(onDone?: () => void): void {
+    if (this.observacionesTimeout) {
+      clearTimeout(this.observacionesTimeout);
+      this.observacionesTimeout = null;
+    }
+    const continuar = () => onDone?.();
+    if (!this.mesaActual || this.cerrada || this.mesaActual.aprobada) {
+      continuar();
+      return;
+    }
+    this.api.actualizarObservacionesMesa(this.mesaActual.id, this.observaciones).subscribe({
+      next: (m) => {
+        this.mesaActual.observaciones = m.observaciones ?? null;
+        continuar();
+      },
+      error: (err) => {
+        this.errorMensaje = err?.error?.message || 'No se pudieron guardar las observaciones';
+        continuar();
+      }
+    });
   }
 
   private cerrarMesaBackend(mesaId: number) {

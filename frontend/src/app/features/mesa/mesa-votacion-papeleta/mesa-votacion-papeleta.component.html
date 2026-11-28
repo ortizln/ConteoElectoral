@@ -116,6 +116,15 @@
           <button aria-label="Cerrar acta" title="Cerrar acta" class="btn btn-danger w-100 btn-xs btn-labeled" (click)="cerrarMesa()"><i class="bi bi-lock-fill"></i><span class="btn-label">Cerrar acta</span></button>
         </div>
       </div>
+      <div class="card mt-3">
+        <div class="card-body">
+          <label class="sm" for="observacionesMesa">Observaciones de la mesa <small class="text-muted">(opcional)</small></label>
+          <textarea id="observacionesMesa" class="form-control sm form-control-sm" rows="2" maxlength="2000"
+            autocomplete="off" placeholder="Ej. Se realizó reconteo por dudas en el acta…"
+            [disabled]="cerrada || mesaActual?.aprobada"
+            [(ngModel)]="observacionesMesa"></textarea>
+        </div>
+      </div>
     </div>
   </div>
 </div>

@@ -376,6 +376,25 @@ public class SyncService {
                         .operationId(op.getOperationId()).success(true)
                         .serverId(mesaId).build();
             }
+            case "OBSERVACIONES": {
+                Object valor = data.get("observaciones");
+                String observaciones = valor == null ? "" : String.valueOf(valor).trim();
+                if (observaciones.length() > 2000) {
+                    return SyncResultDTO.builder()
+                            .operationId(op.getOperationId()).success(false)
+                            .error("Las observaciones no pueden superar 2000 caracteres").build();
+                }
+                String prev = mesa.getObservaciones();
+                mesa.setObservaciones(observaciones.isEmpty() ? null : observaciones);
+                mesaRepository.save(mesa);
+                auditoriaService.registrarAccion(usuarioId, Auditoria.TipoAccion.UPDATE,
+                        "mesa_sync", mesaId,
+                        Map.of("observaciones", prev == null ? "" : prev),
+                        Map.of("observaciones", observaciones));
+                return SyncResultDTO.builder()
+                        .operationId(op.getOperationId()).success(true)
+                        .serverId(mesaId).build();
+            }
             default:
                 return SyncResultDTO.builder()
                         .operationId(op.getOperationId()).success(false)
@@ -443,7 +462,8 @@ public class SyncService {
                     || Boolean.TRUE.equals(m.getAprobada())
                     || (m.getVotosNulos() != null && m.getVotosNulos() > 0)
                     || (m.getVotosBlanco() != null && m.getVotosBlanco() > 0)
-                    || (m.getAusentes() != null && m.getAusentes() > 0);
+                    || (m.getAusentes() != null && m.getAusentes() > 0)
+                    || (m.getObservaciones() != null && !m.getObservaciones().isBlank());
             if (!isFirstPull && !hasState) continue;
 
             Map<String, Object> data = new HashMap<>();
@@ -451,6 +471,7 @@ public class SyncService {
             data.put("votosNulos", m.getVotosNulos());
             data.put("votosBlanco", m.getVotosBlanco());
             data.put("ausentes", m.getAusentes());
+            data.put("observaciones", m.getObservaciones());
             data.put("cerrada", m.getCerrada());
             data.put("aprobada", m.getAprobada());
             data.put("eleccionesId", m.getElecciones() != null ? m.getElecciones().getId() : null);

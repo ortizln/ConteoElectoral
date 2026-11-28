@@ -102,6 +102,28 @@ class SyncService {
     }
   }
 
+  Future<void> enqueueObservaciones(int mesaId, int eleccionId, String observaciones) async {
+    final existingId = await _findPendingEntity('mesa', mesaId, 'OBSERVACIONES');
+    if (existingId != null) {
+      final db = await _db.database;
+      await db.update(
+        'sync_queue',
+        {
+          'payload': jsonEncode({'observaciones': observaciones}),
+          'created_at': DateTime.now().toIso8601String(),
+          'retry_count': 0,
+        },
+        where: 'id = ?',
+        whereArgs: [existingId],
+      );
+    } else {
+      await _db.enqueueSync(
+        'mesa', mesaId, 'OBSERVACIONES',
+        {'observaciones': observaciones}, eleccionId: eleccionId,
+      );
+    }
+  }
+
   // B5: incluir FAILED para no duplicar ops al re-encolar una entidad con error
   Future<int?> _findPendingEntity(String entityType, int entityId, String operation) async {
     final db = await _db.database;
@@ -298,12 +320,18 @@ class SyncService {
         final nulosPendientes = await _findPendingEntity('mesa', mesaId, 'NULOS');
         final blancoPendientes = await _findPendingEntity('mesa', mesaId, 'BLANCO');
         final ausentesPendientes = await _findPendingEntity('mesa', mesaId, 'AUSENTES');
+        final observacionesPendientes = await _findPendingEntity('mesa', mesaId, 'OBSERVACIONES');
         await _db.actualizarNulosBlanco(
           mesaId,
           votosNulos: nulosPendientes != null ? null : payload['votosNulos'] as int?,
           votosBlanco: blancoPendientes != null ? null : payload['votosBlanco'] as int?,
           ausentes: ausentesPendientes != null ? null : payload['ausentes'] as int?,
         );
+        if (observacionesPendientes == null && payload.containsKey('observaciones')) {
+          await _db.actualizarObservaciones(
+            mesaId, payload['observaciones'] as String?,
+          );
+        }
         final aprobada = payload['aprobada'] == true || payload['aprobada'] == 1;
         await _db.actualizarAprobacionMesa(mesaId, aprobada);
         if (aprobada) await _db.cancelarOpsMesaAprobada(mesaId);

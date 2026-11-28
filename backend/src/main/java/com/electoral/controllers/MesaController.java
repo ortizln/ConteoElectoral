@@ -97,6 +97,13 @@ public class MesaController {
         return ResponseEntity.ok(mesaService.actualizarAusentes(id, body.get("ausentes")));
     }
 
+    @PutMapping("/{id}/observaciones")
+    @PreAuthorize("hasRole('MIEMBRO_MESA') or hasRole('ADMIN') or hasRole('SUPERVISOR')")
+    public ResponseEntity<MesaResponse> actualizarObservaciones(@PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(mesaService.actualizarObservaciones(id, body.get("observaciones")));
+    }
+
     @PutMapping("/{id}/corregir")
     @PreAuthorize("hasRole('ADMIN') or hasRole('SUPERVISOR')")
     public ResponseEntity<MesaResponse> corregirActa(@PathVariable Long id,

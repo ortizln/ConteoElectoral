@@ -52,6 +52,10 @@ public class Mesa {
     @Column(name = "aprobada", nullable = false)
     private Boolean aprobada = false;
 
+    /** Observaciones opcionales registradas por el miembro de mesa. UTF-8. */
+    @Column(name = "observaciones", columnDefinition = "text")
+    private String observaciones;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

@@ -49,6 +49,7 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
   Timer? _nulosDebounce;
   Timer? _blancoDebounce;
   Timer? _ausentesDebounce;
+  Timer? _observacionesDebounce;
 
   /// Evita que un doble tap (o dos llamadas simultáneas) registre el mismo voto dos veces.
   bool _registrandoVoto = false;
@@ -61,6 +62,7 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
   int _votosNulos = 0;
   int _votosBlanco = 0;
   int _ausentes = 0;
+  String _observaciones = '';
 
   Usuario? get usuario => _usuario;
   Eleccion? get eleccionActual => _eleccionActual;
@@ -187,6 +189,7 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
   int get votosNulos => _votosNulos;
   int get votosBlanco => _votosBlanco;
   int get ausentes => _ausentes;
+  String get observaciones => _observaciones;
 
   Future<void> init() async {
     WidgetsBinding.instance.addObserver(this);
@@ -392,6 +395,7 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     _nulosDebounce?.cancel();
     _blancoDebounce?.cancel();
     _ausentesDebounce?.cancel();
+    _observacionesDebounce?.cancel();
     _connectivitySub?.cancel();
     _stompSyncSub?.cancel();
     _stompDataSub?.cancel();
@@ -588,6 +592,7 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     _votosNulos = mesa.votosNulos ?? 0;
     _votosBlanco = mesa.votosBlanco ?? 0;
     _ausentes = mesa.ausentes ?? 0;
+    _observaciones = mesa.observaciones ?? '';
     notifyListeners();
   }
 
@@ -712,6 +717,10 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
       _votosNulos = mesa.votosNulos ?? 0;
       _votosBlanco = mesa.votosBlanco ?? 0;
       _ausentes = mesa.ausentes ?? 0;
+      // No pisar texto que el usuario está escribiendo (debounce pendiente).
+      if (_observacionesDebounce == null || !_observacionesDebounce!.isActive) {
+        _observaciones = mesa.observaciones ?? '';
+      }
     }
     notifyListeners();
   }
@@ -943,6 +952,30 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     });
   }
 
+  /// Observaciones son opcionales: se guardan localmente y se encolan para
+  /// sincronizar incluso sin conexión. No bloquean el cierre del acta.
+  Future<void> actualizarObservaciones(String valor) async {
+    if (_mesaActual == null) return;
+    if (_mesaActual!.aprobada) {
+      _error = 'El acta de esta mesa ya fue aprobada y no admite cambios';
+      notifyListeners();
+      return;
+    }
+    // Límite alineado con el backend (evita rechazos al sincronizar).
+    _observaciones = valor.trim().length > 2000
+        ? valor.trim().substring(0, 2000)
+        : valor.trim();
+    final mesa = _mesaActual!;
+    await _db.actualizarObservaciones(mesa.id, _observaciones.isEmpty ? null : _observaciones);
+    await _sync.enqueueObservaciones(mesa.id, mesa.eleccionesId, _observaciones);
+    await _refreshSyncCounts();
+    notifyListeners();
+    _observacionesDebounce?.cancel();
+    _observacionesDebounce = Timer(const Duration(milliseconds: 700), () {
+      if (_isOnline) unawaited(sincronizarVotos());
+    });
+  }
+
   Future<void> cerrarActa() async {
     if (_mesaActual == null) return;
     if (_mesaActual!.aprobada) {
@@ -959,10 +992,12 @@ class AppProvider extends ChangeNotifier with WidgetsBindingObserver {
     _nulosDebounce?.cancel();
     _blancoDebounce?.cancel();
     _ausentesDebounce?.cancel();
+    _observacionesDebounce?.cancel();
     final mesa = _mesaActual!;
     await _sync.enqueueNulos(mesa.id, mesa.eleccionesId, _votosNulos);
     await _sync.enqueueBlanco(mesa.id, mesa.eleccionesId, _votosBlanco);
     await _sync.enqueueAusentes(mesa.id, mesa.eleccionesId, _ausentes);
+    await _sync.enqueueObservaciones(mesa.id, mesa.eleccionesId, _observaciones);
     await _sync.enqueueCerrarMesa(mesa.id, mesa.eleccionesId);
     await _db.cerrarMesaLocal(mesa.id);
 

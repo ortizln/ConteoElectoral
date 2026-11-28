@@ -32,6 +32,7 @@ export class CorregirActaComponent implements OnInit, OnDestroy {
   nulos = 0;
   blanco = 0;
   ausentes = 0;
+  observaciones = '';
   cargando = true;
   guardando = false;
   error = '';
@@ -124,6 +125,7 @@ export class CorregirActaComponent implements OnInit, OnDestroy {
         this.nulos = mesa.votosNulos ?? 0;
         this.blanco = mesa.votosBlanco ?? 0;
         this.ausentes = mesa.ausentes ?? 0;
+        this.observaciones = mesa.observaciones ?? '';
         this.cargarFotos(mesa.fotos || []);
         this.cargarListas();
         this.cargarVotos();
@@ -303,6 +305,7 @@ export class CorregirActaComponent implements OnInit, OnDestroy {
   private aplicarRespuestaMesa(respuesta: {
     id: number; cerrada?: boolean | null; aprobada?: boolean | null;
     votosNulos?: number | null; votosBlanco?: number | null; ausentes?: number | null;
+    observaciones?: string | null;
   }): void {
     if (!this.mesa || this.mesa.mesaId !== respuesta.id) return;
     this.mesa = {
@@ -311,11 +314,13 @@ export class CorregirActaComponent implements OnInit, OnDestroy {
       aprobada: respuesta.aprobada ?? this.mesa.aprobada,
       votosNulos: respuesta.votosNulos ?? this.mesa.votosNulos,
       votosBlanco: respuesta.votosBlanco ?? this.mesa.votosBlanco,
-      ausentes: respuesta.ausentes ?? this.mesa.ausentes
+      ausentes: respuesta.ausentes ?? this.mesa.ausentes,
+      observaciones: respuesta.observaciones ?? this.mesa.observaciones
     };
     this.nulos = this.mesa.votosNulos ?? 0;
     this.blanco = this.mesa.votosBlanco ?? 0;
     this.ausentes = this.mesa.ausentes ?? 0;
+    this.observaciones = this.mesa.observaciones ?? '';
   }
 
   guardar(): void {
@@ -331,6 +336,7 @@ export class CorregirActaComponent implements OnInit, OnDestroy {
       votosNulos: Math.max(0, Number(this.nulos) || 0),
       votosBlanco: Math.max(0, Number(this.blanco) || 0),
       ausentes: Math.max(0, Number(this.ausentes) || 0),
+      observaciones: this.observaciones.trim(),
       votos: this.votos.map(v => ({
         votoId: v.id,
         cantidadVotos: Math.max(0, Number(v.cantidadVotos) || 0)

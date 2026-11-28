@@ -27,8 +27,8 @@
 .alert { padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; }
 .alert-success { background: var(--alantek-success-bg); color: var(--alantek-success); border: 1px solid var(--alantek-success); }
 .alert-danger { background: var(--alantek-danger-bg); color: var(--alantek-danger); border: 1px solid var(--alantek-danger); }
-.tabs { display: flex; gap: 0; margin-bottom: 24px; background: var(--alantek-surface); border-radius: 12px; padding: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-.tab { flex: 1; padding: 12px 20px; border: none; background: transparent; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--alantek-text-muted); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.tabs { display: flex; flex-wrap: wrap; gap: 0; margin-bottom: 24px; background: var(--alantek-surface); border-radius: 12px; padding: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.tab { flex: 1 1 auto; min-width: 130px; padding: 12px 20px; border: none; background: transparent; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--alantek-text-muted); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .tab:hover { background: var(--alantek-background); color: var(--alantek-text); }
 .tab.active { background: var(--alantek-primary); color: white; box-shadow: 0 2px 8px rgba(27, 36, 29, 0.3); }
 .tab-content { min-height: 200px; }
@@ -100,3 +100,39 @@
 .permiso-check { display: inline-flex; align-items: center; gap: 2px; font-size: 11px; font-weight: 600; color: var(--alantek-text-muted); cursor: pointer; }
 .permiso-check input[type="checkbox"] { width: 14px; height: 14px; cursor: pointer; accent-color: var(--alantek-primary); }
 .permisos-actions { margin-top: 20px; display: flex; justify-content: flex-end; }
+
+/* WhatsApp */
+.wpp-tab { display: flex; flex-direction: column; gap: 20px; }
+.wpp-status-card {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 20px; border-radius: 12px;
+  background: var(--alantek-surface); border-left: 4px solid var(--alantek-danger);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.wpp-status-card.ok { border-left-color: var(--alantek-success); }
+.wpp-status-card.warn { border-left-color: var(--alantek-accent); }
+.wpp-status-icon { font-size: 26px; color: var(--alantek-text-muted); }
+.wpp-status-card.ok .wpp-status-icon { color: var(--alantek-success); }
+.wpp-status-info { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.wpp-status-info strong { font-size: 15px; color: var(--alantek-text); }
+.wpp-status-info span, .wpp-status-info small { font-size: 12px; color: var(--alantek-text-muted); }
+.wpp-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px; background: var(--alantek-background); color: var(--alantek-text-muted); }
+.wpp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 900px) { .wpp-grid { grid-template-columns: 1fr; } }
+.wpp-switch { display: inline-flex; align-items: center; gap: 6px; color: var(--alantek-text-secondary); cursor: pointer; }
+.wpp-switch input { width: 15px; height: 15px; accent-color: var(--alantek-primary); cursor: pointer; }
+.wpp-actions { display: flex; gap: 8px; margin-top: 14px; }
+.wpp-hint { margin: 14px 0 0; font-size: 12px; line-height: 1.5; color: var(--alantek-text-muted); }
+.wpp-card { padding: 20px; }
+.wpp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.wpp-table th, .wpp-table td { padding: 9px 10px; border-bottom: 1px solid var(--alantek-border); text-align: left; vertical-align: middle; }
+.wpp-table thead th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--alantek-text-muted); }
+.wpp-group-name { font-weight: 600; color: var(--alantek-text); display: block; }
+.wpp-chat-id { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--alantek-text-secondary); }
+.wpp-muted, .wpp-empty { color: var(--alantek-text-muted); font-size: 12px; }
+.wpp-empty { text-align: center; padding: 20px !important; }
+.wpp-envio-estado { font-weight: 700; font-size: 12px; }
+.wpp-envio-estado.enviado { color: var(--alantek-success); }
+.wpp-envio-estado.fallido { color: var(--alantek-danger); }
+.wpp-envio-estado.pendiente { color: var(--alantek-accent); }
+.wpp-error { display: block; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--alantek-danger); font-size: 11px; }

@@ -32,6 +32,9 @@
     <button aria-label="Permisos" title="Permisos" class="btn tab btn-xs btn-labeled" [class.active]="activeTab === 'permisos'" (click)="activeTab = 'permisos'">
       <span><i class="bi bi-shield-lock"></i></span> Permisos
     </button>
+    <button aria-label="WhatsApp" title="WhatsApp" class="btn tab btn-xs btn-labeled" [class.active]="activeTab === 'whatsapp'" (click)="openWhatsappTab()">
+      <span><i class="bi bi-whatsapp"></i></span> WhatsApp
+    </button>
   </div>
 
   <!-- Tab: Configuración -->
@@ -248,6 +251,151 @@
       </div>
       <div class="permisos-actions">
         <button aria-label="Guardar" title="Guardar" class="btn btn-primary btn-xs btn-labeled" (click)="savePermisos()" [disabled]="permisosSaving"><span *ngIf="permisosSaving" class="spinner-border spinner-border-sm"></span><i *ngIf="!permisosSaving" class="bi bi-save"></i><span class="btn-label">Guardar</span></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: WhatsApp -->
+  <div *ngIf="!loading && activeTab === 'whatsapp'" class="tab-content wpp-tab">
+    <div class="wpp-status-card" [class.ok]="wppEstado?.ready" [class.warn]="wppEstado && !wppEstado.ready">
+      <div class="wpp-status-icon">
+        <i class="bi" [ngClass]="wppEstado?.ready ? 'bi-whatsapp' : 'bi-wifi-off'"></i>
+      </div>
+      <div class="wpp-status-info">
+        <strong>{{ wppEstado?.ready ? 'WhatsApp vinculado y listo' : 'WhatsApp sin vincular' }}</strong>
+        <span>{{ wppEstado?.mensaje || 'Consultando el estado de la sesión…' }}</span>
+        <small *ngIf="wppEstado?.phone">Número vinculado: {{ wppEstado?.phone }}</small>
+      </div>
+      <span class="wpp-badge">{{ wppEstado?.status || 'SIN ESTADO' }}</span>
+      <button aria-label="Recargar" title="Recargar" class="btn btn-outline-secondary btn-xs icon-only" (click)="loadWhatsapp()" [disabled]="wppLoading">
+        <i class="bi bi-arrow-clockwise"></i>
+      </button>
+    </div>
+
+    <div class="wpp-grid">
+      <div class="card">
+        <h5><span><i class="bi bi-link-45deg"></i></span> Sesión de OpenWA</h5>
+        <div class="form-group">
+          <label class="sm" for="wppSessionId">ID de sesión</label>
+          <input id="wppSessionId" type="text" class="form-control sm form-control-sm" autocomplete="off"
+            [(ngModel)]="wppSessionId" placeholder="Ej. ecbae1a0-8d06-437b-b211-dac91a23ab2b" />
+        </div>
+        <label class="wpp-switch sm">
+          <input class="sm" type="checkbox" [(ngModel)]="wppActivo" /> Enviar fotos del acta automáticamente
+        </label>
+        <div class="wpp-actions">
+          <button aria-label="Guardar sesión" title="Guardar sesión" class="btn btn-primary btn-xs btn-labeled" (click)="guardarWhatsappConfig()" [disabled]="wppSaving">
+            <span *ngIf="wppSaving" class="spinner-border spinner-border-sm"></span>
+            <i *ngIf="!wppSaving" class="bi bi-save"></i><span class="btn-label">Guardar sesión</span>
+          </button>
+        </div>
+        <p class="wpp-hint">Si el ID se deja vacío se usa la sesión configurada en el servidor. El texto de cada foto se genera sin tildes para evitar caracteres dañados en WhatsApp.</p>
+      </div>
+
+      <div class="card">
+        <h5><span><i class="bi bi-people"></i></span> {{ wppGrupoEditId != null ? 'Editar grupo' : 'Agregar grupo' }}</h5>
+        <div class="form-group">
+          <label class="sm" for="wppGrupoChatId">ID del chat (JID)</label>
+          <input id="wppGrupoChatId" type="text" class="form-control sm form-control-sm" autocomplete="off"
+            [(ngModel)]="wppGrupoChatId" placeholder="Ej. 120363432092685710@g.us" [disabled]="wppGrupoEditId != null" />
+        </div>
+        <div class="form-group">
+          <label class="sm" for="wppGrupoNombre">Nombre del grupo</label>
+          <input id="wppGrupoNombre" type="text" class="form-control sm form-control-sm" autocomplete="off"
+            [(ngModel)]="wppGrupoNombre" placeholder="Ej. Control Electoral" />
+        </div>
+        <label class="wpp-switch sm">
+          <input class="sm" type="checkbox" [(ngModel)]="wppGrupoActivo" /> Grupo activo
+        </label>
+        <div class="wpp-actions">
+          <button aria-label="Guardar grupo" title="Guardar grupo" class="btn btn-primary btn-xs btn-labeled" (click)="guardarWhatsappGrupo()" [disabled]="wppSaving">
+            <span *ngIf="wppSaving" class="spinner-border spinner-border-sm"></span>
+            <i *ngIf="!wppSaving" class="bi bi-save"></i><span class="btn-label">{{ wppGrupoEditId != null ? 'Actualizar' : 'Agregar grupo' }}</span>
+          </button>
+          <button *ngIf="wppGrupoEditId != null" aria-label="Limpiar" title="Limpiar" class="btn btn-outline-secondary btn-xs icon-only" (click)="limpiarFormularioGrupo()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        <p class="wpp-hint">Cada foto del acta se enviará a todos los grupos activos con el recinto, la mesa y el usuario que la cargó.</p>
+      </div>
+    </div>
+
+    <div class="card wpp-card">
+      <h5><span><i class="bi bi-list-check"></i></span> Grupos que reciben las fotos del acta</h5>
+      <div class="table-responsive">
+        <table class="wpp-table">
+          <thead>
+            <tr>
+              <th>Grupo</th>
+              <th>ID del chat</th>
+              <th class="text-center">Estado</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let grupo of wppGrupos">
+              <td>
+                <span class="wpp-group-name">{{ grupo.nombre }}</span>
+                <small *ngIf="!grupo.configurado" class="wpp-muted">Detectado en OpenWA</small>
+              </td>
+              <td class="wpp-chat-id" [title]="grupo.chatId">{{ grupo.chatId }}</td>
+              <td class="text-center">
+                <label class="wpp-switch sm" [title]="grupo.activo ? 'Grupo activo' : 'Grupo inactivo'">
+                  <input class="sm" type="checkbox" [checked]="grupo.activo" (change)="toggleWhatsappGrupo(grupo)" />
+                </label>
+              </td>
+              <td class="text-center">
+                <button aria-label="Editar grupo" title="Editar grupo" class="btn btn-outline-primary btn-xs icon-only" (click)="editarWhatsappGrupo(grupo)">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+                <button *ngIf="grupo.id != null" aria-label="Eliminar" title="Eliminar" class="btn btn-outline-danger btn-xs icon-only" (click)="eliminarWhatsappGrupo(grupo)">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="wppGrupos.length === 0">
+              <td colspan="4" class="wpp-empty">No se encontraron grupos en la sesión de OpenWA.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card wpp-card">
+      <h5><span><i class="bi bi-send"></i></span> Bandeja de envíos de fotos</h5>
+      <div class="table-responsive">
+        <table class="wpp-table">
+          <thead>
+            <tr>
+              <th>Mesa</th>
+              <th>Grupo</th>
+              <th>Estado</th>
+              <th class="text-center">Intentos</th>
+              <th>Fecha</th>
+              <th class="text-center">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let envio of wppEnvios">
+              <td>{{ envio.mesaNumero || envio.mesaId }}</td>
+              <td>{{ envio.grupoNombre || envio.grupoId }}</td>
+              <td>
+                <span class="wpp-envio-estado" [ngClass]="envio.estado.toLowerCase()">{{ envio.estado }}</span>
+                <small *ngIf="envio.error" class="wpp-error" [title]="envio.error">{{ envio.error }}</small>
+              </td>
+              <td class="text-center">{{ envio.intentos }}</td>
+              <td>{{ envio.enviadoAt || envio.createdAt }}</td>
+              <td class="text-center">
+                <button aria-label="Reenviar" title="Reenviar" class="btn btn-outline-primary btn-xs icon-only" (click)="reenviarWhatsappEnvio(envio)">
+                  <i class="bi bi-arrow-repeat"></i>
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="wppEnvios.length === 0">
+              <td colspan="6" class="wpp-empty">Todavía no se han registrado envíos de fotos del acta.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>

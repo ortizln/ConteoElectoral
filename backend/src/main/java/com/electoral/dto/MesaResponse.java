@@ -27,6 +27,8 @@ public class MesaResponse {
     private Integer votosBlanco;
     private Integer ausentes;
     private Boolean aprobada;
+    /** Observaciones opcionales de la mesa (UTF-8). */
+    private String observaciones;
     /** Electores del padrón del recinto/institución (para comparar con ausentes). */
     private Integer electoresRegistrados;
     private Long usuarioId;
