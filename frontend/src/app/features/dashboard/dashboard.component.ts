@@ -38,7 +38,7 @@ type ResultadoListaCategoriaCard = {
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
-  /** Ruta pública /resultados: solo lectura, sin descargas ni acciones de administración. */
+  /** Modo solo lectura de /resultados: sin descargas ni acciones de administración. */
   @Input() publico = false;
 
   @ViewChild('barChart') barChartRef!: ElementRef<HTMLCanvasElement>;
@@ -371,9 +371,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     this.selectedEleccionId = Number((event.target as HTMLSelectElement).value);
     const eleccion = this.elecciones.find(e => e.id === this.selectedEleccionId);
     this.eleccionNombre = eleccion?.nombre || '';
-    this.cargarMetaFotos(this.selectedEleccionId);
+    if (!this.publico) {
+      this.cargarMetaFotos(this.selectedEleccionId);
+      this.subscribeToUpdates();
+    }
     this.loadDashboard();
-    this.subscribeToUpdates();
   }
 
   loadZonas(): void {

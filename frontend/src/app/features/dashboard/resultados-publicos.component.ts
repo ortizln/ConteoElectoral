@@ -3,8 +3,9 @@ import { CommonModule } from '@angular/common';
 import { DashboardComponent } from './dashboard.component';
 
 /**
- * Resultados públicos: misma visualización del dashboard, sin autenticación.
- * El modo `publico` desactiva descargas, fotos de acta, mesas cerradas y acciones.
+ * Resultados para el perfil VISITANTE: misma visualización del dashboard, pero
+ * con sesión obligatoria. El modo `publico` desactiva descargas, fotos de acta,
+ * mesas cerradas y cualquier acción de manipulación.
  */
 @Component({
   selector: 'app-resultados-publicos',

@@ -63,8 +63,9 @@
         <div class="header-user-info">
           <span class="header-user-name">{{ userName }}</span>
           <span class="header-role-badge" [class.admin]="userRole === 'ADMIN'"
-            [class.supervisor]="userRole === 'SUPERVISOR'">
-            {{ userRole === 'ADMIN' ? 'Administrador' : 'Supervisor' }}
+            [class.supervisor]="userRole === 'SUPERVISOR'"
+            [class.visitante]="userRole === 'VISITANTE'">
+            {{ roleLabel }}
           </span>
         </div>
         <button (click)="toggleTheme()" class="btn theme-toggle btn-xs icon-only" [title]="isDark ? 'Modo claro' : 'Modo oscuro'"

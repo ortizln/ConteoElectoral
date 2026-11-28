@@ -792,8 +792,10 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
         eleccionesId: this.mesaActual.eleccionesId
       }).subscribe({
         next: () => {
+          // Conservar el valor guardado: reiniciarlo a 1 hacía creer que el voto
+          // no se registró y obligaba a volver a digitar la cantidad.
+          this.cantidadVotos = cant;
           this.loadVotos();
-          this.cantidadVotos = 1;
           this.animando = false;
         },
         error: onError
@@ -806,8 +808,10 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
         eleccionesId: this.mesaActual.eleccionesId
       }).subscribe({
         next: () => {
+          // Conservar el valor guardado: reiniciarlo a 1 hacía creer que el voto
+          // no se registró y obligaba a volver a digitar la cantidad.
+          this.cantidadVotos = cant;
           this.loadVotos();
-          this.cantidadVotos = 1;
           this.animando = false;
         },
         error: onError
@@ -1016,7 +1020,8 @@ export class MesaVotacionComponent implements OnInit, OnDestroy {
       this.errorMensaje = err?.error?.message || 'No se pudo registrar el voto a la lista';
     };
     const onSuccess = () => {
-      this.cancelarSeleccionLista();
+      // Igual que el registro individual: el input debe reflejar el voto guardado.
+      this.cantidadLista = cant;
       this.loadVotos();
     };
     if (existingVoto) {

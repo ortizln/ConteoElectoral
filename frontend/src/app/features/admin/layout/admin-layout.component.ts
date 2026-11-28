@@ -40,6 +40,7 @@ export class AdminLayoutComponent {
         { path: '/dashboard', icon: 'bi-speedometer2', label: 'Dashboard Electoral', roles: ['ADMIN', 'SUPERVISOR'] },
         { path: '/mesa', icon: 'bi-check2-square', label: 'Módulo de Votación', roles: ['ADMIN', 'MIEMBRO_MESA'] },
         { path: '/actas', icon: 'bi-camera-fill', label: 'Actas', roles: ['ADMIN', 'SUPERVISOR'] },
+        { path: '/resultados', icon: 'bi-bar-chart-line', label: 'Resultados', roles: ['VISITANTE'] },
       ],
     },
     {
@@ -127,6 +128,17 @@ export class AdminLayoutComponent {
   get userName(): string {
     const user = this.authService.getCurrentUser();
     return user?.nombre + ' ' + user?.apellido || '';
+  }
+
+  get roleLabel(): string {
+    switch (this.userRole) {
+      case 'ADMIN': return 'Administrador';
+      case 'SUPERVISOR': return 'Supervisor';
+      case 'MIEMBRO_MESA': return 'Miembro de Mesa';
+      case 'VISITANTE': return 'Visitante';
+      case 'OPERADOR': return 'Operador';
+      default: return this.userRole;
+    }
   }
 
 

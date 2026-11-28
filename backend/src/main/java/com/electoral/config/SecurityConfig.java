@@ -51,37 +51,18 @@ public class SecurityConfig {
                     .requestMatchers("/api/configuracion/manual").permitAll()
                     .requestMatchers("/api/download/**").permitAll()
                     .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", "/webjars/**").permitAll()
-                    .requestMatchers("/api/download/**").permitAll()
                     .requestMatchers("/ws/**").permitAll()
 
-                    // El dashboard público (/resultados) solo lee: reportes, fotos de acta,
-                    // actas y descargas siguen autenticados.
-                    .requestMatchers(
-                            AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/**/exportar-*"),
-                            AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/**/exportar-acta"))
-                            .authenticated()
-                    .requestMatchers(HttpMethod.GET, "/api/reportes/**", "/api/mesas/cerradas",
-                            "/api/mesas/acta-fotos", "/api/mesas/*/acta-fotos/**",
-                            "/api/votos/mesa/**").authenticated()
-
-                    .requestMatchers(HttpMethod.GET,
-                            "/api/elecciones/activas",
-                            "/api/dashboard/eleccion/*",
-                            "/api/dashboard/eleccion/*/filtrar",
-                            "/api/dashboard/eleccion/*/resultados",
-                            "/api/dashboard/geografico/**",
-                            "/api/zonas", "/api/zonas/**",
-                            "/api/provincias", "/api/provincias/**",
-                            "/api/cantones", "/api/cantones/**",
-                            "/api/parroquias", "/api/parroquias/**",
-                            "/api/instituciones", "/api/instituciones/parroquia/*", "/api/instituciones/*",
-                            "/api/cargos", "/api/cargos/**",
-                            "/api/partidos", "/api/partidos/**",
-                            "/api/candidatos", "/api/candidatos/**",
-                            "/api/listas", "/api/listas/**",
-                            "/api/listas-electorales", "/api/listas-electorales/**",
-                            "/api/votos/candidato/*/detalle", "/api/votos/lista/*/detalle",
-                            "/api/mesas/eleccion/*", "/api/mesas/institucion/*").permitAll()
+                    // /resultados ya no es público. Toda consulta de resultados exige
+                    // sesión; VISITANTE puede leer pero no exportar ni ver actas.
+                    .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/**/exportar-acta"))
+                            .hasAnyRole("ADMIN", "SUPERVISOR", "MIEMBRO_MESA")
+                    .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/**/exportar-*"))
+                            .hasAnyRole("ADMIN", "SUPERVISOR")
+                    .requestMatchers(HttpMethod.GET, "/api/reportes/**", "/api/mesas/cerradas")
+                            .hasAnyRole("ADMIN", "SUPERVISOR")
+                    .requestMatchers(HttpMethod.GET, "/api/mesas/acta-fotos", "/api/mesas/*/acta-fotos/**")
+                            .hasAnyRole("ADMIN", "SUPERVISOR", "MIEMBRO_MESA")
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .anyRequest().authenticated()
                 )

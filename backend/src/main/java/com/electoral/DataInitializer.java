@@ -27,16 +27,14 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         log.info("=== INICIANDO DATAINITIALIZER ===");
         
-        // Crear roles
-        if (rolRepository.count() == 0) {
-            Rol adminRol = Rol.builder().nombre("ADMIN").descripcion("Administrador del sistema").build();
-            Rol supervisorRol = Rol.builder().nombre("SUPERVISOR").descripcion("Supervisor de elecciones").build();
-            Rol miembroRol = Rol.builder().nombre("MIEMBRO_MESA").descripcion("Miembro de mesa de votación").build();
-            rolRepository.save(adminRol);
-            rolRepository.save(supervisorRol);
-            rolRepository.save(miembroRol);
-            log.info("Roles inicializados");
-        }
+        // Crear (o recuperar) roles. Se comprueba uno por uno para que una
+        // instalación existente obtenga VISITANTE sin recrear los anteriores.
+        ensureRol("ADMIN", "Administrador del sistema");
+        ensureRol("SUPERVISOR", "Supervisor de elecciones");
+        ensureRol("MIEMBRO_MESA", "Miembro de mesa de votación");
+        ensureRol("OPERADOR", "Operador de registro de votos");
+        ensureRol("VISITANTE", "Visitante con acceso de solo lectura a los resultados");
+        log.info("Roles inicializados");
 
         // Crear usuario admin
         if (!usuarioRepository.existsByUsername("admin")) {
@@ -64,5 +62,11 @@ public class DataInitializer implements CommandLineRunner {
         permisoService.initDefaultPermisos();
         
         log.info("=== DATAINITIALIZER COMPLETADO ===");
+    }
+
+    private void ensureRol(String nombre, String descripcion) {
+        if (rolRepository.findByNombre(nombre).isEmpty()) {
+            rolRepository.save(Rol.builder().nombre(nombre).descripcion(descripcion).build());
+        }
     }
 }

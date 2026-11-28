@@ -11,6 +11,14 @@ export const roleGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  router.navigate(['/dashboard']);
+  // Cada perfil vuelve a su pantalla permitida. VISITANTE nunca debe caer
+  // en /dashboard (privado) ni en un bucle de redirecciones.
+  const rol = authService.getCurrentUser()?.rol;
+  const destino = rol === 'VISITANTE' ? '/resultados'
+    : rol === 'MIEMBRO_MESA' ? '/mesa'
+    : rol === 'ADMIN' ? '/admin'
+    : '/dashboard';
+
+  router.navigate([state.url === destino ? '/login' : destino]);
   return false;
 };

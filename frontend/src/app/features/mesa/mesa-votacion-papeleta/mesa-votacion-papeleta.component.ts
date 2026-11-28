@@ -148,31 +148,24 @@ export class MesaVotacionPapeletaComponent implements OnInit, OnDestroy {
 
   registrarVoto() {
     if (!this.opcionSeleccionada || this.cantidadInput <= 0 || this.cerrada) return;
-    const existing = this.votosRegistrados.find(v => v.opcionPapeletaId === this.opcionSeleccionada.id);
-    if (existing) {
-      existing.cantidadVotos = this.cantidadInput;
-    } else {
-      this.votosRegistrados.push({
-        opcionPapeletaId: this.opcionSeleccionada.id,
-        papeletaTitulo: this.papeletaActual?.titulo || '',
-        opcionEtiqueta: this.opcionSeleccionada.etiqueta,
-        cantidadVotos: this.cantidadInput
-      });
-    }
-    this.totalVotos = this.votosRegistrados.reduce((s, v) => s + v.cantidadVotos, 0);
     const opcionId = this.opcionSeleccionada.id;
+    const cant = Number(this.cantidadInput);
     this.errorMensaje = '';
     this.api.registrarVotoPapeleta({
       opcionPapeletaId: opcionId,
       mesaId: this.mesaActual.id,
-      cantidadVotos: this.cantidadInput
+      cantidadVotos: cant
     }).subscribe({
+      next: () => {
+        // Mantener la opción y la cantidad registrada en el input; antes se
+        // limpiaban y el miembro veía el contador en cero tras guardar.
+        this.cantidadInput = cant;
+        this.loadVotos();
+      },
       error: (err) => {
         this.errorMensaje = err?.error?.message || 'No se pudo registrar el voto de la papeleta';
       }
     });
-    this.opcionSeleccionada = null;
-    this.cantidadInput = 0;
   }
 
   cerrarMesa() {

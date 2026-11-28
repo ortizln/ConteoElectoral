@@ -16,19 +16,32 @@ export const routes: Routes = [
   },
   { 
     path: 'dashboard', 
-    canActivate: [authGuard],
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'SUPERVISOR', 'OPERADOR'] },
     loadComponent: () => import('./features/admin/layout/admin-layout.component').then(m => m.AdminLayoutComponent),
     children: [
       { 
         path: '', 
+        pathMatch: 'full',
         loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) 
       }
     ]
   },
   {
+    // Resultados ya no es público: requiere sesión y perfil VISITANTE (o roles internos).
+    // Se usa el layout para tener cabecera/cierre de sesión sin menú de administración.
     path: 'resultados',
-    loadComponent: () => import('./features/dashboard/resultados-publicos.component')
-      .then(m => m.ResultadosPublicosComponent)
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'SUPERVISOR', 'VISITANTE'] },
+    loadComponent: () => import('./features/admin/layout/admin-layout.component').then(m => m.AdminLayoutComponent),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        loadComponent: () => import('./features/dashboard/resultados-publicos.component')
+          .then(m => m.ResultadosPublicosComponent)
+      }
+    ]
   },
   { 
     path: 'actas', 

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
 import { CarouselImage, RecuperarPasswordRequest } from '../../../core/models';
@@ -10,7 +10,7 @@ import { environment } from '../../../../environments/environment';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
@@ -143,6 +143,9 @@ export class LoginComponent implements OnInit, OnDestroy {
         break;
       case 'MIEMBRO_MESA':
         this.router.navigate(['/mesa']);
+        break;
+      case 'VISITANTE':
+        this.router.navigate(['/resultados']);
         break;
       default:
         this.router.navigate(['/dashboard']);
